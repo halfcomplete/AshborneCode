@@ -32,12 +32,15 @@ namespace AshborneGame._Core._Player
 
         public NPC? CurrentNPCInteraction { get; set; } = null;
 
+        public Item? CurrentMask { get; set; } = null;
+
 
         /// <summary>
         /// Gets or sets the items equipped by the player, either on the hand, offhand, head, body, or feet.
         /// </summary>
         public Dictionary<string, Item?> EquippedItems { get; set; } = new Dictionary<string, Item?>()
         {
+            { "face", null },
             { "hand", null },
             { "offhand", null },
             { "head", null },
@@ -58,7 +61,7 @@ namespace AshborneGame._Core._Player
         public Player()
         {
             _name = "Hero"; // Default name
-            CurrentLocation = new Location("Sample Location", "A sample location for testing.");
+            CurrentLocation = new Location("test location", "A test location for testing.");
             Inventory = new Inventory();
 		}
 
@@ -117,6 +120,12 @@ namespace AshborneGame._Core._Player
             IOService.Output.WriteLine(CurrentLocation.GetFullDescription(this));
         }
 
+        public void SetupMoveTo(Location newLocation)
+        {
+            CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
+            CurrentSublocation = null;
+        }
+
         /// <summary>
         /// Moves the player based on parsed input.
         /// </summary>
@@ -135,38 +144,46 @@ namespace AshborneGame._Core._Player
             if (_directions.Contains(place))
             {
                 // If the place is a direction, handle it as such
-                HandleDirectionalMovement(place);
+                TryMoveDirectionally(place);
+                return true;
             }
             else if (CurrentLocation.Exits.Values.Any(s => s.Name.Equals(place, StringComparison.OrdinalIgnoreCase)))
             {
                 // If the place is the name of an exit then move to that exit
                 MoveTo(CurrentLocation.Exits.Values.First(s => s.Name.Equals(place, StringComparison.OrdinalIgnoreCase)));
+                return true;
             }
             else if (parsedInput[0].Equals("back", StringComparison.OrdinalIgnoreCase))
             {
                 MoveTo(CurrentLocation);
+                return true;
+            }
+            else if (place == CurrentLocation.Name || place == (CurrentSublocation != null ? CurrentSublocation.Name : string.Empty))
+            {
+                IOService.Output.WriteLine("You can't move there because you are already there.");
+                return true;
             }
             else
             {
                 // Else the place is a sublocation
-                HandleSublocationMovement(place);
+                return TryMoveToSublocation(place);
             }
-            return true;
         }
 
-        private void HandleDirectionalMovement(string direction)
+        private bool TryMoveDirectionally(string direction)
         {
             if (CurrentLocation.Exits.TryGetValue(direction, out Location? newLocation))
             {
                 MoveTo(newLocation);
+                return true;
             }
             else
             {
-                throw new InvalidOperationException($"Cannot move {direction} from {CurrentLocation.Name}. No exit in that direction.");
+                return false;
             }
         }
 
-        private void HandleSublocationMovement(string place)
+        private bool TryMoveToSublocation(string place)
         {
             // Get the sublocation from sublocation list in the current location by name
             var sublocation = CurrentLocation.Sublocations
@@ -178,10 +195,11 @@ namespace AshborneGame._Core._Player
             if (sublocation != null)
             {
                 MoveTo(sublocation);
+                return true;
             }
             else
             {
-                throw new InvalidOperationException($"Cannot find sublocation '{place}' in {CurrentLocation.Name}.");
+                return false;
             }
         }
 

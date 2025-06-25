@@ -1,4 +1,8 @@
 ﻿
+using AshborneGame._Core._Player;
+using AshborneGame._Core.Data.BOCS.ItemSystem;
+using Ink.Runtime;
+
 namespace AshborneGame._Core.Game
 {
     /// <summary>
@@ -9,7 +13,19 @@ namespace AshborneGame._Core.Game
     {
         public Dictionary<string, bool> Flags { get; private set; } = new();
         public Dictionary<string, int> Counters { get; private set; } = new();
+        public Dictionary<string, string> Labels { get; private set; } = new();
         public Dictionary<string, object> Variables { get; private set; } = new();
+        public Dictionary<string, Item> Masks { get; private set; } = new();
+        private Player _player;
+
+        public GameStateManager(Player player)
+        {
+            _player = player;
+            Masks = new Dictionary<string, Item>()
+            {
+                {"Ossaneth", ItemFactory.CreateMask("Ossaneth", "The Unblinking Eye")}
+            };
+        }
 
         // ----------- FLAGS (True/False binary states) -----------
 
@@ -92,6 +108,19 @@ namespace AshborneGame._Core.Game
 
         public void RemoveCounter(string key) => Counters.Remove(key);
 
+        // ----------- LABELS (String storage) ----------
+
+        public void SetLabel(string key, string value) => Labels[key] = value;
+        public string? TryGetLabel(string key)
+        {
+            if (Labels.TryGetValue(key, out string? value))
+                return value;
+            else
+                return null;
+        }
+
+        public bool HasLabel(string key) => Labels.Keys.Contains(key);
+
         // ----------- VARIABLES (Generic object storage) -----------
 
         public void SetVariable(string key, object value) => Variables[key] = value;
@@ -119,6 +148,39 @@ namespace AshborneGame._Core.Game
         public bool HasVariable(string key) => Variables.ContainsKey(key);
 
         public void RemoveVariable(string key) => Variables.Remove(key);
+
+        // ----------- MASKS -----------
+        public void GivePlayerMask(string maskName)
+        {
+            _player.Inventory.AddItem(Masks[maskName]);
+        }
+
+        public bool TryTakePlayerMask(string maskName)
+        {
+            if (_player.Inventory.GetItem(maskName) != null)
+            {
+                _player.Inventory.RemoveItem(Masks[maskName]);
+                if (PlayerWearingMask(maskName)) _player.EquippedItems["face"] = null;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public void ForcePlayerMask(string maskName)
+        {
+            _player.EquippedItems["face"] = null;
+            _player.EquippedItems["face"] = Masks[maskName];
+        }
+
+        public bool PlayerHasMask(string maskName) => _player.Inventory.Slots.Any(s => s.Item.Name == maskName);
+
+        public bool PlayerWearingMask(string maskName)
+        {
+            return _player.EquippedItems["face"] != null && _player.EquippedItems["face"]!.Name == maskName;
+        }
 
         // ----------- UTILITIES -----------
 

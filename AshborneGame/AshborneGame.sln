@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AshborneGame", "AshborneGam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AshborneTests", "..\AshborneTests\AshborneTests.csproj", "{09B9E165-AF0F-41C3-B03C-CB998E4B4A6D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AshborneTooling", "..\AshborneScriptWatcher\AshborneTooling.csproj", "{D5A531BE-E6C2-4506-9F52-B1E11B44A45D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{09B9E165-AF0F-41C3-B03C-CB998E4B4A6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{09B9E165-AF0F-41C3-B03C-CB998E4B4A6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{09B9E165-AF0F-41C3-B03C-CB998E4B4A6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5A531BE-E6C2-4506-9F52-B1E11B44A45D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5A531BE-E6C2-4506-9F52-B1E11B44A45D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5A531BE-E6C2-4506-9F52-B1E11B44A45D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5A531BE-E6C2-4506-9F52-B1E11B44A45D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

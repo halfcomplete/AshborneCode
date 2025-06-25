@@ -93,5 +93,12 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             item.AddBehaviour(typeof(IBreakable), new BreakableBehaviour(item, maxDurability));
             return AddBaseBehaviours(item);
         }
+
+        public static Item CreateMask(string name, string description)
+        {
+            var item = new Item(name, description, "", 1, ItemTypes.Equipment, ItemQualities.Legendary);
+            item.AddBehaviour(typeof(IEquippable), new EquippableBehaviour(new List<string>() { "face" }));
+            return AddBaseBehaviours(item);
+        }
     }
 }

@@ -19,17 +19,21 @@ namespace AshborneGame._Core.Game
         private bool _isRunning;
         private DialogueService _dialogueService;
 
+        private string _startingAct = "Act1";
+        private string _startingScene = "Scene1";
+        private string _startingSceneSection = "Intro_Dialogue";
+
         public GameEngine(IInputHandler input, IOutputHandler output)
         {
             IOService.Initialise(input, output);
 
             Player player = new Player("Hero");
             Location startingLocation = InitialiseStartingLocation(player);
-            player.MoveTo(startingLocation);
+            player.SetupMoveTo(startingLocation);
 
             var session = new GameSession(player);
-            var gameState = new GameStateManager();
-            var inkRunner = new InkRunner(gameState);
+            var gameState = new GameStateManager(player);
+            var inkRunner = new InkRunner(gameState, player);
             _dialogueService = new DialogueService(inkRunner);
 
             InitialiseGameWorld(player);
@@ -83,18 +87,15 @@ namespace AshborneGame._Core.Game
 
         private void StartGameLoop(Player player)
         {
-            IOService.Output.WriteLine("Welcome to *Ashborne*.");
-            IOService.Output.WriteLine("Type 'help' if you are unsure what to do.\n");
-            IOService.Output.WriteLine(player.CurrentLocation.GetFullDescription(player));
+            _dialogueService.StartDialogue($"D:\\C# Projects\\AshborneCode\\AshborneGame\\_Core\\Data\\Scripts\\Act1\\Scene1\\{_startingAct}_{_startingScene}_{_startingSceneSection}.json");
 
-            _dialogueService.StartDialogue($"D:\\C# Projects\\AshborneCode\\AshborneGame\\_Core\\Data\\Scripts\\Act 1\\Scene 1\\act1_scene1_intro.json");
-
-            _isRunning = true;
-
-
+            _isRunning = false;
 
             while (_isRunning)
             {
+                IOService.Output.WriteLine("Welcome to *Ashborne*.");
+                IOService.Output.WriteLine("Type 'help' if you are unsure what to do.\n");
+                IOService.Output.WriteLine(player.CurrentLocation.GetFullDescription(player));
                 // TODO: Add a check here to make sure that there's no conversation running right now
                 string input = IOService.Input.GetPlayerInput().Trim().ToLowerInvariant();
 

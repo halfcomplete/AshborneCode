@@ -16,6 +16,7 @@ namespace AshborneGame._Core.SceneManagement
         private Story _story;
         private Player _player;
         private readonly GameStateManager _gameState;
+        private readonly int _defaultWait = 80;
 
         public bool IsRunning => _story != null && _story.canContinue;
 
@@ -49,12 +50,33 @@ namespace AshborneGame._Core.SceneManagement
             if (_story == null)
                 throw new InvalidOperationException("No Ink story loaded.");
 
+            List<string> _globalSceneTags = _story.globalTags ?? new();
+
             while (_story.canContinue)
             {
                 string line = _story.Continue().Trim();
+                List<string> rawTags = _story.currentTags ?? new();
+                List<string> lineTags = rawTags.Except(_globalSceneTags).ToList();
+                IOService.Output.DisplayDebugMessage(line, Globals.Enums.ConsoleMessageTypes.INFO);
+                IOService.Output.DisplayDebugMessage(string.Join(' ', lineTags) ?? string.Empty, Globals.Enums.ConsoleMessageTypes.INFO);
                 if (!string.IsNullOrWhiteSpace(line))
                 {
-                    IOService.Output.WriteLine(line);
+                    string? targetTag = lineTags.FirstOrDefault(t => t.StartsWith("slow:"));
+                    if (targetTag != null)
+                    {
+                        if (int.TryParse(targetTag.AsSpan(5), out int ms))
+                        {
+                            IOService.Output.WriteLine(line, ms);
+                        }
+                        else
+                        {
+                            IOService.Output.WriteLine(line, _defaultWait);
+                        }
+                    }
+                    else
+                    {
+                        IOService.Output.WriteLine(line, _defaultWait);
+                    }
                 }
             }
 
@@ -118,7 +140,6 @@ namespace AshborneGame._Core.SceneManagement
             _story.BindExternalFunction("pause", (int ms) => Thread.Sleep(ms));
 
             // --- Flags ---
-            _story.BindExternalFunction("setFlag", (string key) => _gameState.SetFlag(key, true));
             _story.BindExternalFunction("setFlag", (string key, bool value) => _gameState.SetFlag(key, value));
 
             _story.BindExternalFunction("getFlag", (string key) =>
@@ -173,6 +194,17 @@ namespace AshborneGame._Core.SceneManagement
                 _gameState.RemoveCounter(key);
             });
 
+            // --- Labels ---
+            _story.BindExternalFunction("setLabel", (string key, string value) => _gameState.SetLabel(key, value));
+
+            _story.BindExternalFunction("getLabel", (string key) =>
+            {
+                var result = _gameState.TryGetLabel(key);
+                return result ?? throw new Exception($"Label 'key' does not exist.");
+            });
+
+            _story.BindExternalFunction("hasLabel", (string key) => _gameState.HasLabel(key));
+
             // --- Variables (Set only) ---
             _story.BindExternalFunction("setVar", (string key, string value) => _gameState.SetVariable(key, value));
 
@@ -190,7 +222,12 @@ namespace AshborneGame._Core.SceneManagement
             _story.BindExternalFunction("playerWearingMask", (string maskName) => _gameState.PlayerWearingMask(maskName));
 
             _story.BindExternalFunction("playerForceMask", (string maskName) => _gameState.ForcePlayerMask(maskName));
-        }
+
+            _story.BindExternalFunction("getPlayerInput", () =>
+            {
+                return IOService.Input.GetPlayerInput();
+            });
+;       }
 
 
         /// <summary>

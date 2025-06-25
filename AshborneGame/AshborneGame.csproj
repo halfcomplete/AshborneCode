@@ -13,17 +13,14 @@
 
   <ItemGroup>
     <Folder Include="WebPort\" />
-    <Folder Include="_Core\Data\Scripts\Act 1\Scene 1\" />
+    <Folder Include="_Core\Data\Scripts\Act1\Scene1\" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="_Core\Game\CommandHandling\Commands\BaseCommands\BaseInventoryCommand.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="_Core\Data\Scripts\Act 1\Scene 1\act1_scene1_intro.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
+  <Import Project="InkAutoInclude.targets" />
 
 </Project>
