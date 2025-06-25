@@ -3,7 +3,7 @@ using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Interfaces;
 using System.Numerics;
 
-namespace AshborneGame._Core.Scenes
+namespace AshborneGame._Core.SceneManagement
 {
     /// <summary>
     /// Represents a location in the game world.

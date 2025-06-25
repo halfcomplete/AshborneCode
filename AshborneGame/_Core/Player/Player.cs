@@ -4,7 +4,7 @@ using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
-using AshborneGame._Core.Scenes;
+using AshborneGame._Core.SceneManagement;
 
 namespace AshborneGame._Core._Player
 {

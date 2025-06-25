@@ -6,7 +6,7 @@ using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
 using AshborneGame._Core.Data.BOCS.ObjectSystem;
 using AshborneGame._Core.Globals.Enums;
-using AshborneGame._Core.Scenes;
+using AshborneGame._Core.SceneManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;

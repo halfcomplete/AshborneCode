@@ -1,7 +1,7 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS;
 
-namespace AshborneGame._Core.Scenes
+namespace AshborneGame._Core.SceneManagement
 {
     /// <summary>
     /// Represents a sublocation within a location that contains an interactive object.

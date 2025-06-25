@@ -2,7 +2,7 @@
 using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.Game.CommandHandling.Commands;
 using AshborneGame._Core.Globals.Services;
-using AshborneGame._Core.Scenes;
+using AshborneGame._Core.SceneManagement;
 using Moq;
 using FluentAssertions;
 using AshborneGame._Core.Globals.Interfaces;

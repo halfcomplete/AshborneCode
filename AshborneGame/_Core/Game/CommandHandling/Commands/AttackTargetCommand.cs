@@ -1,7 +1,7 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
-using AshborneGame._Core.Scenes;
+using AshborneGame._Core.SceneManagement;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
 using System.Collections.Generic;
 

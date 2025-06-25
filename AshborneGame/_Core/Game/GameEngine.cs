@@ -7,7 +7,7 @@ using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
-using AshborneGame._Core.Scenes;
+using AshborneGame._Core.SceneManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +17,7 @@ namespace AshborneGame._Core.Game
     public class GameEngine
     {
         private bool _isRunning;
+        private DialogueService _dialogueService;
 
         public GameEngine(IInputHandler input, IOutputHandler output)
         {
@@ -26,7 +27,10 @@ namespace AshborneGame._Core.Game
             Location startingLocation = InitialiseStartingLocation(player);
             player.MoveTo(startingLocation);
 
-            GameSession session = new GameSession(player);
+            var session = new GameSession(player);
+            var gameState = new GameStateManager();
+            var inkRunner = new InkRunner(gameState);
+            _dialogueService = new DialogueService(inkRunner);
 
             InitialiseGameWorld(player);
 
@@ -83,10 +87,15 @@ namespace AshborneGame._Core.Game
             IOService.Output.WriteLine("Type 'help' if you are unsure what to do.\n");
             IOService.Output.WriteLine(player.CurrentLocation.GetFullDescription(player));
 
+            _dialogueService.StartDialogue($"D:\\C# Projects\\AshborneCode\\AshborneGame\\_Core\\Data\\Scripts\\Act 1\\Scene 1\\act1_scene1_intro.json");
+
             _isRunning = true;
+
+
 
             while (_isRunning)
             {
+                // TODO: Add a check here to make sure that there's no conversation running right now
                 string input = IOService.Input.GetPlayerInput().Trim().ToLowerInvariant();
 
                 if (string.IsNullOrWhiteSpace(input))
