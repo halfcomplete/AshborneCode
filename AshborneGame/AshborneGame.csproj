@@ -21,10 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Inkle.Ink.Engine" Version="0.7.4" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="_Core\Data\Scripts\Act 1\Scene 1\act1_scene1_intro.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
