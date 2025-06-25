@@ -6,7 +6,7 @@ using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBehavi
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviours;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.OtherBehaviours;
 using AshborneGame._Core.Globals.Enums;
-using System.Diagnostics;
+using AshborneGame._Core.Globals.Interfaces;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem
 {
@@ -15,6 +15,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         private static Item AddBaseBehaviours(Item item)
         {
             item.AddBehaviour(typeof(IInspectable), new InspectableBehaviour(item, item.Description, item.Quality, "This item has a hidden lore."));
+            
             return item;
         }
 

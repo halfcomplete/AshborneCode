@@ -28,13 +28,14 @@ namespace AshborneGame._Core.Game
             IOService.Initialise(input, output);
 
             Player player = new Player("Hero");
-            Location startingLocation = InitialiseStartingLocation(player);
-            player.SetupMoveTo(startingLocation);
-
-            var session = new GameSession(player);
+            
             var gameState = new GameStateManager(player);
             var inkRunner = new InkRunner(gameState, player);
             _dialogueService = new DialogueService(inkRunner);
+            GameContext.Initialise(player, gameState);
+
+            Location startingLocation = InitialiseStartingLocation(player);
+            player.SetupMoveTo(startingLocation);
 
             InitialiseGameWorld(player);
 
@@ -89,13 +90,14 @@ namespace AshborneGame._Core.Game
         {
             _dialogueService.StartDialogue($"D:\\C# Projects\\AshborneCode\\AshborneGame\\_Core\\Data\\Scripts\\Act1\\Scene1\\{_startingAct}_{_startingScene}_{_startingSceneSection}.json");
 
-            _isRunning = false;
+            _isRunning = true;
+
+            IOService.Output.WriteLine("Welcome to *Ashborne*.");
+            IOService.Output.WriteLine("Type 'help' if you are unsure what to do.\n");
+            IOService.Output.WriteLine(player.CurrentLocation.GetFullDescription(player));
 
             while (_isRunning)
             {
-                IOService.Output.WriteLine("Welcome to *Ashborne*.");
-                IOService.Output.WriteLine("Type 'help' if you are unsure what to do.\n");
-                IOService.Output.WriteLine(player.CurrentLocation.GetFullDescription(player));
                 // TODO: Add a check here to make sure that there's no conversation running right now
                 string input = IOService.Input.GetPlayerInput().Trim().ToLowerInvariant();
 

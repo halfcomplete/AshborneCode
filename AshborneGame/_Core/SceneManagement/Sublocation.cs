@@ -1,5 +1,7 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS;
+using AshborneGame._Core.Game;
+using AshborneGame._Core.Globals.Interfaces;
 
 namespace AshborneGame._Core.SceneManagement
 {
@@ -39,6 +41,19 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         /// <returns>True if the player can see this sublocation; otherwise, false.</returns>
         public bool CanPlayerSeeSublocation(Player player) => CanPlayerSeeExit(player);
-        
+
+        public override string GetDescription(Player player, GameStateManager state)
+        {
+            string contextualDescription = Description;
+            if (player.EquippedItems.Any(s => s.Value != null && s.Value.Name.Equals("torch", StringComparison.OrdinalIgnoreCase)))
+            {
+                contextualDescription += $". It is barely lit by your torch.";
+            }
+
+            string additionalDescription = string.Empty;
+            if (Object.TryGetBehaviour<IDescribable>(out var describable))
+                additionalDescription = describable.GetDescription(player, state);
+            return $"You are at {Name}. {contextualDescription} {additionalDescription}";
+        }
     }
 }

@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Folder Include="WebPort\" />
+    <Folder Include="_Core\Data\BOCS\CommonBehaviours\" />
     <Folder Include="_Core\Data\Scripts\Act1\Scene1\" />
   </ItemGroup>
 

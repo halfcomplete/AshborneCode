@@ -35,6 +35,8 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public IReadOnlyList<Sublocation> Sublocations => _sublocations;
 
+        public List<(Func<GameStateManager, bool> condition, string description)> Conditions { get; } = new();
+
         private readonly Dictionary<string, Location> _exits;
         private readonly List<Sublocation> _sublocations;
         private readonly int _minimumVisibility;
@@ -187,7 +189,12 @@ namespace AshborneGame._Core.SceneManagement
             return player.Visibility >= _minimumVisibility;
         }
 
-        public string GetDescription(Player player)
+        public void AddCondition(Func<GameStateManager, bool> condition, string description)
+        {
+            Conditions.Add((condition, description));
+        }
+
+        public virtual string GetDescription(Player player, GameStateManager state)
         {
             string contextualDescription = Description;
             if (player.EquippedItems.Any(s => s.Value != null && s.Value.Name.Equals("torch", StringComparison.OrdinalIgnoreCase)))
@@ -199,7 +206,7 @@ namespace AshborneGame._Core.SceneManagement
 
         public string GetFullDescription(Player player)
         {
-            string description = GetDescription(player);
+            string description = GetDescription(player, GameContext.GameState);
             if (_exits.Count > 0)
             {
                 description += "\n" + GetExits(player);
