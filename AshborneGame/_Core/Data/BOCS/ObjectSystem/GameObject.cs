@@ -10,6 +10,7 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem
         {
             Name = name ?? throw new ArgumentNullException(nameof(name), "Object name cannot be null.");
             Description = description;
+            ID = name;
         }
     }
 }

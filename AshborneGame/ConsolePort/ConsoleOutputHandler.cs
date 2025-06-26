@@ -112,7 +112,7 @@ namespace AshborneGame.ConsolePort
             }
 
 #if DEBUG
-            Console.WriteLine($"[{type}]: {message}");
+            //Console.WriteLine($"[{type}]: {message}");
 #endif
 
 

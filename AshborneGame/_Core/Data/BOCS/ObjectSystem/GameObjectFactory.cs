@@ -25,11 +25,13 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem
             (gameObject, var describableBehaviour) = AddDescribableBehaviour(gameObject);
             describableBehaviour.AddCondition(_ =>
                 GameContext.Player.Inventory.Slots.Any(slot =>
-                    slot.Item.GetAllBehaviours<IUnlocksTarget>()
-                        .Any(behaviour => behaviour.UnlockableObjectIDs.Contains(gameObject.ID))
+                    slot.Item.Behaviours.Values
+                        .SelectMany(b => b).ToList()
+                            .Any(b => b is IUnlocksTarget unlocksTarget && unlocksTarget.UnlockableObjectIDs.Contains(gameObject.ID))
                 ),
             "It looks like it can be opened by one of your keys.");
 
+            
             return gameObject;
         }
     }

@@ -7,6 +7,8 @@ using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviours;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.OtherBehaviours;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Interfaces;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours;
+using System.Diagnostics;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem
 {
@@ -43,7 +45,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             item.AddBehaviour(typeof(IUsable), new UsableBehaviour(item));
             item.AddBehaviour(typeof(IActOnUse), new OnUseUnlockObjectBehaviour(unlockableObjectIDs, false));
             item.AddBehaviour(typeof(IActOnUse), new OnUseLogMessage($"Key {name} used to unlock an object."));
-            return AddBaseBehaviours(item);  
+            return AddBaseBehaviours(item);
         }
 
         public static Item CreateArmour(string name, string description, List<string> bodyParts, ItemQualities quality, int maxDurability, Dictionary<PlayerStatTypes, int> statModifiers)
@@ -95,11 +97,6 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             return AddBaseBehaviours(item);
         }
 
-        public static Item CreateMask(string name, string description)
-        {
-            var item = new Item(name, description, "", 1, ItemTypes.Equipment, ItemQualities.Legendary);
-            item.AddBehaviour(typeof(IEquippable), new EquippableBehaviour(new List<string>() { "face" }));
-            return AddBaseBehaviours(item);
-        }
+        
     }
 }

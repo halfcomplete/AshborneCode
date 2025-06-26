@@ -78,11 +78,6 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         /// </remarks>
         public ItemQualities Quality { get; }
 
-        /// <summary>
-        /// Optional key ID that determines which container(s) it unlocks.
-        /// </summary>
-        public List<string>? UnlockableObjectIDs { get; } = null;
-
         #region Constructor
         /// <summary>
         /// Base constructor that takes all parameters. Used internally by other constructors.

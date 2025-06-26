@@ -21,10 +21,7 @@ namespace AshborneGame._Core.Game
         public GameStateManager(Player player)
         {
             _player = player;
-            Masks = new Dictionary<string, Item>()
-            {
-                {"Ossaneth", ItemFactory.CreateMask("Ossaneth", "The Unblinking Eye")}
-            };
+            Masks = MaskInitialiser.InitialiseMasks();
         }
 
         // ----------- FLAGS (True/False binary states) -----------
