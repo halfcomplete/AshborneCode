@@ -9,9 +9,9 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         public string Name => "help";
         public string Description => "Provides information about possible commands.";
 
-        public bool TryExecute(List<string> args, _Player.Player player)
+        public bool TryExecute(List<string> args, Player player)
         {
-            if (args.Count > 0)
+            if (args.Count > 1)
             {
                 IOService.Output.WriteLine("Did you mean just 'help'?");
                 return false;

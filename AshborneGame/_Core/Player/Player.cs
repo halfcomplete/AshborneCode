@@ -2,6 +2,9 @@ using AshborneGame._Core.Data.BOCS.ItemSystem;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
+using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviourModules;
+using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours;
+using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.SceneManagement;
@@ -94,6 +97,7 @@ namespace AshborneGame._Core._Player
         {
             _name = name ?? throw new ArgumentNullException(nameof(name));
             CurrentLocation = startingLocation ?? throw new ArgumentNullException(nameof(startingLocation));
+            startingLocation.TimesVisited = 1;
             Inventory = new Inventory();
         }
 
@@ -105,6 +109,7 @@ namespace AshborneGame._Core._Player
         public void MoveTo(Sublocation newLocation)
         {
             CurrentSublocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
+            newLocation.TimesVisited += 1;
             IOService.Output.WriteLine(CurrentSublocation.GetFullDescription(this));
         }
 
@@ -117,6 +122,7 @@ namespace AshborneGame._Core._Player
         {
             CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
             CurrentSublocation = null;
+            newLocation.TimesVisited += 1;
             IOService.Output.WriteLine(CurrentLocation.GetFullDescription(this));
         }
 
@@ -124,6 +130,7 @@ namespace AshborneGame._Core._Player
         {
             CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
             CurrentSublocation = null;
+            newLocation.TimesVisited = 1;
         }
 
         /// <summary>
@@ -144,8 +151,7 @@ namespace AshborneGame._Core._Player
             if (_directions.Contains(place))
             {
                 // If the place is a direction, handle it as such
-                TryMoveDirectionally(place);
-                return true;
+                return TryMoveDirectionally(place);
             }
             else if (CurrentLocation.Exits.Values.Any(s => s.Name.Equals(place, StringComparison.OrdinalIgnoreCase)))
             {
@@ -157,6 +163,17 @@ namespace AshborneGame._Core._Player
             {
                 MoveTo(CurrentLocation);
                 return true;
+            }
+            else if (parsedInput[0].Equals("through", StringComparison.OrdinalIgnoreCase) && GameContext.Player.CurrentSublocation != null && GameContext.Player.CurrentSublocation.Object.GetAllBehaviours<IInteractable>().Any(b => b is OpenCloseBehaviour openClose && openClose.IsOpen))
+            {
+                // If the player inputted "go through" and we are in a sublocation, the object of which is openable
+                if (GameContext.Player.CurrentSublocation.Object.TryGetBehaviour<IExit>(out var exit))
+                {
+                    // If that object is a pathway to another location
+                    MoveTo(exit.Location); 
+                    return true;
+                }
+                return false;
             }
             else if (place == CurrentLocation.Name || place == (CurrentSublocation != null ? CurrentSublocation.Name : string.Empty))
             {

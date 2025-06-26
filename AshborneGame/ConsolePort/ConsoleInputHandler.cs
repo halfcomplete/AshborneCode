@@ -8,6 +8,7 @@ namespace AshborneGame.ConsolePort
     {
         public string GetPlayerInput()
         {
+            Console.WriteLine("");
             Console.Write("> ");
             return Console.ReadLine() ?? string.Empty;
         }

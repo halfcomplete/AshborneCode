@@ -10,7 +10,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
     /// </summary>
     /// <remarks>
     /// Item Types and Their Properties:
-    /// - Weapons: Can have quality levels and durability. Examples: swords, wands, bows
+    /// - Weapons: Can have quality levels and durability
+    /// Examples: swords, wands, bows
     /// - Tools: Have durability but no quality. Examples: pickaxes, repair kits, lockpicks
     /// - Equipment: Can be equipped to specific body parts. Examples: armor, rings, amulets
     /// - Consumables: Can be used and stacked. Examples: potions, scrolls, materials

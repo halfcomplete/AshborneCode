@@ -16,14 +16,31 @@ namespace AshborneGame._Core.SceneManagement
         public string Id { get; }
 
         /// <summary>
-        /// Gets the name of the location.
+        /// Gets the name of the location (i.e. throne room). Used to say $"You are {PositionalPrefix} {Name}."
         /// </summary>
-        public virtual string Name { get; protected set; }
+        public virtual string Name { get; private set; }
 
         /// <summary>
-        /// Gets the description of the location.
+        /// The name of the location, with some additional information added (i.e. 
         /// </summary>
-        public virtual string Description { get; protected set; }
+        public virtual string DescriptiveName { get; private set; }
+
+        /// <summary>
+        /// The base description of the location (i.e.
+        /// </summary>
+        public virtual string Description { get; private set; }
+
+        /// <summary>
+        /// Additional description, used when looking around or if it's the first time the player travels to that location (i.e. "It's an endless ocean of black water frozen 
+        /// </summary>
+        public virtual string AdditionalDescription { get; private set; }
+
+        /// <summary>
+        /// Where the player is when they travel to that location (i.e. "at the", "in front of the"). Used to say $"You are {PositionalPrefix} {Name}."
+        /// </summary>
+        public virtual string PositionalPrefix { get; private set; }
+
+        
 
         /// <summary>
         /// Gets the dictionary of exits from this location.
@@ -37,9 +54,24 @@ namespace AshborneGame._Core.SceneManagement
 
         public List<(Func<GameStateManager, bool> condition, string description)> Conditions { get; } = new();
 
+        public int TimesVisited { get; set; } = 0;
+
         private readonly Dictionary<string, Location> _exits;
         private readonly List<Sublocation> _sublocations;
         private readonly int _minimumVisibility;
+
+
+        public Location(string name, string description)
+        {
+            Id = Guid.NewGuid().ToString();
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Description = description ?? throw new ArgumentNullException(nameof(description));
+            PositionalPrefix = "test prefix";
+            ReferenceName = name;
+            _exits = new Dictionary<string, Location>();
+            _sublocations = new List<Sublocation>();
+            _minimumVisibility = 5; // Default visibility level
+        }
 
         /// <summary>
         /// Initializes a new instance of the Scene class.
@@ -47,11 +79,14 @@ namespace AshborneGame._Core.SceneManagement
         /// <param name="name">The name of the location.</param>
         /// <param name="description">The description of the location.</param>
         /// <exception cref="ArgumentNullException">Thrown when name or description is null.</exception>
-        public Location(string name, string description)
+        public Location(string name, string description, string positionalPrefix, string referenceName, string additionalDescription)
         {
             Id = Guid.NewGuid().ToString();
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Description = description ?? throw new ArgumentNullException(nameof(description));
+            PositionalPrefix = positionalPrefix;
+            ReferenceName = referenceName;
+            AdditionalDescription = additionalDescription;
             _exits = new Dictionary<string, Location>();
             _sublocations = new List<Sublocation>();
             _minimumVisibility = 5; // Default visibility level
@@ -159,12 +194,12 @@ namespace AshborneGame._Core.SceneManagement
             }
 
             bool areAnySublocationsHidden = false;
-            sublocationString += "You notice some other things nearby:\n";
+            sublocationString += "You notice some other things nearby:";
             foreach (var sublocation in _sublocations)
             {
                 if (sublocation.CanPlayerSeeSublocation(player))
                 {
-                    sublocationString += $"- a {sublocation.Name}\n";
+                    sublocationString += $"\n- a {sublocation.Name}";
                 }
                 else
                 {
@@ -196,12 +231,24 @@ namespace AshborneGame._Core.SceneManagement
 
         public virtual string GetDescription(Player player, GameStateManager state)
         {
-            string contextualDescription = Description;
-            if (player.EquippedItems.Any(s => s.Value != null && s.Value.Name.Equals("torch", StringComparison.OrdinalIgnoreCase)))
+            string description;
+
+            if (TimesVisited > 1)
             {
-                contextualDescription += $". It is barely lit by your torch.";
+                description = $"You are back, {PositionalPrefix} {ReferenceName}. ";
             }
-            return $"You are at {Name}. {contextualDescription}";
+            else
+            {
+                description = $"You are {PositionalPrefix} {ReferenceName}. ";
+            }
+
+            foreach (var (condition, desc) in Conditions)
+            {
+                if (condition(state))
+                    return description + desc;
+            }
+
+            return description + Description;
         }
 
         public string GetFullDescription(Player player)

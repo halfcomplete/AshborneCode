@@ -1,16 +1,11 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem;
-using AshborneGame._Core.Data.BOCS.NPCSystem;
-using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ObjectSystem;
 using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.SceneManagement;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace AshborneGame._Core.Game
 {
@@ -28,7 +23,7 @@ namespace AshborneGame._Core.Game
             IOService.Initialise(input, output);
 
             Player player = new Player("Hero");
-            
+
             var gameState = new GameStateManager(player);
             var inkRunner = new InkRunner(gameState, player);
             _dialogueService = new DialogueService(inkRunner);
@@ -47,28 +42,25 @@ namespace AshborneGame._Core.Game
 
         private Location InitialiseStartingLocation(Player player)
         {
-            var location = new Location("Dusty Armoury", "The room is dark", 5);
+            //Location dreamVoid = new Location("centre", "Splintered mirrors are suspended in the air, but" +
+                "they reflect nothing. Shards of light slice the grey and lifeless sky. They stay still. All is still. All is silent.", "at the", "centre", "It's an endless ocean of black water frozen in time");
 
-            var chest = GameObjectFactory.CreateChest("rusted chest", "A large, rusted chest covered in cobwebs", isLocked: true);
-            var dummy = NPCFactory.CreateDummy("Training Dummy", "It's a wooden training dummy used for practice", 50);
-            var guard = NPCFactory.CreateNPC("guard", "stern-looking", "Halt! Who goes there?", "I am the guard of this armoury");
+            //Location mirrorOfIdentity = new Location("mirror", " Your reflection stares back at you. It doesn't blink.", "standing beneath the", "mirror", "It's tall and cracked.");
 
-            var key = ItemFactory.CreateKey("rusty key", "An old rusty key that looks like it might fit a lock.", "You turn the key and hear a click.", new List<string> { chest.ID });
-            player.Inventory.AddItem(key, 1);
+            //Location knifeOfViolence = new Location("pedestal holding a knife", "It's obsidian, with a golden stand holding up a shining silver knife. Your reflection " +
+                "lies on the blade.", "standing in front of the", "pedestal");
 
-            location.AddSublocation(new Sublocation(location, chest, "rusted chest", "It's covered in cobwebs", 3));
-            location.AddSublocation(new Sublocation(location, dummy, "training dummy", "A wooden training dummy used for practice.", 2));
-            location.AddSublocation(new Sublocation(location, guard, "guard", "A stern-looking guard stands watch.", 4));
+            //Location throneOfPower = new Location("emerald-laced throne ", "It's empty. Should you sit on it?", "in front of the", "throne");
 
-            if (chest.TryGetBehaviour<IHasInventory>(out var inventoryBehaviour))
-            {
-                inventoryBehaviour.Inventory.AddItem(ItemFactory.CreateWeapon("iron sword", "A basic iron sword", ItemQualities.Uncommon, 2, 20));
-                inventoryBehaviour.Inventory.AddItem(ItemFactory.CreateArmour("leather cap", "A basic leather cap that protects your head.", new List<string> { "head" }, ItemQualities.Common, 30, new Dictionary<PlayerStatTypes, int> { { PlayerStatTypes.Defense, 10 } }));
-                inventoryBehaviour.Inventory.AddItem(ItemFactory.CreateHealthPotion("health potion", 20), 3);
-            }
-
-            return location;
+            dreamVoid.AddExit("north", mirrorOfIdentity);
+            dreamVoid.AddExit("west", knifeOfViolence);
+            dreamVoid.AddExit("east", throneOfPower);
+            mirrorOfIdentity.AddExit("south", dreamVoid);
+            knifeOfViolence.AddExit("east", dreamVoid);
+            throneOfPower.AddExit("west", dreamVoid);
+            return dreamVoid;
         }
+
 
         private void InitialiseGameWorld(Player player)
         {
@@ -77,7 +69,6 @@ namespace AshborneGame._Core.Game
             var scroll = ItemFactory.CreateMagicScroll("mysterious scroll", "A scroll with ancient runes", "You read the scroll and feel a surge of power");
 
             player.Inventory.AddItem(torch, 1);
-            player.EquipItem(torch, "hand");
 
             player.Inventory.AddItem(ItemFactory.CreateHealthPotion("health potion", 20), 5);
             player.Inventory.AddItem(damagePotion, 5);
@@ -108,8 +99,7 @@ namespace AshborneGame._Core.Game
                 }
 
                 var splitInput = input.Split(' ').ToList();
-                var action = ExtractAction(ref splitInput);
-                var args = splitInput;
+                var action = ExtractAction(splitInput, out List<string> args);
 
                 bool isValidCommand = CommandManager.TryExecute(action, args, player);
 
@@ -121,22 +111,24 @@ namespace AshborneGame._Core.Game
                     if (string.IsNullOrWhiteSpace(input)) continue;
 
                     splitInput = input.Split(' ').ToList();
-                    action = ExtractAction(ref splitInput);
-                    args = splitInput;
+                    action = ExtractAction(splitInput, out var args2);
 
-                    isValidCommand = CommandManager.TryExecute(action, args, player);
+                    isValidCommand = CommandManager.TryExecute(action, args2, player);
                 }
             }
         }
 
-        private string ExtractAction(ref List<string> input)
+        private string ExtractAction(List<string> input, out List<string> args)
         {
             if (input.Count >= 2 && (input[0] == "go" || input[0] == "talk") && input[1] == "to")
             {
-                var newInput = new List<string>(input);
-                input.RemoveRange(0, 2);
-                return newInput[0];
+                var copy = new List<string>(input);
+                args = new List<string>(input);
+                args.RemoveRange(0, 2);
+                return string.Join(' ', copy.GetRange(0, 2));
             }
+            args = new List<string>(input);
+            args.RemoveAt(0);
             return input[0];
         }
     }

@@ -1,4 +1,5 @@
-﻿using AshborneGame._Core.Game;
+﻿using AshborneGame._Core._Player;
+using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using Moq;
@@ -13,6 +14,8 @@ namespace AshborneTests
             Console.WriteLine(">>> Running global test setup...");
 
             IOService.Initialise(new Mock<IInputHandler>().Object, new Mock<IOutputHandler>().Object);
+            Player player = new Player();
+            GameContext.Initialise(player, new GameStateManager(player));
         }
     }
 

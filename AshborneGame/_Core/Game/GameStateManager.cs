@@ -46,7 +46,10 @@ namespace AshborneGame._Core.Game
         public void RemoveFlag(string key) => Flags.Remove(key);
 
         /// <summary>
-        /// Toggles a flag. If it was true, this sets it to false, else it's set to true.
+        /// Toggles a flag
+        /// 
+        /// 
+        /// If it was true, this sets it to false, else it's set to true.
         /// </summary>
         /// <returns>True if the flag is now true. False if the flag is now false. Null if the flag doesn't exist.</returns>
         public bool? TryToggleFlag(string key)
