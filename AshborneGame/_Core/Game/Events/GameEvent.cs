@@ -13,6 +13,9 @@ namespace AshborneGame._Core.Game.Events
             Data = data ?? new Dictionary<string, object>();
         }
 
+        /// <summary>
+        /// Retrieves data about the event
+        /// </summary>
         public T Get<T>(string key)
         {
             return Data.TryGetValue(key, out var value) ? (T)value : default!;

@@ -2,6 +2,7 @@
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem;
 using Ink.Runtime;
+using System.ComponentModel.DataAnnotations;
 
 namespace AshborneGame._Core.Game
 {
@@ -21,19 +22,26 @@ namespace AshborneGame._Core.Game
         public GameStateManager(Player player)
         {
             _player = player;
-            Masks = MaskInitialiser.InitialiseMasks();
+        }
+
+        public void InitialiseMasks(Dictionary<string, Item> masks)
+        {
+            Masks = masks;
         }
 
         // ----------- FLAGS (True/False binary states) -----------
 
-        public void SetFlag(string key, bool value) => Flags[key] = value;
+        public bool SetFlag(string key, bool value) => Flags[key] = value;
 
         /// <summary>
         /// Gets the value of the provided flag name.
         /// </summary>
         /// <param name="key"></param>
         /// <returns>A bool? value, true if the flag is true, false if the flag is false, null if the flag doesn't exist.</returns>
-        public bool? GetFlag(string key) { return Flags.TryGetValue(key, out var value) ? value : null; }
+        public bool TryGetFlag(string key, out bool value) 
+        {
+            return Flags.TryGetValue(key, out value);
+        }
 
         /// <summary>
         /// Gets whether the flag exists.
@@ -70,8 +78,12 @@ namespace AshborneGame._Core.Game
         /// <summary>
         /// Gets the value of a counter.
         /// </summary>
-        /// <returns>The value if it exists. Null otherwise.</returns>
-        public int? TryGetCounter(string key) => Counters.TryGetValue(key, out var value) ? value : null;
+        /// <returns>True if it was successful, false if not. Out integer value.</returns>
+        public bool TryGetCounter(string key, out int value)
+        {
+            return Counters.TryGetValue(key, out value);
+        }
+
 
         /// <summary>
         /// Increments a counter by amount.
@@ -79,8 +91,7 @@ namespace AshborneGame._Core.Game
         /// <returns>True if it was successful. False otherwise.</returns>
         public bool TryIncrementCounter(string key, int amount = 1)
         {
-            int? baseValue = TryGetCounter(key);
-            if (baseValue == null)
+            if (!TryGetCounter(key, out var baseValue))
             {
                 return false;
             }
@@ -94,8 +105,7 @@ namespace AshborneGame._Core.Game
         /// <returns>True if it was successful. False otherwise.</returns>
         public bool TryDecrementCounter(string key, int amount = 1)
         {
-            int? baseValue = TryGetCounter(key);
-            if (baseValue == null)
+            if (!TryGetCounter(key, out var baseValue))
             {
                 return false;
             }

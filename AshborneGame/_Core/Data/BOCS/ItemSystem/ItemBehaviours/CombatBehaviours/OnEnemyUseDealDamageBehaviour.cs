@@ -20,7 +20,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.CombatBehaviour
         {
             // Attack player
             player.ChangeHealth(-BaseDamage);
-            IOService.Output.WriteLine($"You take {BaseDamage} damage from the enemy's attack. You now have {player.Stats.GetStat(Globals.Enums.PlayerStatTypes.Health)} HP left.");
+            IOService.Output.WriteLine($"You take {BaseDamage} damage from the enemy's attack. You now have {player.Stats.GetStat(Globals.Enums.PlayerStatType.Health)} HP left.");
         }
 
         public override OnEnemyUseDealDamageBehaviour DeepClone()

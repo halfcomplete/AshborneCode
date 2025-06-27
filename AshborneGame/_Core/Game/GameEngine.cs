@@ -2,6 +2,7 @@
 using AshborneGame._Core.Data.BOCS.ItemSystem;
 using AshborneGame._Core.Data.BOCS.ObjectSystem;
 using AshborneGame._Core.Game.CommandHandling;
+using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
@@ -12,6 +13,7 @@ namespace AshborneGame._Core.Game
     public class GameEngine
     {
         private bool _isRunning;
+        public bool DialogueRunning { get; set; }
         private DialogueService _dialogueService;
 
         private string _startingAct = "Act1";
@@ -27,10 +29,11 @@ namespace AshborneGame._Core.Game
             var gameState = new GameStateManager(player);
             var inkRunner = new InkRunner(gameState, player);
             _dialogueService = new DialogueService(inkRunner);
-            GameContext.Initialise(player, gameState);
+            GameContext.Initialise(player, gameState, _dialogueService, this);
+            gameState.InitialiseMasks(MaskInitialiser.InitialiseMasks());
 
-            Location startingLocation = InitialiseStartingLocation(player);
-            player.SetupMoveTo(startingLocation);
+            (Location startingLocation, LocationGroup startingLocationGroup) = InitialiseStartingLocation(player);
+            player.SetupMoveTo(startingLocation, startingLocationGroup);
 
             InitialiseGameWorld(player);
 
@@ -40,25 +43,66 @@ namespace AshborneGame._Core.Game
             StartGameLoop(player);
         }
 
-        private Location InitialiseStartingLocation(Player player)
+        private (Location, LocationGroup) InitialiseStartingLocation(Player player)
         {
-            //Location dreamVoid = new Location("centre", "Splintered mirrors are suspended in the air, but" +
-                "they reflect nothing. Shards of light slice the grey and lifeless sky. They stay still. All is still. All is silent.", "at the", "centre", "It's an endless ocean of black water frozen in time");
+            
+            Location dreamVoid = new Location("the centre", "On all sides, an endless ocean of black water frozen in time stretches away. Splintered glass suspend themselves in the air, each " +
+                "one clearer and cleaner than the next. Shards of light slice the grey and lifeless sky. They stay still. All is still. All is silent.", "at the", "centre");
 
-            //Location mirrorOfIdentity = new Location("mirror", " Your reflection stares back at you. It doesn't blink.", "standing beneath the", "mirror", "It's tall and cracked.");
+            Location mirrorOfIdentity = new Location("the mirror", "Your reflection stares back at you. It doesn't blink.", "standing beneath the", "mirror", "It's tall and cracked.");
 
-            //Location knifeOfViolence = new Location("pedestal holding a knife", "It's obsidian, with a golden stand holding up a shining silver knife. Your reflection " +
+            Location knifeOfViolence = new Location("the pedestal", "It's obsidian, with a golden stand holding up a shining silver knife. Your reflection " +
                 "lies on the blade.", "standing in front of the", "pedestal");
 
-            //Location throneOfPower = new Location("emerald-laced throne ", "It's empty. Should you sit on it?", "in front of the", "throne");
-
+            Location throneOfPower = new Location("the throne", "It's emerald-laced and empty. Nothing reflects off of it. Should you sit on it?", "in front of the", "throne");
+            LocationGroup ossanethDomain = new LocationGroup("Ossaneth's Domain", new List<Location>() { dreamVoid, mirrorOfIdentity, knifeOfViolence, throneOfPower });
+            
             dreamVoid.AddExit("north", mirrorOfIdentity);
             dreamVoid.AddExit("west", knifeOfViolence);
             dreamVoid.AddExit("east", throneOfPower);
             mirrorOfIdentity.AddExit("south", dreamVoid);
             knifeOfViolence.AddExit("east", dreamVoid);
             throneOfPower.AddExit("west", dreamVoid);
-            return dreamVoid;
+
+            throneOfPower.AddCustomCommand(
+            new List<string> { "sit on throne", "get on throne", "sit on the throne", "get on the throne" },
+                () =>
+                {
+                    if (!GameContext.GameState.TryGetFlag("player.actions.sat_on_throne", out var value) )
+                    {
+                        return "You sit on the throne. It's smooth and eerily comfortable, as though it's shaping itself to your body. You feel uneasy, and get off.";
+                    }
+                    return "You sit once again. The throne remains silent.";
+                },
+                () =>
+                {
+                    GameContext.GameState.SetFlag("player.actions.sat_on_throne", true);
+                    
+                }
+            );
+
+            knifeOfViolence.AddCustomCommand(["touch it", "touch the knife", "touch knife"], 
+                () =>
+                {
+                    return "You reach your hand out to feel the knife. As you slide your fingeres across it, a sting of pain suddenly bursts from your hand. You wrench your arm back. Your hand is bleeding. But there's no blood on the knife.";
+                }, 
+                () => GameContext.GameState.SetFlag("player.actions.touched_knife", true));
+            
+            mirrorOfIdentity.AddCustomCommand(["wait"],
+                () =>
+                {
+                    return "You stand before the mirror. You blink. Your reflection doesn't.";
+                }, 
+            
+            () =>
+            {
+                if (!GameContext.GameState.TryIncrementCounter("player.actions.times_waited_at_mirror"))
+                {
+                    GameContext.GameState.SetCounter("player.actions.times_waited_at_mirror", 1);
+                }
+            });
+            
+            return (dreamVoid, ossanethDomain);
         }
 
 
@@ -83,13 +127,13 @@ namespace AshborneGame._Core.Game
 
             _isRunning = true;
 
-            IOService.Output.WriteLine("Welcome to *Ashborne*.");
-            IOService.Output.WriteLine("Type 'help' if you are unsure what to do.\n");
+            _dialogueService.StartDialogue($"D:\\C# Projects\\AshborneCode\\AshborneGame\\_Core\\Data\\Scripts\\Act1\\Scene1\\{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro.json");
             IOService.Output.WriteLine(player.CurrentLocation.GetFullDescription(player));
 
             while (_isRunning)
             {
-                // TODO: Add a check here to make sure that there's no conversation running right now
+                if (DialogueRunning) continue;
+
                 string input = IOService.Input.GetPlayerInput().Trim().ToLowerInvariant();
 
                 if (string.IsNullOrWhiteSpace(input))
@@ -99,7 +143,7 @@ namespace AshborneGame._Core.Game
                 }
 
                 var splitInput = input.Split(' ').ToList();
-                var action = ExtractAction(splitInput, out List<string> args);
+                var action = CommandManager.ExtractAction(splitInput, out List<string> args);
 
                 bool isValidCommand = CommandManager.TryExecute(action, args, player);
 
@@ -111,25 +155,13 @@ namespace AshborneGame._Core.Game
                     if (string.IsNullOrWhiteSpace(input)) continue;
 
                     splitInput = input.Split(' ').ToList();
-                    action = ExtractAction(splitInput, out var args2);
+                    action = CommandManager.ExtractAction(splitInput, out var args2);
 
                     isValidCommand = CommandManager.TryExecute(action, args2, player);
                 }
             }
         }
 
-        private string ExtractAction(List<string> input, out List<string> args)
-        {
-            if (input.Count >= 2 && (input[0] == "go" || input[0] == "talk") && input[1] == "to")
-            {
-                var copy = new List<string>(input);
-                args = new List<string>(input);
-                args.RemoveRange(0, 2);
-                return string.Join(' ', copy.GetRange(0, 2));
-            }
-            args = new List<string>(input);
-            args.RemoveAt(0);
-            return input[0];
-        }
+        
     }
 }

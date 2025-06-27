@@ -15,7 +15,7 @@ namespace AshborneTests
 
             IOService.Initialise(new Mock<IInputHandler>().Object, new Mock<IOutputHandler>().Object);
             Player player = new Player();
-            GameContext.Initialise(player, new GameStateManager(player));
+            GameContext.Initialise(player, new GameStateManager(player), new Mock<DialogueService>().Object, new Mock<GameEngine>().Object);
         }
     }
 

@@ -33,6 +33,6 @@ public class OnTurnStartAttackPlayerComponent : ICanAttackPlayer
     public void AttackPlayer(Player player)
     {
         player.ChangeHealth(-AttackDamage);
-        IOService.Output.WriteLine($"The enemy attacks you with {Weapon.Name} for {AttackDamage} damage. You now have {player.Stats.GetStat(PlayerStatTypes.Health)} HP left.");
+        IOService.Output.WriteLine($"The enemy attacks you with {Weapon.Name} for {AttackDamage} damage. You now have {player.Stats.GetStat(PlayerStatType.Health)} HP left.");
     }
 }

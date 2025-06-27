@@ -20,10 +20,7 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public virtual string Name { get; private set; }
 
-        /// <summary>
-        /// The name of the location, with some additional information added (i.e. 
-        /// </summary>
-        public virtual string DescriptiveName { get; private set; }
+        public virtual string ReferenceName { get; private set; }
 
         /// <summary>
         /// The base description of the location (i.e.
@@ -40,7 +37,8 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public virtual string PositionalPrefix { get; private set; }
 
-        
+        public virtual Dictionary<string, (Func<string> message, Action effect)> CustomCommands { get; } = new();
+
 
         /// <summary>
         /// Gets the dictionary of exits from this location.
@@ -79,7 +77,7 @@ namespace AshborneGame._Core.SceneManagement
         /// <param name="name">The name of the location.</param>
         /// <param name="description">The description of the location.</param>
         /// <exception cref="ArgumentNullException">Thrown when name or description is null.</exception>
-        public Location(string name, string description, string positionalPrefix, string referenceName, string additionalDescription)
+        public Location(string name, string description, string positionalPrefix, string referenceName, string additionalDescription = "something goes here")
         {
             Id = Guid.NewGuid().ToString();
             Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -214,6 +212,15 @@ namespace AshborneGame._Core.SceneManagement
 
             return sublocationString;
         }
+
+        public void AddCustomCommand(List<string> commands, Func<string> messageFunc, Action effect)
+        {
+            foreach (var command in commands)
+            {
+                CustomCommands[command] = (messageFunc, effect);
+            }
+        }
+
 
         /// <summary>
         /// Determines if the player can see this location as an exit.

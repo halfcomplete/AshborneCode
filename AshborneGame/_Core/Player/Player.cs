@@ -5,6 +5,7 @@ using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours;
 using AshborneGame._Core.Game;
+using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.SceneManagement;
@@ -16,6 +17,7 @@ namespace AshborneGame._Core._Player
     /// </summary>
     public class Player
     {
+        public LocationGroup CurrentLocationGroup { get; private set; }
         /// <summary>
         /// Gets the player's current location.
         /// </summary>
@@ -65,6 +67,7 @@ namespace AshborneGame._Core._Player
         {
             _name = "Hero"; // Default name
             CurrentLocation = new Location("test location", "A test location for testing.");
+            CurrentLocationGroup = new LocationGroup("test location group", new List<Location>() { CurrentLocation });
             Inventory = new Inventory();
 		}
 
@@ -77,6 +80,7 @@ namespace AshborneGame._Core._Player
         {
             _name = "Hero"; // Default name
             CurrentLocation = startingLocation ?? throw new ArgumentNullException(nameof(startingLocation));
+            CurrentLocationGroup = new LocationGroup("test location group", new List<Location>() { CurrentLocation });
             Inventory = new Inventory();
         }
 
@@ -84,6 +88,7 @@ namespace AshborneGame._Core._Player
         {
             _name = name;
             CurrentLocation = new Location("Placeholder", "Placeholder", 5);
+            CurrentLocationGroup = new LocationGroup("Placeholder", new List<Location>() { CurrentLocation });
             Inventory = new Inventory();
         }
 
@@ -97,6 +102,7 @@ namespace AshborneGame._Core._Player
         {
             _name = name ?? throw new ArgumentNullException(nameof(name));
             CurrentLocation = startingLocation ?? throw new ArgumentNullException(nameof(startingLocation));
+            CurrentLocationGroup = new LocationGroup("test location group", new List<Location>() { CurrentLocation });
             startingLocation.TimesVisited = 1;
             Inventory = new Inventory();
         }
@@ -126,8 +132,9 @@ namespace AshborneGame._Core._Player
             IOService.Output.WriteLine(CurrentLocation.GetFullDescription(this));
         }
 
-        public void SetupMoveTo(Location newLocation)
+        public void SetupMoveTo(Location newLocation, LocationGroup newLocationGroup)
         {
+            CurrentLocationGroup = newLocationGroup;
             CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
             CurrentSublocation = null;
             newLocation.TimesVisited = 1;
@@ -266,7 +273,7 @@ namespace AshborneGame._Core._Player
             if (npc.TryGetBehaviour<ICanBeAttacked>(out var attackableBehaviour))
             {
                 float damage = 0;
-                var (baseStrength, bonusStrength, totalStrength) = Stats.GetStat(PlayerStatTypes.Strength);
+                var (baseStrength, bonusStrength, totalStrength) = Stats.GetStat(PlayerStatType.Strength);
                 if (EquippedItems.TryGetValue("hand", out var weapon) && weapon != null && weapon.TryGetBehaviour<ICanDamage>(out var damageBehaviour))
                 {
                     damage = (float)(damageBehaviour.BaseDamage + totalStrength * 0.5); // Example damage calculation
@@ -307,17 +314,17 @@ namespace AshborneGame._Core._Player
 
         public void ChangeHealth(int amount)
         {
-            (int baseHealth, _, _) = Stats.GetStat(PlayerStatTypes.Health);
-            (_, _, int totalMaxHealth) = Stats.GetStat(PlayerStatTypes.MaxHealth);
-            Stats.SetBase(PlayerStatTypes.Health, Math.Clamp(baseHealth + amount, 0, totalMaxHealth));
+            (int baseHealth, _, _) = Stats.GetStat(PlayerStatType.Health);
+            (_, _, int totalMaxHealth) = Stats.GetStat(PlayerStatType.MaxHealth);
+            Stats.SetBase(PlayerStatType.Health, Math.Clamp(baseHealth + amount, 0, totalMaxHealth));
             IOService.Output.WriteLine($"You have been healed by {amount} points.");
         }
 
         public void SetHealth(int amount)
         {
-            (int baseHealth, _, _) = Stats.GetStat(PlayerStatTypes.Health);
-            (_, _, int totalMaxHealth) = Stats.GetStat(PlayerStatTypes.MaxHealth);
-            Stats.SetBase(PlayerStatTypes.Health, Math.Clamp(baseHealth, 0, totalMaxHealth));
+            (int baseHealth, _, _) = Stats.GetStat(PlayerStatType.Health);
+            (_, _, int totalMaxHealth) = Stats.GetStat(PlayerStatType.MaxHealth);
+            Stats.SetBase(PlayerStatType.Health, Math.Clamp(baseHealth, 0, totalMaxHealth));
             IOService.Output.WriteLine($"Your health has been set to {amount} points.");
         }
     }

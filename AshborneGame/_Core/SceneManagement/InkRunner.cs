@@ -4,6 +4,7 @@ using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem;
 using System.Reflection.Metadata.Ecma335;
+using AshborneGame._Core.Globals.Enums;
 
 namespace AshborneGame._Core.SceneManagement
 {
@@ -38,8 +39,6 @@ namespace AshborneGame._Core.SceneManagement
             _story = new Story(json);
 
             InitialiseBindings();
-
-            SyncGameStateToInk();
         }
 
         /// <summary>
@@ -80,8 +79,6 @@ namespace AshborneGame._Core.SceneManagement
                 }
             }
 
-            SyncInkToGameState();
-
             if (_story.currentChoices.Count > 0)
             {
                 for (int i = 0; i < _story.currentChoices.Count; i++)
@@ -95,45 +92,6 @@ namespace AshborneGame._Core.SceneManagement
             }
         }
 
-        /// <summary>
-        /// Sync GameStateManager's values into the Ink story variables.
-        /// </summary>
-        private void SyncGameStateToInk()
-        {
-            foreach (var flag in _gameState.Flags)
-                _story.variablesState[flag.Key] = flag.Value;
-
-            foreach (var counter in _gameState.Counters)
-                _story.variablesState[counter.Key] = counter.Value;
-
-            foreach (var variable in _gameState.Variables)
-                _story.variablesState[variable.Key] = variable.Value;
-        }
-
-        /// <summary>
-        /// Sync Ink story variables back to GameStateManager.
-        /// </summary>
-        private void SyncInkToGameState()
-        {
-            foreach (string varName in _story.variablesState)
-            {
-                var value = _story.variablesState[varName];
-
-                switch (value)
-                {
-                    case bool b:
-                        _gameState.SetFlag(varName, b);
-                        break;
-                    case int i:
-                        _gameState.SetCounter(varName, i);
-                        break;
-                    default:
-                        _gameState.SetVariable(varName, value);
-                        break;
-                }
-            }
-        }
-
         private void InitialiseBindings()
         {
             // Pacing
@@ -144,8 +102,11 @@ namespace AshborneGame._Core.SceneManagement
 
             _story.BindExternalFunction("getFlag", (string key) =>
             {
-                var result = _gameState.GetFlag(key);
-                return result ?? throw new Exception($"Flag '{key}' does not exist.");
+                if (_gameState.TryGetFlag(key, out var value))
+                {
+                    return value;
+                }
+                throw new Exception($"Flag '{key}' does not exist.");
             });
 
             _story.BindExternalFunction("hasFlag", (string key) => _gameState.HasFlag(key));
@@ -169,8 +130,7 @@ namespace AshborneGame._Core.SceneManagement
 
             _story.BindExternalFunction("getCounter", (string key) =>
             {
-                var result = _gameState.TryGetCounter(key);
-                return result ?? throw new Exception($"Counter '{key}' does not exist.");
+                return _gameState.TryGetCounter(key, out var result) ? result : throw new Exception($"Counter '{key}' does not exist.");
             });
 
             _story.BindExternalFunction("hasCounter", (string key) => _gameState.HasCounter(key));
@@ -223,11 +183,20 @@ namespace AshborneGame._Core.SceneManagement
 
             _story.BindExternalFunction("playerForceMask", (string maskName) => _gameState.ForcePlayerMask(maskName));
 
-            _story.BindExternalFunction("getPlayerInput", () =>
+            _story.BindExternalFunction("getPlayerInput", IOService.Input.GetPlayerInput);
+
+            _story.BindExternalFunction("changePlayerStat", (string statName, int amount) =>
             {
-                return IOService.Input.GetPlayerInput();
+                PlayerStatType statType = GameContext.Player.Stats.GetStatTypeByName(statName);
+                GameContext.Player.Stats.ChangeBase(statType, amount);
             });
-;       }
+
+            _story.BindExternalFunction("getPlayerStat", (string statName) =>
+            {
+                (_, _, int totalValue) = GameContext.Player.Stats.GetStat(statName);
+                return totalValue;
+            });
+        }
 
 
         /// <summary>

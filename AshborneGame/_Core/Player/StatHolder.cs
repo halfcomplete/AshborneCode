@@ -4,12 +4,12 @@ namespace AshborneGame._Core._Player
 {
     public class StatHolder
     {
-        public PlayerStatTypes Type { get; private set; }
+        public PlayerStatType Type { get; private set; }
         public int BaseValue { get; private set; }
         public int BonusValue { get; private set; } = 0;
         public int Total => BaseValue + BonusValue;
 
-        public StatHolder(PlayerStatTypes statType, int initialValue = 0)
+        public StatHolder(PlayerStatType statType, int initialValue = 0)
         {
             Type = statType;
             BaseValue = initialValue;

@@ -6,23 +6,23 @@ using System.Threading.Tasks;
 
 namespace AshborneGame._Core.Game.Events
 {
-    public class EventBus
+    public static class EventBus
     {
-        private readonly Dictionary<string, List<Action<GameEvent>>> subscribers = new();
+        private static readonly Dictionary<string, List<Action<GameEvent>>> subscribers = new();
 
-        public void Subscribe(string eventName, Action<GameEvent> callback)
+        public static void Subscribe(string eventName, Action<GameEvent> callback)
         {
             if (!subscribers.ContainsKey(eventName)) subscribers[eventName] = new List<Action<GameEvent>>();
             subscribers[eventName].Add(callback);
         }
 
-        public void Unsubscribe(string eventName, Action<GameEvent> callback)
+        public static void Unsubscribe(string eventName, Action<GameEvent> callback)
         {
             subscribers[eventName].Remove(callback);
             if (subscribers[eventName].Count == 0) subscribers.Remove(eventName);
         }
 
-        public void Call(GameEvent gameEvent)
+        public static void Call(GameEvent gameEvent)
         {
             if (subscribers.TryGetValue(gameEvent.Name, out var handlers))
             {
@@ -33,7 +33,7 @@ namespace AshborneGame._Core.Game.Events
             }
         }
 
-        public void Clear()
+        public static void Clear()
         {
             subscribers.Clear();
         }

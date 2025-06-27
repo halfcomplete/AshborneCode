@@ -1,37 +1,32 @@
-﻿using System.Text;
-using AshborneGame._Core.Globals.Enums;
+﻿using AshborneGame._Core.Globals.Enums;
+using System.Text;
+using System.Xml.Linq;
 
 namespace AshborneGame._Core._Player
 {
     public class StatCollection
     {
-        private readonly Dictionary<PlayerStatTypes, StatHolder> _stats = new();
+        private readonly Dictionary<PlayerStatType, StatHolder> _stats = new();
 
         public StatCollection()
         {
             // Initialise all stats with default values
-            foreach (PlayerStatTypes statType in Enum.GetValues(typeof(PlayerStatTypes)))
+            foreach (PlayerStatType statType in Enum.GetValues(typeof(PlayerStatType)))
             {
                 int initialValue;
 
                 switch (statType)
                 {
-                    case PlayerStatTypes.Health:
+                    case PlayerStatType.Health:
                         initialValue = 100;
                         break;
-                    case PlayerStatTypes.MaxHealth:
+                    case PlayerStatType.MaxHealth:
                         initialValue = 100;
                         break;
-                    case PlayerStatTypes.Mana:
-                        initialValue = 100; 
-                        break;
-                    case PlayerStatTypes.MaxMana:
-                        initialValue = 100;
-                        break;
-                    case PlayerStatTypes.Strength:
+                    case PlayerStatType.Strength:
                         initialValue = 10;
                         break;
-                    case PlayerStatTypes.Defense:
+                    case PlayerStatType.Defense:
                         initialValue = 10;
                         break;
                     default:
@@ -43,15 +38,13 @@ namespace AshborneGame._Core._Player
             }
         }
 
-        public StatHolder this[PlayerStatTypes type] => _stats[type];
+        public StatHolder this[PlayerStatType type] => _stats[type];
 
         /// <summary>
         /// Gets the base, bonus, and total value of a specific stat.
         /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public (int, int, int) GetStat(PlayerStatTypes type)
+        public (int, int, int) GetStat(PlayerStatType type)
         {
             if (_stats.TryGetValue(type, out var statHolder))
             {
@@ -67,21 +60,91 @@ namespace AshborneGame._Core._Player
             }
         }
 
-        public void SetBase(PlayerStatTypes type, int value)
+        /// <summary>
+        /// Gets the base, bonus and total value of a player stat by name.
+        /// </summary>
+        /// <param name="statName"></param>
+        /// <returns>(int baseValue, int bonusValue, int totalValue)</returns>
+        public (int, int, int) GetStat(string statName)
+        {
+            return GetStat(GetStatTypeByName(statName));
+        }
+
+        public PlayerStatType GetStatTypeByName(string statName)
+        {
+            PlayerStatType statType;
+
+            switch (statName.ToLowerInvariant())
+            {
+                case "health":
+                    statType = PlayerStatType.Health;
+                    break;
+                case "maxhealth":
+                    statType = PlayerStatType.MaxHealth;
+                    break;
+                case "strength":
+                    statType = PlayerStatType.Strength;
+                    break;
+                case "defense":
+                    statType = PlayerStatType.Defense;
+                    break;
+                case "guilt":
+                    statType = PlayerStatType.Guilt;
+                    break;
+                case "fear":
+                    statType = PlayerStatType.Fear;
+                    break;
+                case "violence":
+                    statType = PlayerStatType.Violence;
+                    break;
+                case "hope":
+                    statType = PlayerStatType.Hope;
+                    break;
+                case "powerhunger":
+                    statType = PlayerStatType.PowerHunger;
+                    break;
+                default:
+                    throw new ArgumentException($"Player Stat Type '{statName}' does not exist.");
+            }
+
+            return statType;
+        }
+
+        public void SetBase(string statName, int value)
+        {
+            _stats[GetStatTypeByName(statName)].SetBase(value);
+        }
+        public void ChangeBase(string statName, int amount)
+        {
+            _stats[GetStatTypeByName(statName)].SetBase(_stats[GetStatTypeByName(statName)].BaseValue + amount);
+        }
+
+        public void AddBonus(string statName, int bonus)
+        {
+            _stats[GetStatTypeByName(statName)].AddBonus(bonus);
+        }
+
+        public void RemoveBonus(string statName, int bonus)
+        {
+            _stats[GetStatTypeByName(statName)].RemoveBonus(bonus);
+        }
+
+        public void SetBase(PlayerStatType type, int value)
         {
             _stats[type].SetBase(value);
         }
-        public void ChangeBase(PlayerStatTypes type, int amount)
+
+        public void ChangeBase(PlayerStatType type, int amount)
         {
             _stats[type].SetBase(_stats[type].BaseValue + amount);
         }
 
-        public void AddBonus(PlayerStatTypes type, int bonus)
+        public void AddBonus(PlayerStatType type, int bonus)
         {
             _stats[type].AddBonus(bonus);
         }
 
-        public void RemoveBonus(PlayerStatTypes type, int bonus)
+        public void RemoveBonus(PlayerStatType type, int bonus)
         {
             _stats[type].RemoveBonus(bonus);
         }

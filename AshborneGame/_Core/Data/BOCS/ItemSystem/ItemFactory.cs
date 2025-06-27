@@ -48,7 +48,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             return AddBaseBehaviours(item);
         }
 
-        public static Item CreateArmour(string name, string description, List<string> bodyParts, ItemQualities quality, int maxDurability, Dictionary<PlayerStatTypes, int> statModifiers)
+        public static Item CreateArmour(string name, string description, List<string> bodyParts, ItemQualities quality, int maxDurability, Dictionary<PlayerStatType, int> statModifiers)
         {
             var item = new Item(name, description, "", 1, ItemTypes.Armour, quality);
             item.AddBehaviour(typeof(IEquippable), new EquippableBehaviour(bodyParts));
@@ -72,7 +72,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         {
             var item = new Item(name, description, useDescription, stackLimit, ItemTypes.Consumable, ItemQualities.Mythic);
             item.AddBehaviour(typeof(IUsable), new UsableBehaviour(item));
-            item.AddBehaviour(typeof(IActOnUse), new OnUseChangePlayerStatBehaviour(30, PlayerStatTypes.Strength));
+            item.AddBehaviour(typeof(IActOnUse), new OnUseChangePlayerStatBehaviour(30, PlayerStatType.Strength));
             item.AddBehaviour(typeof(IIdentifiable), new IdentifiableBehaviour(item, "This scroll contains powerful magic."));
             item.AddBehaviour(typeof(IInspectable), new InspectableBehaviour(item, item.Description, item.Quality, "This item has a hidden lore.", true));
             return item;

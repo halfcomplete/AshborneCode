@@ -17,47 +17,51 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours
 
         public record MaskInterjectionTrigger
         (
-            string EventType,
+            string EventName,
             Func<GameEvent, bool>? EventCondition,
             Func<GameStateManager, bool>? StateCondition,
-            string Message,
+            string? Message,
+            Action? Effect = null,
             bool OneTime = false
         );
 
-        private readonly List<MaskInterjectionTrigger> _triggers = new();
-        private readonly HashSet<string> _firedOnce = new();
-        private EventBus? _eventBus;
-        private GameStateManager? _stateManager;
+        private List<MaskInterjectionTrigger> _triggers = new();
+        private GameStateManager _stateManager;
 
-        public MaskInterjectionBehaviour(BOCSGameObject parentObject)
+        public MaskInterjectionBehaviour(BOCSGameObject parentObject, GameStateManager stateManager)
         {
             ParentObject = parentObject;
+            _stateManager = stateManager;
         }
 
         public void AddTrigger(MaskInterjectionTrigger trigger) => _triggers.Add(trigger);
-        public void Register(EventBus eventBus, GameStateManager stateManager)
+        public void Register()
         {
-            _eventBus = eventBus;
-            _stateManager = stateManager;
-
             foreach (var trigger in _triggers)
             {
-                eventBus.Subscribe(trigger.EventType, (e) =>
+                EventBus.Subscribe(trigger.EventName, (e) =>
                 {
-                    if (ShouldTrigger(trigger, e))
+                    var _triggers2 = new List<MaskInterjectionTrigger>(_triggers);
+                    if (ShouldTrigger(trigger, e, out bool shouldDelete))
                     {
                         IOService.Output.WriteLine($"{ParentObject.Name}: {trigger.Message}");
+                        if (shouldDelete) _triggers2.Remove(trigger);
                     }
+                    _triggers = new List<MaskInterjectionTrigger>(_triggers2);
                 });
             }
         }
 
-        private bool ShouldTrigger(MaskInterjectionTrigger trigger, GameEvent evt)
+        private bool ShouldTrigger(MaskInterjectionTrigger trigger, GameEvent evt, out bool shouldDelete)
         {
-            if (trigger.OneTime && _firedOnce.Contains(trigger.EventType)) return false;
+            shouldDelete = false;
+            if (trigger.OneTime)
+            {
+                shouldDelete = true;
+            }
 
             bool passesEvent = trigger.EventCondition?.Invoke(evt) ?? true;
-            bool passesState = trigger.StateCondition?.Invoke(_stateManager!) ?? true;
+            bool passesState = trigger.StateCondition?.Invoke(_stateManager) ?? true;
 
             return passesEvent && passesState;
         }

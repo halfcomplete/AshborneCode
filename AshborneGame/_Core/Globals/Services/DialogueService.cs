@@ -1,4 +1,5 @@
-﻿using AshborneGame._Core.SceneManagement;
+﻿using AshborneGame._Core.Game;
+using AshborneGame._Core.SceneManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,8 +21,10 @@ namespace AshborneGame._Core.Globals.Services
 
         public void StartDialogue(string inkFilePath)
         {
+            GameContext.GameEngine.DialogueRunning = true;
             _inkRunner.LoadFromFile(inkFilePath);
             _inkRunner.Run();
+            GameContext.GameEngine.DialogueRunning = false;
         }
 
         public void JumpTo(string knot)
