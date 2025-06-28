@@ -3,8 +3,7 @@ namespace AshborneGame._Core.Globals.Services
 {
     public static class FilePathResolver
     {
-        public static string ScriptsRootPath { get; } =
-            Path.Combine(AppContext.BaseDirectory, "Data", "Scripts");
+        public static string ScriptsRootPath { get; } = @"D:\C# Projects\AshborneCode\AshborneGame\_Core\Data\Scripts";
 
         public static string FromScripts(string scriptFilename)
         {
@@ -28,7 +27,8 @@ namespace AshborneGame._Core.Globals.Services
             {
                 throw new FileNotFoundException(fullPath);
             }
-
+            //D:\C# Projects\AshborneCode\AshborneGame\bin\Debug\net8.0\Data\Scripts\Act1\Scene1\Act1_Scene1_Throne_Dialogue.json
+            //D:\C# Projects\AshborneCode\AshborneGame\_Core\Data\Scripts\Act1\Scene1\Act1_Scene1_Throne_Dialogue.json
             return fullPath;
         }
     }

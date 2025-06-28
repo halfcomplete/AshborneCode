@@ -80,11 +80,45 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger
             (
                   EventName: "player.actions.sat_on_throne",
-                  EventCondition: evt => evt.Get<string>("location_group") == "the throne",
+                  EventCondition: evt => evt.Get<string>("location") == "the throne",
                   StateCondition: state => state.TryGetFlag("player.actions.sat_on_throne", out var value) && value,
                   Message: null,
-                  Effect: () => GameContext.DialogueService.StartDialogue(FilePathResolver.FromScripts("Act1_Scene1_Throne_Dialogue"))
+                  Effect: () => GameContext.DialogueService.StartDialogue(FilePathResolver.FromScripts("Act1_Scene1_Throne_Dialogue")),
+                  OneTime: true
             ));
+
+            interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger
+            (
+                  EventName: "player.actions.touched_knife",
+                  EventCondition: evt => evt.Get<string>("location") == "the pedestal",
+                  StateCondition: state => state.TryGetFlag("player.actions.touched_knife", out var value) && value,
+                  Message: null,
+                  Effect: () => GameContext.DialogueService.StartDialogue(FilePathResolver.FromScripts("Act1_Scene1_Knife_Dialogue")),
+                  OneTime: true
+            ));
+
+            interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger
+            (
+                EventName: "player.actions.waited_once_at_mirror",
+                EventCondition: evt => evt.Get<string>("location") == "the mirror",
+                StateCondition: null,
+                Message: "You wait too long... are you hoping something will change?",
+                Effect: null,
+                OneTime: true
+            ));
+
+            GameContext.GameState.AddLocationTimeTrigger(new LocationTimeTrigger
+            (
+                locationName: "the mirror",
+                duration: TimeSpan.FromSeconds(20),
+                eventToRaise: new GameEvent("player.actions.waited_once_at_mirror", new() {
+                    { "location", "the mirror" }
+                }),
+                effect: null,
+                oneTime: true
+            ));
+
+
 
             interjectionBehaviour.Register();
 

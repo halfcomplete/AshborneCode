@@ -40,12 +40,12 @@ namespace AshborneGame._Core.Game
             IOService.Output.DisplayDebugMessage("Game engine initialised successfully.");
             IOService.Output.DisplayDebugMessage("Starting game engine...");
 
-            StartGameLoop(player);
+            StartGameLoop(player, gameState);
         }
 
         private (Location, LocationGroup) InitialiseStartingLocation(Player player)
         {
-            
+
             Location dreamVoid = new Location("the centre", "On all sides, an endless ocean of black water frozen in time stretches away. Splintered glass suspend themselves in the air, each " +
                 "one clearer and cleaner than the next. Shards of light slice the grey and lifeless sky. They stay still. All is still. All is silent.", "at the", "centre");
 
@@ -56,7 +56,7 @@ namespace AshborneGame._Core.Game
 
             Location throneOfPower = new Location("the throne", "It's emerald-laced and empty. Nothing reflects off of it. Should you sit on it?", "in front of the", "throne");
             LocationGroup ossanethDomain = new LocationGroup("Ossaneth's Domain", new List<Location>() { dreamVoid, mirrorOfIdentity, knifeOfViolence, throneOfPower });
-            
+
             dreamVoid.AddExit("north", mirrorOfIdentity);
             dreamVoid.AddExit("west", knifeOfViolence);
             dreamVoid.AddExit("east", throneOfPower);
@@ -68,25 +68,30 @@ namespace AshborneGame._Core.Game
             new List<string> { "sit on throne", "get on throne", "sit on the throne", "get on the throne" },
                 () =>
                 {
-                    if (!GameContext.GameState.TryGetFlag("player.actions.sat_on_throne", out var value) )
+                    if (!GameContext.GameState.TryGetFlag("player.actions.sat_on_throne", out var value))
                     {
                         return "You sit on the throne. It's smooth and eerily comfortable, as though it's shaping itself to your body. You feel uneasy, and get off.";
                     }
-                    return "You sit once again. The throne remains silent.";
+                    return "You sit once again. The throne remains silent, and so does Ossaneth.";
                 },
                 () =>
                 {
                     GameContext.GameState.SetFlag("player.actions.sat_on_throne", true);
-                    
+                    EventBus.Call(new GameEvent("player.actions.sat_on_throne", new Dictionary<string, object> { { "location", "the throne" } }));
                 }
             );
 
-            knifeOfViolence.AddCustomCommand(["touch it", "touch the knife", "touch knife"], 
+            knifeOfViolence.AddCustomCommand(["touch it", "touch the knife", "touch knife"],
                 () =>
                 {
-                    return "You reach your hand out to feel the knife. As you slide your fingeres across it, a sting of pain suddenly bursts from your hand. You wrench your arm back. Your hand is bleeding. But there's no blood on the knife.";
-                }, 
-                () => GameContext.GameState.SetFlag("player.actions.touched_knife", true));
+                    return "You reach your hand out to feel the knife. As you slide your fingeres across it, a sting of pain suddenly bursts from your hand. Your hand is bleeding. But there's no blood on the knife.";
+                },
+                () =>
+                {
+                    GameContext.GameState.SetFlag("player.actions.touched_knife", true);
+                    EventBus.Call(new GameEvent("player.actions.touched_knife", new Dictionary<string, object> { { "location", "the pedestal" } }));
+                }
+            );
             
             mirrorOfIdentity.AddCustomCommand(["wait"],
                 () =>
@@ -121,15 +126,16 @@ namespace AshborneGame._Core.Game
             IOService.Output.DisplayDebugMessage("Game world initialised.");
         }
 
-        private void StartGameLoop(Player player)
+        private void StartGameLoop(Player player, GameStateManager gameState)
         {
-            _dialogueService.StartDialogue($"D:\\C# Projects\\AshborneCode\\AshborneGame\\_Core\\Data\\Scripts\\Act1\\Scene1\\{_startingAct}_{_startingScene}_{_startingSceneSection}.json");
+            //_dialogueService.StartDialogue($"D:\\C# Projects\\AshborneCode\\AshborneGame\\_Core\\Data\\Scripts\\Act1\\Scene1\\{_startingAct}_{_startingScene}_{_startingSceneSection}.json");
 
             _isRunning = true;
 
-            _dialogueService.StartDialogue($"D:\\C# Projects\\AshborneCode\\AshborneGame\\_Core\\Data\\Scripts\\Act1\\Scene1\\{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro.json");
+            //_dialogueService.StartDialogue($"D:\\C# Projects\\AshborneCode\\AshborneGame\\_Core\\Data\\Scripts\\Act1\\Scene1\\{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro.json");
             IOService.Output.WriteLine(player.CurrentLocation.GetFullDescription(player));
 
+            gameState.StartTickLoop();
             while (_isRunning)
             {
                 if (DialogueRunning) continue;
@@ -160,8 +166,7 @@ namespace AshborneGame._Core.Game
                     isValidCommand = CommandManager.TryExecute(action, args2, player);
                 }
             }
+            gameState.StopTickLoop();
         }
-
-        
     }
 }

@@ -116,6 +116,7 @@ namespace AshborneGame._Core._Player
         {
             CurrentSublocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
             newLocation.TimesVisited += 1;
+            GameContext.GameState.OnPlayerEnterLocation(newLocation);
             IOService.Output.WriteLine(CurrentSublocation.GetFullDescription(this));
         }
 
@@ -137,6 +138,7 @@ namespace AshborneGame._Core._Player
             CurrentLocationGroup = newLocationGroup;
             CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
             CurrentSublocation = null;
+            GameContext.GameState.OnPlayerEnterLocation(newLocation);
             newLocation.TimesVisited = 1;
         }
 

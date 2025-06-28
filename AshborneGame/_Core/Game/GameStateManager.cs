@@ -1,6 +1,8 @@
 ﻿
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem;
+using AshborneGame._Core.Game.Events;
+using AshborneGame._Core.SceneManagement;
 using Ink.Runtime;
 using System.ComponentModel.DataAnnotations;
 
@@ -19,6 +21,17 @@ namespace AshborneGame._Core.Game
         public Dictionary<string, Item> Masks { get; private set; } = new();
         private Player _player;
 
+        private readonly Dictionary<Location, TimeSpan> _locationDurations = new();
+        private Location? _currentLocation;
+        private DateTime _locationEnteredTime;
+        private TimeSpan _realTimeInCurrentLocation = TimeSpan.Zero;
+        private DateTime _lastTickTime = DateTime.UtcNow;
+        private List<LocationTimeTrigger> _locationTimeTriggers = new();
+
+        private CancellationTokenSource? _tickCancellation;
+        private Task? _tickTask;
+        private bool _tickRunning = false;
+
         public GameStateManager(Player player)
         {
             _player = player;
@@ -28,6 +41,75 @@ namespace AshborneGame._Core.Game
         {
             Masks = masks;
         }
+
+        public void Tick()
+        {
+            var now = DateTime.UtcNow;
+            var delta = now - _lastTickTime;
+            _lastTickTime = now;
+
+            if (_currentLocation != null)
+                _realTimeInCurrentLocation += delta;
+
+            foreach (var trigger in _locationTimeTriggers)
+            {
+                if (trigger.CheckTrigger(GameContext.Player.CurrentLocation, _realTimeInCurrentLocation))
+                {
+                    // Call the event
+                    EventBus.Call(trigger.EventToRaise);
+
+                    // Execute optional effect (e.g. dialogue)
+                    trigger.Effect?.Invoke();
+                }
+            }
+
+        }
+
+        public void StartTickLoop(int tickIntervalMs = 1000)
+        {
+            if (_tickRunning)
+                return;
+
+            _tickRunning = true;
+            _tickCancellation = new CancellationTokenSource();
+            var token = _tickCancellation.Token;
+
+            _tickTask = Task.Run(async () =>
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        Tick();
+                        await Task.Delay(tickIntervalMs, token);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        // Normal shutdown
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log or handle unexpected errors
+                        Console.WriteLine($"[Tick Error] {ex.Message}");
+                    }
+                }
+
+                _tickRunning = false;
+            });
+        }
+
+        public void StopTickLoop()
+        {
+            if (_tickCancellation == null || !_tickRunning)
+                return;
+
+            _tickCancellation.Cancel();
+            _tickTask?.Wait(); // Optional: wait for cleanup
+            _tickCancellation.Dispose();
+            _tickCancellation = null;
+            _tickTask = null;
+        }
+
 
         // ----------- FLAGS (True/False binary states) -----------
 
@@ -190,6 +272,38 @@ namespace AshborneGame._Core.Game
         public bool PlayerWearingMask(string maskName)
         {
             return _player.EquippedItems["face"] != null && _player.EquippedItems["face"]!.Name == maskName;
+        }
+
+        // ----------- TIME TRACKING -----------
+        public TimeSpan GetLiveTimeInCurrentLocation()
+        {
+            return _realTimeInCurrentLocation;
+        }
+
+        public void OnPlayerEnterLocation(Location location)
+        {
+            if (_currentLocation != null)
+            {
+                if (!_locationDurations.ContainsKey(_currentLocation))
+                    _locationDurations[_currentLocation] = TimeSpan.Zero;
+
+                _locationDurations[_currentLocation] += _realTimeInCurrentLocation;
+            }
+
+            _currentLocation = location;
+            _locationEnteredTime = DateTime.UtcNow;
+            _realTimeInCurrentLocation = TimeSpan.Zero;
+
+            if (!_locationDurations.ContainsKey(location))
+                _locationDurations[location] = TimeSpan.Zero;
+        }
+
+
+        public Location? CurrentLocation => _currentLocation;
+
+        public void AddLocationTimeTrigger(LocationTimeTrigger trigger)
+        {
+            _locationTimeTriggers.Add(trigger);
         }
 
         // ----------- UTILITIES -----------

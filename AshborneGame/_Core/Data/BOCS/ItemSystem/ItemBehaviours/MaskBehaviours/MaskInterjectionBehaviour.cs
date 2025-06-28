@@ -44,7 +44,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours
                     var _triggers2 = new List<MaskInterjectionTrigger>(_triggers);
                     if (ShouldTrigger(trigger, e, out bool shouldDelete))
                     {
-                        IOService.Output.WriteLine($"{ParentObject.Name}: {trigger.Message}");
+                        if (trigger.Message != null)
+                            IOService.Output.WriteLine($"{ParentObject.Name}: {trigger.Message}");
+                        trigger.Effect?.Invoke();
                         if (shouldDelete) _triggers2.Remove(trigger);
                     }
                     _triggers = new List<MaskInterjectionTrigger>(_triggers2);
