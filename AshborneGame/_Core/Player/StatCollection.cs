@@ -30,7 +30,7 @@ namespace AshborneGame._Core._Player
                         initialValue = 10;
                         break;
                     default:
-                        initialValue = 10;
+                        initialValue = 3;
                         break;
                 }
 
@@ -102,6 +102,9 @@ namespace AshborneGame._Core._Player
                     break;
                 case "powerhunger":
                     statType = PlayerStatType.PowerHunger;
+                    break;
+                case "resolve":
+                    statType = PlayerStatType.Resolve;
                     break;
                 default:
                     throw new ArgumentException($"Player Stat Type '{statName}' does not exist.");

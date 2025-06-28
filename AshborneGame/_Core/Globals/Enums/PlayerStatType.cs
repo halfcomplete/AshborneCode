@@ -11,6 +11,7 @@ namespace AshborneGame._Core.Globals.Enums
         PowerHunger,
         Violence,
         Fear,
-        Hope
+        Hope,
+        Resolve
     }
 }

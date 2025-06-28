@@ -1,5 +1,6 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem;
+using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.Data.BOCS.ObjectSystem;
 using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Game.Events;
@@ -46,8 +47,9 @@ namespace AshborneGame._Core.Game
         private (Location, LocationGroup) InitialiseStartingLocation(Player player)
         {
 
-            Location dreamVoid = new Location("the centre", "On all sides, an endless ocean of black water frozen in time stretches away. Splintered glass suspend themselves in the air, each " +
-                "one clearer and cleaner than the next. Shards of light slice the grey and lifeless sky. They stay still. All is still. All is silent.", "at the", "centre");
+            Location dreamVoid = new Location("the centre", "On all sides, an endless ocean of black sand stretches away. Splintered glass suspend themselves in the air, each " +
+                "one clearer and cleaner than the next. Shards of light slice the grey and lifeless sky. They stay still. All is still. All is silent.\nTo your north lies a mirror. To your east lies a throne." +
+                " To your west lies a pedestal. To your south lies a downward slope - you cannot see what's at the bottom.", "at the", "centre");
 
             Location mirrorOfIdentity = new Location("the mirror", "Your reflection stares back at you. It doesn't blink.", "standing beneath the", "mirror", "It's tall and cracked.");
 
@@ -55,14 +57,23 @@ namespace AshborneGame._Core.Game
                 "lies on the blade.", "standing in front of the", "pedestal");
 
             Location throneOfPower = new Location("the throne", "It's emerald-laced and empty. Nothing reflects off of it. Should you sit on it?", "in front of the", "throne");
-            LocationGroup ossanethDomain = new LocationGroup("Ossaneth's Domain", new List<Location>() { dreamVoid, mirrorOfIdentity, knifeOfViolence, throneOfPower });
+
+            Location slope = new Location("the slope", "You descend down the sand slope, until you reach the bottom. A chained figure kneels there, his hands bound above his head and his feet stuck to the ground." +
+                " The figure's head is turned down, and his ragged black hair is almost invisible against the darkness around him.", "on top of", "the slope");
+
+            NPC chainedFigure = new NPC("Chained Prisoner", null, "Act1_Scene1_Prisoner_Dialogue");
+            Sublocation chainedFigureSublocation = new Sublocation(slope, chainedFigure, "prisoner", "A chained prisoner", 5);
+            slope.AddSublocation(chainedFigureSublocation);
+            LocationGroup ossanethDomain = new LocationGroup("Ossaneth's Domain", new List<Location>() { dreamVoid, mirrorOfIdentity, knifeOfViolence, throneOfPower, slope });
 
             dreamVoid.AddExit("north", mirrorOfIdentity);
             dreamVoid.AddExit("west", knifeOfViolence);
             dreamVoid.AddExit("east", throneOfPower);
+            dreamVoid.AddExit("south", slope);
             mirrorOfIdentity.AddExit("south", dreamVoid);
             knifeOfViolence.AddExit("east", dreamVoid);
             throneOfPower.AddExit("west", dreamVoid);
+            slope.AddExit("north", dreamVoid);
 
             throneOfPower.AddCustomCommand(
             new List<string> { "sit on throne", "get on throne", "sit on the throne", "get on the throne" },

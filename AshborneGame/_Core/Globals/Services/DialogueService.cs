@@ -22,6 +22,7 @@ namespace AshborneGame._Core.Globals.Services
         public void StartDialogue(string inkFilePath)
         {
             GameContext.GameEngine.DialogueRunning = true;
+            inkFilePath = FilePathResolver.FromScripts(inkFilePath);
             _inkRunner.LoadFromFile(inkFilePath);
             _inkRunner.Run();
             GameContext.GameEngine.DialogueRunning = false;

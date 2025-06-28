@@ -83,7 +83,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
                   EventCondition: evt => evt.Get<string>("location") == "the throne",
                   StateCondition: state => state.TryGetFlag("player.actions.sat_on_throne", out var value) && value,
                   Message: null,
-                  Effect: () => GameContext.DialogueService.StartDialogue(FilePathResolver.FromScripts("Act1_Scene1_Throne_Dialogue")),
+                  Effect: () => GameContext.DialogueService.StartDialogue("Act1_Scene1_Throne_Dialogue"),
                   OneTime: true
             ));
 
@@ -93,7 +93,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
                   EventCondition: evt => evt.Get<string>("location") == "the pedestal",
                   StateCondition: state => state.TryGetFlag("player.actions.touched_knife", out var value) && value,
                   Message: null,
-                  Effect: () => GameContext.DialogueService.StartDialogue(FilePathResolver.FromScripts("Act1_Scene1_Knife_Dialogue")),
+                  Effect: () => GameContext.DialogueService.StartDialogue("Act1_Scene1_Knife_Dialogue"),
                   OneTime: true
             ));
 

@@ -1,6 +1,7 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Services;
+using AshborneGame._Core.SceneManagement;
 
 namespace AshborneGame._Core.Data.BOCS.NPCSystem
 {
@@ -16,44 +17,37 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
         /// </summary>
         public string Description { get; }
 
-        /// <summary>
-        /// A line of dialogue that the NPC uses to greet the player. This is typically used when the player first encounters the NPC.
-        /// </summary>
-        public string Greeting { get; }
+        public string? Greeting { get; }
 
-        /// <summary>
-        /// A line of dialogue that the NPC uses to describe themself. This is typically used when the player interacts with the NPC.
-        /// </summary>
-        public string SelfDescription { get; }
+        public string? DialogueFileName { get; init; }
 
-        public NPC(string name)
+        public NPC(string name, string? greeting, string? dialogueFileName = null)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name), "Name cannot be null.");
             Description = "An NPC."; // Default description
-            Greeting = "Hello!"; // Default greeting
-            SelfDescription = "I am an NPC."; // Default self-description
+            Greeting = greeting;
+            DialogueFileName = dialogueFileName;
         }
 
-        public NPC(string name, string description)
+        public NPC(string name, string description, string? greeting, string? dialogueFileName = null)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name), "Name cannot be null.");
             Description = description ?? throw new ArgumentNullException(nameof(description), "Description cannot be null.");
-            Greeting = "Hello!"; // Default greeting
-            SelfDescription = "I am an NPC."; // Default self-description
-        }
-
-        public NPC(string name, string description, string greeting, string selfDescription)
-        {
-            Name = name ?? throw new ArgumentNullException(nameof(name), "Name cannot be null.");
-            Description = description ?? throw new ArgumentNullException(nameof(description), "Description cannot be null.");
-            Greeting = greeting ?? throw new ArgumentNullException(nameof(greeting), "Greeting cannot be null.");
-            SelfDescription = selfDescription ?? throw new ArgumentNullException(nameof(selfDescription), "SelfDescription cannot be null.");
+            Greeting = greeting;
+            DialogueFileName = dialogueFileName;
         }
 
         public virtual void Talk(Player player)
         {
-            IOService.Output.WriteLine($"{Name}: {Greeting} {SelfDescription}.");
             player.CurrentNPCInteraction = this;
+            if (DialogueFileName != null)
+            {
+                GameContext.DialogueService.StartDialogue(DialogueFileName);
+            }
+            else if (Greeting != null)
+            {
+                IOService.Output.Write($"{Name}: {Greeting}");
+            }
         }
     }
 }
