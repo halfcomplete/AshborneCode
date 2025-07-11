@@ -35,7 +35,7 @@ namespace AshborneTests
         /// </summary>
         static internal NPC CreateTestNPC(string name = "TestNPC")
         {
-            return new NPC(name);
+            return new NPC(name, null);
         }
 
         /// <summary>

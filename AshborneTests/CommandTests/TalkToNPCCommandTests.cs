@@ -54,7 +54,7 @@ namespace AshborneTests.CommandTests
         private class TestNPC : NPC
         {
             internal bool WasTalkedTo = false;
-            internal TestNPC(string name) : base(name) { }
+            internal TestNPC(string name) : base(name, null) { }
             public override void Talk(Player player) => WasTalkedTo = true;
         }
     }

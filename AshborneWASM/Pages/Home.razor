@@ -1,0 +1,61 @@
+﻿@using AshborneGame._Core.Game
+@using AshborneGame.WebPort
+@page "/"
+
+<h1 class="text-center">ASHBORNE</h1>
+
+<div class="game-screen">
+    <div class="game-output">@gameText</div>
+
+    <input @bind="userInput"
+           @bind:event="oninput"
+           @onkeydown="HandleInput"
+           placeholder="What will you do?" />
+</div>
+
+@code {
+    private string userInput = "";
+    private string gameText = "";
+    private GameEngine engine;
+
+    protected override void OnInitialized()
+    {
+        var outputHandler = new WebOutputHandler(
+            async line => await AppendLine(line),
+            async () => { gameText = ""; await InvokeAsync(StateHasChanged); },
+            async (type, msg) => await AppendLine($"[DEBUG - {type}]: {msg}")
+        );
+
+        var inputHandler = new WebInputHandler(
+            async () => await Task.FromResult(userInput),
+            async (choiceCount) => 1
+        );
+
+        engine = new GameEngine(inputHandler, outputHandler);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            engine.Start(); // this avoids running too early
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task AppendLine(string line)
+    {
+        gameText += line + "\n";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleInput(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(userInput))
+        {
+            await AppendLine($"\n> {userInput}\n");
+            engine.ReceiveCommand(userInput.Trim());
+            userInput = "";
+        }
+    }
+}

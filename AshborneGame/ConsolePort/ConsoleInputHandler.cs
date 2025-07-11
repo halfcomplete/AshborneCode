@@ -1,5 +1,4 @@
-﻿using AshborneGame._Core.Game;
-using AshborneGame._Core.Globals.Interfaces;
+﻿using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 
 namespace AshborneGame.ConsolePort
@@ -15,7 +14,7 @@ namespace AshborneGame.ConsolePort
 
         public int GetChoiceInput(int choiceCount)
         {
-            IOService.Output.WriteLine("What do you choose?");
+            IOService.Output.Write("What do you choose? ");
             while (true)
             {
                 string input = Console.ReadLine() ?? "";

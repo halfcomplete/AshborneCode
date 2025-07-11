@@ -26,10 +26,10 @@ namespace AshborneGame._Core.Game
             IOService.Initialise(input, output);
 
             Player player = new Player("Hero");
-
             var gameState = new GameStateManager(player);
             var inkRunner = new InkRunner(gameState, player);
             _dialogueService = new DialogueService(inkRunner);
+
             GameContext.Initialise(player, gameState, _dialogueService, this);
             gameState.InitialiseMasks(MaskInitialiser.InitialiseMasks());
 
@@ -37,11 +37,11 @@ namespace AshborneGame._Core.Game
             player.SetupMoveTo(startingLocation, startingLocationGroup);
 
             InitialiseGameWorld(player);
+        }
 
-            IOService.Output.DisplayDebugMessage("Game engine initialised successfully.");
-            IOService.Output.DisplayDebugMessage("Starting game engine...");
-
-            StartGameLoop(player, gameState);
+        public void Start()
+        {
+            StartGameLoop(GameContext.Player, GameContext.GameState);
         }
 
         private (Location, LocationGroup) InitialiseStartingLocation(Player player)
@@ -137,7 +137,7 @@ namespace AshborneGame._Core.Game
             IOService.Output.DisplayDebugMessage("Game world initialised.");
         }
 
-        private void StartGameLoop(Player player, GameStateManager gameState)
+        public void StartGameLoop(Player player, GameStateManager gameState)
         {
             //_dialogueService.StartDialogue($"D:\\C# Projects\\AshborneCode\\AshborneGame\\_Core\\Data\\Scripts\\Act1\\Scene1\\{_startingAct}_{_startingScene}_{_startingSceneSection}.json");
 
@@ -178,6 +178,36 @@ namespace AshborneGame._Core.Game
                 }
             }
             gameState.StopTickLoop();
+        }
+
+        public void ReceiveCommand(string input)
+        {
+            if (!_isRunning)
+            {
+                IOService.Output.WriteLine("Game is not running.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                IOService.Output.WriteLine("You must enter a command.");
+                return;
+            }
+
+            var splitInput = input.Split(' ').ToList();
+            var action = CommandManager.ExtractAction(splitInput, out List<string> args);
+
+            bool isValidCommand = CommandManager.TryExecute(action, args, GameContext.Player);
+
+            if (!isValidCommand)
+            {
+                IOService.Output.WriteLine("Invalid command. Please try again or type 'help' for assistance.");
+            }
+        }
+
+        public void Stop()
+        {
+            _isRunning = false;
         }
     }
 }
