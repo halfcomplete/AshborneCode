@@ -34,30 +34,38 @@ namespace AshborneGame._Core.SceneManagement
         public async Task LoadFromFileAsync(string inkJsonPath)
         {
             string json;
-            
-            // Check if this is a web path (starts with /)
-            if (!inkJsonPath.StartsWith("http") && inkJsonPath.StartsWith("/"))
+            try
             {
-                using var httpClient = new HttpClient();
-                
-                // Use relative path for GitHub Pages compatibility
-                string fullUrl = inkJsonPath.TrimStart('/');
-                // Append cache-busting timestamp
-                string ts = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
-                if (fullUrl.Contains("?"))
-                    fullUrl += "&ts=" + ts;
+                // Check if this is a web path (starts with /)
+                if (!inkJsonPath.StartsWith("http") && inkJsonPath.StartsWith("/"))
+                {
+                    using var httpClient = new HttpClient();
+                    
+                    // Use relative path for GitHub Pages compatibility
+                    string fullUrl = inkJsonPath.TrimStart('/');
+                    // Append cache-busting timestamp
+                    string ts = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+                    if (fullUrl.Contains("?"))
+                        fullUrl += "&ts=" + ts;
+                    else
+                        fullUrl += "?ts=" + ts;
+                    IOService.Output.DisplayDebugMessage($"Trying to fetch: {fullUrl}", ConsoleMessageTypes.INFO);
+                    json = await httpClient.GetStringAsync(fullUrl);
+                }
                 else
-                    fullUrl += "?ts=" + ts;
-                IOService.Output.DisplayDebugMessage($"Trying to fetch: {fullUrl}", ConsoleMessageTypes.INFO);
-                json = await httpClient.GetStringAsync(fullUrl);
-            }
-            else
-            {
-                // Console context - load from file system
-                if (!File.Exists(inkJsonPath))
-                    throw new FileNotFoundException($"Ink file not found at path: {inkJsonPath}");
+                {
+                    // Console context - load from file system
+                    if (!File.Exists(inkJsonPath))
+                        throw new FileNotFoundException($"Ink file not found at path: {inkJsonPath}");
 
-                json = File.ReadAllText(inkJsonPath);
+                    json = File.ReadAllText(inkJsonPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                var stackTrace = Environment.StackTrace;
+                IOService.Output.DisplayDebugMessage($"[DIALOGUE LOAD ERROR] {ex.Message}\nCall Stack:\n{stackTrace}", ConsoleMessageTypes.ERROR);
+                throw;
             }
             
             _story = new Story(json);
