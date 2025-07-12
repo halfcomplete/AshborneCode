@@ -58,40 +58,23 @@ namespace AshborneGame.ConsolePort
         /// <param name="ms">The time to wait in milliseconds between each character.</param>
         public void WriteLine(string message, int ms)
         {
-#if DEBUG
-            Console.WriteLine(message);
-#else
-            int i = 0;
-            foreach (var letter in message)
+            // For console, ignore web typewriter markers and use native typewriter effect
+            if (message.Contains("__TYPEWRITER_START__") && message.Contains("__TYPEWRITER_END__"))
             {
-                Console.Write(letter);
-                if (letter.Equals('.') && (message.Count() == i + 1 || message[i + 1].Equals(' '))) // If we reach a full stop and it's the last in the message / sentence.
-                {
-                    Thread.Sleep(1000);
-                }
-                else if (letter.Equals('"') && (message.Count() == i + 1 || message[i + 1].Equals(' '))) // If we reach a quotation mark and it's the end of the message / sentence
-                {
-                    Thread.Sleep(1200);
-                }
-                else if (letter.Equals(']') && (message.Count() == i + 1 || message[i + 1].Equals(' '))) // If we reach a closing square bracket and it's the end of the message / sentence
-                {
-                    Thread.Sleep(1500);
-                }
-                else
-                {
-                    Thread.Sleep(ms);
-                }
-
-                if (message.Count() == i + 1)
-                {
-                    Console.WriteLine();
-                    Thread.Sleep(1000);
-                }
-
-                i += 1;
+                // Extract the actual message and use regular WriteLine (which has built-in typewriter effect)
+                int startIndex = message.IndexOf("__TYPEWRITER_START__") + "__TYPEWRITER_START__".Length;
+                int endIndex = message.IndexOf("__TYPEWRITER_END__");
+                string actualMessage = message.Substring(startIndex, endIndex - startIndex);
+                
+                WriteLine(actualMessage); // Use the regular WriteLine with built-in typewriter effect
+                return;
             }
-#endif
+
+            // Use the built-in typewriter effect from the regular WriteLine method
+            WriteLine(message);
         }
+
+
 
         public void DisplayDebugMessage(string message, ConsoleMessageTypes type)
         {

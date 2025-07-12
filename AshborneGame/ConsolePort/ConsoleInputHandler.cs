@@ -26,5 +26,16 @@ namespace AshborneGame.ConsolePort
                 IOService.Output.WriteLine("Invalid choice. Enter a number between 1 and " + choiceCount);
             }
         }
+
+        // Async versions for interface compatibility
+        public async Task<string> GetPlayerInputAsync()
+        {
+            return await Task.FromResult(GetPlayerInput());
+        }
+
+        public async Task<int> GetChoiceInputAsync(int choiceCount)
+        {
+            return await Task.FromResult(GetChoiceInput(choiceCount));
+        }
     }
 }

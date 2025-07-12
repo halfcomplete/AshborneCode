@@ -5,6 +5,7 @@ using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem;
 using System.Reflection.Metadata.Ecma335;
 using AshborneGame._Core.Globals.Enums;
+using System.IO;
 
 namespace AshborneGame._Core.SceneManagement
 {
@@ -28,23 +29,57 @@ namespace AshborneGame._Core.SceneManagement
         }
 
         /// <summary>
-        /// Loads an Ink JSON story file from disk.
+        /// Loads an Ink JSON story file from disk or HTTP.
+        /// </summary>
+        public async Task LoadFromFileAsync(string inkJsonPath)
+        {
+            string json;
+            
+            // Check if this is a web path (starts with /)
+            if (inkJsonPath.StartsWith("/"))
+            {
+                // Web context - load via HTTP
+                using var httpClient = new HttpClient();
+                
+                // For web context, construct absolute URL from current location
+                string baseUrl = "https://localhost:7070"; // Use HTTPS for port 7070
+                string fullUrl = baseUrl + inkJsonPath;
+                IOService.Output.DisplayDebugMessage($"Trying to fetch: {fullUrl}", ConsoleMessageTypes.INFO);
+                json = await httpClient.GetStringAsync(fullUrl);
+            }
+            else
+            {
+                // Console context - load from file system
+                if (!File.Exists(inkJsonPath))
+                    throw new FileNotFoundException($"Ink file not found at path: {inkJsonPath}");
+
+                json = File.ReadAllText(inkJsonPath);
+            }
+            
+            _story = new Story(json);
+            InitialiseBindings();
+        }
+
+        /// <summary>
+        /// Loads an Ink JSON story file from disk (sync version for console compatibility).
         /// </summary>
         public void LoadFromFile(string inkJsonPath)
         {
-            if (!File.Exists(inkJsonPath))
-                throw new FileNotFoundException($"Ink file not found at path: {inkJsonPath}");
-
-            string json = File.ReadAllText(inkJsonPath);
-            _story = new Story(json);
-
-            InitialiseBindings();
+            LoadFromFileAsync(inkJsonPath).GetAwaiter().GetResult();
         }
 
         /// <summary>
         /// Runs the Ink story line by line until player input or choice is needed.
         /// </summary>
         public void Run()
+        {
+            RunAsync().GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Runs the Ink story line by line until player input or choice is needed (async version).
+        /// </summary>
+        public async Task RunAsync()
         {
             if (_story == null)
                 throw new InvalidOperationException("No Ink story loaded.");
@@ -86,9 +121,9 @@ namespace AshborneGame._Core.SceneManagement
                     IOService.Output.WriteLine($"[{i + 1}] {_story.currentChoices[i].text}");
                 }
 
-                int choice = IOService.Input.GetChoiceInput(_story.currentChoices.Count);
+                int choice = await IOService.Input.GetChoiceInputAsync(_story.currentChoices.Count);
                 _story.ChooseChoiceIndex(choice - 1);
-                Run(); // Continue running after choice
+                await RunAsync(); // Continue running after choice
             }
         }
 

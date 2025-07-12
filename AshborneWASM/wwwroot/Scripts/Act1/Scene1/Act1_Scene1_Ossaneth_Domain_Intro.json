@@ -1,0 +1,1 @@
+{"inkVersion":21,"root":[["ev",300,{"x()":"pause","exArgs":1},"pop","/ev","\n","#","^slow:150","/#","^Ossaneth: Welcome to my domain. This is where we shall get acquainted.\"","\n","ev","str","^player.gone_to.ossaneth_domain","/str",1,{"x()":"setCounter","exArgs":2},"pop","/ev","\n","end",["done",{"#n":"g-0"}],null],"done",null],"listDefs":{}}

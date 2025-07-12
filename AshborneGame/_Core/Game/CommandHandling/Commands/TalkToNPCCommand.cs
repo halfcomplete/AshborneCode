@@ -31,9 +31,15 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                 return false;
             }
 
-            string characterName = string.Join(" ", args).Trim();
             Sublocation sublocation = player.CurrentSublocation!;
             NPC npc = (NPC)sublocation.Object;
+
+            // Check if the NPC's name matches the target name (case-insensitive, partial match)
+            if (!npc.Name.ToLowerInvariant().Contains(targetName.ToLowerInvariant()))
+            {
+                IOService.Output.WriteLine($"There is no one named '{targetName}' here.");
+                return false;
+            }
 
             npc.Talk(player);
             return true;

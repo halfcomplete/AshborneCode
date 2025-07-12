@@ -1,9 +1,9 @@
 ﻿using AshborneGame._Core.Game;
 using AshborneGame.ConsolePort;
 
-namespace AshborneGame._Core
+namespace AshborneConsole
 {
-    public class Program
+    internal class Program
     {
         static void Main(string[] args)
         {
@@ -11,6 +11,8 @@ namespace AshborneGame._Core
             var output = new ConsoleOutputHandler();
 
             var game = new GameEngine(input, output);
+
+            game.Start();
         }
     }
 }

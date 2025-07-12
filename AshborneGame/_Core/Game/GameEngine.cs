@@ -44,6 +44,19 @@ namespace AshborneGame._Core.Game
             StartGameLoop(GameContext.Player, GameContext.GameState);
         }
 
+        public async Task StartGameLoopAsync()
+        {
+            _isRunning = true;
+            
+            // Initialize the game state
+            GameContext.GameState.StartTickLoop();
+            
+            // Display initial location description
+            IOService.Output.WriteLine(GameContext.Player.CurrentLocation.GetFullDescription(GameContext.Player));
+            
+            // Don't start the blocking loop - let the web interface handle input via ReceiveCommand
+        }
+
         private (Location, LocationGroup) InitialiseStartingLocation(Player player)
         {
 

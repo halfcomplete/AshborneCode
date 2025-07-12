@@ -5,5 +5,9 @@ namespace AshborneGame._Core.Globals.Interfaces
     {
         string GetPlayerInput();
         int GetChoiceInput(int choiceCount);
+        
+        // Async versions for web compatibility
+        Task<string> GetPlayerInputAsync();
+        Task<int> GetChoiceInputAsync(int choiceCount);
     }
 }

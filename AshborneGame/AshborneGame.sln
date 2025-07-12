@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AshborneTooling", "..\Ashbo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AshborneWASM", "..\AshborneWASM\AshborneWASM.csproj", "{F6596FB0-A3CA-4713-BDEC-E9D06251556F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AshborneConsole", "..\AshborneConsole\AshborneConsole.csproj", "{C2C49FB6-0B0B-4258-B468-85521749BD57}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{F6596FB0-A3CA-4713-BDEC-E9D06251556F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6596FB0-A3CA-4713-BDEC-E9D06251556F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F6596FB0-A3CA-4713-BDEC-E9D06251556F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2C49FB6-0B0B-4258-B468-85521749BD57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2C49FB6-0B0B-4258-B468-85521749BD57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2C49FB6-0B0B-4258-B468-85521749BD57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2C49FB6-0B0B-4258-B468-85521749BD57}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

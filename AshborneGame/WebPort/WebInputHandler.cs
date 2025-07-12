@@ -16,15 +16,25 @@ namespace AshborneGame.WebPort
             _getChoiceInputAsync = getChoiceInputAsync;
         }
 
+        public async Task<string> GetPlayerInputAsync()
+        {
+            return await _getUserInputAsync();
+        }
+
+        public async Task<int> GetChoiceInputAsync(int choiceCount)
+        {
+            return await _getChoiceInputAsync(choiceCount);
+        }
+
+        // Legacy sync methods for compatibility
         public string GetPlayerInput()
         {
-            // Use a blocking wait to simulate sync return — okay in Blazor if called inside an async method
-            return _getUserInputAsync().GetAwaiter().GetResult();
+            return GetPlayerInputAsync().GetAwaiter().GetResult();
         }
 
         public int GetChoiceInput(int choiceCount)
         {
-            return _getChoiceInputAsync(choiceCount).GetAwaiter().GetResult();
+            return GetChoiceInputAsync(choiceCount).GetAwaiter().GetResult();
         }
     }
 }

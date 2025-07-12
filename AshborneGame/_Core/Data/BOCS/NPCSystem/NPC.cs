@@ -2,6 +2,7 @@
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.SceneManagement;
+using AshborneGame.WebPort;
 
 namespace AshborneGame._Core.Data.BOCS.NPCSystem
 {
@@ -42,7 +43,17 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
             player.CurrentNPCInteraction = this;
             if (DialogueFileName != null)
             {
-                GameContext.DialogueService.StartDialogue(DialogueFileName);
+                // Check if we're in a web environment by checking if the input handler supports async
+                if (IOService.Input is WebPort.WebInputHandler)
+                {
+                    // Use async version for web - run directly on UI thread
+                    _ = GameContext.DialogueService.StartDialogueAsync(DialogueFileName);
+                }
+                else
+                {
+                    // Use sync version for console
+                    GameContext.DialogueService.StartDialogue(DialogueFileName);
+                }
             }
             else if (Greeting != null)
             {

@@ -33,28 +33,9 @@ namespace AshborneGame.WebPort
 
         public async void WriteLine(string message, int ms)
         {
-            // Simulate typewriter-style pacing
-            int i = 0;
-            while (i < message.Length)
-            {
-                char c = message[i];
-                await _writeCallback?.Invoke(c.ToString());
-
-                if ((c == '.' || c == ':' || c == '"' || c == ']') &&
-                    (i == message.Length - 1 || message[i + 1] == ' ' || message[i + 1] == '\n'))
-                {
-                    await Task.Delay(110);
-                }
-                else
-                {
-                    await Task.Delay(ms);
-                }
-
-                i++;
-            }
-
-            await _writeCallback?.Invoke("\n");
-            await Task.Delay(200);
+            // Simulate typewriter-style pacing for web
+            // We'll use a special marker to indicate this is a typewriter effect
+            await _writeCallback?.Invoke($"__TYPEWRITER_START__{message}__TYPEWRITER_END__\n");
         }
 
         public void DisplayDebugMessage(string message, ConsoleMessageTypes type)
