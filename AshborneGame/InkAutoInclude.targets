@@ -1,7 +1,7 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemGroup>
-		<!-- Automatically include ALL compiled JSON scripts in Data\Scripts -->
-		<Content Include="_Core\Data\Scripts\**\*.json">
+		<!-- Automatically include ALL compiled JSON scripts in Data\Dialogue -->
+		<Content Include="_Core\Data\Dialogue\**\*.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>

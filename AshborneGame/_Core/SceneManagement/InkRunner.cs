@@ -36,14 +36,12 @@ namespace AshborneGame._Core.SceneManagement
             string json;
             
             // Check if this is a web path (starts with /)
-            if (inkJsonPath.StartsWith("/"))
+            if (!inkJsonPath.StartsWith("http") && (inkJsonPath.StartsWith("/") || inkJsonPath.StartsWith("Scripts")))
             {
-                // Web context - load via HTTP
                 using var httpClient = new HttpClient();
                 
-                // For web context, construct absolute URL from current location
-                string baseUrl = "https://localhost:7070"; // Use HTTPS for port 7070
-                string fullUrl = baseUrl + inkJsonPath;
+                // Use relative path for GitHub Pages compatibility
+                string fullUrl = inkJsonPath.TrimStart('/');
                 // Append cache-busting timestamp
                 string ts = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
                 if (fullUrl.Contains("?"))

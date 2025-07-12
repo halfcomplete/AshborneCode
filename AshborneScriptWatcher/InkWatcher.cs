@@ -8,15 +8,15 @@ namespace AshborneTooling
     internal class InkWatcher
     {
         private static readonly string inklecatePath = @"D:\Ink\inklecate.exe";
-        private static readonly string inkScriptsRoot = @"D:\C# Projects\AshborneDesign\Narrative";
-        private static readonly string outputRoot = @"D:\C# Projects\AshborneCode\AshborneGame\_Core\Data\Scripts";
-        private static readonly string wasmRoot = @"D:\C# Projects\AshborneCode\AshborneWASM\wwwroot\Scripts";
+        private static readonly string inkDialogueRoot = @"D:\C# Projects\AshborneDesign\Narrative";
+        private static readonly string outputRoot = @"D:\C# Projects\AshborneCode\AshborneGame\_Core\Data\Dialogue";
+        private static readonly string wasmRoot = @"D:\C# Projects\AshborneCode\AshborneWASM\wwwroot\Dialogue";
         public static async Task Main(string[] args)
         {
             Console.WriteLine("Ashborne Ink Watcher Started");
-            Console.WriteLine($"Watching for changes in: {inkScriptsRoot}");
+            Console.WriteLine($"Watching for changes in: {inkDialogueRoot}");
 
-            using var watcher = new FileSystemWatcher(inkScriptsRoot, "*.ink")
+            using var watcher = new FileSystemWatcher(inkDialogueRoot, "*.ink")
             {
                 IncludeSubdirectories = true,
                 NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.CreationTime

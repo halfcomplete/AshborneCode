@@ -152,11 +152,11 @@ namespace AshborneGame._Core.Game
 
         public void StartGameLoop(Player player, GameStateManager gameState)
         {
-            //_dialogueService.StartDialogue($"D:\\C# Projects\\AshborneCode\\AshborneGame\\_Core\\Data\\Scripts\\Act1\\Scene1\\{_startingAct}_{_startingScene}_{_startingSceneSection}.json");
+            //_dialogueService.StartDialogue($"D:\\C# Projects\\AshborneCode\\AshborneGame\\_Core\\Data\\Dialogue\\Act1\\Scene1\\{_startingAct}_{_startingScene}_{_startingSceneSection}.json");
 
             _isRunning = true;
 
-            //_dialogueService.StartDialogue($"D:\\C# Projects\\AshborneCode\\AshborneGame\\_Core\\Data\\Scripts\\Act1\\Scene1\\{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro.json");
+            //_dialogueService.StartDialogue($"D:\\C# Projects\\AshborneCode\\AshborneGame\\_Core\\Data\\Dialogue\\Act1\\Scene1\\{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro.json");
             IOService.Output.WriteLine(player.CurrentLocation.GetFullDescription(player));
 
             gameState.StartTickLoop();

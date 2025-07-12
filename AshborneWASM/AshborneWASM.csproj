@@ -21,19 +21,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="wwwroot\Scripts\Act1\Scene1\Act1_Scene1_Intro_Dialogue.json">
+    <Content Update="wwwroot\Dialogue\Act1\Scene1\Act1_Scene1_Intro_Dialogue.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\Scripts\Act1\Scene1\Act1_Scene1_Knife_Dialogue.json">
+    <Content Update="wwwroot\Dialogue\Act1\Scene1\Act1_Scene1_Knife_Dialogue.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\Scripts\Act1\Scene1\Act1_Scene1_Ossaneth_Domain_Intro.json">
+    <Content Update="wwwroot\Dialogue\Act1\Scene1\Act1_Scene1_Ossaneth_Domain_Intro.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\Scripts\Act1\Scene1\Act1_Scene1_Prisoner_Dialogue.json">
+    <Content Update="wwwroot\Dialogue\Act1\Scene1\Act1_Scene1_Prisoner_Dialogue.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\Scripts\Act1\Scene1\Act1_Scene1_Throne_Dialogue.json">
+    <Content Update="wwwroot\Dialogue\Act1\Scene1\Act1_Scene1_Throne_Dialogue.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

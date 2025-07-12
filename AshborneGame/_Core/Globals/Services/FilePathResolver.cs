@@ -6,9 +6,9 @@ namespace AshborneGame._Core.Globals.Services
 {
     public static class FilePathResolver
     {
-        public static string ScriptsRootPath { get; } = @"D:\C# Projects\AshborneCode\AshborneGame\_Core\Data\Scripts";
+        public static string DialogueRootPath { get; } = @"D:\C# Projects\AshborneCode\AshborneGame\_Core\Data\Dialogue";
 
-        public static string FromScripts(string scriptFilename)
+        public static string FromDialogue(string scriptFilename)
         {
             if (string.IsNullOrWhiteSpace(scriptFilename))
                 throw new ArgumentException("Script filename cannot be null or empty.");
@@ -33,11 +33,11 @@ namespace AshborneGame._Core.Globals.Services
                 // Web context - try to find the file in the current directory structure
                 // First try the wwwroot path relative to the current directory
                 string[] possiblePaths = {
-                    Path.Combine("wwwroot", "Scripts", actFolder, sceneFolder, fullFileName),
-                    Path.Combine("Scripts", actFolder, sceneFolder, fullFileName),
-                    Path.Combine("..", "wwwroot", "Scripts", actFolder, sceneFolder, fullFileName),
-                    Path.Combine("..", "..", "wwwroot", "Scripts", actFolder, sceneFolder, fullFileName),
-                    Path.Combine("..", "..", "..", "wwwroot", "Scripts", actFolder, sceneFolder, fullFileName)
+                    Path.Combine("wwwroot", "Dialogue", actFolder, sceneFolder, fullFileName),
+                    Path.Combine("Dialogue", actFolder, sceneFolder, fullFileName),
+                    Path.Combine("..", "wwwroot", "Dialogue", actFolder, sceneFolder, fullFileName),
+                    Path.Combine("..", "..", "wwwroot", "Dialogue", actFolder, sceneFolder, fullFileName),
+                    Path.Combine("..", "..", "..", "wwwroot", "Dialogue", actFolder, sceneFolder, fullFileName)
                 };
                 
                 foreach (string path in possiblePaths)
@@ -51,13 +51,13 @@ namespace AshborneGame._Core.Globals.Services
                 }
                 
                 // If no file found, fall back to HTTP path
-                string webPath = $"/Scripts/{actFolder}/{sceneFolder}/{fullFileName}";
+                string webPath = $"/Dialogue/{actFolder}/{sceneFolder}/{fullFileName}";
                 IOService.Output.DisplayDebugMessage($"FilePathResolver: No file found, using HTTP path = '{webPath}'", ConsoleMessageTypes.WARNING);
                 return webPath;
             }
 
             // Console context - use absolute path
-            string fullPath = Path.Combine(ScriptsRootPath, actFolder, sceneFolder, fullFileName);
+            string fullPath = Path.Combine(DialogueRootPath, actFolder, sceneFolder, fullFileName);
 
             if (!File.Exists(fullPath))
             {

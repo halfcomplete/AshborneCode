@@ -32,7 +32,7 @@ namespace AshborneGame._Core.Globals.Services
                 IOService.Output.DisplayDebugMessage($"Starting dialogue: {inkFilePath}", ConsoleMessageTypes.INFO);
                 IOService.Output.DisplayDebugMessage($"Current directory: {Directory.GetCurrentDirectory()}", ConsoleMessageTypes.INFO);
                 GameContext.GameEngine.DialogueRunning = true;
-                inkFilePath = FilePathResolver.FromScripts(inkFilePath);
+                inkFilePath = FilePathResolver.FromDialogue(inkFilePath);
                 IOService.Output.DisplayDebugMessage($"Loading file: {inkFilePath}", ConsoleMessageTypes.INFO);
                 await _inkRunner.LoadFromFileAsync(inkFilePath);
                 IOService.Output.DisplayDebugMessage("Running Ink story...", ConsoleMessageTypes.INFO);
