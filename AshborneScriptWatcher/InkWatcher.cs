@@ -10,7 +10,7 @@ namespace AshborneTooling
         private static readonly string inklecatePath = @"D:\Ink\inklecate.exe";
         private static readonly string inkScriptsRoot = @"D:\C# Projects\AshborneDesign\Narrative";
         private static readonly string outputRoot = @"D:\C# Projects\AshborneCode\AshborneGame\_Core\Data\Scripts";
-
+        private static readonly string wasmRoot = @"D:\C# Projects\AshborneCode\AshborneWASM\wwwroot\Scripts";
         public static async Task Main(string[] args)
         {
             Console.WriteLine("Ashborne Ink Watcher Started");
@@ -47,8 +47,6 @@ namespace AshborneTooling
         private static void CompileInkFile(string inkFilePath)
         {
             string fileName = Path.GetFileName(inkFilePath); // e.g. Act1_Scene1_intro.ink
-
-            // Extract act and scene numbers using regex or split
             string[] parts = fileName.Split('_', StringSplitOptions.RemoveEmptyEntries);
 
             if (parts.Length < 2 || !parts[0].StartsWith("Act") || !parts[1].StartsWith("Scene"))
@@ -57,16 +55,18 @@ namespace AshborneTooling
                 return;
             }
 
-            string actPart = parts[0];   // e.g. Act1
-            string scenePart = parts[1]; // e.g. Scene1
+            string actPart = parts[0];   // Act1
+            string scenePart = parts[1]; // Scene1
 
-            // Construct output folder path: Scripts\Act1\Scene1\
             string outputFolder = Path.Combine(outputRoot, actPart, scenePart);
-            Directory.CreateDirectory(outputFolder); // Ensure the folder exists
+            string wasmFolder = Path.Combine(wasmRoot, actPart, scenePart);
 
-            // Set output path inside that folder
+            Directory.CreateDirectory(outputFolder);
+            Directory.CreateDirectory(wasmFolder);
+
             string outputFileName = Path.ChangeExtension(fileName, ".json");
             string jsonOutputPath = Path.Combine(outputFolder, outputFileName);
+            string jsonWasmPath = Path.Combine(wasmFolder, outputFileName);
 
             ProcessStartInfo startInfo = new()
             {
@@ -81,22 +81,22 @@ namespace AshborneTooling
             using var process = Process.Start(startInfo);
             process.WaitForExit();
 
-            // Force Visual Studio to refresh
-            File.SetLastWriteTimeUtc(jsonOutputPath, DateTime.UtcNow);
-
             string output = process.StandardOutput.ReadToEnd();
             string error = process.StandardError.ReadToEnd();
 
             if (process.ExitCode == 0)
             {
-                Console.WriteLine($"Compiled: {fileName} to {actPart}\\{scenePart}\\{outputFileName}");
+                // Copy to WASM project as well
+                File.Copy(jsonOutputPath, jsonWasmPath, overwrite: true);
+                File.SetLastWriteTimeUtc(jsonOutputPath, DateTime.UtcNow);
+                File.SetLastWriteTimeUtc(jsonWasmPath, DateTime.UtcNow);
+
+                Console.WriteLine($"Compiled and copied: {fileName} → Game + WASM");
             }
             else
             {
-                Console.WriteLine($"Compilation error in {fileName}:");
-                Console.WriteLine(error);
+                Console.WriteLine($"Compilation error in {fileName}:\n{error}");
             }
         }
-
     }
 }

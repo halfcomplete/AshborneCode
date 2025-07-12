@@ -27,7 +27,7 @@ namespace AshborneGame.WebPort
 
         public void WriteLine(string message)
         {
-            // Simple newline version
+            // Simple newline version - no buffering
             _writeCallback?.Invoke(message + "\n");
         }
 
@@ -40,7 +40,9 @@ namespace AshborneGame.WebPort
 
         public void DisplayDebugMessage(string message, ConsoleMessageTypes type)
         {
+#if DEBUG
             _debugCallback?.Invoke(type, message);
+#endif
         }
 
         public void Clear()

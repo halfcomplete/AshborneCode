@@ -1,6 +1,8 @@
 ﻿@using AshborneGame._Core.Game
 @using AshborneGame.WebPort
+@using Microsoft.JSInterop
 @page "/"
+@inject IJSRuntime JS
 
 <h1 class="text-center">ASHBORNE</h1>
 
@@ -43,6 +45,8 @@
     private bool isTypingDialogue = false;
     private List<string> dialogueChoices = new List<string>();
     private TaskCompletionSource<int> choiceCompletionSource;
+    private Queue<string> typewriterQueue = new Queue<string>();
+    private bool isTypewriterRunning = false;
 
     protected override void OnInitialized()
     {
@@ -77,11 +81,12 @@
         
         // Set dialogue state and wait for choices to be populated
         isInDialogue = true;
+        dialogueChoices.Clear(); // Clear any existing choices
         await InvokeAsync(StateHasChanged);
         
-        // Wait for choices to be populated (with timeout to prevent infinite wait)
+        // Wait for choices to be populated (with longer timeout)
         int timeout = 0;
-        while (dialogueChoices.Count == 0 && timeout < 1000) // 10 second timeout
+        while (dialogueChoices.Count == 0 && timeout < 5000) // 50 second timeout (5000 * 10ms)
         {
             await Task.Delay(10);
             timeout++;
@@ -89,7 +94,8 @@
         
         if (dialogueChoices.Count == 0)
         {
-            // If no choices were detected, return 1 as fallback
+            // If no choices were detected after timeout, log and wait for user input anyway
+            await AppendLine("[DEBUG] No dialogue choices detected after timeout, waiting for manual input");
             isInDialogue = false;
             await InvokeAsync(StateHasChanged);
             return 1;
@@ -114,23 +120,33 @@
     private async Task AppendLine(string line)
     {
         // Check if this is a dialogue choice line (format: [1] Choice text)
-        if (line.Trim().StartsWith("[") && line.Contains("]"))
+        // Make sure it's a complete choice line, not just a partial one
+        if (line.Trim().StartsWith("[") && line.Contains("]") && line.Trim().Length > 2)
         {
             int bracketEnd = line.IndexOf("]");
             if (bracketEnd > 0 && int.TryParse(line.Substring(1, bracketEnd - 1), out int choiceNumber))
             {
                 string choiceText = line.Substring(bracketEnd + 1).Trim();
-                dialogueChoices.Add(choiceText);
-                // Don't immediately show choices - wait for dialogue to complete
-                await InvokeAsync(StateHasChanged);
-                return;
+                if (!string.IsNullOrWhiteSpace(choiceText))
+                {
+                    await AppendLine($"[DEBUG] Detected dialogue choice {choiceNumber}: {choiceText}");
+                    dialogueChoices.Add(choiceText);
+                    // Don't immediately show choices - wait for dialogue to complete
+                    await InvokeAsync(StateHasChanged);
+                    await AutoScrollToBottom();
+                    return;
+                }
             }
         }
 
         // Check if this is a typewriter effect message
         if (line.Contains("__TYPEWRITER_START__") && line.Contains("__TYPEWRITER_END__"))
         {
-            await HandleTypewriterEffect(line);
+            typewriterQueue.Enqueue(line);
+            if (!isTypewriterRunning)
+            {
+                _ = ProcessTypewriterQueue();
+            }
         }
         else
         {
@@ -144,50 +160,62 @@
                 gameText += "\n";
             }
             await InvokeAsync(StateHasChanged);
+            await AutoScrollToBottom();
         }
+    }
+
+    private async Task ProcessTypewriterQueue()
+    {
+        isTypewriterRunning = true;
+        while (typewriterQueue.Count > 0)
+        {
+            string line = typewriterQueue.Dequeue();
+            await HandleTypewriterEffect(line);
+        }
+        isTypewriterRunning = false;
     }
 
     private async Task HandleTypewriterEffect(string line)
     {
-        // Extract the message from the typewriter markers
         int startIndex = line.IndexOf("__TYPEWRITER_START__") + "__TYPEWRITER_START__".Length;
         int endIndex = line.IndexOf("__TYPEWRITER_END__");
         string message = line.Substring(startIndex, endIndex - startIndex);
-        
-        // Set typing state to prevent choices from showing
+
         isTypingDialogue = true;
         await InvokeAsync(StateHasChanged);
-        
-        // Add the message to gameText without the markers
-        gameText += message + "\n";
-        await InvokeAsync(StateHasChanged);
-        
-        // Now implement the typewriter effect
-        string currentText = gameText;
-        string targetText = currentText.Substring(0, currentText.Length - message.Length - 1); // Remove the message we just added
-        
-        for (int i = 0; i < message.Length; i++)
+
+        // Split into lines and type each line separately
+        string[] lines = message.Split('\n');
+        var buffer = gameText.Split('\n').ToList(); // Keep previous lines
+
+        foreach (var msgLine in lines)
         {
-            targetText += message[i];
-            gameText = targetText + "\n";
+            string typedLine = "";
+            for (int i = 0; i < msgLine.Length; i++)
+            {
+                typedLine += msgLine[i];
+                gameText = string.Join('\n', buffer) + (buffer.Count > 0 ? "\n" : "") + typedLine;
+                // Update UI every character
+                await InvokeAsync(StateHasChanged);
+                await AutoScrollToBottom();
+                char currentChar = msgLine[i];
+                if ((currentChar == '.' || currentChar == ':' || currentChar == '"' || currentChar == ']') &&
+                    (i == msgLine.Length - 1 || msgLine[i + 1] == ' '))
+                {
+                    await Task.Delay(800);
+                }
+                else
+                {
+                    await Task.Delay(50);
+                }
+            }
+            buffer.Add(typedLine); // Add finished line to buffer
+            gameText = string.Join('\n', buffer);
             await InvokeAsync(StateHasChanged);
-            
-            // Add delays for typewriter effect
-            char currentChar = message[i];
-            if ((currentChar == '.' || currentChar == ':' || currentChar == '"' || currentChar == ']') &&
-                (i == message.Length - 1 || message[i + 1] == ' ' || message[i + 1] == '\n'))
-            {
-                await Task.Delay(800);
-            }
-            else
-            {
-                await Task.Delay(50); // Faster for web
-            }
+            await AutoScrollToBottom();
+            await Task.Delay(100);
         }
-        
         await Task.Delay(200);
-        
-        // Clear typing state to allow choices to show
         isTypingDialogue = false;
         await InvokeAsync(StateHasChanged);
     }
@@ -217,5 +245,11 @@
                 userInput = "";
             }
         }
+    }
+
+    private async Task AutoScrollToBottom()
+    {
+        await JS.InvokeVoidAsync("scrollGameOutputToBottom", false); // false = instant
+        await Task.Delay(10);
     }
 }

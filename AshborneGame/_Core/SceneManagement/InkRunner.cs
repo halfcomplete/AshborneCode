@@ -44,6 +44,12 @@ namespace AshborneGame._Core.SceneManagement
                 // For web context, construct absolute URL from current location
                 string baseUrl = "https://localhost:7070"; // Use HTTPS for port 7070
                 string fullUrl = baseUrl + inkJsonPath;
+                // Append cache-busting timestamp
+                string ts = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+                if (fullUrl.Contains("?"))
+                    fullUrl += "&ts=" + ts;
+                else
+                    fullUrl += "?ts=" + ts;
                 IOService.Output.DisplayDebugMessage($"Trying to fetch: {fullUrl}", ConsoleMessageTypes.INFO);
                 json = await httpClient.GetStringAsync(fullUrl);
             }
