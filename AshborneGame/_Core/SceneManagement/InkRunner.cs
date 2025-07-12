@@ -36,7 +36,7 @@ namespace AshborneGame._Core.SceneManagement
             string json;
             
             // Check if this is a web path (starts with /)
-            if (!inkJsonPath.StartsWith("http") && (inkJsonPath.StartsWith("/") || inkJsonPath.StartsWith("Scripts")))
+            if (!inkJsonPath.StartsWith("http") && inkJsonPath.StartsWith("/"))
             {
                 using var httpClient = new HttpClient();
                 
