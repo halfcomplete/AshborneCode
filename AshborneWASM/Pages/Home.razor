@@ -1,25 +1,33 @@
 ﻿@using AshborneGame._Core.Game
+@using AshborneGame._Core.Globals.Services
 @using AshborneGame.WebPort
 @using Microsoft.JSInterop
 @page "/"
 @inject IJSRuntime JS
-
 
 <h1 class="text-center">ASHBORNE</h1>
 
 <div class="game-screen">
     <div class="game-output">@gameText</div>
 
-    @if (isInDialogue && dialogueChoices.Count > 0 && !isTypingDialogue)
+    @if (isAwaitingPlayerInput)
+    {
+        <input @bind="userInput"
+               @bind:event="oninput"
+               @onkeydown="HandleInput"
+               placeholder="Enter your response..." autofocus />
+        <div><em>Type your response and press Enter.</em></div>
+    }
+    else if (isInDialogue && dialogueChoices.Count > 0 && !isTypingDialogue)
     {
         <div class="dialogue-choices">
             <p>Choose an option:</p>
             @for (int i = 0; i < dialogueChoices.Count; i++)
             {
                 int choiceIndex = i; // Capture the index for the lambda
-                <button @onclick="() => SelectDialogueChoice(choiceIndex + 1)" class="choice-button">
-                    [@(choiceIndex + 1)] @dialogueChoices[i]
-                </button>
+                                     <button @onclick="() => SelectDialogueChoice(choiceIndex + 1)" class="choice-button">
+                                         [@(choiceIndex + 1)] @dialogueChoices[i]
+                                     </button>
             }
         </div>
     }
@@ -40,6 +48,8 @@
 
 @code {
     [Inject] private HttpClient Http { get; set; }
+    [Inject] private NavigationManager Navigation { get; set; }
+    [Inject] private AppEnvironment AppEnv { get; set; }
     private string userInput = "";
     private string gameText = "";
     private GameEngine engine;
@@ -49,43 +59,66 @@
     private TaskCompletionSource<int> choiceCompletionSource;
     private Queue<string> typewriterQueue = new Queue<string>();
     private bool isTypewriterRunning = false;
+    private bool isAwaitingPlayerInput = false;
+    private TaskCompletionSource<string> playerInputTcs;
 
     protected override void OnInitialized()
     {
-        #if DEBUG
+#if DEBUG
         var outputHandler = new WebOutputHandler(
             async line => await AppendLine(line),
             async () => { gameText = ""; await InvokeAsync(StateHasChanged); },
             async (type, msg) => await AppendLine($"[DEBUG - {type}]: {msg}")
         );
-        #else
+#else
         var outputHandler = new WebOutputHandler(
             async line => await AppendLine(line),
             async () => { gameText = ""; await InvokeAsync(StateHasChanged); }
         );
-        #endif
+#endif
 
         var inputHandler = new WebInputHandler(
             async () => await Task.FromResult(userInput),
             async (choiceCount) => await GetDialogueChoice(choiceCount)
         );
 
-        engine = new GameEngine(inputHandler, outputHandler);
-        
+        engine = new GameEngine(inputHandler, outputHandler, AppEnv);
+
+        // Wire up async player input callback for InkRunner
+        if (GameContext.DialogueService != null && GameContext.DialogueService.GetType().GetProperty("_inkRunner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance) != null)
+        {
+            var inkRunnerField = GameContext.DialogueService.GetType().GetField("_inkRunner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (inkRunnerField != null)
+            {
+                var inkRunner = inkRunnerField.GetValue(GameContext.DialogueService) as AshborneGame._Core.SceneManagement.InkRunner;
+                inkRunner?.SetPlayerInputCallback(GetPlayerInputFromUIAsync);
+            }
+        }
+
         // Start the game without the blocking loop
         engine.StartGameLoopAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Auto-scroll to bottom on initial page load
+            await Task.Delay(100); // Small delay to ensure DOM is ready
+            await AutoScrollToBottom();
+        }
     }
 
     private async Task<int> GetDialogueChoice(int choiceCount)
     {
         // Create a completion source for this choice
         choiceCompletionSource = new TaskCompletionSource<int>();
-        
+
         // Set dialogue state and wait for choices to be populated
         isInDialogue = true;
         dialogueChoices.Clear(); // Clear any existing choices
         await InvokeAsync(StateHasChanged);
-        
+
         // Wait for choices to be populated (with longer timeout)
         int timeout = 0;
         while (dialogueChoices.Count == 0 && timeout < 5000) // 50 second timeout (5000 * 10ms)
@@ -93,7 +126,7 @@
             await Task.Delay(10);
             timeout++;
         }
-        
+
         if (dialogueChoices.Count == 0)
         {
             // If no choices were detected after timeout, log and wait for user input anyway
@@ -102,15 +135,15 @@
             await InvokeAsync(StateHasChanged);
             return 1;
         }
-        
+
         // Wait for the user to make a choice
         int choice = await choiceCompletionSource.Task;
-        
+
         // Clear dialogue state
         isInDialogue = false;
         dialogueChoices.Clear();
         await InvokeAsync(StateHasChanged);
-        
+
         return choice;
     }
 
@@ -222,10 +255,26 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    private async Task<string> GetPlayerInputFromUIAsync()
+    {
+        playerInputTcs = new TaskCompletionSource<string>();
+        isAwaitingPlayerInput = true;
+        await InvokeAsync(StateHasChanged);
+        return await playerInputTcs.Task;
+    }
+
     private async Task HandleInput(KeyboardEventArgs e)
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(userInput))
         {
+            if (isAwaitingPlayerInput && playerInputTcs != null)
+            {
+                playerInputTcs.TrySetResult(userInput);
+                isAwaitingPlayerInput = false;
+                userInput = "";
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
             try
             {
                 await AppendLine($"\n> {userInput}\n");

@@ -21,13 +21,13 @@ namespace AshborneGame._Core.Game
         private string _startingScene = "Scene1";
         private string _startingSceneSection = "Intro_Dialogue";
 
-        public GameEngine(IInputHandler input, IOutputHandler output)
+        public GameEngine(IInputHandler input, IOutputHandler output, AppEnvironment appEnvironment)
         {
             IOService.Initialise(input, output);
 
             Player player = new Player("Hero");
             var gameState = new GameStateManager(player);
-            var inkRunner = new InkRunner(gameState, player);
+            var inkRunner = new InkRunner(gameState, player, appEnvironment);
             _dialogueService = new DialogueService(inkRunner);
 
             GameContext.Initialise(player, gameState, _dialogueService, this);
@@ -50,11 +50,13 @@ namespace AshborneGame._Core.Game
             
             // Initialize the game state
             GameContext.GameState.StartTickLoop();
-            
+
+            _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
+
+            _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
+
             // Display initial location description
             IOService.Output.WriteLine(GameContext.Player.CurrentLocation.GetFullDescription(GameContext.Player));
-            
-            // Don't start the blocking loop - let the web interface handle input via ReceiveCommand
         }
 
         private (Location, LocationGroup) InitialiseStartingLocation(Player player)
@@ -152,11 +154,11 @@ namespace AshborneGame._Core.Game
 
         public void StartGameLoop(Player player, GameStateManager gameState)
         {
-            //_dialogueService.StartDialogue($"D:\\C# Projects\\AshborneCode\\AshborneGame\\_Core\\Data\\Dialogue\\Act1\\Scene1\\{_startingAct}_{_startingScene}_{_startingSceneSection}.json");
+            _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
 
             _isRunning = true;
 
-            //_dialogueService.StartDialogue($"D:\\C# Projects\\AshborneCode\\AshborneGame\\_Core\\Data\\Dialogue\\Act1\\Scene1\\{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro.json");
+            _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
             IOService.Output.WriteLine(player.CurrentLocation.GetFullDescription(player));
 
             gameState.StartTickLoop();

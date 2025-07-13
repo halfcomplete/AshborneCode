@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>AshborneWASM v2</title>
+    <base href="./" />
+    <script>
+        // Debug and force cache refresh for GitHub Pages deployment
+        console.log('Current location:', window.location.href);
+        console.log('Hostname:', window.location.hostname);
+        console.log('Pathname:', window.location.pathname);
+        
+        // Force reload if we detect we're on GitHub Pages but still accessing localhost
+        if (window.location.hostname.endsWith('.github.io') && window.location.href.includes('localhost')) {
+            console.log('Detected localhost reference on GitHub Pages, forcing reload...');
+            window.location.reload(true);
+        }
+        
+        // Clear any cached data
+        if ('caches' in window) {
+            caches.keys().then(function(names) {
+                console.log('Found caches:', names);
+                for (let name of names) {
+                    caches.delete(name);
+                }
+            });
+        }
+        
+        // Force clear localStorage and sessionStorage
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Unregister any existing service workers
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                }
+            });
+        }
+    </script>
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="AshborneWASM.styles.css" rel="stylesheet" />
+    <link href="manifest.webmanifest" rel="manifest" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
+</head>
+
+<body>
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_framework/blazor.webassembly.js?v=1"></script>
+    <script>
+        // Register service worker for production
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(function (registration) {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(function (err) {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+        
+        // Debug function to test URL resolution
+        window.testUrlResolution = function() {
+            console.log('Testing URL resolution...');
+            console.log('Current location:', window.location.href);
+            console.log('Base href:', document.querySelector('base').href);
+            
+            // Test relative URL resolution
+            const testUrl = 'Dialogue/Act1/Scene1/Act1_Scene1_Prisoner_Dialogue.json';
+            const resolvedUrl = new URL(testUrl, window.location.href).href;
+            console.log('Resolved URL for', testUrl, ':', resolvedUrl);
+            
+            // Test fetch
+            fetch(testUrl)
+                .then(response => {
+                    console.log('Fetch successful:', response.status);
+                })
+                .catch(error => {
+                    console.log('Fetch failed:', error);
+                });
+        };
+        
+        // Run test after page loads
+        window.addEventListener('load', function() {
+            setTimeout(window.testUrlResolution, 1000);
+        });
+    </script>
+    <script src="Scripts/scroll.js"></script>
+</body>
+
+</html>

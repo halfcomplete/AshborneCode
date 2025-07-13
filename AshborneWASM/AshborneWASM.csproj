@@ -4,7 +4,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+	  <!--
+	  <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+	  -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,26 +18,9 @@
     <ProjectReference Include="..\AshborneGame\AshborneGame.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
-  </ItemGroup>
+    <ItemGroup>
+      <None Include="wwwroot\.nojekyll" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Content Update="wwwroot\Dialogue\Act1\Scene1\Act1_Scene1_Intro_Dialogue.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\Dialogue\Act1\Scene1\Act1_Scene1_Knife_Dialogue.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\Dialogue\Act1\Scene1\Act1_Scene1_Ossaneth_Domain_Intro.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\Dialogue\Act1\Scene1\Act1_Scene1_Prisoner_Dialogue.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\Dialogue\Act1\Scene1\Act1_Scene1_Throne_Dialogue.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
 
 </Project>

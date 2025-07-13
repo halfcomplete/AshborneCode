@@ -33,9 +33,13 @@ namespace AshborneGame.WebPort
 
         public async void WriteLine(string message, int ms)
         {
-            // Simulate typewriter-style pacing for web
-            // We'll use a special marker to indicate this is a typewriter effect
+#if DEBUG
+            // Simple newline version - no buffering
+            _writeCallback?.Invoke(message + "\n");
+#else
+
             await _writeCallback?.Invoke($"__TYPEWRITER_START__{message}__TYPEWRITER_END__\n");
+#endif
         }
 
         public void DisplayDebugMessage(string message, ConsoleMessageTypes type)

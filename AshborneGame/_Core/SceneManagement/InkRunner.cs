@@ -18,14 +18,16 @@ namespace AshborneGame._Core.SceneManagement
         private Story _story;
         private Player _player;
         private readonly GameStateManager _gameState;
+        private readonly AppEnvironment _appEnvironment;
         private readonly int _defaultWait = 80;
 
         public bool IsRunning => _story != null && _story.canContinue;
 
-        public InkRunner(GameStateManager gameState, Player player)
+        public InkRunner(GameStateManager gameState, Player player, AppEnvironment appEnvironment)
         {
             _gameState = gameState;
             _player = player;
+            _appEnvironment = appEnvironment;
         }
 
         /// <summary>
@@ -50,8 +52,32 @@ namespace AshborneGame._Core.SceneManagement
 
                     IOService.Output.DisplayDebugMessage($"[WASM] Trying to fetch: {fullUrl}", ConsoleMessageTypes.INFO);
                     
-                    // Use relative URL - the browser will resolve it relative to the current page
-                    json = await new HttpClient().GetStringAsync(fullUrl);
+                    // Ensure it's a relative URL (no leading slash)
+                    fullUrl = fullUrl.TrimStart('/');
+                    
+                    IOService.Output.DisplayDebugMessage($"[WASM] Final URL to fetch: {fullUrl}", ConsoleMessageTypes.INFO);
+                    
+                    // Use HttpClient with proper URL construction
+                    using var httpClient = new HttpClient();
+                    httpClient.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
+                    httpClient.DefaultRequestHeaders.Add("Pragma", "no-cache");
+                    
+                    // For GitHub Pages, construct the full URL manually
+                    if (_appEnvironment.IsGithubPages)
+                    {
+                        // GitHub Pages - use full URL
+                        string fullUrlWithBase = _appEnvironment.BaseApiUrl + fullUrl;
+                        IOService.Output.DisplayDebugMessage($"[WASM] Using full URL for GitHub Pages: {fullUrlWithBase}", ConsoleMessageTypes.INFO);
+                        json = await httpClient.GetStringAsync(fullUrlWithBase);
+                    }
+                    else
+                    {
+                        // Local development - construct absolute URL from current page
+                        string currentUrl = _appEnvironment.BaseApiUrl;
+                        string absoluteUrl = currentUrl.TrimEnd('/') + "/" + fullUrl;
+                        IOService.Output.DisplayDebugMessage($"[WASM] Using absolute URL for localhost: {absoluteUrl}", ConsoleMessageTypes.INFO);
+                        json = await httpClient.GetStringAsync(absoluteUrl);
+                    }
                 }
                 else
                 {
@@ -107,6 +133,18 @@ namespace AshborneGame._Core.SceneManagement
             while (_story.canContinue)
             {
                 string line = _story.Continue().Trim();
+
+                // Handle async player input in WASM
+                if (line.StartsWith("__AWAIT_INPUT__") && OperatingSystem.IsBrowser())
+                {
+                    if (_getPlayerInputFromUIAsync == null)
+                        throw new InvalidOperationException("No UI callback for player input set!");
+                    string userInput = await _getPlayerInputFromUIAsync();
+                    // Set a variable in Ink to the input (or use an external function to return it)
+                    _story.variablesState["lastPlayerInput"] = userInput;
+                    continue; // Continue the Ink story
+                }
+
                 List<string> rawTags = _story.currentTags ?? new();
                 List<string> lineTags = rawTags.Except(_globalSceneTags).ToList();
                 IOService.Output.DisplayDebugMessage(line, Globals.Enums.ConsoleMessageTypes.INFO);
@@ -236,7 +274,17 @@ namespace AshborneGame._Core.SceneManagement
 
             _story.BindExternalFunction("playerForceMask", (string maskName) => _gameState.ForcePlayerMask(maskName));
 
-            _story.BindExternalFunction("getPlayerInput", IOService.Input.GetPlayerInput);
+            _story.BindExternalFunction("getPlayerInput", () =>
+            {
+                if (OperatingSystem.IsBrowser())
+                {
+                    return "__AWAIT_INPUT__";
+                }
+                else
+                {
+                    return IOService.Input.GetPlayerInput();
+                }
+            });
 
             _story.BindExternalFunction("changePlayerStat", (string statName, int amount) =>
             {
@@ -250,6 +298,9 @@ namespace AshborneGame._Core.SceneManagement
                 return totalValue;
             });
         }
+
+        private Func<Task<string>>? _getPlayerInputFromUIAsync;
+        public void SetPlayerInputCallback(Func<Task<string>> callback) => _getPlayerInputFromUIAsync = callback;
 
 
         /// <summary>

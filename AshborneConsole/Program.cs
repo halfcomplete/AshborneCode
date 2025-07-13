@@ -1,5 +1,6 @@
 ﻿using AshborneGame._Core.Game;
 using AshborneGame.ConsolePort;
+using AshborneGame._Core.Globals.Services;
 
 namespace AshborneConsole
 {
@@ -10,7 +11,12 @@ namespace AshborneConsole
             var input = new ConsoleInputHandler();
             var output = new ConsoleOutputHandler();
 
-            var game = new GameEngine(input, output);
+            var appEnvironment = new AppEnvironment
+            {
+                IsGithubPages = false,
+                BaseApiUrl = "/"
+            };
+            var game = new GameEngine(input, output, appEnvironment);
 
             game.Start();
         }
