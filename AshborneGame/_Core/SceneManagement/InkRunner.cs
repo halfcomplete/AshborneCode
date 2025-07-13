@@ -36,41 +36,47 @@ namespace AshborneGame._Core.SceneManagement
             string json;
             try
             {
-                // Check if this is a web path (starts with /)
-                if (!inkJsonPath.StartsWith("http") && inkJsonPath.StartsWith("/"))
+                if (OperatingSystem.IsBrowser())
                 {
-                    using var httpClient = new HttpClient();
-                    
-                    // Use relative path for GitHub Pages compatibility
+                    // For web, use relative URLs to work with any base path (localhost, GitHub Pages, etc.)
                     string fullUrl = inkJsonPath.TrimStart('/');
-                    // Append cache-busting timestamp
                     string ts = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+
+                    // Cache-busting query param
                     if (fullUrl.Contains("?"))
                         fullUrl += "&ts=" + ts;
                     else
                         fullUrl += "?ts=" + ts;
-                    IOService.Output.DisplayDebugMessage($"Trying to fetch: {fullUrl}", ConsoleMessageTypes.INFO);
-                    json = await httpClient.GetStringAsync(fullUrl);
+
+                    IOService.Output.DisplayDebugMessage($"[WASM] Trying to fetch: {fullUrl}", ConsoleMessageTypes.INFO);
+                    
+                    // Use relative URL - the browser will resolve it relative to the current page
+                    json = await new HttpClient().GetStringAsync(fullUrl);
                 }
                 else
                 {
-                    // Console context - load from file system
+                    // Console / local file system path
                     if (!File.Exists(inkJsonPath))
                         throw new FileNotFoundException($"Ink file not found at path: {inkJsonPath}");
 
+                    IOService.Output.DisplayDebugMessage($"[LOCAL] Reading from: {inkJsonPath}", ConsoleMessageTypes.INFO);
                     json = File.ReadAllText(inkJsonPath);
                 }
             }
             catch (Exception ex)
             {
                 var stackTrace = Environment.StackTrace;
-                IOService.Output.DisplayDebugMessage($"[DIALOGUE LOAD ERROR] {ex.Message}\nCall Stack:\n{stackTrace}", ConsoleMessageTypes.ERROR);
+                IOService.Output.DisplayDebugMessage(
+                    $"[DIALOGUE LOAD ERROR] {ex.Message}\nCall Stack:\n{stackTrace}",
+                    ConsoleMessageTypes.ERROR
+                );
                 throw;
             }
-            
+
             _story = new Story(json);
             InitialiseBindings();
         }
+
 
         /// <summary>
         /// Loads an Ink JSON story file from disk (sync version for console compatibility).

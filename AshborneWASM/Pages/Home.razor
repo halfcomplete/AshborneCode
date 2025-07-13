@@ -4,6 +4,7 @@
 @page "/"
 @inject IJSRuntime JS
 
+
 <h1 class="text-center">ASHBORNE</h1>
 
 <div class="game-screen">
@@ -38,6 +39,7 @@
 </div>
 
 @code {
+    [Inject] private HttpClient Http { get; set; }
     private string userInput = "";
     private string gameText = "";
     private GameEngine engine;
