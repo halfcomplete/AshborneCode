@@ -5,6 +5,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	<RunAOTCompilation>false</RunAOTCompilation>
+    <UseAotCompilation>false</UseAotCompilation>
   </PropertyGroup>
 
   <ItemGroup>

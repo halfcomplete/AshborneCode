@@ -70,5 +70,10 @@ namespace AshborneGame._Core.Globals.Services
         {
             return _inkRunner.HasInkVariable(key);
         }
+
+        public void SetPlayerInputCallback(Func<bool, Task<string>> callback)
+        {
+            _inkRunner.SetPlayerInputCallback(callback);
+        }
     }
 }

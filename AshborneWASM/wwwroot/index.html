@@ -7,8 +7,8 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <title>AshborneWASM v2</title>
-    <base href="./" />
+    <title>Ashborne</title>
+    <base href="/Ashborne/" />
     <script>
         // Debug and force cache refresh for GitHub Pages deployment
         console.log('Current location:', window.location.href);
@@ -89,8 +89,22 @@
             console.log('Base href:', document.querySelector('base').href);
             
             // Test relative URL resolution
-            const testUrl = 'Dialogue/Act1/Scene1/Act1_Scene1_Prisoner_Dialogue.json';
-            const resolvedUrl = new URL(testUrl, window.location.href).href;
+            var testUrl = 'Dialogue/Act1/Scene1/Act1_Scene1_Prisoner_Dialogue.json';
+            var resolvedUrl = new URL(testUrl, window.location.href).href;
+            console.log('Resolved URL for', testUrl, ':', resolvedUrl);
+
+            // Test fetch
+            fetch(testUrl)
+                .then(response => {
+                    console.log('Fetch successful:', response.status);
+                })
+                .catch(error => {
+                    console.log('Fetch failed:', error);
+                });
+
+            // Test relative URL resolution
+            testUrl = 'Dialogue/Act1/Scene1/Act1_Scene1_Ossaneth_Domain_Intro.json';
+            resolvedUrl = new URL(testUrl, window.location.href).href;
             console.log('Resolved URL for', testUrl, ':', resolvedUrl);
             
             // Test fetch

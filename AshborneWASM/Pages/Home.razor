@@ -15,7 +15,7 @@
         <input @bind="userInput"
                @bind:event="oninput"
                @onkeydown="HandleInput"
-               placeholder="Enter your response..." autofocus />
+               placeholder="@(isDialogueInput ? "What do you say?" : "What will you do?")" autofocus />
         <div><em>Type your response and press Enter.</em></div>
     }
     else if (isInDialogue && dialogueChoices.Count > 0 && !isTypingDialogue)
@@ -60,6 +60,7 @@
     private Queue<string> typewriterQueue = new Queue<string>();
     private bool isTypewriterRunning = false;
     private bool isAwaitingPlayerInput = false;
+    private bool isDialogueInput = false;
     private TaskCompletionSource<string> playerInputTcs;
 
     protected override void OnInitialized()
@@ -85,14 +86,9 @@
         engine = new GameEngine(inputHandler, outputHandler, AppEnv);
 
         // Wire up async player input callback for InkRunner
-        if (GameContext.DialogueService != null && GameContext.DialogueService.GetType().GetProperty("_inkRunner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance) != null)
+        if (GameContext.DialogueService != null)
         {
-            var inkRunnerField = GameContext.DialogueService.GetType().GetField("_inkRunner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (inkRunnerField != null)
-            {
-                var inkRunner = inkRunnerField.GetValue(GameContext.DialogueService) as AshborneGame._Core.SceneManagement.InkRunner;
-                inkRunner?.SetPlayerInputCallback(GetPlayerInputFromUIAsync);
-            }
+            GameContext.DialogueService.SetPlayerInputCallback(GetPlayerInputFromUIAsync);
         }
 
         // Start the game without the blocking loop
@@ -237,11 +233,11 @@
                 if ((currentChar == '.' || currentChar == ':' || currentChar == '"' || currentChar == ']') &&
                     (i == msgLine.Length - 1 || msgLine[i + 1] == ' '))
                 {
-                    await Task.Delay(800);
+                    await Task.Delay(15);
                 }
                 else
                 {
-                    await Task.Delay(50);
+                    await Task.Delay(15);
                 }
             }
             buffer.Add(typedLine); // Add finished line to buffer
@@ -255,10 +251,11 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task<string> GetPlayerInputFromUIAsync()
+    private async Task<string> GetPlayerInputFromUIAsync(bool isDialogue)
     {
         playerInputTcs = new TaskCompletionSource<string>();
         isAwaitingPlayerInput = true;
+        isDialogueInput = isDialogue;
         await InvokeAsync(StateHasChanged);
         return await playerInputTcs.Task;
     }

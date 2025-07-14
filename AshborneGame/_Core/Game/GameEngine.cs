@@ -51,9 +51,9 @@ namespace AshborneGame._Core.Game
             // Initialize the game state
             GameContext.GameState.StartTickLoop();
 
-            _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
+            await _dialogueService.StartDialogueAsync($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
 
-            _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
+            await _dialogueService.StartDialogueAsync($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
 
             // Display initial location description
             IOService.Output.WriteLine(GameContext.Player.CurrentLocation.GetFullDescription(GameContext.Player));

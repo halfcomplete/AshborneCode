@@ -135,20 +135,37 @@ namespace AshborneGame._Core.SceneManagement
                 string line = _story.Continue().Trim();
 
                 // Handle async player input in WASM
-                if (line.StartsWith("__AWAIT_INPUT__") && OperatingSystem.IsBrowser())
+                if (line.StartsWith("__GET_PLAYER_INPUT__"))
                 {
-                    if (_getPlayerInputFromUIAsync == null)
-                        throw new InvalidOperationException("No UI callback for player input set!");
-                    string userInput = await _getPlayerInputFromUIAsync();
-                    // Set a variable in Ink to the input (or use an external function to return it)
-                    _story.variablesState["lastPlayerInput"] = userInput;
-                    continue; // Continue the Ink story
+                    if (OperatingSystem.IsBrowser())
+                    {
+                        if (_getPlayerInputFromUIAsync == null)
+                        {
+                            throw new InvalidOperationException("No player input callback set for Ink story.");
+                        }
+                        string playerInput = await _getPlayerInputFromUIAsync(true); // true = dialogue input
+                        while (playerInput == string.Empty)
+                        {
+                            playerInput = await _getPlayerInputFromUIAsync(true);
+                        }
+                        GameContext.GameState.SetLabel("player.input", playerInput);
+                    }
+                    else
+                    {
+                        string playerInput = IOService.Input.GetPlayerInput();
+                        while (string.IsNullOrWhiteSpace(playerInput))
+                        {
+                            playerInput = IOService.Input.GetPlayerInput();
+                        }
+                        GameContext.GameState.SetLabel("player.input", playerInput);
+                    }
+                    continue; // Continue the Ink story after input
                 }
 
                 List<string> rawTags = _story.currentTags ?? new();
                 List<string> lineTags = rawTags.Except(_globalSceneTags).ToList();
-                IOService.Output.DisplayDebugMessage(line, Globals.Enums.ConsoleMessageTypes.INFO);
-                IOService.Output.DisplayDebugMessage(string.Join(' ', lineTags) ?? string.Empty, Globals.Enums.ConsoleMessageTypes.INFO);
+                IOService.Output.DisplayDebugMessage(line, ConsoleMessageTypes.INFO);
+                IOService.Output.DisplayDebugMessage(string.Join(' ', lineTags) ?? string.Empty, ConsoleMessageTypes.INFO);
                 if (!string.IsNullOrWhiteSpace(line))
                 {
                     string? targetTag = lineTags.FirstOrDefault(t => t.StartsWith("slow:"));
@@ -299,8 +316,8 @@ namespace AshborneGame._Core.SceneManagement
             });
         }
 
-        private Func<Task<string>>? _getPlayerInputFromUIAsync;
-        public void SetPlayerInputCallback(Func<Task<string>> callback) => _getPlayerInputFromUIAsync = callback;
+        private Func<bool, Task<string>>? _getPlayerInputFromUIAsync;
+        public void SetPlayerInputCallback(Func<bool, Task<string>> callback) => _getPlayerInputFromUIAsync = callback;
 
 
         /// <summary>
