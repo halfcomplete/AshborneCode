@@ -38,22 +38,12 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
             DialogueFileName = dialogueFileName;
         }
 
-        public virtual void Talk(Player player)
+        public virtual async Task Talk(Player player)
         {
             player.CurrentNPCInteraction = this;
             if (DialogueFileName != null)
             {
-                // Check if we're in a web environment by checking if the input handler supports async
-                if (IOService.Input is WebPort.WebInputHandler)
-                {
-                    // Use async version for web - run directly on UI thread
-                    _ = GameContext.DialogueService.StartDialogueAsync(DialogueFileName);
-                }
-                else
-                {
-                    // Use sync version for console
-                    GameContext.DialogueService.StartDialogue(DialogueFileName);
-                }
+                await GameContext.DialogueService.StartDialogue(DialogueFileName);
             }
             else if (Greeting != null)
             {

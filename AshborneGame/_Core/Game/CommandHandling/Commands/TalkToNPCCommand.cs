@@ -16,18 +16,18 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         {
             if (args.Count == 0)
             {
-                IOService.Output.WriteLine("Talk to whom? Specify a target.");
+                IOService.Output.DisplayFailMessage("Talk to whom? Specify a target.");
                 return false;
             }
             string targetName = string.Join(" ", args).Trim();
             if (player.CurrentSublocation == null)
             {
-                IOService.Output.WriteLine("You are not in a place where you can talk.");
+                IOService.Output.DisplayFailMessage("You are not in a place where you can talk.");
                 return false;
             }
             if (player.CurrentSublocation.Object is not NPC)
             {
-                IOService.Output.WriteLine($"There is no one to talk to.");
+                IOService.Output.DisplayFailMessage($"There is no one to talk to.");
                 return false;
             }
 
@@ -37,7 +37,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             // Check if the NPC's name matches the target name (case-insensitive, partial match)
             if (!npc.Name.ToLowerInvariant().Contains(targetName.ToLowerInvariant()))
             {
-                IOService.Output.WriteLine($"There is no one named '{targetName}' here.");
+                IOService.Output.DisplayFailMessage($"There is no one named '{targetName}' here.");
                 return false;
             }
 

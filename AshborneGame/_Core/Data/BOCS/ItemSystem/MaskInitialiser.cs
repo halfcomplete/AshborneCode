@@ -20,7 +20,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         {
             Dictionary<string, Item> masks = new Dictionary<string, Item>();
 
-            var ossaneth = CreateOssaneth(out var name);
+            var (name, ossaneth) = CreateOssaneth();
             masks.Add(name, ossaneth);
 
             return masks;
@@ -38,9 +38,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             return mask;
         }
 
-        private static Item CreateOssaneth(out string name)
+        private static (string, Item) CreateOssaneth()
         {
-            name = "Ossaneth";
+            string name = "Ossaneth";
             var ossaneth = CreateMask(name, "The Unblinking Eye", out var interjectionBehaviour);
 
             // Add various triggers and messages for Ossaneth
@@ -83,7 +83,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
                   EventCondition: evt => evt.Get<string>("location") == "the throne",
                   StateCondition: state => state.TryGetFlag("player.actions.sat_on_throne", out var value) && value,
                   Message: null,
-                  Effect: () => GameContext.DialogueService.StartDialogue("Act1_Scene1_Throne_Dialogue"),
+                  Effect: async () => await GameContext.DialogueService.StartDialogue("Act1_Scene1_Throne_Dialogue"),
                   OneTime: true
             ));
 
@@ -93,7 +93,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
                   EventCondition: evt => evt.Get<string>("location") == "the pedestal",
                   StateCondition: state => state.TryGetFlag("player.actions.touched_knife", out var value) && value,
                   Message: null,
-                  Effect: () => GameContext.DialogueService.StartDialogue("Act1_Scene1_Knife_Dialogue"),
+                  Effect: async () => await GameContext.DialogueService.StartDialogue("Act1_Scene1_Knife_Dialogue"),
                   OneTime: true
             ));
 
@@ -118,11 +118,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
                 oneTime: true
             ));
 
-
-
             interjectionBehaviour.Register();
 
-            return ossaneth;
+            return (name, ossaneth);
         }
     }
 }

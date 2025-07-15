@@ -37,6 +37,7 @@
                @bind:event="oninput"
                @onkeydown="HandleInput"
                placeholder="What will you do?" />
+        <div><em>Type your action and press Enter.</em></div>
     }
     else
     {
@@ -85,10 +86,26 @@
 
         engine = new GameEngine(inputHandler, outputHandler, AppEnv);
 
-        // Wire up async player input callback for InkRunner
+		// Wire up callbacks for dialogue and player input
         if (GameContext.DialogueService != null)
         {
             GameContext.DialogueService.SetPlayerInputCallback(GetPlayerInputFromUIAsync);
+            GameContext.DialogueService.DialogueComplete += async () =>
+            {
+                isInDialogue = false;
+                isAwaitingPlayerInput = false;
+                userInput = "";
+                IOService.Output.DisplayDebugMessage($"[DEBUG] DialogueComplete handler called at {DateTime.Now}");
+                await InvokeAsync(StateHasChanged);
+            };
+            GameContext.DialogueService.DialogueStart += async () =>
+            {
+                isInDialogue = true;
+                isAwaitingPlayerInput = false;
+                userInput = "";
+                IOService.Output.DisplayDebugMessage($"[DEBUG] DialogueStart handler called at {DateTime.Now}");
+                await InvokeAsync(StateHasChanged);
+            };
         }
 
         // Start the game without the blocking loop
@@ -105,13 +122,19 @@
         }
     }
 
+    private void ResetInput()
+    {
+        isAwaitingPlayerInput = false;
+        userInput = "";
+        isDialogueInput = false;
+        InvokeAsync(StateHasChanged);
+    }
+
     private async Task<int> GetDialogueChoice(int choiceCount)
     {
         // Create a completion source for this choice
         choiceCompletionSource = new TaskCompletionSource<int>();
 
-        // Set dialogue state and wait for choices to be populated
-        isInDialogue = true;
         dialogueChoices.Clear(); // Clear any existing choices
         await InvokeAsync(StateHasChanged);
 
@@ -127,7 +150,6 @@
         {
             // If no choices were detected after timeout, log and wait for user input anyway
             await AppendLine("[DEBUG] No dialogue choices detected after timeout, waiting for manual input");
-            isInDialogue = false;
             await InvokeAsync(StateHasChanged);
             return 1;
         }
@@ -136,7 +158,6 @@
         int choice = await choiceCompletionSource.Task;
 
         // Clear dialogue state
-        isInDialogue = false;
         dialogueChoices.Clear();
         await InvokeAsync(StateHasChanged);
 
@@ -233,11 +254,11 @@
                 if ((currentChar == '.' || currentChar == ':' || currentChar == '"' || currentChar == ']') &&
                     (i == msgLine.Length - 1 || msgLine[i + 1] == ' '))
                 {
-                    await Task.Delay(15);
+                    await Task.Delay(600);
                 }
                 else
                 {
-                    await Task.Delay(15);
+                    await Task.Delay(24);
                 }
             }
             buffer.Add(typedLine); // Add finished line to buffer

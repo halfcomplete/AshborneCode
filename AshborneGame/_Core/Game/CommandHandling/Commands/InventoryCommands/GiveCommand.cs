@@ -16,7 +16,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
         {
             if (args.Count == 0)
             {
-                IOService.Output.WriteLine("Give what? Specify an item and optionally a quantity (e.g. 'give 3 gold coin').");
+                IOService.Output.DisplayFailMessage("Give what? Specify an item and optionally a quantity (e.g. 'give 3 gold coin').");
                 return false;
             }
 
@@ -25,7 +25,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 
             if (destinationInventory == null)
             {
-                IOService.Output.WriteLine("You are not targeting a container or an NPC with an inventory.");
+                IOService.Output.DisplayFailMessage("You are not targeting a container or an NPC with an inventory.");
                 return false;
             }
 
@@ -41,7 +41,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
                 }
                 else
                 {
-                    IOService.Output.WriteLine("Invalid amount.");
+                    IOService.Output.DisplayFailMessage("Invalid amount.");
                     return false;
                 }
             }
@@ -57,7 +57,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
                     Item? targetItem = originInventory.GetItem(itemName);
                     if (targetItem == null)
                     {
-                        IOService.Output.WriteLine($"You cannot give {itemName} because it is not in your inventory.");
+                        IOService.Output.DisplayFailMessage($"You cannot give {itemName} because it is not in your inventory.");
                         return false;
                     }
                     GiveAllOfAnItem(originInventory, destinationInventory, targetItem);
@@ -67,14 +67,14 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 
             if (string.IsNullOrEmpty(itemName))
             {
-                IOService.Output.WriteLine("Give what? Specify an item.");
+                IOService.Output.DisplayFailMessage("Give what? Specify an item.");
                 return false;
             }
 
             Item? item = originInventory.GetItem(itemName);
             if (item == null)
             {
-                IOService.Output.WriteLine($"You cannot give {itemName} because it is not in your inventory.");
+                IOService.Output.DisplayFailMessage($"You cannot give {itemName} because it is not in your inventory.");
                 return false;
             }
 
@@ -89,7 +89,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 
             if (availableCount < quantity)
             {
-                IOService.Output.WriteLine($"You don't have enough {itemName} to give {quantity}.");
+                IOService.Output.DisplayFailMessage($"You don't have enough {itemName} to give {quantity}.");
                 return false;
             }
 
@@ -120,7 +120,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
         {
             if (destination == null)
             {
-                IOService.Output.WriteLine("There is no opened container or NPC to give items to.");
+                IOService.Output.DisplayFailMessage("There is no opened container or NPC to give items to.");
                 return false;
             }
 

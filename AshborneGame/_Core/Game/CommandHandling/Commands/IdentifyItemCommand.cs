@@ -16,7 +16,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         {
             if (args.Count == 0)
             {
-                IOService.Output.WriteLine("Identify what? Specify an item.");
+                IOService.Output.DisplayFailMessage("Identify what? Specify an item.");
                 return false;
             }
             string itemName = string.Join(" ", args).Trim();
@@ -25,7 +25,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             {
                 if (!item.TryGetBehaviour<IIdentifiable>(out var identifiableBehaviour))
                 {
-                    IOService.Output.WriteLine($"{item.Name} cannot be inspected.");
+                    IOService.Output.DisplayFailMessage($"{item.Name} cannot be inspected.");
                     return false;
                 }
                 IOService.Output.WriteLine($"Identifying {item.Name}: {item.Description}");
@@ -34,7 +34,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             }
             else
             {
-                IOService.Output.WriteLine($"You don't have a {itemName} to identify.");
+                IOService.Output.DisplayFailMessage($"You don't have a {itemName} to identify.");
                 return false;
             }
         }

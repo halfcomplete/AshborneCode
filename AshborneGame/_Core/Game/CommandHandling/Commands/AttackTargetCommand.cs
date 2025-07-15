@@ -16,20 +16,20 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         {
             if (args.Count == 0)
             {
-                IOService.Output.WriteLine("Attack what? Specify a target.");
+                IOService.Output.DisplayFailMessage("Attack what? Specify a target.");
                 return true;
             }
             string targetName = string.Join(" ", args).Trim();
             Sublocation? sublocation = player.CurrentSublocation;
             if (sublocation == null)
             {
-                IOService.Output.WriteLine("There's nothing to attack here. You might want to get closer.");
+                IOService.Output.DisplayFailMessage("There's nothing to attack here. You might want to get closer.");
                 return true;
             }
             NPC? targetNPC = sublocation.Object as NPC;
             if (targetNPC == null)
             {
-                IOService.Output.WriteLine($"You cannot attack that.");
+                IOService.Output.DisplayFailMessage($"You cannot attack that.");
                 return true;
             }
             player.Attack(targetNPC);

@@ -15,7 +15,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         {
             if (args.Count == 0)
             {
-                IOService.Output.WriteLine("Inspect what? Specify an item.");
+                IOService.Output.DisplayFailMessage("Inspect what? Specify an item.");
                 return false;
             }
 
@@ -25,7 +25,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             {
                 if (!item.TryGetBehaviour<IInspectable>(out var inspectableBehaviour))
                 {
-                    IOService.Output.WriteLine($"That can't be inspected.");
+                    IOService.Output.DisplayFailMessage($"That can't be inspected.");
                     return false;
                 }
                 IOService.Output.WriteLine($"Inspecting {item.Name}: {item.Description}");
@@ -34,7 +34,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             }
             else
             {
-                IOService.Output.WriteLine($"You don't have a {itemName} to inspect.");
+                IOService.Output.DisplayFailMessage($"You don't have a {itemName} to inspect.");
                 return false;
             }
         }

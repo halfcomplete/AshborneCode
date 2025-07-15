@@ -17,7 +17,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         {
             if (args.Count == 0)
             {
-                IOService.Output.WriteLine("Close what? Specify an object.");
+                IOService.Output.DisplayFailMessage("Close what? Specify an object.");
                 return false;
             }
 
@@ -26,7 +26,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 
             if (sublocation == null)
             {
-                IOService.Output.WriteLine("There's nothing to close here.");
+                IOService.Output.DisplayFailMessage("There's nothing to close here.");
                 return false;
             }
 
@@ -41,7 +41,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             }
             else
             {
-                IOService.Output.WriteLine($"You cannot close that.");
+                IOService.Output.DisplayFailMessage($"You cannot close that.");
                 return false;
             }
         }

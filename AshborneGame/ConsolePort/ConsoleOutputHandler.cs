@@ -98,8 +98,12 @@ namespace AshborneGame.ConsolePort
             //Console.WriteLine($"[{type}]: {message}");
 #endif
 
-
             Console.ResetColor();
+        }
+
+        public void DisplayFailMessage(string message)
+        {
+            Console.WriteLine($"[FAIL] {message}");
         }
     }
 }

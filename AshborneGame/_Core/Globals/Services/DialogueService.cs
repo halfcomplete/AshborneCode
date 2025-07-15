@@ -12,6 +12,7 @@ namespace AshborneGame._Core.Globals.Services
     public class DialogueService
     {
         private readonly InkRunner _inkRunner;
+        private string? _currentDialogueKey = null;
 
         public DialogueService(InkRunner inkRunner)
         {
@@ -20,18 +21,18 @@ namespace AshborneGame._Core.Globals.Services
 
         public bool IsRunning => _inkRunner.IsRunning;
 
-        public void StartDialogue(string inkFilePath)
-        {
-            StartDialogueAsync(inkFilePath).GetAwaiter().GetResult();
-        }
+        public event Action? DialogueComplete;
+        public event Action? DialogueStart;
 
-        public async Task StartDialogueAsync(string inkFilePath)
+        public async Task StartDialogue(string inkFilePath)
         {
+            string originalKey = inkFilePath;
+            _currentDialogueKey = originalKey;
             try
             {
                 IOService.Output.DisplayDebugMessage($"Starting dialogue: {inkFilePath}", ConsoleMessageTypes.INFO);
                 IOService.Output.DisplayDebugMessage($"Current directory: {Directory.GetCurrentDirectory()}", ConsoleMessageTypes.INFO);
-                GameContext.GameEngine.DialogueRunning = true;
+                DialogueStart?.Invoke();
                 inkFilePath = FilePathResolver.FromDialogue(inkFilePath);
                 IOService.Output.DisplayDebugMessage($"Loading file: {inkFilePath}", ConsoleMessageTypes.INFO);
                 await _inkRunner.LoadFromFileAsync(inkFilePath);
@@ -52,7 +53,12 @@ namespace AshborneGame._Core.Globals.Services
             }
             finally
             {
-                GameContext.GameEngine.DialogueRunning = false;
+                // Only invoke DialogueComplete if this is still the current dialogue
+                if (_currentDialogueKey == originalKey)
+                {
+                    DialogueComplete?.Invoke();
+                    _currentDialogueKey = null;
+                }
             }
         }
 

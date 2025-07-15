@@ -42,6 +42,14 @@ namespace AshborneGame.WebPort
 #endif
         }
 
+        public void DisplayFailMessage(string message)
+        {
+            // Later, display a fail message on UI
+            // E.g., using a toast notification or alert
+            // For now, just log it
+            _writeCallback?.Invoke($"[FAIL] {message}\n");
+        }
+
         public void DisplayDebugMessage(string message, ConsoleMessageTypes type)
         {
 #if DEBUG

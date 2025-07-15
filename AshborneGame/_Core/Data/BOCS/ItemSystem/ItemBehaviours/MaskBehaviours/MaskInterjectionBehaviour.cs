@@ -21,7 +21,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours
             Func<GameEvent, bool>? EventCondition,
             Func<GameStateManager, bool>? StateCondition,
             string? Message,
-            Action? Effect = null,
+            Func<Task>? Effect = null,
             bool OneTime = false
         );
 
@@ -35,18 +35,19 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours
         }
 
         public void AddTrigger(MaskInterjectionTrigger trigger) => _triggers.Add(trigger);
-        public void Register()
+        public async Task Register()
         {
             foreach (var trigger in _triggers)
             {
-                EventBus.Subscribe(trigger.EventName, (e) =>
+                EventBus.Subscribe(trigger.EventName, async (e) =>
                 {
                     var _triggers2 = new List<MaskInterjectionTrigger>(_triggers);
                     if (ShouldTrigger(trigger, e, out bool shouldDelete))
                     {
                         if (trigger.Message != null)
                             IOService.Output.WriteLine($"{ParentObject.Name}: {trigger.Message}");
-                        trigger.Effect?.Invoke();
+                        if (trigger.Effect != null)
+                            await trigger.Effect();
                         if (shouldDelete) _triggers2.Remove(trigger);
                     }
                     _triggers = new List<MaskInterjectionTrigger>(_triggers2);

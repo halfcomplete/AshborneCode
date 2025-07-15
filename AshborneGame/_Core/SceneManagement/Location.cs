@@ -1,4 +1,5 @@
 ﻿using AshborneGame._Core._Player;
+using AshborneGame._Core.Data.BOCS.ObjectSystem;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Interfaces;
 using System.Numerics;
@@ -8,7 +9,7 @@ namespace AshborneGame._Core.SceneManagement
     /// <summary>
     /// Represents a location in the game world.
     /// </summary>
-    public class Location : IDescribable
+    public class Location : IDescribable, ILocation
     {
         /// <summary>
         /// Gets the unique identifier of the location.
@@ -18,26 +19,26 @@ namespace AshborneGame._Core.SceneManagement
         /// <summary>
         /// Gets the name of the location (i.e. throne room). Used to say $"You are {PositionalPrefix} {Name}."
         /// </summary>
-        public virtual string Name { get; private set; }
+        public string Name { get; private set; }
 
-        public virtual string ReferenceName { get; private set; }
+        public string ReferenceName { get; private set; }
 
         /// <summary>
         /// The base description of the location (i.e.
         /// </summary>
-        public virtual string Description { get; private set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Additional description, used when looking around or if it's the first time the player travels to that location (i.e. "It's an endless ocean of black water frozen 
         /// </summary>
-        public virtual string AdditionalDescription { get; private set; }
+        public string AdditionalDescription { get; private set; }
 
         /// <summary>
         /// Where the player is when they travel to that location (i.e. "at the", "in front of the"). Used to say $"You are {PositionalPrefix} {Name}."
         /// </summary>
-        public virtual string PositionalPrefix { get; private set; }
+        public string PositionalPrefix { get; private set; }
 
-        public virtual Dictionary<string, (Func<string> message, Action effect)> CustomCommands { get; } = new();
+        public Dictionary<string, (Func<string> message, Action effect)> CustomCommands { get; } = new();
 
 
         /// <summary>
@@ -49,6 +50,7 @@ namespace AshborneGame._Core.SceneManagement
         /// Gets the list of sublocations in this location.
         /// </summary>
         public IReadOnlyList<Sublocation> Sublocations => _sublocations;
+        public List<GameObject> Objects => _objects;
 
         public List<(Func<GameStateManager, bool> condition, string description)> Conditions { get; } = new();
 
@@ -56,6 +58,7 @@ namespace AshborneGame._Core.SceneManagement
 
         private readonly Dictionary<string, Location> _exits;
         private readonly List<Sublocation> _sublocations;
+        private List<GameObject> _objects;
         private readonly int _minimumVisibility;
 
 
@@ -242,11 +245,11 @@ namespace AshborneGame._Core.SceneManagement
 
             if (TimesVisited > 1)
             {
-                description = $"You are back, {PositionalPrefix} {ReferenceName}. ";
+                description = $"You once again {PositionalPrefix} {ReferenceName}. ";
             }
             else
             {
-                description = $"You are {PositionalPrefix} {ReferenceName}. ";
+                description = $"You {PositionalPrefix} {ReferenceName}. ";
             }
 
             foreach (var (condition, desc) in Conditions)

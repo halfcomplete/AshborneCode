@@ -16,7 +16,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             IOService.Output.DisplayDebugMessage($"Parsed Input for 'go to': {string.Join(" ", args)}", ConsoleMessageTypes.INFO); // Debugging output
             if (args.Count == 0)
             {
-                IOService.Output.WriteLine("Go to what? Specify an object or location.");
+                IOService.Output.DisplayFailMessage("Go to what? Specify an object or location.");
                 return false;
             }
             IOService.Output.DisplayDebugMessage("Handling 'go to' command...", ConsoleMessageTypes.INFO);

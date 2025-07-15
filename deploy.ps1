@@ -8,7 +8,7 @@ $deployRepoPath    = "D:\C# Projects\Ashborne"
 
 # === Step 1: Publish Blazor project WITHOUT service worker ===
 Write-Host "`n[INFO] Publishing Blazor app (no service worker)..."
-dotnet publish $blazorProjectPath -c Debug -o $publishOutputPath /p:RunAOTCompilation=false /p:PublishTrimmed=false
+dotnet publish $blazorProjectPath -c Release -o $publishOutputPath /p:RunAOTCompilation=false /p:PublishTrimmed=false
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "[ERROR] Publish failed. Aborting."

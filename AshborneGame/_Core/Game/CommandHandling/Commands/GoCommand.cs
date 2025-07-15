@@ -14,7 +14,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         {
             if (args.Count == 0)
             {
-                IOService.Output.WriteLine("Go where? Specify a direction or location.");
+                IOService.Output.DisplayFailMessage("Go where? Specify a direction or location.");
                 return false;
             }
 

@@ -13,7 +13,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
         {
             if (args.Count > 0)
             {
-                IOService.Output.WriteLine("Did you mean \"inventory\"?");
+                IOService.Output.DisplayFailMessage("Did you mean \"inventory\"?");
                 return false;
             }
 

@@ -13,7 +13,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         {
             if (args.Count > 0)
             {
-                IOService.Output.WriteLine("Did you mean \"exit\"?");
+                IOService.Output.DisplayFailMessage("Did you mean \"exit\"?");
                 return false;
             }
 

@@ -16,7 +16,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         {
             if (args.Count == 0)
             {
-                IOService.Output.WriteLine("Usage: use <item_name>");
+                IOService.Output.DisplayFailMessage("Usage: use <item_name>");
                 return false;
             }
 
@@ -25,13 +25,13 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 
             if (item == null)
             {
-                IOService.Output.WriteLine($"You do not have an item named '{itemName}' in your inventory.");
+                IOService.Output.DisplayFailMessage($"You do not have an item named '{itemName}' in your inventory.");
                 return false;
             }
 
             if (!item.Behaviours.ContainsKey(typeof(IUsable)))
             {
-                IOService.Output.WriteLine($"The item '{item.Name}' cannot be used.");
+                IOService.Output.DisplayFailMessage($"The item '{item.Name}' cannot be used.");
                 return false;
             }
 

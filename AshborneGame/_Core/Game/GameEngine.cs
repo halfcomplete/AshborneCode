@@ -14,7 +14,7 @@ namespace AshborneGame._Core.Game
     public class GameEngine
     {
         private bool _isRunning;
-        public bool DialogueRunning { get; set; }
+        private bool _dialogueRunning { get; set; }
         private DialogueService _dialogueService;
 
         private string _startingAct = "Act1";
@@ -33,9 +33,16 @@ namespace AshborneGame._Core.Game
             GameContext.Initialise(player, gameState, _dialogueService, this);
             gameState.InitialiseMasks(MaskInitialiser.InitialiseMasks());
 
-            (Location startingLocation, LocationGroup startingLocationGroup) = InitialiseStartingLocation(player);
+            (ILocation startingLocation, LocationGroup startingLocationGroup) = InitialiseStartingLocation(player);
             player.SetupMoveTo(startingLocation, startingLocationGroup);
-
+            _dialogueService.DialogueStart += async () =>
+            {
+                _dialogueRunning = true;
+            };
+            _dialogueService.DialogueComplete += async () =>
+            {
+                _dialogueRunning = false;
+            };
             InitialiseGameWorld(player);
         }
 
@@ -51,44 +58,49 @@ namespace AshborneGame._Core.Game
             // Initialize the game state
             GameContext.GameState.StartTickLoop();
 
-            await _dialogueService.StartDialogueAsync($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
+            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
 
-            await _dialogueService.StartDialogueAsync($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
+            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
 
             // Display initial location description
             IOService.Output.WriteLine(GameContext.Player.CurrentLocation.GetFullDescription(GameContext.Player));
         }
 
-        private (Location, LocationGroup) InitialiseStartingLocation(Player player)
+        private (ILocation, LocationGroup) InitialiseStartingLocation(Player player)
         {
 
-            Location dreamVoid = new Location("the centre", "On all sides, an endless ocean of black sand stretches away. Splintered glass suspend themselves in the air, each " +
+            ILocation eyePlatform = new Location(
+                "the centre", 
+                "On all sides, an endless ocean of black sand stretches away. Splintered glass suspend themselves in the air, each " +
                 "one clearer and cleaner than the next. Shards of light slice the grey and lifeless sky. They stay still. All is still. All is silent.\nTo your north lies a mirror. To your east lies a throne." +
-                " To your west lies a pedestal. To your south lies a downward slope - you cannot see what's at the bottom.", "at the", "centre");
+                " To your west lies a pedestal. To your south lies a downward slope - you cannot see what's at the bottom.", 
+                "stand on", 
+                "centre");
 
-            Location mirrorOfIdentity = new Location("the mirror", "Your reflection stares back at you. It doesn't blink.", "standing beneath the", "mirror", "It's tall and cracked.");
+            ILocation mirrorOfIdentity = new Location("the mirror", "Your reflection stares back at you. It doesn't blink.", "standing beneath the", "mirror", "It's tall and cracked.");
 
-            Location knifeOfViolence = new Location("the pedestal", "It's obsidian, with a golden stand holding up a shining silver knife. Your reflection " +
+            ILocation knifeOfViolence = new Location("the pedestal", "It's obsidian, with a golden stand holding up a shining silver knife. Your reflection " +
                 "lies on the blade.", "standing in front of the", "pedestal");
 
-            Location throneOfPower = new Location("the throne", "It's emerald-laced and empty. Nothing reflects off of it. Should you sit on it?", "in front of the", "throne");
+            ILocation throneOfPower = new Location("the throne", "It's emerald-laced and empty. Nothing reflects off of it. Should you sit on it?", "in front of the", "throne");
 
-            Location slope = new Location("the slope", "You descend down the sand slope, until you reach the bottom. A chained figure kneels there, his hands bound above his head and his feet stuck to the ground." +
+            ILocation slope = new Location("the slope", "You descend down the sand slope, until you reach the bottom. A chained figure kneels there, his hands bound above his head and his feet stuck to the ground." +
                 " The figure's head is turned down, and his ragged black hair is almost invisible against the darkness around him.", "on top of", "the slope");
 
             NPC chainedFigure = new NPC("Chained Prisoner", null, "Act1_Scene1_Prisoner_Dialogue");
-            Sublocation chainedFigureSublocation = new Sublocation(slope, chainedFigure, "prisoner", "A chained prisoner", 5);
-            slope.AddSublocation(chainedFigureSublocation);
-            LocationGroup ossanethDomain = new LocationGroup("Ossaneth's Domain", new List<Location>() { dreamVoid, mirrorOfIdentity, knifeOfViolence, throneOfPower, slope });
+            ILocation chainedFigureSublocation = new Sublocation((Location)slope, chainedFigure, "prisoner", "A chained prisoner", 5);
+            ((Location)slope).AddSublocation((Sublocation)chainedFigureSublocation);
+            var locations = new List<ILocation> { eyePlatform, mirrorOfIdentity, knifeOfViolence, throneOfPower, slope };
+            LocationGroup ossanethDomain = new LocationGroup("Ossaneth's Domain", locations);
 
-            dreamVoid.AddExit("north", mirrorOfIdentity);
-            dreamVoid.AddExit("west", knifeOfViolence);
-            dreamVoid.AddExit("east", throneOfPower);
-            dreamVoid.AddExit("south", slope);
-            mirrorOfIdentity.AddExit("south", dreamVoid);
-            knifeOfViolence.AddExit("east", dreamVoid);
-            throneOfPower.AddExit("west", dreamVoid);
-            slope.AddExit("north", dreamVoid);
+            ((Location)eyePlatform).AddExit("north", (Location)mirrorOfIdentity);
+            ((Location)eyePlatform).AddExit("west", (Location)knifeOfViolence);
+            ((Location)eyePlatform).AddExit("east", (Location)throneOfPower);
+            ((Location)eyePlatform).AddExit("south", (Location)slope);
+            ((Location)mirrorOfIdentity).AddExit("south", (Location)eyePlatform);
+            ((Location)knifeOfViolence).AddExit("east", (Location)eyePlatform);
+            ((Location)throneOfPower).AddExit("west", (Location)eyePlatform);
+            ((Location)slope).AddExit("north", (Location)eyePlatform);
 
             throneOfPower.AddCustomCommand(
             new List<string> { "sit on throne", "get on throne", "sit on the throne", "get on the throne" },
@@ -133,7 +145,7 @@ namespace AshborneGame._Core.Game
                 }
             });
             
-            return (dreamVoid, ossanethDomain);
+            return (eyePlatform, ossanethDomain);
         }
 
 
@@ -152,25 +164,25 @@ namespace AshborneGame._Core.Game
             IOService.Output.DisplayDebugMessage("Game world initialised.");
         }
 
-        public void StartGameLoop(Player player, GameStateManager gameState)
+        public async Task StartGameLoop(Player player, GameStateManager gameState)
         {
-            _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
+            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
 
             _isRunning = true;
 
-            _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
+            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
             IOService.Output.WriteLine(player.CurrentLocation.GetFullDescription(player));
 
             gameState.StartTickLoop();
             while (_isRunning)
             {
-                if (DialogueRunning) continue;
+                if (_dialogueRunning) continue;
 
                 string input = IOService.Input.GetPlayerInput().Trim().ToLowerInvariant();
 
                 if (string.IsNullOrWhiteSpace(input))
                 {
-                    IOService.Output.WriteLine("You must enter a command.");
+                    IOService.Output.DisplayFailMessage("You must enter a command.");
                     continue;
                 }
 
@@ -181,7 +193,7 @@ namespace AshborneGame._Core.Game
 
                 while (!isValidCommand)
                 {
-                    IOService.Output.WriteLine("Invalid command. Please try again or type 'help' for assistance.");
+                    IOService.Output.DisplayFailMessage("Invalid command. Please try again or type 'help' for assistance.");
 
                     input = IOService.Input.GetPlayerInput().Trim();
                     if (string.IsNullOrWhiteSpace(input)) continue;
@@ -199,13 +211,13 @@ namespace AshborneGame._Core.Game
         {
             if (!_isRunning)
             {
-                IOService.Output.WriteLine("Game is not running.");
+                IOService.Output.DisplayFailMessage("Game is not running.");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(input))
             {
-                IOService.Output.WriteLine("You must enter a command.");
+                IOService.Output.DisplayFailMessage("You must enter a command.");
                 return;
             }
 
@@ -216,7 +228,7 @@ namespace AshborneGame._Core.Game
 
             if (!isValidCommand)
             {
-                IOService.Output.WriteLine("Invalid command. Please try again or type 'help' for assistance.");
+                IOService.Output.DisplayFailMessage("Invalid command. Please try again or type 'help' for assistance.");
             }
         }
 

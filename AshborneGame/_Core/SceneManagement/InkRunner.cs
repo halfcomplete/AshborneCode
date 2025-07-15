@@ -125,85 +125,123 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public async Task RunAsync()
         {
+            IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: RunAsync started at {DateTime.Now}", ConsoleMessageTypes.INFO);
             if (_story == null)
                 throw new InvalidOperationException("No Ink story loaded.");
 
             List<string> _globalSceneTags = _story.globalTags ?? new();
 
-            while (_story.canContinue)
+            while (true)
             {
-                string line = _story.Continue().Trim();
-
-                // Handle async player input in WASM
-                if (line.StartsWith("__GET_PLAYER_INPUT__"))
+                bool sawEndMarker = false;
+                while (_story.canContinue)
                 {
-                    if (OperatingSystem.IsBrowser())
-                    {
-                        if (_getPlayerInputFromUIAsync == null)
-                        {
-                            throw new InvalidOperationException("No player input callback set for Ink story.");
-                        }
-                        string playerInput = await _getPlayerInputFromUIAsync(true); // true = dialogue input
-                        while (playerInput == string.Empty)
-                        {
-                            playerInput = await _getPlayerInputFromUIAsync(true);
-                        }
-                        GameContext.GameState.SetLabel("player.input", playerInput);
-                    }
-                    else
-                    {
-                        string playerInput = IOService.Input.GetPlayerInput();
-                        while (string.IsNullOrWhiteSpace(playerInput))
-                        {
-                            playerInput = IOService.Input.GetPlayerInput();
-                        }
-                        GameContext.GameState.SetLabel("player.input", playerInput);
-                    }
-                    continue; // Continue the Ink story after input
-                }
+                    string line = _story.Continue().Trim();
+                    IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Line='{line}'", ConsoleMessageTypes.INFO);
 
-                List<string> rawTags = _story.currentTags ?? new();
-                List<string> lineTags = rawTags.Except(_globalSceneTags).ToList();
-                IOService.Output.DisplayDebugMessage(line, ConsoleMessageTypes.INFO);
-                IOService.Output.DisplayDebugMessage(string.Join(' ', lineTags) ?? string.Empty, ConsoleMessageTypes.INFO);
-                if (!string.IsNullOrWhiteSpace(line))
-                {
-                    string? targetTag = lineTags.FirstOrDefault(t => t.StartsWith("slow:"));
-                    if (targetTag != null)
+                    if (line == "__END__")
                     {
-                        if (int.TryParse(targetTag.AsSpan(5), out int ms))
+                        IOService.Output.DisplayDebugMessage("[DEBUG] __END__ marker encountered. Ending dialogue.", ConsoleMessageTypes.INFO);
+                        sawEndMarker = true;
+                        break;
+                    }
+
+                    // Handle async player input in WASM
+                    if (line.StartsWith("__GET_PLAYER_INPUT__"))
+                    {
+                        IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Awaiting player input at {DateTime.Now}", ConsoleMessageTypes.INFO);
+                        if (OperatingSystem.IsBrowser())
                         {
-                            IOService.Output.WriteLine(line, ms);
+                            if (_getPlayerInputFromUIAsync == null)
+                            {
+                                throw new InvalidOperationException("No player input callback set for Ink story.");
+                            }
+                            string playerInput = await _getPlayerInputFromUIAsync(true); // true = dialogue input
+                            while (playerInput == string.Empty)
+                            {
+                                playerInput = await _getPlayerInputFromUIAsync(true);
+                            }
+                            GameContext.GameState.SetLabel("player.input", playerInput);
+                        }
+                        else
+                        {
+                            string playerInput = IOService.Input.GetPlayerInput();
+                            while (string.IsNullOrWhiteSpace(playerInput))
+                            {
+                                playerInput = IOService.Input.GetPlayerInput();
+                            }
+                            GameContext.GameState.SetLabel("player.input", playerInput);
+                        }
+                        IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Player input received at {DateTime.Now}", ConsoleMessageTypes.INFO);
+                        continue; // Continue the Ink story after input
+                    }
+
+                    List<string> rawTags = _story.currentTags ?? new();
+                    List<string> lineTags = rawTags.Except(_globalSceneTags).ToList();
+                    IOService.Output.DisplayDebugMessage(line, ConsoleMessageTypes.INFO);
+                    IOService.Output.DisplayDebugMessage(string.Join(' ', lineTags) ?? string.Empty, ConsoleMessageTypes.INFO);
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        string? targetTag = lineTags.FirstOrDefault(t => t.StartsWith("slow:"));
+                        if (targetTag != null)
+                        {
+                            if (int.TryParse(targetTag.AsSpan(5), out int ms))
+                            {
+                                IOService.Output.WriteLine(line, ms);
+                            }
+                            else
+                            {
+                                IOService.Output.WriteLine(line, _defaultWait);
+                            }
                         }
                         else
                         {
                             IOService.Output.WriteLine(line, _defaultWait);
                         }
                     }
-                    else
-                    {
-                        IOService.Output.WriteLine(line, _defaultWait);
-                    }
                 }
-            }
 
-            if (_story.currentChoices.Count > 0)
-            {
-                for (int i = 0; i < _story.currentChoices.Count; i++)
+                if (sawEndMarker)
                 {
-                    IOService.Output.WriteLine($"[{i + 1}] {_story.currentChoices[i].text}");
+                    IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: End of story reached at {DateTime.Now}", ConsoleMessageTypes.INFO);
+                    break;
                 }
 
-                int choice = await IOService.Input.GetChoiceInputAsync(_story.currentChoices.Count);
-                _story.ChooseChoiceIndex(choice - 1);
-                await RunAsync(); // Continue running after choice
+                if (_story.currentChoices.Count > 0)
+                {
+                    IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Presenting choices at {DateTime.Now}", ConsoleMessageTypes.INFO);
+                    for (int i = 0; i < _story.currentChoices.Count; i++)
+                    {
+                        IOService.Output.WriteLine($"[{i + 1}] {_story.currentChoices[i].text}");
+                    }
+
+                    int choice = await IOService.Input.GetChoiceInputAsync(_story.currentChoices.Count);
+                    IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Choice {choice} selected at {DateTime.Now}", ConsoleMessageTypes.INFO);
+                    _story.ChooseChoiceIndex(choice - 1);
+                }
+                else
+                {
+                    // Wait for more content or choices, but do not spam debug messages
+                    await Task.Delay(10);
+                }
             }
+            IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: RunAsync finished at {DateTime.Now}", ConsoleMessageTypes.INFO);
+            
         }
 
         private void InitialiseBindings()
         {
             // Pacing
-            _story.BindExternalFunction("pause", (int ms) => Thread.Sleep(ms));
+            if (OperatingSystem.IsBrowser())
+            {
+                // Web: async delay
+                _story.BindExternalFunction("pause", async (int ms) => { await Task.Delay(ms); });
+            }
+            else
+            {
+                // Console: blocking sleep
+                _story.BindExternalFunction("pause", (int ms) => Thread.Sleep(ms));
+            }
 
             // --- Flags ---
             _story.BindExternalFunction("setFlag", (string key, bool value) => _gameState.SetFlag(key, value));
@@ -291,18 +329,6 @@ namespace AshborneGame._Core.SceneManagement
 
             _story.BindExternalFunction("playerForceMask", (string maskName) => _gameState.ForcePlayerMask(maskName));
 
-            _story.BindExternalFunction("getPlayerInput", () =>
-            {
-                if (OperatingSystem.IsBrowser())
-                {
-                    return "__AWAIT_INPUT__";
-                }
-                else
-                {
-                    return IOService.Input.GetPlayerInput();
-                }
-            });
-
             _story.BindExternalFunction("changePlayerStat", (string statName, int amount) =>
             {
                 PlayerStatType statType = GameContext.Player.Stats.GetStatTypeByName(statName);
@@ -344,5 +370,7 @@ namespace AshborneGame._Core.SceneManagement
         {
             return _story.variablesState[key];
         }
+
+        public delegate void OnDialogueFinished();
     }
 }

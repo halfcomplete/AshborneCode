@@ -8,7 +8,18 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <title>Ashborne</title>
-    <base href="/Ashborne/" />
+    <base id="dynamic-base" href="/" />
+    <script>
+      // Set base href dynamically for GitHub Pages vs local
+      (function() {
+        var base = document.getElementById('dynamic-base');
+        if (window.location.hostname.endsWith('github.io')) {
+          base.setAttribute('href', '/Ashborne/');
+        } else {
+          base.setAttribute('href', '/');
+        }
+      })();
+    </script>
     <script>
         // Debug and force cache refresh for GitHub Pages deployment
         console.log('Current location:', window.location.href);

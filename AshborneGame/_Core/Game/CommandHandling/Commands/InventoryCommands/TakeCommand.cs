@@ -16,7 +16,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
         {
             if (args.Count == 0)
             {
-                IOService.Output.WriteLine("Take what? Specify an item and optionally a quantity (e.g. 'take 2 gold coin').");
+                IOService.Output.DisplayFailMessage("Take what? Specify an item and optionally a quantity (e.g. 'take 2 gold coin').");
                 return false;
             }
 
@@ -26,7 +26,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 
             if (originInventory == null)
             {
-                IOService.Output.WriteLine("There is no open container or NPC inventory to take items from.");
+                IOService.Output.DisplayFailMessage("There is no open container or NPC inventory to take items from.");
                 return false;
             }
 
@@ -41,7 +41,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
                 }
                 else
                 {
-                    IOService.Output.WriteLine("Invalid amount.");
+                    IOService.Output.DisplayFailMessage("Invalid amount.");
                     return false;
                 }
                 
@@ -59,7 +59,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
                     Item? targetItem = originInventory.GetItem(itemName);
                     if (targetItem == null)
                     {
-                        IOService.Output.WriteLine($"You cannot take {itemName} because it is not there.");
+                        IOService.Output.DisplayFailMessage($"You cannot take {itemName} because it is not there.");
                         return false;
                     }
 
@@ -71,14 +71,14 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 
             if (string.IsNullOrEmpty(itemName))
             {
-                IOService.Output.WriteLine("Take what? Specify an item.");
+                IOService.Output.DisplayFailMessage("Take what? Specify an item.");
                 return false;
             }
 
             Item? item = originInventory.GetItem(itemName);
             if (item == null)
             {
-                IOService.Output.WriteLine($"You cannot take {itemName} because it is not there.");
+                IOService.Output.DisplayFailMessage($"You cannot take {itemName} because it is not there.");
                 return false;
             }
 
@@ -93,7 +93,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 
             if (availableCount < quantity)
             {
-                IOService.Output.WriteLine($"There are not enough {itemName} to take {quantity}.");
+                IOService.Output.DisplayFailMessage($"There are not enough {itemName} to take {quantity}.");
                 return false;
             }
 
