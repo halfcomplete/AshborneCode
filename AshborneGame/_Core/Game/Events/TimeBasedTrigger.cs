@@ -1,4 +1,5 @@
-﻿using AshborneGame._Core.SceneManagement;
+﻿using AshborneGame._Core.Globals.Interfaces;
+using AshborneGame._Core.SceneManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,11 +26,11 @@ namespace AshborneGame._Core.Game.Events
             OneTime = oneTime;
         }
 
-        public bool CheckTrigger(Location? currentLocation, TimeSpan currentLocationTime)
+        public bool CheckTrigger(ILocation? currentLocation, TimeSpan currentLocationTime)
         {
             if (OneTime && Triggered) return false;
 
-            if (currentLocation?.Name == LocationName && currentLocationTime >= Duration)
+            if (currentLocation?.Name.ReferenceName == LocationName && currentLocationTime >= Duration)
             {
                 Triggered = true;
                 return true;

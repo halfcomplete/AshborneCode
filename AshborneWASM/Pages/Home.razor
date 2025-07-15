@@ -299,8 +299,8 @@
                 string command = userInput.Trim();
                 await AppendLine($"[DEBUG] Executing command: '{command}'");
                 await AppendLine($"[DEBUG] Player location: {GameContext.Player.CurrentLocation.Name}");
-                await AppendLine($"[DEBUG] Player sublocation: {(GameContext.Player.CurrentSublocation?.Name ?? "None")}");
-                await AppendLine($"[DEBUG] Sublocation object: {(GameContext.Player.CurrentSublocation?.Object?.GetType().Name ?? "None")}");
+                await AppendLine($"[DEBUG] Player sublocation: {(GameContext.Player.CurrentSublocation?.Name.ReferenceName ?? "None")}");
+                await AppendLine($"[DEBUG] Sublocation object: {(GameContext.Player.CurrentSublocation?.GameObject?.GetType().Name ?? "None")}");
                 engine.ReceiveCommand(command);
                 await AppendLine($"[DEBUG] Command execution completed");
             }

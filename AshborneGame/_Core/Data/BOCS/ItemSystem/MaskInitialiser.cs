@@ -20,7 +20,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         {
             Dictionary<string, Item> masks = new Dictionary<string, Item>();
 
-            var (name, ossaneth) = CreateOssaneth();
+            var ossaneth = CreateOssaneth(out var name);
             masks.Add(name, ossaneth);
 
             return masks;
@@ -38,9 +38,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             return mask;
         }
 
-        private static (string, Item) CreateOssaneth()
+        private static Item CreateOssaneth(out string name)
         {
-            string name = "Ossaneth";
+            name = "Ossaneth";
             var ossaneth = CreateMask(name, "The Unblinking Eye", out var interjectionBehaviour);
 
             // Add various triggers and messages for Ossaneth
@@ -80,27 +80,27 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger
             (
                   EventName: "player.actions.sat_on_throne",
-                  EventCondition: evt => evt.Get<string>("location") == "the throne",
+                  EventCondition: evt => evt.Get<string>("location") == "throne",
                   StateCondition: state => state.TryGetFlag("player.actions.sat_on_throne", out var value) && value,
                   Message: null,
-                  Effect: async () => await GameContext.DialogueService.StartDialogue("Act1_Scene1_Throne_Dialogue"),
+                  Effect: () => GameContext.DialogueService.StartDialogue("Act1_Scene1_Throne_Dialogue"),
                   OneTime: true
             ));
 
             interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger
             (
                   EventName: "player.actions.touched_knife",
-                  EventCondition: evt => evt.Get<string>("location") == "the pedestal",
+                  EventCondition: evt => evt.Get<string>("location") == "pedestal",
                   StateCondition: state => state.TryGetFlag("player.actions.touched_knife", out var value) && value,
                   Message: null,
-                  Effect: async () => await GameContext.DialogueService.StartDialogue("Act1_Scene1_Knife_Dialogue"),
+                  Effect: () => GameContext.DialogueService.StartDialogue("Act1_Scene1_Knife_Dialogue"),
                   OneTime: true
             ));
 
             interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger
             (
                 EventName: "player.actions.waited_once_at_mirror",
-                EventCondition: evt => evt.Get<string>("location") == "the mirror",
+                EventCondition: evt => evt.Get<string>("location") == "mirror",
                 StateCondition: null,
                 Message: "You wait too long... are you hoping something will change?",
                 Effect: null,
@@ -109,18 +109,18 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
 
             GameContext.GameState.AddLocationTimeTrigger(new LocationTimeTrigger
             (
-                locationName: "the mirror",
+                locationName: "mirror",
                 duration: TimeSpan.FromSeconds(20),
                 eventToRaise: new GameEvent("player.actions.waited_once_at_mirror", new() {
-                    { "location", "the mirror" }
+                    { "location", "mirror" }
                 }),
                 effect: null,
                 oneTime: true
             ));
 
-            interjectionBehaviour.Register();
+            _ = interjectionBehaviour.Register();
 
-            return (name, ossaneth);
+            return ossaneth;
         }
     }
 }

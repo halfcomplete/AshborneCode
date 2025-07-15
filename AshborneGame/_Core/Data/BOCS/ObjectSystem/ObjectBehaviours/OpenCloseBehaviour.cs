@@ -4,6 +4,7 @@ using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviourModules;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Enums;
+using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 
 namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
@@ -73,7 +74,8 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 
             if (ParentObject.TryGetBehaviour<ExitToNewLocationBehaviour>(out var exitToNewLocationBehaviour) && player.CurrentSublocation != null)
             {
-                player.CurrentSublocation.AddExit("through", exitToNewLocationBehaviour.Location);
+                ILocation sublocation = player.CurrentSublocation;
+                sublocation.AddExit("through", exitToNewLocationBehaviour.Location);
             }
         }
 

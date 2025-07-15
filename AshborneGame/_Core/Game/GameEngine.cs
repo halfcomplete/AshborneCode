@@ -33,7 +33,7 @@ namespace AshborneGame._Core.Game
             GameContext.Initialise(player, gameState, _dialogueService, this);
             gameState.InitialiseMasks(MaskInitialiser.InitialiseMasks());
 
-            (ILocation startingLocation, LocationGroup startingLocationGroup) = InitialiseStartingLocation(player);
+            (Location startingLocation, LocationGroup startingLocationGroup) = InitialiseStartingLocation(player);
             player.SetupMoveTo(startingLocation, startingLocationGroup);
             _dialogueService.DialogueStart += async () =>
             {
@@ -63,88 +63,64 @@ namespace AshborneGame._Core.Game
             await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
 
             // Display initial location description
-            IOService.Output.WriteLine(GameContext.Player.CurrentLocation.GetFullDescription(GameContext.Player));
+            ILocation location = (ILocation)GameContext.Player.CurrentLocation;
+            IOService.Output.WriteLine(location.GetDescription(GameContext.Player, GameContext.GameState));
         }
 
-        private (ILocation, LocationGroup) InitialiseStartingLocation(Player player)
+        private (Location, LocationGroup) InitialiseStartingLocation(Player player)
         {
+            var eyePlatformDesc = new LocationDescriptor("the centre", "the", "stand on");
+            var eyePlatformNarr = new LocationNarrativeProfile { FirstTimeDescription = "On all sides, an endless ocean of black sand stretches away..." };
+            var eyePlatform = new Location(eyePlatformDesc, eyePlatformNarr, System.Guid.NewGuid().ToString());
 
-            ILocation eyePlatform = new Location(
-                "the centre", 
-                "On all sides, an endless ocean of black sand stretches away. Splintered glass suspend themselves in the air, each " +
-                "one clearer and cleaner than the next. Shards of light slice the grey and lifeless sky. They stay still. All is still. All is silent.\nTo your north lies a mirror. To your east lies a throne." +
-                " To your west lies a pedestal. To your south lies a downward slope - you cannot see what's at the bottom.", 
-                "stand on", 
-                "centre");
+            var mirrorDesc = new LocationDescriptor("the mirror", "the", "standing beneath the");
+            var mirrorNarr = new LocationNarrativeProfile { FirstTimeDescription = "Your reflection stares back at you. It doesn't blink. It's tall and cracked." };
+            var mirrorOfIdentity = new Location(mirrorDesc, mirrorNarr, System.Guid.NewGuid().ToString());
 
-            ILocation mirrorOfIdentity = new Location("the mirror", "Your reflection stares back at you. It doesn't blink.", "standing beneath the", "mirror", "It's tall and cracked.");
+            var knifeDesc = new LocationDescriptor("the pedestal", "the", "standing in front of the");
+            var knifeNarr = new LocationNarrativeProfile { FirstTimeDescription = "It's obsidian, with a golden stand holding up a shining silver knife. Your reflection lies on the blade." };
+            var knifeOfViolence = new Location(knifeDesc, knifeNarr, System.Guid.NewGuid().ToString());
 
-            ILocation knifeOfViolence = new Location("the pedestal", "It's obsidian, with a golden stand holding up a shining silver knife. Your reflection " +
-                "lies on the blade.", "standing in front of the", "pedestal");
+            var throneDesc = new LocationDescriptor("the throne", "the", "in front of the");
+            var throneNarr = new LocationNarrativeProfile { FirstTimeDescription = "It's emerald-laced and empty. Nothing reflects off of it. Should you sit on it?" };
+            var throneOfPower = new Location(throneDesc, throneNarr, System.Guid.NewGuid().ToString());
 
-            ILocation throneOfPower = new Location("the throne", "It's emerald-laced and empty. Nothing reflects off of it. Should you sit on it?", "in front of the", "throne");
+            var slopeDesc = new LocationDescriptor("the slope", "the", "on top of");
+            var slopeNarr = new LocationNarrativeProfile { FirstTimeDescription = "You descend down the sand slope, until you reach the bottom. A chained figure kneels there..." };
+            var slope = new Location(slopeDesc, slopeNarr, System.Guid.NewGuid().ToString());
 
-            ILocation slope = new Location("the slope", "You descend down the sand slope, until you reach the bottom. A chained figure kneels there, his hands bound above his head and his feet stuck to the ground." +
-                " The figure's head is turned down, and his ragged black hair is almost invisible against the darkness around him.", "on top of", "the slope");
+            // Example NPC as GameObject for sublocation
+            var chainedFigure = new GameObject("Chained Prisoner", "A chained prisoner");
+            var prisonerDesc = new LocationDescriptor("prisoner");
+            var prisonerNarr = new LocationNarrativeProfile { FirstTimeDescription = "A chained prisoner" };
+            var chainedFigureSublocation = new Sublocation(slope, chainedFigure, prisonerDesc, prisonerNarr, System.Guid.NewGuid().ToString());
+            slope.AddSublocation(chainedFigureSublocation);
 
-            NPC chainedFigure = new NPC("Chained Prisoner", null, "Act1_Scene1_Prisoner_Dialogue");
-            ILocation chainedFigureSublocation = new Sublocation((Location)slope, chainedFigure, "prisoner", "A chained prisoner", 5);
-            ((Location)slope).AddSublocation((Sublocation)chainedFigureSublocation);
-            var locations = new List<ILocation> { eyePlatform, mirrorOfIdentity, knifeOfViolence, throneOfPower, slope };
-            LocationGroup ossanethDomain = new LocationGroup("Ossaneth's Domain", locations);
+            // Example custom command for a location
+            eyePlatform.AddCustomCommand(new List<string> { "pray" },
+                () => "You kneel and pray. The silence is overwhelming.",
+                () => { /* effect logic here */ });
 
-            ((Location)eyePlatform).AddExit("north", (Location)mirrorOfIdentity);
-            ((Location)eyePlatform).AddExit("west", (Location)knifeOfViolence);
-            ((Location)eyePlatform).AddExit("east", (Location)throneOfPower);
-            ((Location)eyePlatform).AddExit("south", (Location)slope);
-            ((Location)mirrorOfIdentity).AddExit("south", (Location)eyePlatform);
-            ((Location)knifeOfViolence).AddExit("east", (Location)eyePlatform);
-            ((Location)throneOfPower).AddExit("west", (Location)eyePlatform);
-            ((Location)slope).AddExit("north", (Location)eyePlatform);
+            // Example custom command for a sublocation
+            chainedFigureSublocation.AddCustomCommand(new List<string> { "free prisoner" },
+                () => "You attempt to free the prisoner, but the chains are too strong.",
+                () => { /* effect logic here */ });
 
-            throneOfPower.AddCustomCommand(
-            new List<string> { "sit on throne", "get on throne", "sit on the throne", "get on the throne" },
-                () =>
-                {
-                    if (!GameContext.GameState.TryGetFlag("player.actions.sat_on_throne", out var value))
-                    {
-                        return "You sit on the throne. It's smooth and eerily comfortable, as though it's shaping itself to your body. You feel uneasy, and get off.";
-                    }
-                    return "You sit once again. The throne remains silent, and so does Ossaneth.";
-                },
-                () =>
-                {
-                    GameContext.GameState.SetFlag("player.actions.sat_on_throne", true);
-                    EventBus.Call(new GameEvent("player.actions.sat_on_throne", new Dictionary<string, object> { { "location", "the throne" } }));
-                }
-            );
+            // Add exits to the locations
+            eyePlatform.Exits.Add("north", mirrorOfIdentity);
+            eyePlatform.Exits.Add("east", knifeOfViolence);
+            eyePlatform.Exits.Add("west", throneOfPower);
+            eyePlatform.Exits.Add("south", slope);
 
-            knifeOfViolence.AddCustomCommand(["touch it", "touch the knife", "touch knife"],
-                () =>
-                {
-                    return "You reach your hand out to feel the knife. As you slide your fingeres across it, a sting of pain suddenly bursts from your hand. Your hand is bleeding. But there's no blood on the knife.";
-                },
-                () =>
-                {
-                    GameContext.GameState.SetFlag("player.actions.touched_knife", true);
-                    EventBus.Call(new GameEvent("player.actions.touched_knife", new Dictionary<string, object> { { "location", "the pedestal" } }));
-                }
-            );
-            
-            mirrorOfIdentity.AddCustomCommand(["wait"],
-                () =>
-                {
-                    return "You stand before the mirror. You blink. Your reflection doesn't.";
-                }, 
-            
-            () =>
-            {
-                if (!GameContext.GameState.TryIncrementCounter("player.actions.times_waited_at_mirror"))
-                {
-                    GameContext.GameState.SetCounter("player.actions.times_waited_at_mirror", 1);
-                }
-            });
-            
+            mirrorOfIdentity.Exits.Add("south", eyePlatform);
+            knifeOfViolence.Exits.Add("west", eyePlatform);
+            throneOfPower.Exits.Add("east", eyePlatform);
+            slope.Exits.Add("north", eyePlatform);
+
+            var locations = new List<Location> { eyePlatform, mirrorOfIdentity, knifeOfViolence, throneOfPower, slope };
+            var ossanethDomain = new LocationGroup("Ossaneth's Domain", "Ossaneth's Domain");
+            foreach (var loc in locations) ossanethDomain.AddLocation(loc);
+
             return (eyePlatform, ossanethDomain);
         }
 
@@ -171,7 +147,7 @@ namespace AshborneGame._Core.Game
             _isRunning = true;
 
             await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
-            IOService.Output.WriteLine(player.CurrentLocation.GetFullDescription(player));
+            IOService.Output.WriteLine(player.CurrentLocation.GetDescription(player, gameState));
 
             gameState.StartTickLoop();
             while (_isRunning)
