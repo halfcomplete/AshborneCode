@@ -1,32 +1,40 @@
-﻿using AshborneGame._Core._Player;
-using AshborneGame._Core.Game;
-using AshborneGame._Core.Globals.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using AshborneGame._Core._Player;
+using AshborneGame._Core.Game;
 
 namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 {
-    internal class DescribableBehaviour : IDescribable
+    /// <summary>
+    /// Used by LocationNarrativeProfile, GameObjects, NPCs, etc. for conditional descriptions.
+    /// </summary>
+    public class DescribableBehaviour
     {
-        public List<(Func<GameStateManager, bool> condition, string description)> Conditions { get; } = new();
+        /// <summary>
+        /// List of (condition, description) pairs.
+        /// </summary>
+        public List<(Func<GameStateManager, bool> Condition, string Description)> Conditions { get; } = new();
 
+        /// <summary>
+        /// Adds a new conditional description.
+        /// </summary>
         public void AddCondition(Func<GameStateManager, bool> condition, string description)
         {
             Conditions.Add((condition, description));
         }
 
+        /// <summary>
+        /// Returns all applicable descriptions for the current state, joined by space.
+        /// </summary>
         public string GetDescription(Player player, GameStateManager state)
         {
-            foreach (var (condition, desc) in Conditions)
-            {
-                if (condition(state))
-                    return desc;
-            }
+            var applicable = Conditions
+                .Where(c => c.Condition(state))
+                .Select(c => c.Description)
+                .ToList();
 
-            return string.Empty;
+            return string.Join(" ", applicable);
         }
     }
 }

@@ -14,6 +14,7 @@ namespace AshborneGame._Core.Game
         public static GameStateManager GameState { get; private set; }
         public static DialogueService DialogueService { get; private set; }
         public static GameEngine GameEngine { get; private set; }
+        public static Random Random { get; } = new Random();
 
         public static void Initialise(Player player, GameStateManager gameState, DialogueService dialogueRunner, GameEngine gameEngine)
         {

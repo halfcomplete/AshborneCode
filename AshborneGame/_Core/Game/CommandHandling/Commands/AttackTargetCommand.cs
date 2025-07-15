@@ -26,7 +26,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                 IOService.Output.DisplayFailMessage("There's nothing to attack here. You might want to get closer.");
                 return true;
             }
-            NPC? targetNPC = sublocation.Object as NPC;
+            NPC? targetNPC = sublocation.GameObject as NPC;
             if (targetNPC == null)
             {
                 IOService.Output.DisplayFailMessage($"You cannot attack that.");

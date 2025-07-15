@@ -18,13 +18,14 @@ namespace AshborneGame._Core._Player
     /// </summary>
     public class Player
     {
-        public LocationGroup CurrentLocationGroup { get; private set; }
+        public Scene CurrentScene { get; private set; }
+
         /// <summary>
         /// Gets the player's current location.
         /// </summary>
-        public ILocation CurrentLocation { get; private set; }
+        public Location CurrentLocation { get; private set; }
 
-        public ILocation? CurrentSublocation { get; private set; } = null;
+        public Sublocation? CurrentSublocation { get; private set; } = null;
 
         /// <summary>
         /// Gets the player's inventory.
@@ -67,8 +68,11 @@ namespace AshborneGame._Core._Player
         public Player()
         {
             _name = "Hero"; // Default name
-            CurrentLocation = new Location("test location", "A test location for testing.");
-            CurrentLocationGroup = new LocationGroup("test location group", new List<ILocation>() { (Location)CurrentLocation });
+            var descriptor = new LocationDescriptor("test location");
+            var narrative = new LocationNarrativeProfile { FirstTimeDescription = "A test location for testing." };
+            CurrentLocation = new Location(descriptor, narrative, System.Guid.NewGuid().ToString());
+            CurrentScene = new Scene("test location group", "Test Location Group");
+            CurrentScene.AddLocation(CurrentLocation);
             Inventory = new Inventory();
 		}
 
@@ -81,15 +85,19 @@ namespace AshborneGame._Core._Player
         {
             _name = "Hero"; // Default name
             CurrentLocation = startingLocation ?? throw new ArgumentNullException(nameof(startingLocation));
-            CurrentLocationGroup = new LocationGroup("test location group", new List<ILocation>() { (Location)CurrentLocation });
+            CurrentScene = new Scene("test location group", "Test Location Group");
+            CurrentScene.AddLocation(CurrentLocation);
             Inventory = new Inventory();
         }
 
         public Player(string name)
         {
             _name = name;
-            CurrentLocation = new Location("Placeholder", "Placeholder", 5);
-            CurrentLocationGroup = new LocationGroup("Placeholder", new List<ILocation>() { (Location)CurrentLocation });
+            var descriptor = new LocationDescriptor("Placeholder");
+            var narrative = new LocationNarrativeProfile { FirstTimeDescription = "Placeholder" };
+            CurrentLocation = new Location(descriptor, narrative, System.Guid.NewGuid().ToString());
+            CurrentScene = new Scene("Placeholder", "Placeholder");
+            CurrentScene.AddLocation(CurrentLocation);
             Inventory = new Inventory();
         }
 
@@ -103,8 +111,8 @@ namespace AshborneGame._Core._Player
         {
             _name = name ?? throw new ArgumentNullException(nameof(name));
             CurrentLocation = startingLocation ?? throw new ArgumentNullException(nameof(startingLocation));
-            CurrentLocationGroup = new LocationGroup("test location group", new List<ILocation>() { (Location)CurrentLocation });
-            startingLocation.TimesVisited = 1;
+            CurrentScene = new Scene("test location group", "Test Location Group");
+            CurrentScene.AddLocation(CurrentLocation);
             Inventory = new Inventory();
         }
 
@@ -113,40 +121,34 @@ namespace AshborneGame._Core._Player
         /// </summary>
         /// <param name="newLocation">The sublocation to move to.</param>
         /// <exception cref="ArgumentNullException">Thrown when newLocation is null.</exception>
-        public void MoveTo(ILocation newLocation)
+        public void MoveTo(Location newLocation)
         {
-            if (newLocation is Sublocation subloc)
-            {
-                CurrentSublocation = subloc;
-                subloc.TimesVisited += 1;
-                GameContext.GameState.OnPlayerEnterLocation(subloc.ParentLocation);
-                IOService.Output.WriteLine(subloc.GetFullDescription(this));
-            }
-            else if (newLocation is Location loc)
-            {
-                CurrentLocation = loc;
-                CurrentSublocation = null;
-                loc.TimesVisited += 1;
-                GameContext.GameState.OnPlayerEnterLocation(loc);
-                IOService.Output.WriteLine(loc.GetFullDescription(this));
-            }
-            else
-            {
-                // fallback for other ILocation implementations
-                CurrentLocation = newLocation;
-                CurrentSublocation = null;
-                newLocation.TimesVisited += 1;
-                IOService.Output.WriteLine(newLocation.GetFullDescription(this));
-            }
+            CurrentLocation = newLocation;
+            CurrentSublocation = null;
+            GameContext.GameState.OnPlayerEnterLocation(newLocation);
+            IOService.Output.WriteLine(newLocation.GetDescription(this, GameContext.GameState));
         }
 
-        public void SetupMoveTo(ILocation newLocation, LocationGroup newLocationGroup)
+        public void MoveTo(Sublocation newSublocation)
         {
-            CurrentLocationGroup = newLocationGroup;
+            CurrentSublocation = newSublocation;
+            GameContext.GameState.OnPlayerEnterLocation(newSublocation.ParentLocation);
+            IOService.Output.WriteLine(newSublocation.GetDescription(this, GameContext.GameState));
+        }
+
+        public void MoveTo(Scene newScene)
+        {
+            CurrentScene = newScene;
+            IOService.Output.WriteLine(newScene.GetHeader());
+        }
+
+        public void SetupMoveTo(Location newLocation, Scene newScene)
+        {
+            CurrentScene = newScene;
             CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
             CurrentSublocation = null;
-            GameContext.GameState.OnPlayerEnterLocation(newLocation as Location ?? (newLocation as Sublocation)?.ParentLocation);
-            newLocation.TimesVisited = 1;
+            GameContext.GameState.OnPlayerEnterLocation(newLocation);
+            IOService.Output.WriteLine(newScene.GetHeader());
         }
 
         /// <summary>
@@ -169,49 +171,44 @@ namespace AshborneGame._Core._Player
                 // If the place is a direction, handle it as such
                 return TryMoveDirectionally(place);
             }
-            else if (CurrentLocation.Exits.Values.Any(s => s.Name.Equals(place, StringComparison.OrdinalIgnoreCase)))
+            else if (CurrentLocation.Name.Matches(place))
             {
-                // If the place is the name of an exit then move to that exit
-                MoveTo(CurrentLocation.Exits.Values.First(s => s.Name.Equals(place, StringComparison.OrdinalIgnoreCase)));
+                IOService.Output.WriteLine("You can't move there because you are already there.");
                 return true;
             }
-            else if (parsedInput[0].Equals("back", StringComparison.OrdinalIgnoreCase))
-            {
-                MoveTo(CurrentLocation);
-                return true;
-            }
-            else if (parsedInput[0].Equals("through", StringComparison.OrdinalIgnoreCase) && CurrentSublocation != null && ((Sublocation)CurrentSublocation).Object.GetAllBehaviours<IInteractable>().Any(b => b is OpenCloseBehaviour openClose && openClose.IsOpen))
-            {
-                // If the player inputted "go through" and we are in a sublocation, the object of which is openable
-                if (((Sublocation)CurrentSublocation).Object.TryGetBehaviour<IExit>(out var exit))
-                {
-                    // If that object is a pathway to another location
-                    MoveTo(exit.Location); 
-                    return true;
-                }
-                return false;
-            }
-            else if (place == CurrentLocation.Name || place == (CurrentSublocation != null ? CurrentSublocation.Name : string.Empty))
+            else if (CurrentSublocation != null && CurrentSublocation.Name.Matches(place))
             {
                 IOService.Output.WriteLine("You can't move there because you are already there.");
                 return true;
             }
             else
             {
-                // Else the place is a sublocation
+                // Try to move to a sublocation
                 return TryMoveToSublocation(place);
             }
         }
 
         private bool TryMoveDirectionally(string direction)
         {
-            if (CurrentLocation.Exits.TryGetValue(direction, out var newLocation))
+            if (CurrentSublocation != null)
             {
-                MoveTo((Location)newLocation);
-                return true;
+                // Only 'back' is supported in sublocations
+                if (direction == "back" && CurrentSublocation.Exits.ContainsKey("back"))
+                {
+                    MoveTo(CurrentSublocation.Exits["back"]);
+                    return true;
+                }
+                IOService.Output.DisplayFailMessage("You can't go that way from here.");
+                return false;
             }
             else
             {
+                if (CurrentLocation.Exits.TryGetValue(direction, out var newLocation))
+                {
+                    MoveTo(newLocation);
+                    return true;
+                }
+                IOService.Output.DisplayFailMessage("You can't go that way.");
                 return false;
             }
         }
@@ -220,20 +217,14 @@ namespace AshborneGame._Core._Player
         {
             // Get the sublocation from sublocation list in the current location by name
             var sublocation = CurrentLocation.Sublocations
-                .FirstOrDefault(s => s.Name.Equals(place, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(s => s.Name.Matches(place));
 
-            // Because .FirstOrDefault can return null, check if sublocation is not null
-            // If it is not null, move to that sublocation (that means it exists in the current location)
-            // If it is null, throw an exception
             if (sublocation != null)
             {
-                MoveTo((Sublocation)sublocation);
+                MoveTo(sublocation);
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         public void EquipItem(Item item, string slot)
@@ -338,3 +329,4 @@ namespace AshborneGame._Core._Player
         }
     }
 }
+

@@ -41,25 +41,14 @@ namespace AshborneGame._Core.Game.CommandHandling
 
         public static bool TryExecute(string action, List<string> args, Player player)
         {
+            // Check sublocation custom commands first
             if (player.CurrentSublocation != null)
             {
                 foreach (var kvp in player.CurrentSublocation.CustomCommands)
                 {
-                    if (action.Equals(kvp.Key))
-                    {
-                        IOService.Output.WriteLine(kvp.Value.message.Invoke());
-                        kvp.Value.effect?.Invoke();
-                        return true;
-                    }
-                }
-            }
-            else
-            {
-                foreach (var kvp in player.CurrentLocation.CustomCommands)
-                {
                     var args2 = new List<string>(args);
                     args2.Insert(0, action);
-                    if (string.Join(' ', args2).Equals(kvp.Key))
+                    if (string.Join(' ', args2).Equals(kvp.Key, StringComparison.OrdinalIgnoreCase))
                     {
                         IOService.Output.WriteLine(kvp.Value.message.Invoke());
                         kvp.Value.effect?.Invoke();
@@ -68,6 +57,18 @@ namespace AshborneGame._Core.Game.CommandHandling
                 }
             }
 
+            // Then check location custom commands
+            foreach (var kvp in player.CurrentLocation.CustomCommands)
+            {
+                var args2 = new List<string>(args);
+                args2.Insert(0, action);
+                if (string.Join(' ', args2).Equals(kvp.Key, StringComparison.OrdinalIgnoreCase))
+                {
+                    IOService.Output.WriteLine(kvp.Value.message.Invoke());
+                    kvp.Value.effect?.Invoke();
+                    return true;
+                }
+            }
 
             if (CheckIfCaughtByCommandBuckets(player, action, out string message))
             {

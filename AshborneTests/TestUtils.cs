@@ -24,7 +24,7 @@ namespace AshborneTests
         {
             if (location == null)
             {
-                location = new Location("Test Location", "A place for testing.", 1);
+                location = TestUtils.CreateTestLocation();
             }
             var player = new Player(name, location);
             return player;
@@ -56,7 +56,15 @@ namespace AshborneTests
         /// </summary>
         static internal Location CreateTestLocation(string name = "Test Location")
         {
-            return new Location(name, "A place for testing", 1);
+            var descriptor = new AshborneGame._Core.SceneManagement.LocationDescriptor(name);
+            var narrative = new AshborneGame._Core.SceneManagement.LocationNarrativeProfile
+            {
+                FirstTimeDescription = $"{name} - first time.",
+                ReturnDescription = $"{name} - return.",
+                LookAroundDescription = $"Looking around {name}.",
+                AmbientSnippets = new() { $"Ambient for {name}." }
+            };
+            return new AshborneGame._Core.SceneManagement.Location(descriptor, narrative, System.Guid.NewGuid().ToString());
         }
 
         /// <summary>
@@ -64,14 +72,29 @@ namespace AshborneTests
         /// </summary>
         static internal Sublocation CreateTestSublocation(BOCSGameObject gameObject)
         {
-            Sublocation sublocation = new Sublocation(
-                CreateTestLocation(Guid.NewGuid().ToString()),
-                gameObject,
-                "Test sublocation",
-                "A sublocation for testing",
-                5
-            );
-            return sublocation;
+            var parent = CreateTestLocation(System.Guid.NewGuid().ToString());
+            var descriptor = new AshborneGame._Core.SceneManagement.LocationDescriptor("Test sublocation");
+            var narrative = new AshborneGame._Core.SceneManagement.LocationNarrativeProfile
+            {
+                FirstTimeDescription = "Test sublocation - first time.",
+                ReturnDescription = "Test sublocation - return.",
+                LookAroundDescription = "Looking around test sublocation.",
+                AmbientSnippets = new() { "Ambient for test sublocation." }
+            };
+            if (gameObject is AshborneGame._Core.Data.BOCS.ObjectSystem.GameObject go)
+            {
+                return new AshborneGame._Core.SceneManagement.Sublocation(
+                    parent,
+                    go,
+                    descriptor,
+                    narrative,
+                    System.Guid.NewGuid().ToString()
+                );
+            }
+            else
+            {
+                throw new System.InvalidCastException("gameObject must be a GameObject for Sublocation test creation.");
+            }
         }
 
         static internal GameObject CreateTestGameObject(string name = "Test Object")

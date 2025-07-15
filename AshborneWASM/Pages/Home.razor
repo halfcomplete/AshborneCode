@@ -218,6 +218,7 @@
 
     private async Task ProcessTypewriterQueue()
     {
+        // Ensure that only one line is written at a time
         isTypewriterRunning = true;
         while (typewriterQueue.Count > 0)
         {
@@ -254,11 +255,19 @@
                 if ((currentChar == '.' || currentChar == ':' || currentChar == '"' || currentChar == ']') &&
                     (i == msgLine.Length - 1 || msgLine[i + 1] == ' '))
                 {
-                    await Task.Delay(600);
+#if DEBUG
+                    await Task.Delay(200); // Shorter delay for production
+#else
+                    await Task.Delay(800);
+#endif
                 }
                 else
                 {
-                    await Task.Delay(24);
+#if DEBUG
+                    await Task.Delay(10); // Shorter delay for production
+#else
+                    await Task.Delay(30);
+#endif
                 }
             }
             buffer.Add(typedLine); // Add finished line to buffer
@@ -299,8 +308,8 @@
                 string command = userInput.Trim();
                 await AppendLine($"[DEBUG] Executing command: '{command}'");
                 await AppendLine($"[DEBUG] Player location: {GameContext.Player.CurrentLocation.Name}");
-                await AppendLine($"[DEBUG] Player sublocation: {(GameContext.Player.CurrentSublocation?.Name ?? "None")}");
-                await AppendLine($"[DEBUG] Sublocation object: {(GameContext.Player.CurrentSublocation?.Object?.GetType().Name ?? "None")}");
+                await AppendLine($"[DEBUG] Player sublocation: {(GameContext.Player.CurrentSublocation?.Name.ReferenceName ?? "None")}");
+                await AppendLine($"[DEBUG] Sublocation object: {(GameContext.Player.CurrentSublocation?.GameObject?.GetType().Name ?? "None")}");
                 engine.ReceiveCommand(command);
                 await AppendLine($"[DEBUG] Command execution completed");
             }

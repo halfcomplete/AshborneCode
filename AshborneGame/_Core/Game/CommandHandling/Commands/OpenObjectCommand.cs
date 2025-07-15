@@ -23,42 +23,48 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             }
 
             string objectName = string.Join(" ", args).Trim();
-            Sublocation? location = (Sublocation)player.CurrentSublocation;
+            Sublocation? sublocation = player.CurrentSublocation;
+            IEnumerable<IInteractable>? allIInteractableBehaviours = null;
 
-            if (location == null)
+            if (sublocation == null)
             {
-                location = player.CurrentLocation;
+                Location location = player.CurrentLocation;
+                allIInteractableBehaviours = location.GameObjects.FirstOrDefault(o => o.Name.Equals(objectName))?.GetAllBehaviours<IInteractable>();
+            }
+            else
+            {
+                allIInteractableBehaviours = sublocation.GameObject.GetAllBehaviours<IInteractable>();
             }
 
-            var allBehaviours = location.Objects.FirstOrDefault(o => o.Name.Equals(objectName))?.GetAllBehaviours<IInteractable>();
-            if (allBehaviours == null)
+
+            if (allIInteractableBehaviours == null)
             {
                 IOService.Output.DisplayFailMessage($"That is not an object here.");
                 return false;
             }
             IOService.Output.DisplayDebugMessage($"You are trying to open {objectName}.");
-            IOService.Output.DisplayDebugMessage($"The object has the following behaviours: {string.Join(", ", allBehaviours.Select(b => b.GetType().Name))}.");
-            if (!allBehaviours.ToList().Any(b => b.GetType() == typeof(OpenCloseBehaviour)))
+            IOService.Output.DisplayDebugMessage($"The object has the following behaviours: {string.Join(", ", allIInteractableBehaviours.Select(b => b.GetType().Name))}.");
+            if (!allIInteractableBehaviours.ToList().Any(b => b.GetType() == typeof(OpenCloseBehaviour)))
             {
                 IOService.Output.DisplayFailMessage($"You can't open that.");
                 return false;
             }
 
-            if (allBehaviours.ToList().Any(b => b.GetType() == typeof(LockUnlockBehaviour)))
+            if (allIInteractableBehaviours.ToList().Any(b => b.GetType() == typeof(LockUnlockBehaviour)))
             {
-                var lockUnlockBehaviour = allBehaviours.FirstOrDefault(b => b is LockUnlockBehaviour) as LockUnlockBehaviour;
+                var lockUnlockBehaviour = allIInteractableBehaviours.FirstOrDefault(b => b is LockUnlockBehaviour) as LockUnlockBehaviour;
                 if (lockUnlockBehaviour!.IsLocked)
                 {
                     IOService.Output.DisplayFailMessage($"You cannot open that because it is locked.");
                     return false;
                 }
-                var openCloseBehaviour = allBehaviours.FirstOrDefault(b => b is OpenCloseBehaviour) as OpenCloseBehaviour;
+                var openCloseBehaviour = allIInteractableBehaviours.FirstOrDefault(b => b is OpenCloseBehaviour) as OpenCloseBehaviour;
                 openCloseBehaviour!.Interact(ObjectInteractionTypes.Open, player);
                 return true;
             }
             else
             {
-                var openCloseBehaviour = allBehaviours.FirstOrDefault(b => b is OpenCloseBehaviour) as OpenCloseBehaviour;
+                var openCloseBehaviour = allIInteractableBehaviours.FirstOrDefault(b => b is OpenCloseBehaviour) as OpenCloseBehaviour;
                 openCloseBehaviour!.Interact(ObjectInteractionTypes.Open, player);
                 return true;
             }
