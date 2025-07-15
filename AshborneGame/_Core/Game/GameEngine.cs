@@ -33,7 +33,7 @@ namespace AshborneGame._Core.Game
             GameContext.Initialise(player, gameState, _dialogueService, this);
             gameState.InitialiseMasks(MaskInitialiser.InitialiseMasks());
 
-            (Location startingLocation, LocationGroup startingLocationGroup) = InitialiseStartingLocation(player);
+            (Location startingLocation, Scene startingLocationGroup) = InitialiseStartingLocation(player);
             player.SetupMoveTo(startingLocation, startingLocationGroup);
             _dialogueService.DialogueStart += async () =>
             {
@@ -55,7 +55,7 @@ namespace AshborneGame._Core.Game
         {
             _isRunning = true;
             
-            // Initialize the game state
+            // Initialise the game state
             GameContext.GameState.StartTickLoop();
 
             await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
@@ -63,11 +63,11 @@ namespace AshborneGame._Core.Game
             await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
 
             // Display initial location description
-            ILocation location = (ILocation)GameContext.Player.CurrentLocation;
+            ILocation location = GameContext.Player.CurrentLocation;
             IOService.Output.WriteLine(location.GetDescription(GameContext.Player, GameContext.GameState));
         }
 
-        private (Location, LocationGroup) InitialiseStartingLocation(Player player)
+        private (Location, Scene) InitialiseStartingLocation(Player player)
         {
             var eyePlatformDesc = new LocationDescriptor("the centre", "the", "stand on");
             var eyePlatformNarr = new LocationNarrativeProfile { FirstTimeDescription = "On all sides, an endless ocean of black sand stretches away..." };
@@ -118,10 +118,16 @@ namespace AshborneGame._Core.Game
             slope.Exits.Add("north", eyePlatform);
 
             var locations = new List<Location> { eyePlatform, mirrorOfIdentity, knifeOfViolence, throneOfPower, slope };
-            var ossanethDomain = new LocationGroup("Ossaneth's Domain", "Ossaneth's Domain");
+            var ossanethDomain = new Scene("Ossaneth's Domain", "Ossaneth's Domain");
             foreach (var loc in locations) ossanethDomain.AddLocation(loc);
+            
+            var prologueLocation = new Location(new LocationDescriptor("Prologue"), new LocationNarrativeProfile(), "Prologue Location");
+            var prologue = new Scene("Prologue", "Prologue");
 
-            return (eyePlatform, ossanethDomain);
+            prologue.AddLocation(prologueLocation);
+            GameContext.GameState.SetCounter("player.current_scene_no", 1);
+
+            return (prologueLocation, prologue);
         }
 
 

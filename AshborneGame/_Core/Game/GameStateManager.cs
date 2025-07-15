@@ -296,6 +296,18 @@ namespace AshborneGame._Core.Game
 
             if (!_locationDurations.ContainsKey(location))
                 _locationDurations[location] = TimeSpan.Zero;
+
+            if (!GameContext.Player.CurrentScene.Locations.Contains(GameContext.Player.CurrentLocation))
+            {
+                // We've moved to a new scene
+                // Increment the scene number
+                if (!TryDecrementCounter("player.current_scene_no"))
+                {
+                    SetCounter("player.current_scene_no", 1);
+                }
+                // Change the player's scene
+                GameContext.Player.MoveTo(GameContext.Player.CurrentLocation.Group);
+            }
         }
 
 

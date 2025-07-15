@@ -218,6 +218,7 @@
 
     private async Task ProcessTypewriterQueue()
     {
+        // Ensure that only one line is written at a time
         isTypewriterRunning = true;
         while (typewriterQueue.Count > 0)
         {
@@ -254,11 +255,19 @@
                 if ((currentChar == '.' || currentChar == ':' || currentChar == '"' || currentChar == ']') &&
                     (i == msgLine.Length - 1 || msgLine[i + 1] == ' '))
                 {
-                    await Task.Delay(600);
+#if DEBUG
+                    await Task.Delay(200); // Shorter delay for production
+#else
+                    await Task.Delay(800);
+#endif
                 }
                 else
                 {
-                    await Task.Delay(24);
+#if DEBUG
+                    await Task.Delay(10); // Shorter delay for production
+#else
+                    await Task.Delay(30);
+#endif
                 }
             }
             buffer.Add(typedLine); // Add finished line to buffer

@@ -19,7 +19,7 @@ namespace AshborneGame._Core.SceneManagement
         /// <summary>
         /// The group this location belongs to, if any.
         /// </summary>
-        public LocationGroup? Group { get; set; }
+        public Scene Group { get; set; }
 
         /// <summary>
         /// Flexible naming and parsing for the location.

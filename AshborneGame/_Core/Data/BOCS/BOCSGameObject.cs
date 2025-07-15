@@ -54,7 +54,7 @@ public abstract class BOCSGameObject
         {
             IOService.Output.DisplayDebugMessage($"- {b.GetType().Name}: {string.Join(", ", b)}", ConsoleMessageTypes.INFO);
         }
-        IOService.Output.WriteLine("");
+        IOService.Output.DisplayDebugMessage("");
     }
 
     public void RemoveBehaviour<T>() where T : class => Behaviours.Remove(typeof(T));

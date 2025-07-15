@@ -18,7 +18,8 @@ namespace AshborneGame._Core._Player
     /// </summary>
     public class Player
     {
-        public LocationGroup CurrentLocationGroup { get; private set; }
+        public Scene CurrentScene { get; private set; }
+
         /// <summary>
         /// Gets the player's current location.
         /// </summary>
@@ -67,11 +68,11 @@ namespace AshborneGame._Core._Player
         public Player()
         {
             _name = "Hero"; // Default name
-            var descriptor = new AshborneGame._Core.SceneManagement.LocationDescriptor("test location");
-            var narrative = new AshborneGame._Core.SceneManagement.LocationNarrativeProfile { FirstTimeDescription = "A test location for testing." };
-            CurrentLocation = new AshborneGame._Core.SceneManagement.Location(descriptor, narrative, System.Guid.NewGuid().ToString());
-            CurrentLocationGroup = new AshborneGame._Core.SceneManagement.LocationGroup("test location group", "Test Location Group");
-            CurrentLocationGroup.AddLocation(CurrentLocation);
+            var descriptor = new LocationDescriptor("test location");
+            var narrative = new LocationNarrativeProfile { FirstTimeDescription = "A test location for testing." };
+            CurrentLocation = new Location(descriptor, narrative, System.Guid.NewGuid().ToString());
+            CurrentScene = new Scene("test location group", "Test Location Group");
+            CurrentScene.AddLocation(CurrentLocation);
             Inventory = new Inventory();
 		}
 
@@ -84,19 +85,19 @@ namespace AshborneGame._Core._Player
         {
             _name = "Hero"; // Default name
             CurrentLocation = startingLocation ?? throw new ArgumentNullException(nameof(startingLocation));
-            CurrentLocationGroup = new AshborneGame._Core.SceneManagement.LocationGroup("test location group", "Test Location Group");
-            CurrentLocationGroup.AddLocation(CurrentLocation);
+            CurrentScene = new Scene("test location group", "Test Location Group");
+            CurrentScene.AddLocation(CurrentLocation);
             Inventory = new Inventory();
         }
 
         public Player(string name)
         {
             _name = name;
-            var descriptor = new AshborneGame._Core.SceneManagement.LocationDescriptor("Placeholder");
-            var narrative = new AshborneGame._Core.SceneManagement.LocationNarrativeProfile { FirstTimeDescription = "Placeholder" };
-            CurrentLocation = new AshborneGame._Core.SceneManagement.Location(descriptor, narrative, System.Guid.NewGuid().ToString());
-            CurrentLocationGroup = new AshborneGame._Core.SceneManagement.LocationGroup("Placeholder", "Placeholder");
-            CurrentLocationGroup.AddLocation(CurrentLocation);
+            var descriptor = new LocationDescriptor("Placeholder");
+            var narrative = new LocationNarrativeProfile { FirstTimeDescription = "Placeholder" };
+            CurrentLocation = new Location(descriptor, narrative, System.Guid.NewGuid().ToString());
+            CurrentScene = new Scene("Placeholder", "Placeholder");
+            CurrentScene.AddLocation(CurrentLocation);
             Inventory = new Inventory();
         }
 
@@ -110,8 +111,8 @@ namespace AshborneGame._Core._Player
         {
             _name = name ?? throw new ArgumentNullException(nameof(name));
             CurrentLocation = startingLocation ?? throw new ArgumentNullException(nameof(startingLocation));
-            CurrentLocationGroup = new AshborneGame._Core.SceneManagement.LocationGroup("test location group", "Test Location Group");
-            CurrentLocationGroup.AddLocation(CurrentLocation);
+            CurrentScene = new Scene("test location group", "Test Location Group");
+            CurrentScene.AddLocation(CurrentLocation);
             Inventory = new Inventory();
         }
 
@@ -135,12 +136,19 @@ namespace AshborneGame._Core._Player
             IOService.Output.WriteLine(newSublocation.GetDescription(this, GameContext.GameState));
         }
 
-        public void SetupMoveTo(Location newLocation, LocationGroup newLocationGroup)
+        public void MoveTo(Scene newScene)
         {
-            CurrentLocationGroup = newLocationGroup;
+            CurrentScene = newScene;
+            IOService.Output.WriteLine(newScene.GetHeader());
+        }
+
+        public void SetupMoveTo(Location newLocation, Scene newScene)
+        {
+            CurrentScene = newScene;
             CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
             CurrentSublocation = null;
             GameContext.GameState.OnPlayerEnterLocation(newLocation);
+            IOService.Output.WriteLine(newScene.GetHeader());
         }
 
         /// <summary>
