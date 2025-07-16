@@ -23,7 +23,7 @@ namespace AshborneGame.ConsolePort
                     return choice;
                 }
 
-                IOService.Output.WriteLine("Invalid choice. Enter a number between 1 and " + choiceCount);
+                IOService.Output.DisplayFailMessage("Invalid choice. Enter a number between 1 and " + choiceCount);
             }
         }
 

@@ -5,6 +5,7 @@ namespace AshborneGame._Core.Globals.Interfaces
     public interface IOutputHandler
     {
         void Write(string message);
+        void Write(string message, int ms);
         void WriteLine(string message);
         void WriteLine(string message, int ms);
         void DisplayFailMessage(string message);

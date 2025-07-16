@@ -1,6 +1,8 @@
 ﻿using AshborneGame._Core.Game;
+using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Interfaces;
+using AshborneGame._Core.Globals.Services;
 
 namespace AshborneGame.ConsolePort
 {
@@ -10,43 +12,18 @@ namespace AshborneGame.ConsolePort
         {
             Console.Write(message);
         }
-        public void WriteLine(string message)
-        {
-            // Write a line with default delay
-            Console.WriteLine(message, 30);
-        }
 
-        public void WriteLine(string message, int ms)
+        public void Write(string message, int ms)
         {
-            
+
 #if DEBUG
             int i = 0;
             foreach (var letter in message)
             {
-                int modification = GameContext.Random.Next(-5, 6); // Randomly modify the delay by -5 to +5 milliseconds
                 Console.Write(letter);
-                if (letter.Equals('.') && (message.Count() == i + 1 || message[i + 1].Equals(' '))) // If we reach a full stop and it's the last in the message / sentence.
-                {
-                    Thread.Sleep((ms + modification) * 7);
-                }
-                else if ((letter.Equals('"') || letter.Equals(':')) && (message.Count() == i + 1 || message[i + 1].Equals(' ') || message[i + 1].Equals('\n'))) // If we reach a quotation mark or colon and it's the end of the message / sentence
-                {
-                    Thread.Sleep((ms + modification) * 6);
-                }
-                else if (letter.Equals(']') && (message.Count() == i + 1 || message[i + 1].Equals(' '))) // If we reach a closing square bracket and it's the end of the message / sentence
-                {
-                    Thread.Sleep((ms + modification) * 7);
-                }
-                else
-                {
-                    Thread.Sleep((ms + modification) / 2);
-                }
 
-                if (message.Count() == i + 1)
-                {
-                    Console.WriteLine();
-                    Thread.Sleep((ms + modification) * 2);
-                }
+                bool isEnd = message.Count() == i + 1 || message[i + 1].Equals(' ') || (i + 2 == message.Length && message.Substring(i + 3).Equals("\n")); // Check if this is the end of the message or sentence
+                Thread.Sleep(CharacterOutputDelayCalculator.CalculateDebugDelay(letter, ms, isEnd));
 
                 i += 1;
             }
@@ -54,33 +31,50 @@ namespace AshborneGame.ConsolePort
             int i = 0;
             foreach (var letter in message)
             {
-                int modification = GameContext.Random.Next(-5, 6); // Randomly modify the delay by -5 to +5 milliseconds
                 Console.Write(letter);
-                if (letter.Equals('.') && (message.Count() == i + 1 || message[i + 1].Equals(' '))) // If we reach a full stop and it's the last in the message / sentence.
-                {
-                    Thread.Sleep((ms + modification) * 14);
-                }
-                else if ((letter.Equals('"') || letter.Equals(':')) && (message.Count() == i + 1 || message[i + 1].Equals(' ') || message[i + 1].Equals('\n'))) // If we reach a quotation mark or colon and it's the end of the message / sentence
-                {
-                    Thread.Sleep((ms + modification) * 12);
-                }
-                else if (letter.Equals(']') && (message.Count() == i + 1 || message[i + 1].Equals(' '))) // If we reach a closing square bracket and it's the end of the message / sentence
-                {
-                    Thread.Sleep((ms + modification) * 14);
-                }
-                else
-                {
-                    Thread.Sleep((ms + modification));
-                }
 
-                if (message.Count() == i + 1)
-                {
-                    Console.WriteLine();
-                    Thread.Sleep((ms + modification) * 4);
-                }
+                bool isEnd = message.Length == i + 1 || message[i + 1].Equals(' ') || (i + 2 == message.Length && message.Substring(i + 1).Equals("\n")); // Check if this is the end of the message or sentence
+                Thread.Sleep(CharacterOutputDelayCalculator.CalculateDelay(letter, ms, isEnd));
 
                 i += 1;
             }
+#endif
+        }
+
+        public void WriteLine(string message)
+        {
+            // Write a line with default delay
+            WriteLine(message, 30);
+        }
+
+        public void WriteLine(string message, int ms)
+        {
+            // Handle special pause marker: ms__PAUSE__
+            if (message.EndsWith("__PAUSE__"))
+            {
+                var msStr = message.Substring(0, message.IndexOf("__PAUSE__"));
+                if (int.TryParse(msStr, out int t))
+                {
+                    Thread.Sleep(t);
+                }
+                else
+                {
+                    Thread.Sleep(OutputConstants.DefaultPauseDuration);
+                }
+                return;
+            }
+#if DEBUG
+            Write(message, ms);
+
+            int modification = GameContext.Random.Next(OutputConstants.RandomPauseMin, OutputConstants.RandomPauseMax + 1); // Randomly modify the delay
+            Console.WriteLine();
+            Thread.Sleep((ms + modification) * OutputConstants.NewLinePauseMultiplier);
+#else
+            Write(message, ms);
+
+            int modification = GameContext.Random.Next(OutputConstants.RandomPauseMin, OutputConstants.RandomPauseMax + 1); // Randomly modify the delay
+            Console.WriteLine();
+            Thread.Sleep((ms + modification) * OutputConstants.NewLinePauseMultiplier);
 #endif
         }
 
@@ -104,7 +98,7 @@ namespace AshborneGame.ConsolePort
             }
 
 #if DEBUG
-            //Console.WriteLine($"[{type}]: {message}");
+            Console.WriteLine($"[{type}]: {message}");
 #endif
 
             Console.ResetColor();

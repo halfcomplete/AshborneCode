@@ -43,18 +43,17 @@ public abstract class BOCSGameObject
         // Add the behavior to the list
         Behaviours[type].Add(behaviour);
 
-        if (type == typeof(IUsable))
-        {
-            IOService.Output.DisplayDebugMessage($"{Name} is now usable.", ConsoleMessageTypes.ERROR);
-        }
+        //if (type == typeof(IUsable))
+        //{
+        //    IOService.Output.DisplayDebugMessage($"{Name} is now usable.", ConsoleMessageTypes.ERROR);
+        //}
 
-        IOService.Output.DisplayDebugMessage($"Added behaviour of type {type.FullName} to {Name}.", ConsoleMessageTypes.INFO);
-        IOService.Output.DisplayDebugMessage($"All registered behaviours for {Name}: {string.Join(", ", Behaviours.Keys.Select(t => t.Name))}", ConsoleMessageTypes.INFO);
-        foreach (var b in Behaviours)
-        {
-            IOService.Output.DisplayDebugMessage($"- {b.GetType().Name}: {string.Join(", ", b)}", ConsoleMessageTypes.INFO);
-        }
-        IOService.Output.DisplayDebugMessage("");
+        //IOService.Output.DisplayDebugMessage($"Added behaviour of type {type.FullName} to {Name}.", ConsoleMessageTypes.INFO);
+        //IOService.Output.DisplayDebugMessage($"All registered behaviours for {Name}: {string.Join(", ", Behaviours.Keys.Select(t => t.Name))}", ConsoleMessageTypes.INFO);
+        //foreach (var b in Behaviours)
+        //{
+        //    IOService.Output.DisplayDebugMessage($"- {b.GetType().Name}: {string.Join(", ", b)}", ConsoleMessageTypes.INFO);
+        //}
     }
 
     public void RemoveBehaviour<T>() where T : class => Behaviours.Remove(typeof(T));

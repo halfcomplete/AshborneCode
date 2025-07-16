@@ -5,16 +5,16 @@ namespace AshborneGame.WebPort
 {
     public class WebOutputHandler : IOutputHandler
     {
-        private readonly Func<string, Task> _writeCallback;
+        private readonly Func<string, Task> _writeLineCallback;
         private readonly Func<Task> _clearCallback;
         private readonly Func<ConsoleMessageTypes, string, Task> _debugCallback;
 
         public WebOutputHandler(
-            Func<string, Task> writeCallback,
+            Func<string, Task> writeLineCallback,
             Func<Task> clearCallback,
             Func<ConsoleMessageTypes, string, Task>? debugCallback = null)
         {
-            _writeCallback = writeCallback;
+            _writeLineCallback = writeLineCallback;
             _clearCallback = clearCallback;
             _debugCallback = debugCallback ?? ((type, msg) => Task.CompletedTask);
         }
@@ -22,18 +22,28 @@ namespace AshborneGame.WebPort
         public void Write(string message)
         {
             // Write without newline
-            _writeCallback?.Invoke(message);
+            _writeLineCallback?.Invoke(message);
         }
 
-        public void WriteLine(string message)
+        public async void Write(string message, int ms)
         {
-            // Simple newline version - no buffering
-            _writeCallback?.Invoke(message + "\n");
+            await _writeLineCallback?.Invoke($"{ms}__TYPEWRITER_START__{message}__TYPEWRITER_END__");
+        }
+
+        public async void WriteLine(string message)
+        {
+            if (message.TrimEnd().EndsWith("__PAUSE__"))
+            {
+                // Handle special pause marker: ms__PAUSE__
+                await _writeLineCallback?.Invoke($"{message}");
+                return;
+            }
+            await _writeLineCallback?.Invoke($"__TYPEWRITER_START__{message}__TYPEWRITER_END__\n");
         }
 
         public async void WriteLine(string message, int ms)
         {
-            await _writeCallback?.Invoke($"__TYPEWRITER_START__{message}__TYPEWRITER_END__\n");
+            await _writeLineCallback?.Invoke($"{ms}__TYPEWRITER_START__{message}__TYPEWRITER_END__\n");
         }
 
         public void DisplayFailMessage(string message)
@@ -41,7 +51,7 @@ namespace AshborneGame.WebPort
             // Later, display a fail message on UI
             // E.g., using a toast notification or alert
             // For now, just log it
-            _writeCallback?.Invoke($"[FAIL] {message}\n");
+            _writeLineCallback?.Invoke($"[FAIL] {message}\n");
         }
 
         public void DisplayDebugMessage(string message, ConsoleMessageTypes type)

@@ -1,4 +1,5 @@
 ﻿@using AshborneGame._Core.Game
+@using AshborneGame._Core.Globals.Constants
 @using AshborneGame._Core.Globals.Services
 @using AshborneGame.WebPort
 @using Microsoft.JSInterop
@@ -48,9 +49,9 @@
 </div>
 
 @code {
-    [Inject] private HttpClient Http { get; set; }
-    [Inject] private NavigationManager Navigation { get; set; }
-    [Inject] private AppEnvironment AppEnv { get; set; }
+    [Inject] private HttpClient? Http { get; set; }
+    [Inject] private NavigationManager? Navigation { get; set; }
+    [Inject] private AppEnvironment? AppEnv { get; set; }
     private string userInput = "";
     private string gameText = "";
     private GameEngine engine;
@@ -58,23 +59,29 @@
     private bool isTypingDialogue = false;
     private List<string> dialogueChoices = new List<string>();
     private TaskCompletionSource<int> choiceCompletionSource;
-    private Queue<string> typewriterQueue = new Queue<string>();
-    private bool isTypewriterRunning = false;
     private bool isAwaitingPlayerInput = false;
     private bool isDialogueInput = false;
     private TaskCompletionSource<string> playerInputTcs;
 
+    // Output queue for all output (lines, pauses, typewriter)
+    private Queue<string> outputQueue = new Queue<string>();
+    private bool isProcessingQueue = false;
+
     protected override void OnInitialized()
     {
+        if (AppEnv == null)
+        {
+            throw new InvalidOperationException("AppEnvironment is not injected.");
+        }
 #if DEBUG
         var outputHandler = new WebOutputHandler(
-            async line => await AppendLine(line),
+            async line => EnqueueOutput(line),
             async () => { gameText = ""; await InvokeAsync(StateHasChanged); },
-            async (type, msg) => await AppendLine($"[DEBUG - {type}]: {msg}")
+            async (type, msg) => EnqueueOutput($"[DEBUG - {type}]: {msg}")
         );
 #else
         var outputHandler = new WebOutputHandler(
-            async line => await AppendLine(line),
+            async line => EnqueueOutput(line),
             async () => { gameText = ""; await InvokeAsync(StateHasChanged); }
         );
 #endif
@@ -86,7 +93,7 @@
 
         engine = new GameEngine(inputHandler, outputHandler, AppEnv);
 
-		// Wire up callbacks for dialogue and player input
+        // Wire up callbacks for dialogue and player input
         if (GameContext.DialogueService != null)
         {
             GameContext.DialogueService.SetPlayerInputCallback(GetPlayerInputFromUIAsync);
@@ -95,7 +102,6 @@
                 isInDialogue = false;
                 isAwaitingPlayerInput = false;
                 userInput = "";
-                IOService.Output.DisplayDebugMessage($"[DEBUG] DialogueComplete handler called at {DateTime.Now}");
                 await InvokeAsync(StateHasChanged);
             };
             GameContext.DialogueService.DialogueStart += async () =>
@@ -103,7 +109,6 @@
                 isInDialogue = true;
                 isAwaitingPlayerInput = false;
                 userInput = "";
-                IOService.Output.DisplayDebugMessage($"[DEBUG] DialogueStart handler called at {DateTime.Now}");
                 await InvokeAsync(StateHasChanged);
             };
         }
@@ -130,79 +135,63 @@
         InvokeAsync(StateHasChanged);
     }
 
-    private async Task<int> GetDialogueChoice(int choiceCount)
+    // Enqueue output for sequential processing
+    private void EnqueueOutput(string line)
     {
-        // Create a completion source for this choice
-        choiceCompletionSource = new TaskCompletionSource<int>();
-
-        dialogueChoices.Clear(); // Clear any existing choices
-        await InvokeAsync(StateHasChanged);
-
-        // Wait for choices to be populated (with longer timeout)
-        int timeout = 0;
-        while (dialogueChoices.Count == 0 && timeout < 5000) // 50 second timeout (5000 * 10ms)
+        outputQueue.Enqueue(line);
+        if (!isProcessingQueue)
         {
-            await Task.Delay(10);
-            timeout++;
+            _ = ProcessOutputQueue();
         }
-
-        if (dialogueChoices.Count == 0)
-        {
-            // If no choices were detected after timeout, log and wait for user input anyway
-            await AppendLine("[DEBUG] No dialogue choices detected after timeout, waiting for manual input");
-            await InvokeAsync(StateHasChanged);
-            return 1;
-        }
-
-        // Wait for the user to make a choice
-        int choice = await choiceCompletionSource.Task;
-
-        // Clear dialogue state
-        dialogueChoices.Clear();
-        await InvokeAsync(StateHasChanged);
-
-        return choice;
     }
 
-    private async Task SelectDialogueChoice(int choice)
+    private async Task ProcessOutputQueue()
     {
-        choiceCompletionSource?.TrySetResult(choice);
-    }
-
-    private async Task AppendLine(string line)
-    {
-        // Check if this is a dialogue choice line (format: [1] Choice text)
-        // Make sure it's a complete choice line, not just a partial one
-        if (line.Trim().StartsWith("[") && line.Contains("]") && line.Trim().Length > 2)
+        isProcessingQueue = true;
+        while (outputQueue.Count > 0)
         {
-            int bracketEnd = line.IndexOf("]");
-            if (bracketEnd > 0 && int.TryParse(line.Substring(1, bracketEnd - 1), out int choiceNumber))
+            var line = outputQueue.Dequeue();
+            // Handle special pause marker: ms__PAUSE__
+            if (line.TrimEnd().EndsWith("__PAUSE__"))
             {
-                string choiceText = line.Substring(bracketEnd + 1).Trim();
-                if (!string.IsNullOrWhiteSpace(choiceText))
+                var msStr = line.Substring(0, line.IndexOf("__PAUSE__"));
+                if (int.TryParse(msStr, out int ms))
                 {
-                    await AppendLine($"[DEBUG] Detected dialogue choice {choiceNumber}: {choiceText}");
-                    dialogueChoices.Add(choiceText);
-                    // Don't immediately show choices - wait for dialogue to complete
                     await InvokeAsync(StateHasChanged);
-                    await AutoScrollToBottom();
-                    return;
+                    await Task.Yield();
+                    await Task.Delay(ms);
+                }
+                else
+                {
+                    await InvokeAsync(StateHasChanged);
+                    await Task.Yield();
+                    await Task.Delay(OutputConstants.DefaultPauseDuration);
+                }
+                continue; // Do not add pause marker to output buffer
+            }
+            // Handle typewriter effect
+            if (line.Contains("__TYPEWRITER_START__") && line.Contains("__TYPEWRITER_END__"))
+            {
+                await HandleTypewriterEffect(line);
+                continue;
+            }
+            // Dialogue choice line
+            if (line.Trim().StartsWith("[") && line.Contains("]") && line.Trim().Length > 2)
+            {
+                int bracketEnd = line.IndexOf("]");
+                if (bracketEnd > 0 && int.TryParse(line.Substring(1, bracketEnd - 1), out int choiceNumber))
+                {
+                    string choiceText = line.Substring(bracketEnd + 1).Trim();
+                    if (!string.IsNullOrWhiteSpace(choiceText))
+                    {
+                        dialogueChoices.Add(choiceText);
+                        await InvokeAsync(StateHasChanged);
+                        await AutoScrollToBottom();
+                        continue;
+                    }
                 }
             }
-        }
-
-        // Check if this is a typewriter effect message
-        if (line.Contains("__TYPEWRITER_START__") && line.Contains("__TYPEWRITER_END__"))
-        {
-            typewriterQueue.Enqueue(line);
-            if (!isTypewriterRunning)
-            {
-                _ = ProcessTypewriterQueue();
-            }
-        }
-        else
-        {
-            // Don't add empty lines or lines that are just whitespace
+            // Normal line
             if (!string.IsNullOrWhiteSpace(line))
             {
                 gameText += line + "\n";
@@ -214,22 +203,19 @@
             await InvokeAsync(StateHasChanged);
             await AutoScrollToBottom();
         }
-    }
-
-    private async Task ProcessTypewriterQueue()
-    {
-        // Ensure that only one line is written at a time
-        isTypewriterRunning = true;
-        while (typewriterQueue.Count > 0)
-        {
-            string line = typewriterQueue.Dequeue();
-            await HandleTypewriterEffect(line);
-        }
-        isTypewriterRunning = false;
+        isProcessingQueue = false;
     }
 
     private async Task HandleTypewriterEffect(string line)
     {
+        // Parse ms value at the start of the line (e.g. "50__TYPEWRITER_START__...")
+        int ms = 30; // default
+        int msEnd = line.IndexOf("__TYPEWRITER_START__");
+        if (msEnd > 0)
+        {
+            string msStr = line.Substring(0, msEnd);
+            if (!int.TryParse(msStr, out ms)) ms = 30;
+        }
         int startIndex = line.IndexOf("__TYPEWRITER_START__") + "__TYPEWRITER_START__".Length;
         int endIndex = line.IndexOf("__TYPEWRITER_END__");
         string message = line.Substring(startIndex, endIndex - startIndex);
@@ -248,37 +234,59 @@
             {
                 typedLine += msgLine[i];
                 gameText = string.Join('\n', buffer) + (buffer.Count > 0 ? "\n" : "") + typedLine;
-                // Update UI every character
                 await InvokeAsync(StateHasChanged);
                 await AutoScrollToBottom();
-                char currentChar = msgLine[i];
-                if ((currentChar == '.' || currentChar == ':' || currentChar == '"' || currentChar == ']') &&
-                    (i == msgLine.Length - 1 || msgLine[i + 1] == ' '))
-                {
+                char letter = msgLine[i];
+                bool isEnd = message.Count() == i + 1 || message[i + 1].Equals(' ') || (i + 2 == message.Length && message.Substring(i + 1).Equals("\n")); // Check if this is the end of the message or sentence
+                
 #if DEBUG
-                    await Task.Delay(200); // Shorter delay for production
+                await Task.Delay(CharacterOutputDelayCalculator.CalculateDebugDelay(letter, ms, isEnd));
 #else
-                    await Task.Delay(800);
+                await Task.Delay(CharacterOutputDelayCalculator.CalculateDelay(letter, ms, isEnd));
 #endif
-                }
-                else
-                {
-#if DEBUG
-                    await Task.Delay(10); // Shorter delay for production
-#else
-                    await Task.Delay(30);
-#endif
-                }
             }
             buffer.Add(typedLine); // Add finished line to buffer
             gameText = string.Join('\n', buffer);
             await InvokeAsync(StateHasChanged);
             await AutoScrollToBottom();
-            await Task.Delay(100);
+
+#if DEBUG
+            await Task.Delay(Convert.ToInt32(Math.Round(ms * OutputConstants.NewLinePauseMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier)));
+#else
+            await Task.Delay(ms * OutputConstants.NewLinePauseMultiplier);
+#endif
         }
-        await Task.Delay(200);
         isTypingDialogue = false;
         await InvokeAsync(StateHasChanged);
+    }
+
+    // All usages of AppendLine, AppendMsg, etc. should now use EnqueueOutput
+    private async Task<int> GetDialogueChoice(int choiceCount)
+    {
+        choiceCompletionSource = new TaskCompletionSource<int>();
+        dialogueChoices.Clear();
+        await InvokeAsync(StateHasChanged);
+        int timeout = 0;
+        while (dialogueChoices.Count == 0 && timeout < 5000)
+        {
+            await Task.Delay(10);
+            timeout++;
+        }
+        if (dialogueChoices.Count == 0)
+        {
+            EnqueueOutput("[DEBUG] No dialogue choices detected after timeout, waiting for manual input");
+            await InvokeAsync(StateHasChanged);
+            return 1;
+        }
+        int choice = await choiceCompletionSource.Task;
+        dialogueChoices.Clear();
+        await InvokeAsync(StateHasChanged);
+        return choice;
+    }
+
+    private async Task SelectDialogueChoice(int choice)
+    {
+        choiceCompletionSource?.TrySetResult(choice);
     }
 
     private async Task<string> GetPlayerInputFromUIAsync(bool isDialogue)
@@ -304,19 +312,19 @@
             }
             try
             {
-                await AppendLine($"\n> {userInput}\n");
+                EnqueueOutput($"> {userInput}");
                 string command = userInput.Trim();
-                await AppendLine($"[DEBUG] Executing command: '{command}'");
-                await AppendLine($"[DEBUG] Player location: {GameContext.Player.CurrentLocation.Name}");
-                await AppendLine($"[DEBUG] Player sublocation: {(GameContext.Player.CurrentSublocation?.Name.ReferenceName ?? "None")}");
-                await AppendLine($"[DEBUG] Sublocation object: {(GameContext.Player.CurrentSublocation?.GameObject?.GetType().Name ?? "None")}");
+                EnqueueOutput($"[DEBUG] Executing command: '{command}'");
+                EnqueueOutput($"[DEBUG] Player location: {GameContext.Player.CurrentLocation.Name}");
+                EnqueueOutput($"[DEBUG] Player sublocation: {(GameContext.Player.CurrentSublocation?.Name.ReferenceName ?? "None")}");
+                EnqueueOutput($"[DEBUG] Sublocation object: {(GameContext.Player.CurrentSublocation?.GameObject?.GetType().Name ?? "None")}");
                 engine.ReceiveCommand(command);
-                await AppendLine($"[DEBUG] Command execution completed");
+                EnqueueOutput($"[DEBUG] Command execution completed");
             }
             catch (Exception ex)
             {
-                await AppendLine($"[ERROR] Command execution failed: {ex.Message}");
-                await AppendLine($"[ERROR] Stack trace: {ex.StackTrace}");
+                EnqueueOutput($"[ERROR] Command execution failed: {ex.Message}");
+                EnqueueOutput($"[ERROR] Stack trace: {ex.StackTrace}");
             }
             finally
             {
@@ -327,7 +335,18 @@
 
     private async Task AutoScrollToBottom()
     {
-        await JS.InvokeVoidAsync("scrollGameOutputToBottom", false); // false = instant
-        await Task.Delay(10);
+        try
+        {
+            if (JS != null)
+            {
+                await JS.InvokeVoidAsync("scrollGameOutputToBottom", false); // false = instant
+                await Task.Delay(10);
+            }
+        }
+        catch (Exception ex)
+        {
+            gameText += $"\n[ERROR] JS interop failed: {ex.Message}\n";
+            await InvokeAsync(StateHasChanged);
+        }
     }
 }

@@ -21,6 +21,8 @@ namespace AshborneGame._Core.SceneManagement
         private readonly AppEnvironment _appEnvironment;
         private readonly int _defaultWait = 80;
 
+        private string? _currentSilentPath = null;
+
         public bool IsRunning => _story != null && _story.canContinue;
 
         public InkRunner(GameStateManager gameState, Player player, AppEnvironment appEnvironment)
@@ -145,11 +147,15 @@ namespace AshborneGame._Core.SceneManagement
                         sawEndMarker = true;
                         break;
                     }
-
+                    if (line.TrimEnd().EndsWith("__PAUSE__"))
+                    {
+                        IOService.Output.WriteLine(line);
+                        continue;
+                    }
                     // Handle async player input in WASM
                     if (line.StartsWith("__GET_PLAYER_INPUT__"))
                     {
-                        IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Awaiting player input at {DateTime.Now}", ConsoleMessageTypes.INFO);
+                        IOService.Output.DisplayDebugMessage($"InkRunner: Awaiting player input at {DateTime.Now}", ConsoleMessageTypes.INFO);
                         if (OperatingSystem.IsBrowser())
                         {
                             if (_getPlayerInputFromUIAsync == null)
@@ -231,18 +237,6 @@ namespace AshborneGame._Core.SceneManagement
 
         private void InitialiseBindings()
         {
-            // Pacing
-            if (OperatingSystem.IsBrowser())
-            {
-                // Web: async delay
-                _story.BindExternalFunction("pause", async (int ms) => { await Task.Delay(ms); });
-            }
-            else
-            {
-                // Console: blocking sleep
-                _story.BindExternalFunction("pause", (int ms) => Thread.Sleep(ms));
-            }
-
             // --- Flags ---
             _story.BindExternalFunction("setFlag", (string key, bool value) => _gameState.SetFlag(key, value));
 
@@ -339,6 +333,11 @@ namespace AshborneGame._Core.SceneManagement
             {
                 (_, _, int totalValue) = GameContext.Player.Stats.GetStat(statName);
                 return totalValue;
+            });
+
+            _story.BindExternalFunction("setSilentPath", (string path) =>
+            {
+                _currentSilentPath = path;
             });
         }
 
