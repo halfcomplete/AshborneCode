@@ -36,15 +36,15 @@ namespace AshborneGame._Core.SceneManagement
             get => _currentSilentPath.Item2;
         }
 
-        private (string, int) _currentWarnPath = ("", 0);
-        public string CurrentWarnPath
+        private (string, int) _currentWarningPath = ("", 0);
+        public string CurrentWarningPath
         {
-            get => _currentWarnPath.Item1;
+            get => _currentWarningPath.Item1;
         }
 
-        public int WarnPathWait
+        public int WarningPathWait
         {
-            get => _currentWarnPath.Item2;
+            get => _currentWarningPath.Item2;
         }
 
 
@@ -362,11 +362,6 @@ namespace AshborneGame._Core.SceneManagement
             {
                 (_, _, int totalValue) = GameContext.Player.Stats.GetStat(statName);
                 return totalValue;
-            });
-
-            _story.BindExternalFunction("setWarnPath", (string warnPath, int warnMs) =>
-            {
-                _currentWarnPath = (warnPath, warnMs);
             });
 
             _story.BindExternalFunction("setSilentPath", (string silentPath, int silentMs) =>

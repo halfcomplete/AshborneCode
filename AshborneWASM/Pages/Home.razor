@@ -90,11 +90,11 @@
             throw new InvalidOperationException("AppEnvironment is not injected.");
         }
 #if DEBUG
-        var outputHandler = new WebOutputHandler(
-            async line => EnqueueOutput(line),
-            async () => { gameText = ""; await InvokeAsync(StateHasChanged); },
-            async (type, msg) => EnqueueOutput($"[DEBUG - {type}]: {msg}")
-        );
+    var outputHandler = new WebOutputHandler(
+    async line => EnqueueOutput(line),
+    async () => { gameText = ""; await InvokeAsync(StateHasChanged); },
+    async (type, msg) => EnqueueOutput($"[DEBUG - {type}]: {msg}")
+    );
 #else
         var outputHandler = new WebOutputHandler(
             async line => EnqueueOutput(line),
@@ -272,7 +272,7 @@
                 await AutoScrollToBottom();
                 char letter = msgLine[i];
                 bool isEnd = message.Count() == i + 1 || message[i + 1].Equals(' ') || (i + 2 == message.Length && message.Substring(i + 1).Equals("\n")); // Check if this is the end of the message or sentence
-                
+
 #if DEBUG
                 await Task.Delay(CharacterOutputDelayCalculator.CalculateDebugDelay(letter, ms, isEnd));
 #else
@@ -304,26 +304,33 @@
         if (Instance != null)
             await Instance.FlushOutputQueueAsync();
 
-        // If a silent path is set, start the timeout logic
-        if (!string.IsNullOrWhiteSpace(GameContext.InkRunner.CurrentSilentPath))
-        {
-            var timeoutTask = Task.Delay(GameContext.InkRunner.SilentPathWait);
-            var choiceTask = choiceCompletionSource.Task;
-            var completedTask = await Task.WhenAny(choiceTask, timeoutTask);
+        bool hasSilent = !string.IsNullOrWhiteSpace(GameContext.InkRunner.CurrentSilentPath);
 
-            if (completedTask == timeoutTask)
+        // If silent path is set, start silent timer
+        if (hasSilent)
+        {
+            var silentTask = Task.Delay(GameContext.InkRunner.SilentPathWait);
+            var choiceTask = choiceCompletionSource.Task;
+            var completedTask = await Task.WhenAny(choiceTask, silentTask);
+
+            if (completedTask == silentTask)
             {
                 await GameContext.InkRunner.TryJumpToSilentPathAsync();
-                // Return early so we do NOT await choiceCompletionSource.Task
-                return -1; // or some sentinel value
+                return -1; // sentinel for silent path
             }
+            // If the user made a choice in time, return it
+            int choice = await choiceCompletionSource.Task;
+            dialogueChoices.Clear();
+            await InvokeAsync(StateHasChanged);
+            return choice;
         }
-
-        // If no silent path, or if the user made a choice in time, just wait for the choice
-        int choice = await choiceCompletionSource.Task;
-        dialogueChoices.Clear();
-        await InvokeAsync(StateHasChanged);
-        return choice;
+        else
+        {
+            int choice = await choiceCompletionSource.Task;
+            dialogueChoices.Clear();
+            await InvokeAsync(StateHasChanged);
+            return choice;
+        }
     }
 
     private async Task SelectDialogueChoice(int choice)
