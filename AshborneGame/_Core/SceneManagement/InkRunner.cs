@@ -6,6 +6,9 @@ using AshborneGame._Core.Data.BOCS.ItemSystem;
 using System.Reflection.Metadata.Ecma335;
 using AshborneGame._Core.Globals.Enums;
 using System.IO;
+#if BLAZOR
+using AshborneWASM.Pages;
+#endif
 
 namespace AshborneGame._Core.SceneManagement
 {
@@ -21,7 +24,29 @@ namespace AshborneGame._Core.SceneManagement
         private readonly AppEnvironment _appEnvironment;
         private readonly int _defaultWait = 80;
 
-        private string? _currentSilentPath = null;
+        private (string, int) _currentSilentPath = ("", 0);
+
+        public string CurrentSilentPath
+        {
+            get => _currentSilentPath.Item1;
+        }
+
+        public int SilentPathWait
+        {
+            get => _currentSilentPath.Item2;
+        }
+
+        private (string, int) _currentWarnPath = ("", 0);
+        public string CurrentWarnPath
+        {
+            get => _currentWarnPath.Item1;
+        }
+
+        public int WarnPathWait
+        {
+            get => _currentWarnPath.Item2;
+        }
+
 
         public bool IsRunning => _story != null && _story.canContinue;
 
@@ -220,7 +245,11 @@ namespace AshborneGame._Core.SceneManagement
                     {
                         IOService.Output.WriteLine($"[{i + 1}] {_story.currentChoices[i].text}");
                     }
-
+#if BLAZOR
+                    // Wait for Blazor output queue to flush so choices are visible before input is awaited
+                    if (Home.Instance != null)
+                        await Home.Instance.FlushOutputQueueAsync();
+#endif
                     int choice = await IOService.Input.GetChoiceInputAsync(_story.currentChoices.Count);
                     IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Choice {choice} selected at {DateTime.Now}", ConsoleMessageTypes.INFO);
                     _story.ChooseChoiceIndex(choice - 1);
@@ -335,9 +364,14 @@ namespace AshborneGame._Core.SceneManagement
                 return totalValue;
             });
 
-            _story.BindExternalFunction("setSilentPath", (string path) =>
+            _story.BindExternalFunction("setWarnPath", (string warnPath, int warnMs) =>
             {
-                _currentSilentPath = path;
+                _currentWarnPath = (warnPath, warnMs);
+            });
+
+            _story.BindExternalFunction("setSilentPath", (string silentPath, int silentMs) =>
+            {
+                _currentSilentPath = (silentPath, silentMs);
             });
         }
 
@@ -352,6 +386,17 @@ namespace AshborneGame._Core.SceneManagement
         {
             _story.ChoosePathString(path);
             Run();
+        }
+
+        /// <summary>
+        /// Try to jump to the specified silent path.
+        /// </summary>
+        public async Task TryJumpToSilentPathAsync()
+        {
+            if (string.IsNullOrWhiteSpace(_currentSilentPath.Item1))
+                return;
+            _story.ChoosePathString(_currentSilentPath.Item1);
+            await RunAsync();
         }
 
         /// <summary>

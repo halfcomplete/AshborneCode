@@ -19,10 +19,19 @@ namespace AshborneGame.WebPort
             _debugCallback = debugCallback ?? ((type, msg) => Task.CompletedTask);
         }
 
+        // IOutputHandler.Write(string) implementation (void)
         public void Write(string message)
         {
-            // Write without newline
-            _writeLineCallback?.Invoke(message);
+            WriteAsync(message).GetAwaiter().GetResult();
+        }
+
+        // Task-based Write for internal async use
+        public Task WriteAsync(string text)
+        {
+#if DEBUG && BLAZOR
+            Console.WriteLine($"[DEBUG] WebOutputHandler.Write: {text}");
+#endif
+            return _writeLineCallback(text);
         }
 
         public async void Write(string message, int ms)
@@ -30,15 +39,19 @@ namespace AshborneGame.WebPort
             await _writeLineCallback?.Invoke($"{ms}__TYPEWRITER_START__{message}__TYPEWRITER_END__");
         }
 
-        public async void WriteLine(string message)
+        // IOutputHandler.WriteLine(string) implementation (void)
+        public void WriteLine(string message)
         {
-            if (message.TrimEnd().EndsWith("__PAUSE__"))
-            {
-                // Handle special pause marker: ms__PAUSE__
-                await _writeLineCallback?.Invoke($"{message}");
-                return;
-            }
-            await _writeLineCallback?.Invoke($"__TYPEWRITER_START__{message}__TYPEWRITER_END__\n");
+            WriteLineAsync(message).GetAwaiter().GetResult();
+        }
+
+        // Task-based WriteLine for internal async use
+        public Task WriteLineAsync(string line)
+        {
+#if DEBUG && BLAZOR
+            Console.WriteLine($"[DEBUG] WebOutputHandler.WriteLine: {line}");
+#endif
+            return _writeLineCallback(line);
         }
 
         public async void WriteLine(string message, int ms)

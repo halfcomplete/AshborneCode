@@ -1,6 +1,8 @@
 ﻿@using AshborneGame._Core.Game
+@using AshborneGame._Core.SceneManagement;
 @using AshborneGame._Core.Globals.Constants
 @using AshborneGame._Core.Globals.Services
+@using System.Diagnostics;
 @using AshborneGame.WebPort
 @using Microsoft.JSInterop
 @page "/"
@@ -48,6 +50,15 @@
     }
 </div>
 
+<div>
+    <pre>
+        isInDialogue: @isInDialogue
+        isAwaitingPlayerInput: @isAwaitingPlayerInput
+        dialogueChoices.Count: @dialogueChoices.Count
+        isTypingDialogue: @isTypingDialogue
+    </pre>
+</div>
+
 @code {
     [Inject] private HttpClient? Http { get; set; }
     [Inject] private NavigationManager? Navigation { get; set; }
@@ -62,13 +73,18 @@
     private bool isAwaitingPlayerInput = false;
     private bool isDialogueInput = false;
     private TaskCompletionSource<string> playerInputTcs;
+    private TaskCompletionSource<bool> choicesAvailableTcs;
 
     // Output queue for all output (lines, pauses, typewriter)
     private Queue<string> outputQueue = new Queue<string>();
     private bool isProcessingQueue = false;
 
+    // Static instance for external access (used by InkRunner flush)
+    public static Home? Instance;
+
     protected override void OnInitialized()
     {
+        Instance = this;
         if (AppEnv == null)
         {
             throw new InvalidOperationException("AppEnvironment is not injected.");
@@ -138,10 +154,25 @@
     // Enqueue output for sequential processing
     private void EnqueueOutput(string line)
     {
+#if DEBUG
+        Console.WriteLine($"[DEBUG] EnqueueOutput: {line}");
+#endif
         outputQueue.Enqueue(line);
         if (!isProcessingQueue)
         {
             _ = ProcessOutputQueue();
+        }
+    }
+
+    /// <summary>
+    /// Waits until the output queue is fully processed. Used to synchronize output and input.
+    /// </summary>
+    public async Task FlushOutputQueueAsync()
+    {
+        // Wait until the output queue is empty and not processing
+        while (outputQueue.Count > 0 || isProcessingQueue)
+        {
+            await Task.Delay(1);
         }
     }
 
@@ -151,6 +182,9 @@
         while (outputQueue.Count > 0)
         {
             var line = outputQueue.Dequeue();
+#if DEBUG
+            Console.WriteLine($"[DEBUG] ProcessOutputQueue: {line}");
+#endif
             // Handle special pause marker: ms__PAUSE__
             if (line.TrimEnd().EndsWith("__PAUSE__"))
             {
@@ -260,24 +294,32 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    // All usages of AppendLine, AppendMsg, etc. should now use EnqueueOutput
     private async Task<int> GetDialogueChoice(int choiceCount)
     {
         choiceCompletionSource = new TaskCompletionSource<int>();
         dialogueChoices.Clear();
         await InvokeAsync(StateHasChanged);
-        int timeout = 0;
-        while (dialogueChoices.Count == 0 && timeout < 5000)
+
+        // Wait for output queue to be fully processed so choices are visible
+        if (Instance != null)
+            await Instance.FlushOutputQueueAsync();
+
+        // If a silent path is set, start the timeout logic
+        if (!string.IsNullOrWhiteSpace(GameContext.InkRunner.CurrentSilentPath))
         {
-            await Task.Delay(10);
-            timeout++;
+            var timeoutTask = Task.Delay(GameContext.InkRunner.SilentPathWait);
+            var choiceTask = choiceCompletionSource.Task;
+            var completedTask = await Task.WhenAny(choiceTask, timeoutTask);
+
+            if (completedTask == timeoutTask)
+            {
+                await GameContext.InkRunner.TryJumpToSilentPathAsync();
+                // Return early so we do NOT await choiceCompletionSource.Task
+                return -1; // or some sentinel value
+            }
         }
-        if (dialogueChoices.Count == 0)
-        {
-            EnqueueOutput("[DEBUG] No dialogue choices detected after timeout, waiting for manual input");
-            await InvokeAsync(StateHasChanged);
-            return 1;
-        }
+
+        // If no silent path, or if the user made a choice in time, just wait for the choice
         int choice = await choiceCompletionSource.Task;
         dialogueChoices.Clear();
         await InvokeAsync(StateHasChanged);

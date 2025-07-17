@@ -30,7 +30,7 @@ namespace AshborneGame._Core.Game
             var inkRunner = new InkRunner(gameState, player, appEnvironment);
             _dialogueService = new DialogueService(inkRunner);
 
-            GameContext.Initialise(player, gameState, _dialogueService, this);
+            GameContext.Initialise(player, gameState, _dialogueService, inkRunner, this);
             gameState.InitialiseMasks(MaskInitialiser.InitialiseMasks());
 
             (Location startingLocation, Scene startingLocationGroup) = InitialiseStartingLocation(player);

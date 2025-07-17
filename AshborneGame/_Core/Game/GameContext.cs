@@ -1,10 +1,6 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Globals.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using AshborneGame._Core.SceneManagement;
 
 namespace AshborneGame._Core.Game
 {
@@ -13,14 +9,16 @@ namespace AshborneGame._Core.Game
         public static Player Player { get; private set; }
         public static GameStateManager GameState { get; private set; }
         public static DialogueService DialogueService { get; private set; }
+        public static InkRunner InkRunner { get; private set; }
         public static GameEngine GameEngine { get; private set; }
         public static Random Random { get; } = new Random();
 
-        public static void Initialise(Player player, GameStateManager gameState, DialogueService dialogueRunner, GameEngine gameEngine)
+        public static void Initialise(Player player, GameStateManager gameState, DialogueService dialogueRunner, InkRunner inkRunner, GameEngine gameEngine)
         {
             Player = player;
             GameState = gameState;
             DialogueService = dialogueRunner;
+            InkRunner = inkRunner;
             GameEngine = gameEngine;
         }
     }
