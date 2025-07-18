@@ -44,7 +44,7 @@ namespace AshborneGame._Core.SceneManagement
         public void AddLocation(Location location)
         {
             Locations.Add(location);
-            location.Group = this;
+            location.Scene = this;
         }
 
         public string GetHeader()

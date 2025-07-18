@@ -56,8 +56,8 @@ namespace AshborneTests
         /// </summary>
         static internal Location CreateTestLocation(string name = "Test Location")
         {
-            var descriptor = new AshborneGame._Core.SceneManagement.LocationDescriptor(name);
-            var narrative = new AshborneGame._Core.SceneManagement.LocationNarrativeProfile
+            var descriptor = new AshborneGame._Core.SceneManagement.LocationIdentifier(name);
+            var narrative = new AshborneGame._Core.SceneManagement.LocationDescriptionProfile
             {
                 FirstTimeDescription = $"{name} - first time.",
                 ReturnDescription = $"{name} - return.",
@@ -73,8 +73,8 @@ namespace AshborneTests
         static internal Sublocation CreateTestSublocation(BOCSGameObject gameObject)
         {
             var parent = CreateTestLocation(System.Guid.NewGuid().ToString());
-            var descriptor = new AshborneGame._Core.SceneManagement.LocationDescriptor("Test sublocation");
-            var narrative = new AshborneGame._Core.SceneManagement.LocationNarrativeProfile
+            var descriptor = new AshborneGame._Core.SceneManagement.LocationIdentifier("Test sublocation");
+            var narrative = new AshborneGame._Core.SceneManagement.LocationDescriptionProfile
             {
                 FirstTimeDescription = "Test sublocation - first time.",
                 ReturnDescription = "Test sublocation - return.",

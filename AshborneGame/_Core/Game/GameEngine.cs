@@ -1,9 +1,8 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem;
-using AshborneGame._Core.Data.BOCS.NPCSystem;
-using AshborneGame._Core.Data.BOCS.ObjectSystem;
 using AshborneGame._Core.Game.CommandHandling;
-using AshborneGame._Core.Game.Events;
+using AshborneGame._Core.Game.DescriptionHandling;
+using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
@@ -69,65 +68,86 @@ namespace AshborneGame._Core.Game
 
         private (Location, Scene) InitialiseStartingLocation(Player player)
         {
-            var eyePlatformDesc = new LocationDescriptor("the centre", "the", "stand on");
-            var eyePlatformNarr = new LocationNarrativeProfile { FirstTimeDescription = "On all sides, an endless ocean of black sand stretches away..." };
-            var eyePlatform = new Location(eyePlatformDesc, eyePlatformNarr, System.Guid.NewGuid().ToString());
+            Location eyePlatform = LocationFactory.CreateLocation(
+                new Location(
+                    new LocationIdentifier("Eye Platform"),
+                    "Eye Platform"),
+                "You glance around uneasily. The eye you stand on is unblinking and unmoving. Black clouds cover the sky, and the occasional lightning flashes are bright white against an otherwise dull and dark background.",
+                new FadingDescription(
+                    "You feel sick and disoriented. It takes you a few moments to stabilise. Glancing around, you notice that you're standing on an eye-shaped platform overlooking a vast, swirling abyss. The air is thick with an otherworldly energy as mirrors and shards of glass spin wildly around you.",
+                    "You are back on the platform. The eye beneath seems stronger now, the pupil having enlarged, as though it wants to see more. The abyss feels darker, heavier.",
+                    "For the fourth time, you stand overlooking the mess of glass and mirrors. You almost grow tired of it. The vortex is at its strongest now. The void is at its darkest, deepest, and the mirrors reflect your ragged face. It is unrecognisable now.",
+                    "You are once again on the eye platform. It remains unchanged. The vortex belows continues swirling, and the eye continues staring."),
+                new SensoryDescription(
+                    "The platform beneath is an alien stone, black and white patterns etched into every part of the eye.",
+                    "It's eerily quiet despite the chaos above and below. As though the eye is remembering, and commanding everything to be silent."),
+                new AmbientDescription(new Dictionary<TimeSpan, string>() { { TimeSpan.FromSeconds(50), "The glass keeps on spinning around you. The eye does not blink." } }),
+                ConditionalDescription.Create()
+                .When((player, gameState) =>
+                {
+                    if (gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedHallwayOfMirrors, out bool value) &&
+                    player.CurrentLocation.VisitCount == 1 || player.CurrentLocation.VisitCount == 2 || player.CurrentLocation.VisitCount == 4)
+                    {
+                        return value;
+                    }
+                    return false;
+                })
+                .Show("And the mirrors reflect even deeper now, each questioning your very identity.")
+                .Once()
+                .When((player, gameState) =>
+                {
+                    if (gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedHallwayOfMirrors, out bool value) &&
+                    player.CurrentLocation.VisitCount == 3 || player.CurrentLocation.VisitCount > 4)
+                    {
+                        return value;
+                    }
+                    return false;
+                })
+                .Show("However, the mirrors seem to reflect even deeper into you now, each questioning your very identity.")
+                .Once()
+                .When((player, gameState) =>
+                {
+                    bool visitedTemple = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedTempleOfTheBound, out bool v1);
+                    bool talkedToBound = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_TalkedToBoundOne, out bool v2);
+                    int visits = player.CurrentLocation.VisitCount;
 
-            var mirrorDesc = new LocationDescriptor("the mirror", "the", "standing beneath the");
-            var mirrorNarr = new LocationNarrativeProfile { FirstTimeDescription = "Your reflection stares back at you. It doesn't blink. It's tall and cracked." };
-            var mirrorOfIdentity = new Location(mirrorDesc, mirrorNarr, System.Guid.NewGuid().ToString());
+                    if (visitedTemple &&
+                        talkedToBound &&
+                        (visits == 1 || visits == 2 || visits == 4))
+                    {
+                        return v1 && v2;
+                    }
+                    return false;
+                })
+                .Show("The swirl almost reminds you of the Bound One — chaotic, unnerving and unpredictable. You shiver. Maybe it's best not to think about him.")
+                .Once()
+                .When((player, gameState) =>
+                {
+                    bool visitedTemple = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedTempleOfTheBound, out bool v1);
+                    bool talkedToBound = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_TalkedToBoundOne, out bool v2);
+                    int visits = player.CurrentLocation.VisitCount;
 
-            var knifeDesc = new LocationDescriptor("the pedestal", "the", "standing in front of the");
-            var knifeNarr = new LocationNarrativeProfile { FirstTimeDescription = "It's obsidian, with a golden stand holding up a shining silver knife. Your reflection lies on the blade." };
-            var knifeOfViolence = new Location(knifeDesc, knifeNarr, System.Guid.NewGuid().ToString());
+                    if (visitedTemple && talkedToBound && (visits == 3 || visits > 4))
+                    {
+                        return v1 && v2;
+                    }
+                    return false;
+                })
+                .Show("However, now the swirl almost reminds you of the Bound One — chaotic, unnerving and unpredictable. You shiver. Maybe it's best not to think about him.")
+                .Once()
+            );
 
-            var throneDesc = new LocationDescriptor("the throne", "the", "in front of the");
-            var throneNarr = new LocationNarrativeProfile { FirstTimeDescription = "It's emerald-laced and empty. Nothing reflects off of it. Should you sit on it?" };
-            var throneOfPower = new Location(throneDesc, throneNarr, System.Guid.NewGuid().ToString());
-
-            var slopeDesc = new LocationDescriptor("the slope", "the", "on top of");
-            var slopeNarr = new LocationNarrativeProfile { FirstTimeDescription = "You descend down the sand slope, until you reach the bottom. A chained figure kneels there..." };
-            var slope = new Location(slopeDesc, slopeNarr, System.Guid.NewGuid().ToString());
-
-            // Example NPC as GameObject for sublocation
-            var chainedFigure = new GameObject("Chained Prisoner", "A chained prisoner");
-            var prisonerDesc = new LocationDescriptor("prisoner");
-            var prisonerNarr = new LocationNarrativeProfile { FirstTimeDescription = "A chained prisoner" };
-            var chainedFigureSublocation = new Sublocation(slope, chainedFigure, prisonerDesc, prisonerNarr, System.Guid.NewGuid().ToString());
-            slope.AddSublocation(chainedFigureSublocation);
-
-            // Example custom command for a location
-            eyePlatform.AddCustomCommand(new List<string> { "pray" },
-                () => "You kneel and pray. The silence is overwhelming.",
-                () => { /* effect logic here */ });
-
-            // Example custom command for a sublocation
-            chainedFigureSublocation.AddCustomCommand(new List<string> { "free prisoner" },
-                () => "You attempt to free the prisoner, but the chains are too strong.",
-                () => { /* effect logic here */ });
-
-            // Add exits to the locations
-            eyePlatform.Exits.Add("north", mirrorOfIdentity);
-            eyePlatform.Exits.Add("east", knifeOfViolence);
-            eyePlatform.Exits.Add("west", throneOfPower);
-            eyePlatform.Exits.Add("south", slope);
-
-            mirrorOfIdentity.Exits.Add("south", eyePlatform);
-            knifeOfViolence.Exits.Add("west", eyePlatform);
-            throneOfPower.Exits.Add("east", eyePlatform);
-            slope.Exits.Add("north", eyePlatform);
-
-            var locations = new List<Location> { eyePlatform, mirrorOfIdentity, knifeOfViolence, throneOfPower, slope };
+            var locations = new List<Location> { eyePlatform };
             var ossanethDomain = new Scene("Ossaneth's Domain", "Ossaneth's Domain");
             foreach (var loc in locations) ossanethDomain.AddLocation(loc);
-            
-            var prologueLocation = new Location(new LocationDescriptor("Prologue"), new LocationNarrativeProfile(), "Prologue Location");
+
+            var prologueLocation = LocationFactory.CreateLocation(new Location(), "This is a prologue location.", new FadingDescription(), new SensoryDescription());
             var prologue = new Scene("Prologue", "Prologue");
 
             prologue.AddLocation(prologueLocation);
             GameContext.GameState.SetCounter("player.current_scene_no", 1);
 
-            return (prologueLocation, prologue);
+            return (eyePlatform, ossanethDomain);
         }
 
 
@@ -148,14 +168,16 @@ namespace AshborneGame._Core.Game
 
         public async Task StartGameLoop(Player player, GameStateManager gameState)
         {
-            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
+            //await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
 
-            _isRunning = true;
+            
 
-            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
+            //await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
             IOService.Output.WriteLine(player.CurrentLocation.GetDescription(player, gameState));
 
             gameState.StartTickLoop();
+
+            _isRunning = true;
             while (_isRunning)
             {
                 if (_dialogueRunning) continue;

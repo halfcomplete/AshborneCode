@@ -2,6 +2,7 @@
 using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.ObjectSystem;
 using AshborneGame._Core.Game;
+using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Interfaces;
 
 namespace AshborneGame._Core.SceneManagement
@@ -20,6 +21,8 @@ namespace AshborneGame._Core.SceneManagement
         /// The object that is at this sublocation.
         /// </summary>
         public BOCSGameObject GameObject { get; }
+
+        public DescriptionComposer DescriptionComposer { get; private set; }
 
         /// <summary>
         /// Dictionary of exits from this sublocation. Only 'back' is supported, which returns to the parent location.
@@ -59,12 +62,7 @@ namespace AshborneGame._Core.SceneManagement
         /// <summary>
         /// Flexible naming and parsing for the sublocation.
         /// </summary>
-        public LocationDescriptor Name { get; }
-
-        /// <summary>
-        /// Narrative profile for all types of descriptions.
-        /// </summary>
-        public LocationNarrativeProfile Descriptions { get; }
+        public LocationIdentifier Name { get; }
 
         /// <summary>
         /// Creates a new Sublocation.
@@ -74,12 +72,12 @@ namespace AshborneGame._Core.SceneManagement
         /// <param name="name">LocationDescriptor for naming and parsing.</param>
         /// <param name="desc">Narrative profile for descriptions.</param>
         /// <param name="id">Unique identifier.</param>
-        public Sublocation(Location parent, GameObject focusObject, LocationDescriptor name, LocationNarrativeProfile desc, string id)
+        public Sublocation(Location parent, GameObject focusObject, LocationIdentifier name, DescriptionComposer desc, string id)
         {
             ParentLocation = parent;
             GameObject = focusObject;
             Name = name;
-            Descriptions = desc;
+            DescriptionComposer = desc;
             ID = id;
             Exits = new Dictionary<string, Location> { { "back", parent } };
         }
@@ -87,11 +85,6 @@ namespace AshborneGame._Core.SceneManagement
         /// <summary>
         /// Returns the appropriate description for the player and state.
         /// </summary>
-        public string GetDescription(Player player, GameStateManager state) => Descriptions.GetDescription(player, state);
-
-        /// <summary>
-        /// Returns the positional name (e.g., "in the Dusty Armoury").
-        /// </summary>
-        public string GetPositionalName() => $"{Name.PositionalPrefix} {Name.DisplayName}";
+        public string GetDescription(Player player, GameStateManager state) => DescriptionComposer.GetDescription(player, state);
     }
 }

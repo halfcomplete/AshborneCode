@@ -6,7 +6,7 @@ namespace AshborneGame._Core.SceneManagement
     /// <summary>
     /// Supports flexible naming for parsing, immersion, and varied prose.
     /// </summary>
-    public class LocationDescriptor
+    public class LocationIdentifier
     {
         /// <summary>
         /// The core name of the location (e.g., "Dusty Armoury").
@@ -17,11 +17,6 @@ namespace AshborneGame._Core.SceneManagement
         /// Article to use (e.g., "the").
         /// </summary>
         public string Article { get; } = "the";
-
-        /// <summary>
-        /// Positional prefix (e.g., "in", "on", "at").
-        /// </summary>
-        public string PositionalPrefix { get; } = "in";
 
         /// <summary>
         /// Display name (e.g., "the Dusty Armoury").
@@ -36,11 +31,10 @@ namespace AshborneGame._Core.SceneManagement
         /// <summary>
         /// Creates a new LocationDescriptor.
         /// </summary>
-        public LocationDescriptor(string referenceName, string article = "the", string positionalPrefix = "in")
+        public LocationIdentifier(string referenceName, string article = "the")
         {
             ReferenceName = referenceName;
             Article = article;
-            PositionalPrefix = positionalPrefix;
         }
 
         /// <summary>

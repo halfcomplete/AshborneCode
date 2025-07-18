@@ -306,7 +306,7 @@ namespace AshborneGame._Core.Game
                     SetCounter("player.current_scene_no", 1);
                 }
                 // Change the player's scene
-                GameContext.Player.MoveTo(GameContext.Player.CurrentLocation.Group);
+                GameContext.Player.MoveTo(GameContext.Player.CurrentLocation.Scene);
             }
         }
 

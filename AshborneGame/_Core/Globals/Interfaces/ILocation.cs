@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Game;
+using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.SceneManagement;
 
 namespace AshborneGame._Core.Globals.Interfaces
@@ -22,12 +23,12 @@ namespace AshborneGame._Core.Globals.Interfaces
         /// <summary>
         /// Flexible naming and parsing for the location.
         /// </summary>
-        LocationDescriptor Name { get; }
+        LocationIdentifier Name { get; }
 
         /// <summary>
         /// Narrative profile for all types of descriptions.
         /// </summary>
-        LocationNarrativeProfile Descriptions { get; }
+        DescriptionComposer DescriptionComposer { get; }
 
         /// <summary>
         /// Dictionary of exits from this location. Keys are directions/keywords, values are Locations.
@@ -43,11 +44,6 @@ namespace AshborneGame._Core.Globals.Interfaces
         /// Returns the appropriate description for the player and state.
         /// </summary>
         string GetDescription(Player player, GameStateManager state);
-
-        /// <summary>
-        /// Returns the positional name (e.g., "in the Dusty Armoury").
-        /// </summary>
-        string GetPositionalName();
 
         /// <summary>
         /// Adds an exit to another location.

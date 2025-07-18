@@ -9,7 +9,7 @@ namespace AshborneGame._Core.SceneManagement
     /// <summary>
     /// Manages all types of descriptive text, including conditionals.
     /// </summary>
-    public class LocationNarrativeProfile
+    public class LocationDescriptionProfile
     {
         /// <summary>
         /// Description shown the first time the player visits.

@@ -1,7 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ObjectSystem;
 using AshborneGame._Core.Game;
+using AshborneGame._Core.Game.DescriptionHandling;
+using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Interfaces;
 
 namespace AshborneGame._Core.SceneManagement
@@ -19,17 +22,17 @@ namespace AshborneGame._Core.SceneManagement
         /// <summary>
         /// The group this location belongs to, if any.
         /// </summary>
-        public Scene Group { get; set; }
+        public Scene Scene { get; set; }
 
         /// <summary>
         /// Flexible naming and parsing for the location.
         /// </summary>
-        public LocationDescriptor Name { get; }
+        public LocationIdentifier Name { get; }
 
         /// <summary>
-        /// Narrative profile for all types of descriptions.
+        /// Composer class for managing descriptions.
         /// </summary>
-        public LocationNarrativeProfile Descriptions { get; }
+        public DescriptionComposer DescriptionComposer { get; private set; }
 
         /// <summary>
         /// Game objects present in this location.
@@ -50,6 +53,8 @@ namespace AshborneGame._Core.SceneManagement
         /// Dictionary of custom commands for this location.
         /// </summary>
         public Dictionary<string, (Func<string> message, Action effect)> CustomCommands { get; } = new();
+
+        public int VisitCount { get; private set; } = 0;
 
         /// <summary>
         /// Adds custom commands to this location.
@@ -84,23 +89,84 @@ namespace AshborneGame._Core.SceneManagement
         /// Creates a new Location.
         /// </summary>
         /// <param name="name">LocationDescriptor for naming and parsing.</param>
-        /// <param name="descriptions">Narrative profile for descriptions.</param>
+        /// <param name="composer">DescriptionComposer to combine descriptions.</param>
         /// <param name="id">Unique identifier.</param>
-        public Location(LocationDescriptor name, LocationNarrativeProfile descriptions, string id)
+        public Location(LocationIdentifier name, DescriptionComposer composer, string id)
         {
             Name = name;
-            Descriptions = descriptions;
+            DescriptionComposer = composer;
             ID = id;
+        }
+
+        public Location(LocationIdentifier name, string id)
+            : this(name, new DescriptionComposer(), id)
+        {
+        }
+
+        public Location()
+        {
+            Scene = new Scene("default_scene", "Default Scene");
+            Name = new LocationIdentifier("Default Location");
+            DescriptionComposer = new DescriptionComposer(
+                "You see a generic location.",
+                new FadingDescription("You enter a new place.", "You are here again.", "You have been here many times."),
+                new SensoryDescription("A generic location.", "You hear ambient sounds."));
+            ID = "default_location";
         }
 
         /// <summary>
         /// Returns the appropriate description for the player and state.
         /// </summary>
-        public string GetDescription(Player player, GameStateManager state) => Descriptions.GetDescription(player, state);
+        public string GetDescription(Player player, GameStateManager state) => DescriptionComposer.GetDescription(player, state);
 
-        /// <summary>
-        /// Returns the positional name (e.g., "in the Dusty Armoury").
-        /// </summary>
-        public string GetPositionalName() => $"{Name.PositionalPrefix} {Name.DisplayName}";
+        public void SetDescriptionComposer(DescriptionComposer composer)
+        {
+            DescriptionComposer = composer ?? throw new ArgumentNullException(nameof(composer), "Description composer cannot be null.");
+        }
+
+        public string GetExits()
+        {
+            var sb = new StringBuilder();
+            if (Exits.Count == 0)
+            {
+                sb.AppendLine("\nThere are no exits from here.");
+                if (Sublocations.Count == 0)
+                {
+                    sb.Append(" There is also nothing of note here.");
+                }
+                else
+                {
+                    sb.Append(" However, you can go to:");
+                }
+            }
+            else
+            {
+                sb.AppendLine("\nFrom here you can leave:");
+                foreach (var exit in Exits)
+                {
+                    if (DirectionConstants.CardinalDirections.Contains(exit.Key))
+                    {
+                        sb.AppendLine($"- {exit.Key} to {exit.Value.Name}");
+                    }
+                }
+            }
+
+            foreach (var sublocation in Sublocations)
+            {
+                sb.AppendLine($"- {sublocation.Name}");
+            }
+
+            foreach (var @object in GameObjects)
+            {
+                sb.AppendLine($"- {@object.Name}");
+            }
+
+            return sb.ToString();
+        }
+
+        public void IncrementVisitCount()
+        {
+            VisitCount++;
+        }
     }
 }

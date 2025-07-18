@@ -10,6 +10,8 @@ using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.SceneManagement;
 using AshborneGame._Core.Globals.Interfaces;
+using AshborneGame._Core.Game.DescriptionHandling;
+using AshborneGame._Core.Globals.Constants;
 
 namespace AshborneGame._Core._Player
 {
@@ -63,14 +65,17 @@ namespace AshborneGame._Core._Player
         public StatCollection Stats { get; } = new StatCollection();
 
         private readonly string _name;
-        private static readonly string[] _directions = { "north", "south", "east", "west" };
 
         public Player()
         {
             _name = "Hero"; // Default name
-            var descriptor = new LocationDescriptor("test location");
-            var narrative = new LocationNarrativeProfile { FirstTimeDescription = "A test location for testing." };
-            CurrentLocation = new Location(descriptor, narrative, System.Guid.NewGuid().ToString());
+            var descriptor = new LocationIdentifier("test location");
+            CurrentLocation = LocationFactory.CreateLocation(
+                new Location(descriptor, descriptor.DisplayName),
+                "You see a generic location.",
+                new FadingDescription("You enter a new place.", "You are here again.", "You have been here many times."),
+                new SensoryDescription("A generic location.", "You hear ambient sounds.")
+            );
             CurrentScene = new Scene("test location group", "Test Location Group");
             CurrentScene.AddLocation(CurrentLocation);
             Inventory = new Inventory();
@@ -93,9 +98,13 @@ namespace AshborneGame._Core._Player
         public Player(string name)
         {
             _name = name;
-            var descriptor = new LocationDescriptor("Placeholder");
-            var narrative = new LocationNarrativeProfile { FirstTimeDescription = "Placeholder" };
-            CurrentLocation = new Location(descriptor, narrative, System.Guid.NewGuid().ToString());
+            var descriptor = new LocationIdentifier("Placeholder");
+            CurrentLocation = LocationFactory.CreateLocation(
+                new Location(descriptor, descriptor.DisplayName),
+                "You see a placeholder location.",
+                new FadingDescription("You enter a placeholder place.", "You are at the placeholder place again.", "You have been here many times."),
+                new SensoryDescription("A placeholder location.", "You hear placeholder sounds.")
+            );
             CurrentScene = new Scene("Placeholder", "Placeholder");
             CurrentScene.AddLocation(CurrentLocation);
             Inventory = new Inventory();
@@ -166,7 +175,7 @@ namespace AshborneGame._Core._Player
 
             IOService.Output.DisplayDebugMessage("Move to... " + place, ConsoleMessageTypes.INFO);
 
-            if (_directions.Contains(place))
+            if (DirectionConstants.CardinalDirections.Contains(place))
             {
                 // If the place is a direction, handle it as such
                 return TryMoveDirectionally(place);
@@ -193,6 +202,7 @@ namespace AshborneGame._Core._Player
             if (CurrentSublocation != null)
             {
                 // Only 'back' is supported in sublocations
+                // TODO: Implement 'back' functionality for locations, which returns the player to the previous location
                 if (direction == "back" && CurrentSublocation.Exits.ContainsKey("back"))
                 {
                     MoveTo(CurrentSublocation.Exits["back"]);
