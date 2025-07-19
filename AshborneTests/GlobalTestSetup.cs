@@ -2,6 +2,7 @@
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
+using AshborneGame._Core.SceneManagement;
 using Moq;
 
 namespace AshborneTests
@@ -15,7 +16,7 @@ namespace AshborneTests
 
             IOService.Initialise(new Mock<IInputHandler>().Object, new Mock<IOutputHandler>().Object);
             Player player = new Player();
-            GameContext.Initialise(player, new GameStateManager(player), new Mock<DialogueService>().Object, new Mock<GameEngine>().Object);
+            GameContext.Initialise(player, new GameStateManager(player), new Mock<DialogueService>().Object, new Mock<InkRunner>().Object, new Mock<GameEngine>().Object);
         }
     }
 

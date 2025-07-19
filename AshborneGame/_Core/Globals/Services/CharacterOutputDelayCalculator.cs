@@ -14,9 +14,9 @@ namespace AshborneGame._Core.Globals.Services
             {
                 delay = (ms + randomVariation) * OutputConstants.FullStopPauseMultiplier;
             }
-            else if (letter.Equals('-') && isEnd) // If we reach a hyphen and it's the end of the message / sentence
+            else if (letter.Equals('—') && isEnd) // If we reach an em dash and it's the end of the message / sentence
             {
-                delay = (ms + randomVariation) * OutputConstants.HyphenPauseMultiplier;
+                delay = (ms + randomVariation) * OutputConstants.EmDashPauseMultiplier;
             }
             else if (letter.Equals(',') && isEnd) // If we reach a comma and it's the end of the message / sentence
             {
