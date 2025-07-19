@@ -58,12 +58,9 @@ namespace AshborneTests
         static internal Location CreateTestLocation(string name = "Test Location")
         {
             var descriptor = new LocationIdentifier(name);
-<<<<<<< Updated upstream
             var narrative = new DescriptionComposer();
             return new Location(descriptor, narrative, Guid.NewGuid().ToString());
-=======
             return new Location(descriptor, new AshborneGame._Core.Game.DescriptionHandling.DescriptionComposer(), System.Guid.NewGuid().ToString());
->>>>>>> Stashed changes
         }
 
         /// <summary>
@@ -72,26 +69,15 @@ namespace AshborneTests
         static internal Sublocation CreateTestSublocation(BOCSGameObject gameObject)
         {
             var parent = CreateTestLocation(System.Guid.NewGuid().ToString());
-<<<<<<< Updated upstream
             var identifier = new LocationIdentifier("Test sublocation");
-            var narrative = new DescriptionComposer();
-=======
-            var descriptor = new LocationIdentifier("Test sublocation");
->>>>>>> Stashed changes
             if (gameObject is GameObject go)
             {
                 return new Sublocation(
                     parent,
                     go,
-<<<<<<< Updated upstream
                     identifier,
-                    narrative,
-                    Guid.NewGuid().ToString()
-=======
-                    descriptor,
                     new AshborneGame._Core.Game.DescriptionHandling.DescriptionComposer(),
                     System.Guid.NewGuid().ToString()
->>>>>>> Stashed changes
                 );
             }
             else
