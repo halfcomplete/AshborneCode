@@ -35,11 +35,6 @@ namespace AshborneGame._Core.SceneManagement
         public DescriptionComposer DescriptionComposer { get; private set; }
 
         /// <summary>
-        /// Game objects present in this location.
-        /// </summary>
-        public List<GameObject> GameObjects { get; } = new();
-
-        /// <summary>
         /// Sublocations within this location.
         /// </summary>
         public List<Sublocation> Sublocations { get; } = new();
@@ -149,16 +144,20 @@ namespace AshborneGame._Core.SceneManagement
                         sb.AppendLine($"- {exit.Key} to {exit.Value.Name}");
                     }
                 }
+
+                if (Sublocations.Count == 0)
+                {
+                    sb.AppendLine(" However, there is nothing of note here.");
+                }
+                else
+                {
+                    sb.AppendLine(" You can also go to:");
+                }
             }
 
             foreach (var sublocation in Sublocations)
             {
                 sb.AppendLine($"- {sublocation.Name}");
-            }
-
-            foreach (var @object in GameObjects)
-            {
-                sb.AppendLine($"- {@object.Name}");
             }
 
             return sb.ToString();

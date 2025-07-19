@@ -81,7 +81,7 @@ namespace AshborneGame._Core.Game
                 new SensoryDescription(
                     "The platform beneath is an alien stone, black and white patterns etched into every part of the eye.",
                     "It's eerily quiet despite the chaos above and below. As though the eye is remembering, and commanding everything to be silent."),
-                new AmbientDescription(new Dictionary<TimeSpan, string>() { { TimeSpan.FromSeconds(50), "The glass keeps on spinning around you. The eye does not blink." } }),
+                new AmbientDescription(new Dictionary<TimeSpan, string>() { { TimeSpan.FromSeconds(5), "The glass keeps on spinning around you. The eye does not blink." } }),
                 ConditionalDescription.Create()
                 .When((player, gameState) =>
                 {

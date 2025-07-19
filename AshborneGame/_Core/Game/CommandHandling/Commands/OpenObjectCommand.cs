@@ -25,23 +25,14 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             string objectName = string.Join(" ", args).Trim();
             Sublocation? sublocation = player.CurrentSublocation;
             IEnumerable<IInteractable>? allIInteractableBehaviours = null;
-
-            if (sublocation == null)
-            {
-                Location location = player.CurrentLocation;
-                allIInteractableBehaviours = location.GameObjects.FirstOrDefault(o => o.Name.Equals(objectName))?.GetAllBehaviours<IInteractable>();
-            }
-            else
-            {
-                allIInteractableBehaviours = sublocation.GameObject.GetAllBehaviours<IInteractable>();
-            }
-
+            allIInteractableBehaviours = sublocation?.GameObject.GetAllBehaviours<IInteractable>();
 
             if (allIInteractableBehaviours == null)
             {
                 IOService.Output.DisplayFailMessage($"That is not an object here.");
                 return false;
             }
+
             IOService.Output.DisplayDebugMessage($"You are trying to open {objectName}.");
             IOService.Output.DisplayDebugMessage($"The object has the following behaviours: {string.Join(", ", allIInteractableBehaviours.Select(b => b.GetType().Name))}.");
             if (!allIInteractableBehaviours.ToList().Any(b => b.GetType() == typeof(OpenCloseBehaviour)))
