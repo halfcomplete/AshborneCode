@@ -50,9 +50,9 @@ namespace AshborneGame.ConsolePort
         public void WriteLine(string message, int ms)
         {
             // Handle special pause marker: ms__PAUSE__
-            if (message.EndsWith("__PAUSE__"))
+            if (message.EndsWith(OutputConstants.PauseMarker))
             {
-                var msStr = message.Substring(0, message.IndexOf("__PAUSE__"));
+                var msStr = message.Substring(0, message.IndexOf(OutputConstants.PauseMarker));
                 if (int.TryParse(msStr, out int t))
                 {
                     Thread.Sleep(t);

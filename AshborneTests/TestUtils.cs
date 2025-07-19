@@ -5,6 +5,7 @@ using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
 using AshborneGame._Core.Data.BOCS.ObjectSystem;
+using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.SceneManagement;
 using System;
@@ -56,15 +57,9 @@ namespace AshborneTests
         /// </summary>
         static internal Location CreateTestLocation(string name = "Test Location")
         {
-            var descriptor = new AshborneGame._Core.SceneManagement.LocationIdentifier(name);
-            var narrative = new AshborneGame._Core.SceneManagement.LocationDescriptionProfile
-            {
-                FirstTimeDescription = $"{name} - first time.",
-                ReturnDescription = $"{name} - return.",
-                LookAroundDescription = $"Looking around {name}.",
-                AmbientSnippets = new() { $"Ambient for {name}." }
-            };
-            return new AshborneGame._Core.SceneManagement.Location(descriptor, narrative, System.Guid.NewGuid().ToString());
+            var descriptor = new LocationIdentifier(name);
+            var narrative = new DescriptionComposer();
+            return new Location(descriptor, narrative, Guid.NewGuid().ToString());
         }
 
         /// <summary>
@@ -73,27 +68,21 @@ namespace AshborneTests
         static internal Sublocation CreateTestSublocation(BOCSGameObject gameObject)
         {
             var parent = CreateTestLocation(System.Guid.NewGuid().ToString());
-            var descriptor = new AshborneGame._Core.SceneManagement.LocationIdentifier("Test sublocation");
-            var narrative = new AshborneGame._Core.SceneManagement.LocationDescriptionProfile
+            var identifier = new LocationIdentifier("Test sublocation");
+            var narrative = new DescriptionComposer();
+            if (gameObject is GameObject go)
             {
-                FirstTimeDescription = "Test sublocation - first time.",
-                ReturnDescription = "Test sublocation - return.",
-                LookAroundDescription = "Looking around test sublocation.",
-                AmbientSnippets = new() { "Ambient for test sublocation." }
-            };
-            if (gameObject is AshborneGame._Core.Data.BOCS.ObjectSystem.GameObject go)
-            {
-                return new AshborneGame._Core.SceneManagement.Sublocation(
+                return new Sublocation(
                     parent,
                     go,
-                    descriptor,
+                    identifier,
                     narrative,
-                    System.Guid.NewGuid().ToString()
+                    Guid.NewGuid().ToString()
                 );
             }
             else
             {
-                throw new System.InvalidCastException("gameObject must be a GameObject for Sublocation test creation.");
+                throw new InvalidCastException("gameObject must be a GameObject for Sublocation test creation.");
             }
         }
 

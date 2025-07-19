@@ -231,11 +231,10 @@ namespace AshborneGame._Core.Game
 
         public async Task StartGameLoop(Player player, GameStateManager gameState)
         {
-            //await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
+            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
 
-            
+            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
 
-            //await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
             IOService.Output.WriteLine(player.CurrentLocation.GetDescription(player, gameState));
 
             if (player.CurrentLocation == _eyePlatform && _eyePlatformAmbientManager != null)

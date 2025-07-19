@@ -1,9 +1,23 @@
+@font-face {
+    font-family: 'IM Fell English SC';
+    src: url('/visual/fonts/IMFellEnglishSC-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 h1:focus {
     outline: none;
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin: 0.5rem 0;
+    font-family: 'IM Fell English SC', serif;
 }
 
 a, .btn-link {
