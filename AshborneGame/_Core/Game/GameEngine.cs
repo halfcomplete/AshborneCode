@@ -8,6 +8,7 @@ using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.SceneManagement;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace AshborneGame._Core.Game
 {
@@ -45,12 +46,54 @@ namespace AshborneGame._Core.Game
             if (_eyePlatform.DescriptionComposer.Ambient != null)
             {
                 _eyePlatformAmbientManager = new AmbientTimerManager(_eyePlatform);
-                _eyePlatformAmbientManager.OnAmbientDescriptionTriggered += desc =>
+                if (OperatingSystem.IsBrowser())
                 {
-                    _inputPausedForAmbient = true;
-                    output.WriteLine(desc);
-                    _eyePlatformAmbientManager.OnAmbientDescriptionComplete();
-                };
+                    // Web/Blazor: use async output
+                    _eyePlatformAmbientManager.OnAmbientDescriptionTriggeredAsync += async desc =>
+                    {
+                        _inputPausedForAmbient = true;
+                        // Try to use WriteLineAsync if available
+                        var webOutput = output as dynamic;
+                        if (webOutput != null && webOutput.WriteLineAsync != null)
+                        {
+                            await webOutput.WriteLineAsync(desc);
+                            await webOutput.WriteLineAsync(""); // Just a new line for spacing
+                        }
+                        else
+                        {
+                            // fallback to sync
+                            output.WriteLine(desc);
+                            output.WriteLine("");
+                        }
+                        // Do NOT output '> ' in web
+                        _eyePlatformAmbientManager.OnAmbientDescriptionComplete();
+                    };
+                }
+                else
+                {
+                    // Console: remove '> ', output ambient, then restore prompt
+                    _eyePlatformAmbientManager.OnAmbientDescriptionTriggered += desc =>
+                    {
+                        _inputPausedForAmbient = true;
+                        // Remove last two characters (the prompt)
+                        try
+                        {
+                            int left = Console.CursorLeft;
+                            int top = Console.CursorTop;
+                            if (left >= 2)
+                            {
+                                Console.SetCursorPosition(left - 2, top);
+                                Console.Write("  ");
+                                Console.SetCursorPosition(left - 2, top);
+                            }
+                        }
+                        catch { /* ignore if not in a real console */ }
+                        output.WriteLine(desc);
+                        output.WriteLine("");
+                        output.Write("> ");
+                        _eyePlatformAmbientManager.OnAmbientDescriptionComplete();
+                    };
+                }
                 _eyePlatformAmbientManager.OnInputPaused += () => { _inputPausedForAmbient = true; };
                 _eyePlatformAmbientManager.OnInputResumed += () => { _inputPausedForAmbient = false; };
             }

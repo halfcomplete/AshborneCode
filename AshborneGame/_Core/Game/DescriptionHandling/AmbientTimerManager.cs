@@ -22,6 +22,7 @@ namespace AshborneGame._Core.Game.DescriptionHandling
         private readonly object _lock = new object();
 
         public event Action<string>? OnAmbientDescriptionTriggered;
+        public event Func<string, Task>? OnAmbientDescriptionTriggeredAsync; // For web/async output
         public event Action? OnInputPaused;
         public event Action? OnInputResumed;
 
@@ -142,7 +143,16 @@ namespace AshborneGame._Core.Game.DescriptionHandling
                 var duration = (TimeSpan)state!;
                 if (_ambientDescription.FromDuration.TryGetValue(duration, out var desc))
                 {
-                    OnAmbientDescriptionTriggered?.Invoke(desc);
+                    // Prefer async event if set (web), else use sync event (console)
+                    if (OnAmbientDescriptionTriggeredAsync != null)
+                    {
+                        // Fire and forget, GameEngine will await this
+                        _ = OnAmbientDescriptionTriggeredAsync(desc);
+                    }
+                    else
+                    {
+                        OnAmbientDescriptionTriggered?.Invoke(desc);
+                    }
                 }
                 OnInputPaused?.Invoke();
             }
