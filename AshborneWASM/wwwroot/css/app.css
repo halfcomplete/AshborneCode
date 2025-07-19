@@ -1,41 +1,31 @@
 @font-face {
-    font-family: 'IM Fell English SC';
+    font-family: 'IMFellEnglishSC';
     src: url('/visual/fonts/IMFellEnglishSC-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 
+@font-face {
+    font-family: 'AnonymousPro-Regular';
+    src: url('/visual/fonts/AnonymousPro-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Reset body and center everything */
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
 }
 
-h1:focus {
-    outline: none;
-}
-
-h1 {
-    font-size: 2.5rem;
-    font-weight: 300;
-    margin: 0.5rem 0;
-    font-family: 'IM Fell English SC', serif;
-}
-
-a, .btn-link {
-    color: #0071c1;
-}
-
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-.content {
-    padding-top: 1.1rem;
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 .valid.modified:not([type=checkbox]) {
@@ -76,7 +66,7 @@ a, .btn-link {
 }
 
     .blazor-error-boundary::after {
-        content: "An error has occurred."
+        content: "An error has occurred.";
     }
 
 .loading-progress {
@@ -102,70 +92,131 @@ a, .btn-link {
         }
 
 .loading-progress-text {
+    font-family: AnonymousPro-Regular, serif;
     position: absolute;
     text-align: center;
     font-weight: bold;
+    font-size: 20px;
     inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
 }
 
-    .loading-progress-text:after {
+    .loading-progress-text::after {
         content: var(--blazor-load-percentage-text, "Loading");
     }
 
-code {
-    color: #c02d76;
+.scene-header {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    background: #181818ee;
+    color: #f8f8f8;
+    text-align: center;
+    padding: 1.5rem 0 1.2rem;
+    border-bottom: 2px solid #333;
+    letter-spacing: 0.08em;
+    font-family: 'IMFellEnglishSC', serif;
+    font-size: 2.1rem;
+    font-variant: small-caps;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.12);
+    z-index: 10;
+}
+
+.scene-header-text {
+    display: block;
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    font-family: 'IMFellEnglishSC', serif;
+    font-size: 2.1rem;
+    font-weight: normal;
+    letter-spacing: 0.08em;
+    color: #f8f8f8;
+    text-shadow: 0 2px 8px #000a;
 }
 
 .game-screen {
-    width: 70%;
-    margin: 30px auto;
-    padding: 20px;
-    background-color: #1e1e1e;
-    color: #f8f8f8;
-    font-family: monospace;
-    border-radius: 10px;
-    box-shadow: 0 0 10px #333;
-    min-height: 400px;
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 0 0 16px;
+    background: none;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    min-height: 500px;
 }
 
 .game-output {
-    white-space: pre-wrap;
-    margin-bottom: 10px;
-    line-height: 1.5;
-    min-height: 200px;
-    max-height: 400px;
+    width: 100%;
+    max-width: 1500px;
+    min-height: 260px;
+    max-height: 420px;
+    margin: 24px auto 0;
+    padding: 2.2rem 2.5rem;
+    background: linear-gradient(135deg, #23201b 80%, #2d2a25 100%);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 4px 32px 0 #000a, 0 1.5px 0 #bfae8e44 inset;
+    border: 1.5px solid #bfae8e33;
+    color: #fdfcf9;
+    font-family: 'AnonymousPro-Regular', serif;
+    font-size: 1.18rem;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
     overflow-y: auto;
     scroll-behavior: smooth;
-    flex: 1;
-    scroll-snap-type: y proximity;
+    box-sizing: border-box;
+    transition: box-shadow 0.2s;
 }
+
+    .game-output::-webkit-scrollbar {
+        width: 10px;
+        background: #23201b;
+    }
+
+    .game-output::-webkit-scrollbar-thumb {
+        background: #bfae8e44;
+        border-radius: 8px;
+    }
 
 input {
     width: 100%;
-    padding: 12px;
-    border-radius: 5px;
-    font-size: 1rem;
+    max-width: 1500px;
+    margin: 0 auto;
+    display: block;
+    padding: 16px 18px;
+    border-radius: 0 0 8px 8px;
+    font-size: 1.15rem;
     border: none;
     outline: none;
-    background-color: #333;
-    color: #fff;
+    background-color: #23201b;
+    color: #f8eecb;
+    box-shadow: 0 2px 8px #0004;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    transition: box-shadow 0.2s, border 0.2s;
 }
 
-.dialogue-choices {
-    margin-top: 15px;
+    input:focus {
+        box-shadow: 0 0 0 2px #bfae8e99, 0 2px 8px #0004;
+        border: 1.5px solid #bfae8e99;
+    }
+
+.dialogue-choices,
+.dialogue-waiting {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
     padding: 15px;
     background-color: #2a2a2a;
-    border-radius: 8px;
+    border-radius: 0 0 8px 8px;
     border: 1px solid #444;
 }
 
-.dialogue-choices p {
-    margin: 0 0 10px 0;
-    color: #ccc;
-    font-weight: bold;
-}
+    .dialogue-choices p {
+        margin: 0 0 10px 0;
+        color: #ccc;
+        font-weight: bold;
+    }
 
 .choice-button {
     display: block;
@@ -183,25 +234,16 @@ input {
     transition: all 0.2s ease;
 }
 
-.choice-button:hover {
-    background-color: #4a4a4a;
-    border-color: #666;
-    transform: translateX(5px);
-}
+    .choice-button:hover {
+        background-color: #4a4a4a;
+        border-color: #666;
+        transform: translateX(5px);
+    }
 
-.choice-button:active {
-    background-color: #555;
-    transform: translateX(2px);
-}
-
-.dialogue-waiting {
-    margin-top: 15px;
-    padding: 15px;
-    background-color: #2a2a2a;
-    border-radius: 8px;
-    border: 1px solid #444;
-    text-align: center;
-}
+    .choice-button:active {
+        background-color: #555;
+        transform: translateX(2px);
+    }
 
 .dialogue-waiting p {
     margin: 0;
@@ -210,3 +252,213 @@ input {
     font-size: 0.9rem;
 }
 
+@media {
+    .game-screen {
+        width: 98vw;
+        min-width: 0;
+    }
+
+    .game-output {
+        padding: 1.2rem 0.7rem;
+        font-size: 1rem;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .scene-header {
+        font-size: 1.2rem;
+        padding: 1rem 0 0.7rem;
+    }
+
+    .scene-header-text {
+        font-size: 1.2rem;
+    }
+
+    input {
+        width: 100%;
+        font-size: 1rem;
+        padding: 10px;
+        max-width: auto;
+    }
+
+    .dialogue-choices,
+    .dialogue-waiting {
+        max-width: auto;
+        border-radius: 0 0 6px 6px;
+    }
+}
+
+/*
+/* Reset body and center everything */
+/*
+
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+
+
+/* Blazor error UI */
+/*#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+.blazor-error-boundary {
+    background: url(...) no-repeat 1rem/1.8rem, #b32121;
+    padding: 1rem 1rem 1rem 3.7rem;
+    color: white;
+}
+
+    .blazor-error-boundary::after {
+        content: "An error has occurred.";
+    }*/
+
+/* Loading */
+/*.loading-progress {
+    margin: 20vh auto 1rem auto;
+    width: 8rem;
+    height: 8rem;
+    position: relative;
+}
+
+    .loading-progress circle {
+        transform-origin: 50% 50%;
+        transform: rotate(-90deg);
+        stroke-width: 0.6rem;
+        fill: none;
+        stroke: #e0e0e0;
+    }
+
+        .loading-progress circle:last-child {
+            stroke: #1b6ec2;
+            transition: stroke-dasharray 0.05s ease-in-out;
+        }
+
+.loading-progress-text {
+    position: absolute;
+    text-align: center;
+    font-weight: bold;
+    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+}
+
+    .loading-progress-text::after {
+        content: var(--blazor-load-percentage-text, "Loading");
+    }*/
+
+/* Header */
+/*.scene-header {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    background: #181818ee;
+    padding: 1.5rem 0 1.2rem;
+    border-bottom: 2px solid #333;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    z-index: 10;
+}
+
+.scene-header-text {
+    margin: 0 auto;
+    max-width: 1500px;
+    font-family: 'IMFellEnglishSC', serif;
+    font-size: 2.1rem;
+    color: #f8f8f8;
+    text-align: center;
+    letter-spacing: 0.08em;
+    text-shadow: 0 2px 8px #000a;
+}*/
+
+/* Game container */
+/*.game-screen {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 0 0 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 500px;
+}*/
+
+/* Output box */
+/*.game-output {
+    width: 100%;
+    max-width: 1500px;
+    margin: 24px auto 0;
+    padding: 2.2rem 2.5rem;
+    background: linear-gradient(135deg,#23201b 80%,#2d2a25 100%);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 4px 32px #000a, inset 0 1.5px 0 #bfae8e44;
+    border: 1.5px solid #bfae8e33;
+    color: #fdfcf9;
+    overflow-y: auto;
+}*/
+
+/* Inputs & dialogues flush with output */
+/*input,
+.dialogue-choices,
+.dialogue-waiting {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    background: #23201b;
+    color: #f8eecb;
+    border: none;
+    outline: none;
+}*/
+
+/* Input styling */
+/*input {
+    padding: 16px;
+    box-shadow: 0 2px 8px #0004;
+    font-size: 1.15rem;
+    border-radius: 0 0 8px 8px;
+}
+
+    input:focus {
+        box-shadow: 0 0 0 2px #bfae8e99, 0 2px 8px #0004;
+    }*/
+
+/* Dialogue blocks */
+/*.dialogue-choices,
+.dialogue-waiting {
+    padding: 15px;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 0 0 8px 8px;
+}
+
+    .dialogue-choices p {
+        color: #ccc;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .dialogue-waiting p {
+        color: #888;
+        font-style: italic;
+    }*/
+
+/* Responsive */
+/*@media (max-width: 1600px) {
+    .game-screen,
+    .game-output,
+    input {
+        width: 98vw;
+        max-width: 1500px;
+    }
+}*/

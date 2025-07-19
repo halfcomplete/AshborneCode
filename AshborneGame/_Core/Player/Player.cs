@@ -148,7 +148,9 @@ namespace AshborneGame._Core._Player
         public void MoveTo(Scene newScene)
         {
             CurrentScene = newScene;
+#if !BLAZOR
             IOService.Output.WriteLine(newScene.GetHeader());
+#endif
         }
 
         public void SetupMoveTo(Location newLocation, Scene newScene)
@@ -157,7 +159,9 @@ namespace AshborneGame._Core._Player
             CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
             CurrentSublocation = null;
             GameContext.GameState.OnPlayerEnterLocation(newLocation);
+#if !BLAZOR
             IOService.Output.WriteLine(newScene.GetHeader());
+#endif
         }
 
         /// <summary>

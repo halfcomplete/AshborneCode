@@ -8,10 +8,21 @@
 @page "/"
 @inject IJSRuntime JS
 
-<h1 class="text-center">ASHBORNE</h1>
+<div class="scene-header">
+    @if (GameContext.Player?.CurrentScene != null && GameContext.GameState != null)
+    {
+        var scene = GameContext.Player.CurrentScene;
+        int sceneNo = 1;
+        GameContext.GameState.TryGetCounter("player.current_scene_no", out sceneNo);
+        string actLabel = scene.ID.ToUpper().StartsWith("ACT") ? scene.ID.ToUpper().Replace("ACT", "ACT ") : $"ACT I";
+        <span class="scene-header-text">
+            @actLabel: SCENE @sceneNo — @scene.DisplayName.ToUpper()
+        </span>
+    }
+</div>
 
 <div class="game-screen">
-    <div class="game-output">@gameText</div>
+    <div class="game-output">@((MarkupString)gameText.Replace("\n", "<br />"))</div>
 
     @if (isAwaitingPlayerInput)
     {
