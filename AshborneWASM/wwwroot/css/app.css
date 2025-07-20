@@ -148,10 +148,10 @@ body {
 }
 
 .game-output {
-    width: 100%;
+    width: 80%;
     max-width: 1500px;
-    min-height: 260px;
-    max-height: 420px;
+    min-height: 600px;
+    max-height: 600px;
     margin: 24px auto 0;
     padding: 2.2rem 2.5rem;
     background: linear-gradient(135deg, #23201b 80%, #2d2a25 100%);
@@ -167,6 +167,7 @@ body {
     scroll-behavior: smooth;
     box-sizing: border-box;
     transition: box-shadow 0.2s;
+    border-bottom: none;
 }
 
     .game-output::-webkit-scrollbar {
@@ -179,7 +180,32 @@ body {
         border-radius: 8px;
     }
 
+/* Inputs & dialogues flush with output */
+input,
+.dialogue-choices,
+.dialogue-waiting {
+    width: 80%;
+    max-width: 1500px;
+    margin: 0 auto;
+    background: #23201b;
+    color: #f8eecb;
+    border: none;
+    outline: none;
+}
+
+/* Input styling */
 input {
+    border-top: none;
+    padding: 16px;
+    box-shadow: 0 2px 8px #0004;
+    font-size: 1.15rem;
+    border-radius: 0 0 8px 8px;
+}
+
+    input:focus {
+        box-shadow: 0 0 0 2px #bfae8e99, 0 2px 8px #0004;
+    }
+/*input {
     width: 100%;
     max-width: 1500px;
     margin: 0 auto;
@@ -199,17 +225,49 @@ input {
     input:focus {
         box-shadow: 0 0 0 2px #bfae8e99, 0 2px 8px #0004;
         border: 1.5px solid #bfae8e99;
-    }
+    }*/
 
 .dialogue-choices,
 .dialogue-waiting {
-    width: 100%;
+    width: 80%;
     max-width: 1500px;
-    margin: 0 auto;
-    padding: 15px;
-    background-color: #2a2a2a;
-    border-radius: 0 0 8px 8px;
-    border: 1px solid #444;
+    min-height: 60px;
+    max-height: 60px;
+    margin: 0 auto 0;
+    padding: 1rem 1.3rem;
+    background: linear-gradient(135deg, #23201b 80%, #2d2a25 100%);
+    border-radius: 0px 0px 18px 18px;
+    box-shadow: 0 4px 32px 0 #000a, 0 1.5px 0 #bfae8e44 inset;
+    border: 1.5px solid #bfae8e33;
+    color: #fdfcf9;
+    font-family: 'AnonymousPro-Regular', serif;
+    font-size: 1.18rem;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    box-sizing: border-box;
+    transition: box-shadow 0.2s;
+    border-top: none;
+/*    width: 100%;
+    max-width: 1500px;
+    min-height: 100px;
+    max-height: 100px;
+    margin: 0 auto 0;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #23201b 80%, #2d2a25 100%);
+    border-radius: 0 18px 0 0;
+    box-shadow: 0 4px 32px 0 #000a, 0 1.5px 0 #bfae8e44 inset;
+    border: 1.5px solid #bfae8e33;
+    color: #fdfcf9;
+    font-family: 'AnonymousPro-Regular', serif;
+    font-size: 1.18rem;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    box-sizing: border-box;
+    transition: box-shadow 0.2s;*/
 }
 
     .dialogue-choices p {
@@ -252,7 +310,7 @@ input {
     font-size: 0.9rem;
 }
 
-@media {
+@media (max-width: 1600px) {
     .game-screen {
         width: 98vw;
         min-width: 0;
@@ -462,3 +520,50 @@ input {
         max-width: 1500px;
     }
 }*/
+
+.title-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #181818 80%, #23201b 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.title-logo {
+    font-family: 'IMFellEnglishSC', serif;
+    font-size: 5rem;
+    color: #f8eecb;
+    letter-spacing: 0.18em;
+    text-shadow: 0 4px 32px #000a, 0 2px 8px #bfae8e44;
+    margin-bottom: 2.5rem;
+    text-align: center;
+    user-select: none;
+}
+
+.begin-button {
+    font-family: 'AnonymousPro-Regular', serif;
+    font-size: 2rem;
+    padding: 0.8rem 3.5rem;
+    background: linear-gradient(90deg, #bfae8e 60%, #8c7c5a 100%);
+    color: #23201b;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px #0006;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+}
+
+.begin-button:hover, .begin-button:focus {
+    background: linear-gradient(90deg, #e6d7b8 60%, #bfae8e 100%);
+    transform: translateY(-2px) scale(1.04);
+    outline: none;
+}

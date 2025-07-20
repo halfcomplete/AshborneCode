@@ -148,9 +148,13 @@ namespace AshborneGame._Core._Player
         public void MoveTo(Scene newScene)
         {
             CurrentScene = newScene;
-#if !BLAZOR
+            if (OperatingSystem.IsBrowser())
+            {
+                // In Blazor, don't write the scene header to the console
+                // Instead, the scene header is displayed in the UI
+                return;
+            }
             IOService.Output.WriteLine(newScene.GetHeader());
-#endif
         }
 
         public void SetupMoveTo(Location newLocation, Scene newScene)
@@ -159,9 +163,13 @@ namespace AshborneGame._Core._Player
             CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
             CurrentSublocation = null;
             GameContext.GameState.OnPlayerEnterLocation(newLocation);
-#if !BLAZOR
+            if (OperatingSystem.IsBrowser())
+            {
+                // In Blazor, don't write the scene header to the console
+                // Instead, the scene header is displayed in the UI
+                return;
+            }
             IOService.Output.WriteLine(newScene.GetHeader());
-#endif
         }
 
         /// <summary>

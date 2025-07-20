@@ -8,67 +8,77 @@
 @page "/"
 @inject IJSRuntime JS
 
-<div class="scene-header">
-    @if (GameContext.Player?.CurrentScene != null && GameContext.GameState != null)
-    {
-        var scene = GameContext.Player.CurrentScene;
-        int sceneNo = 1;
-        GameContext.GameState.TryGetCounter("player.current_scene_no", out sceneNo);
-        string actLabel = scene.ID.ToUpper().StartsWith("ACT") ? scene.ID.ToUpper().Replace("ACT", "ACT ") : $"ACT I";
-        <span class="scene-header-text">
-            @actLabel: SCENE @sceneNo — @scene.DisplayName.ToUpper()
-        </span>
-    }
-</div>
+@if (!hasStarted)
+{
+    <div class="title-screen">
+        <div class="title-logo">ASHBORNE</div>
+        <button class="begin-button" @onclick="BeginGame">Begin</button>
+    </div>
+}
+else
+{
+    <div class="scene-header">
+        @if (GameContext.Player?.CurrentScene != null && GameContext.GameState != null)
+        {
+            var scene = GameContext.Player.CurrentScene;
+            int sceneNo = 1;
+            GameContext.GameState.TryGetCounter("player.current_scene_no", out sceneNo);
+            string actLabel = scene.ID.ToUpper().StartsWith("ACT") ? scene.ID.ToUpper().Replace("ACT", "ACT ") : $"ACT I";
+            <span class="scene-header-text">
+                @actLabel: SCENE @sceneNo — @scene.DisplayName.ToUpper()
+            </span>
+        }
+    </div>
 
-<div class="game-screen">
-    <div class="game-output">@((MarkupString)gameText.Replace("\n", "<br />"))</div>
+    <div class="game-screen">
+        <div class="game-output">@((MarkupString)gameText.Replace("\n", "<br />"))</div>
 
-    @if (isAwaitingPlayerInput)
-    {
-        <input @bind="userInput"
-               @bind:event="oninput"
-               @onkeydown="HandleInput"
-               placeholder="@(isDialogueInput ? "What do you say?" : "What will you do?")" autofocus />
-        <div><em>Type your response and press Enter.</em></div>
-    }
-    else if (isInDialogue && dialogueChoices.Count > 0 && !isTypingDialogue)
-    {
-        <div class="dialogue-choices">
-            <p>Choose an option:</p>
-            @for (int i = 0; i < dialogueChoices.Count; i++)
-            {
-                int choiceIndex = i; // Capture the index for the lambda
-                                     <button @onclick="() => SelectDialogueChoice(choiceIndex + 1)" class="choice-button">
-                                         [@(choiceIndex + 1)] @dialogueChoices[i]
-                                     </button>
-            }
-        </div>
-    }
-    else if (!isInDialogue)
-    {
-        <input @bind="userInput"
-               @bind:event="oninput"
-               @onkeydown="HandleInput"
-               placeholder="What will you do?" />
-        <div><em>Type your action and press Enter.</em></div>
-    }
-    else
-    {
-        <div class="dialogue-waiting">
-            <p>Listening...</p>
-        </div>
-    }
-</div>
+        @if (isAwaitingPlayerInput)
+        {
+            <input @bind="userInput"
+                   @bind:event="oninput"
+                   @onkeydown="HandleInput"
+                   placeholder="@(isDialogueInput ? "What do you say?" : "What will you do?")" autofocus />
+            <div><em>Type your response and press Enter.</em></div>
+        }
+        else if (isInDialogue && dialogueChoices.Count > 0 && !isTypingDialogue)
+        {
+            <div class="dialogue-choices">
+                <p>Choose an option:</p>
+                @for (int i = 0; i < dialogueChoices.Count; i++)
+                {
+                    int choiceIndex = i; // Capture the index for the lambda
+                                         <button @onclick="() => SelectDialogueChoice(choiceIndex + 1)" class="choice-button">
+                                             [@(choiceIndex + 1)] @dialogueChoices[i]
+                                         </button>
+                }
+            </div>
+        }
+        else if (!isInDialogue)
+        {
+            <input @bind="userInput"
+                   @bind:event="oninput"
+                   @onkeydown="HandleInput"
+                   placeholder="What will you do?" />
+            <div><em>Type your action and press Enter.</em></div>
+        }
+        else
+        {
+            <div class="dialogue-waiting">
+                <p>Listening...</p>
+            </div>
+        }
+    </div>
+}
 
-<div>
+@* <div>
     <pre>
         isInDialogue: @isInDialogue
         isAwaitingPlayerInput: @isAwaitingPlayerInput
         dialogueChoices.Count: @dialogueChoices.Count
         isTypingDialogue: @isTypingDialogue
     </pre>
-</div>
+</div> *@
 
 @code {
     [Inject] private HttpClient? Http { get; set; }
@@ -85,6 +95,7 @@
     private bool isDialogueInput = false;
     private TaskCompletionSource<string> playerInputTcs;
     private TaskCompletionSource<bool> choicesAvailableTcs;
+    private bool hasStarted = false;
 
     // Output queue for all output (lines, pauses, typewriter)
     private Queue<string> outputQueue = new Queue<string>();
@@ -140,8 +151,7 @@
             };
         }
 
-        // Start the game without the blocking loop
-        engine.StartGameLoopAsync();
+        // Do NOT start the game loop here; it will be started after Begin is pressed.
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -408,5 +418,12 @@
             gameText += $"\n[ERROR] JS interop failed: {ex.Message}\n";
             await InvokeAsync(StateHasChanged);
         }
+    }
+
+    private void BeginGame()
+    {
+        hasStarted = true;
+        StateHasChanged();
+        engine.StartGameLoopAsync();
     }
 }
