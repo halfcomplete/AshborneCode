@@ -20,19 +20,23 @@ namespace AshborneGame._Core.Game
         private string _startingScene = "Scene1";
         private string _startingSceneSection = "Intro_Dialogue";
 
+        private Location _firstLocation;
+        private Scene _firstScene;
+
         public GameEngine(IInputHandler input, IOutputHandler output, AppEnvironment appEnvironment)
         {
             IOService.Initialise(input, output);
 
             Player player = new Player("Hero");
             var gameState = new GameStateManager(player);
+            gameState.SetCounter(GameStateKeyConstants.Counters.Player.CurrentActNo, 1);
             var inkRunner = new InkRunner(gameState, player, appEnvironment);
             _dialogueService = new DialogueService(inkRunner);
 
             GameContext.Initialise(player, gameState, _dialogueService, inkRunner, this);
             gameState.InitialiseMasks(MaskInitialiser.InitialiseMasks());
 
-            (Location startingLocation, Scene startingLocationGroup) = InitialiseStartingLocation(player);
+            ((Location startingLocation, Scene startingLocationGroup), (_firstLocation, _firstScene)) = InitialiseStartingLocation(player);
             player.SetupMoveTo(startingLocation, startingLocationGroup);
             _dialogueService.DialogueStart += async () =>
             {
@@ -61,12 +65,13 @@ namespace AshborneGame._Core.Game
 
             await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
 
+            GameContext.Player.SetupMoveTo(_firstLocation, _firstScene);
             // Display initial location description
             ILocation location = GameContext.Player.CurrentLocation;
             IOService.Output.WriteLine(location.GetDescription(GameContext.Player, GameContext.GameState));
         }
 
-        private (Location, Scene) InitialiseStartingLocation(Player player)
+        private ((Location, Scene), (Location, Scene)) InitialiseStartingLocation(Player player)
         {
             Location eyePlatform = LocationFactory.CreateLocation(
                 new Location(
@@ -145,9 +150,9 @@ namespace AshborneGame._Core.Game
             var prologue = new Scene("Prologue", "Prologue");
 
             prologue.AddLocation(prologueLocation);
-            GameContext.GameState.SetCounter("player.current_scene_no", 1);
+            GameContext.GameState.SetCounter(GameStateKeyConstants.Counters.Player.CurrentSceneNo, 0);
 
-            return (eyePlatform, ossanethDomain);
+            return ((prologueLocation, prologue), (eyePlatform, ossanethDomain));
         }
 
 
@@ -168,11 +173,10 @@ namespace AshborneGame._Core.Game
 
         public async Task StartGameLoop(Player player, GameStateManager gameState)
         {
-            //await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
+            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
 
-            
+            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
 
-            //await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
             IOService.Output.WriteLine(player.CurrentLocation.GetDescription(player, gameState));
 
             gameState.StartTickLoop();

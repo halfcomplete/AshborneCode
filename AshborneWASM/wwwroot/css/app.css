@@ -186,6 +186,7 @@ input,
 .dialogue-waiting {
     width: 80%;
     max-width: 1500px;
+    height: 60px;
     margin: 0 auto;
     background: #23201b;
     color: #f8eecb;
@@ -195,44 +196,9 @@ input,
 
 /* Input styling */
 input {
-    border-top: none;
-    padding: 16px;
-    box-shadow: 0 2px 8px #0004;
-    font-size: 1.15rem;
-    border-radius: 0 0 8px 8px;
-}
-
-    input:focus {
-        box-shadow: 0 0 0 2px #bfae8e99, 0 2px 8px #0004;
-    }
-/*input {
-    width: 100%;
-    max-width: 1500px;
-    margin: 0 auto;
-    display: block;
-    padding: 16px 18px;
-    border-radius: 0 0 8px 8px;
-    font-size: 1.15rem;
-    border: none;
-    outline: none;
-    background-color: #23201b;
-    color: #f8eecb;
-    box-shadow: 0 2px 8px #0004;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    transition: box-shadow 0.2s, border 0.2s;
-}
-
-    input:focus {
-        box-shadow: 0 0 0 2px #bfae8e99, 0 2px 8px #0004;
-        border: 1.5px solid #bfae8e99;
-    }*/
-
-.dialogue-choices,
-.dialogue-waiting {
     width: 80%;
     max-width: 1500px;
-    min-height: 60px;
-    max-height: 60px;
+    height: 60px;
     margin: 0 auto 0;
     padding: 1rem 1.3rem;
     background: linear-gradient(135deg, #23201b 80%, #2d2a25 100%);
@@ -241,7 +207,7 @@ input {
     border: 1.5px solid #bfae8e33;
     color: #fdfcf9;
     font-family: 'AnonymousPro-Regular', serif;
-    font-size: 1.18rem;
+    font-size: 1rem;
     line-height: 1.7;
     letter-spacing: 0.01em;
     overflow-y: auto;
@@ -249,25 +215,33 @@ input {
     box-sizing: border-box;
     transition: box-shadow 0.2s;
     border-top: none;
-/*    width: 100%;
+}
+
+    input:focus {
+        box-shadow: 0 0 0 2px #bfae8e99, 0 2px 8px #0004;
+    }
+
+.dialogue-choices,
+.dialogue-waiting {
+    width: 80%;
     max-width: 1500px;
-    min-height: 100px;
-    max-height: 100px;
+    height: 60px;
     margin: 0 auto 0;
-    padding: 0.5rem 1rem;
+    padding: 1rem 1.3rem;
     background: linear-gradient(135deg, #23201b 80%, #2d2a25 100%);
-    border-radius: 0 18px 0 0;
+    border-radius: 0px 0px 18px 18px;
     box-shadow: 0 4px 32px 0 #000a, 0 1.5px 0 #bfae8e44 inset;
     border: 1.5px solid #bfae8e33;
     color: #fdfcf9;
     font-family: 'AnonymousPro-Regular', serif;
-    font-size: 1.18rem;
+    font-size: 1rem;
     line-height: 1.7;
     letter-spacing: 0.01em;
     overflow-y: auto;
     scroll-behavior: smooth;
     box-sizing: border-box;
-    transition: box-shadow 0.2s;*/
+    transition: box-shadow 0.2s;
+    border-top: none;
 }
 
     .dialogue-choices p {
@@ -344,197 +318,38 @@ input {
         border-radius: 0 0 6px 6px;
     }
 }
-
-/*
-/* Reset body and center everything */
-/*
-
-*, *::before, *::after {
-    box-sizing: inherit;
-}
-
-
-/* Blazor error UI */
-/*#blazor-error-ui {
-    background: lightyellow;
-    bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
-    display: none;
-    left: 0;
-    padding: 0.6rem 1.25rem;
-    position: fixed;
-    width: 100%;
-    z-index: 1000;
-}
-
-    #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
-    }
-
-.blazor-error-boundary {
-    background: url(...) no-repeat 1rem/1.8rem, #b32121;
-    padding: 1rem 1rem 1rem 3.7rem;
-    color: white;
-}
-
-    .blazor-error-boundary::after {
-        content: "An error has occurred.";
-    }*/
-
-/* Loading */
-/*.loading-progress {
-    margin: 20vh auto 1rem auto;
-    width: 8rem;
-    height: 8rem;
+.main-container {
     position: relative;
-}
-
-    .loading-progress circle {
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
-        stroke-width: 0.6rem;
-        fill: none;
-        stroke: #e0e0e0;
-    }
-
-        .loading-progress circle:last-child {
-            stroke: #1b6ec2;
-            transition: stroke-dasharray 0.05s ease-in-out;
-        }
-
-.loading-progress-text {
-    position: absolute;
-    text-align: center;
-    font-weight: bold;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
-}
-
-    .loading-progress-text::after {
-        content: var(--blazor-load-percentage-text, "Loading");
-    }*/
-
-/* Header */
-/*.scene-header {
-    position: sticky;
-    top: 0;
-    left: 0;
     width: 100vw;
-    background: #181818ee;
-    padding: 1.5rem 0 1.2rem;
-    border-bottom: 2px solid #333;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-    z-index: 10;
+    height: 100vh;
+    min-height: 100vh;
+    min-width: 100vw;
+    overflow: hidden;
 }
-
-.scene-header-text {
-    margin: 0 auto;
-    max-width: 1500px;
-    font-family: 'IMFellEnglishSC', serif;
-    font-size: 2.1rem;
-    color: #f8f8f8;
-    text-align: center;
-    letter-spacing: 0.08em;
-    text-shadow: 0 2px 8px #000a;
-}*/
-
-/* Game container */
-/*.game-screen {
-    width: 100%;
-    max-width: 1500px;
-    margin: 0 auto;
-    padding: 0 0 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 500px;
-}*/
-
-/* Output box */
-/*.game-output {
-    width: 100%;
-    max-width: 1500px;
-    margin: 24px auto 0;
-    padding: 2.2rem 2.5rem;
-    background: linear-gradient(135deg,#23201b 80%,#2d2a25 100%);
-    border-radius: 18px 18px 0 0;
-    box-shadow: 0 4px 32px #000a, inset 0 1.5px 0 #bfae8e44;
-    border: 1.5px solid #bfae8e33;
-    color: #fdfcf9;
-    overflow-y: auto;
-}*/
-
-/* Inputs & dialogues flush with output */
-/*input,
-.dialogue-choices,
-.dialogue-waiting {
-    width: 100%;
-    max-width: 1500px;
-    margin: 0 auto;
-    background: #23201b;
-    color: #f8eecb;
-    border: none;
-    outline: none;
-}*/
-
-/* Input styling */
-/*input {
-    padding: 16px;
-    box-shadow: 0 2px 8px #0004;
-    font-size: 1.15rem;
-    border-radius: 0 0 8px 8px;
+.game-bg-black {
+    background: #000 !important;
 }
-
-    input:focus {
-        box-shadow: 0 0 0 2px #bfae8e99, 0 2px 8px #0004;
-    }*/
-
-/* Dialogue blocks */
-/*.dialogue-choices,
-.dialogue-waiting {
-    padding: 15px;
-    background-color: #2a2a2a;
-    border: 1px solid #444;
-    border-radius: 0 0 8px 8px;
-}
-
-    .dialogue-choices p {
-        color: #ccc;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-
-    .dialogue-waiting p {
-        color: #888;
-        font-style: italic;
-    }*/
-
-/* Responsive */
-/*@media (max-width: 1600px) {
-    .game-screen,
-    .game-output,
-    input {
-        width: 98vw;
-        max-width: 1500px;
-    }
-}*/
-
 .title-screen {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: linear-gradient(135deg, #181818 80%, #23201b 100%);
+    background: #181818;
+    z-index: 10;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 10000;
+    transition: opacity 1s;
+    opacity: 1;
+    pointer-events: all;
 }
-
+.title-screen.fade-out {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1s;
+}
 .title-logo {
     font-family: 'IMFellEnglishSC', serif;
     font-size: 5rem;
@@ -545,7 +360,6 @@ input {
     text-align: center;
     user-select: none;
 }
-
 .begin-button {
     font-family: 'AnonymousPro-Regular', serif;
     font-size: 2rem;
@@ -561,9 +375,16 @@ input {
     font-weight: bold;
     letter-spacing: 0.08em;
 }
-
 .begin-button:hover, .begin-button:focus {
-    background: linear-gradient(90deg, #e6d7b8 60%, #bfae8e 100%);
-    transform: translateY(-2px) scale(1.04);
+    transform: scale(1.04);
     outline: none;
+}
+.game-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+    /* Always visible, no opacity or pointer-events toggling */
 }

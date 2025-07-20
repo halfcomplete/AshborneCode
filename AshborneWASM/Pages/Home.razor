@@ -8,68 +8,82 @@
 @page "/"
 @inject IJSRuntime JS
 
-@if (!hasStarted)
-{
-    <div class="title-screen">
-        <div class="title-logo">ASHBORNE</div>
-        <button class="begin-button" @onclick="BeginGame">Begin</button>
-    </div>
-}
-else
-{
-    <div class="scene-header">
-        @if (GameContext.Player?.CurrentScene != null && GameContext.GameState != null)
-        {
-            var scene = GameContext.Player.CurrentScene;
-            int sceneNo = 1;
-            GameContext.GameState.TryGetCounter("player.current_scene_no", out sceneNo);
-            string actLabel = scene.ID.ToUpper().StartsWith("ACT") ? scene.ID.ToUpper().Replace("ACT", "ACT ") : $"ACT I";
-            <span class="scene-header-text">
-                @actLabel: SCENE @sceneNo — @scene.DisplayName.ToUpper()
-            </span>
-        }
-    </div>
-
-    <div class="game-screen">
-        <div class="game-output">@((MarkupString)gameText.Replace("\n", "<br />"))</div>
-
-        @if (isAwaitingPlayerInput)
-        {
-            <input @bind="userInput"
-                   @bind:event="oninput"
-                   @onkeydown="HandleInput"
-                   placeholder="@(isDialogueInput ? "What do you say?" : "What will you do?")" autofocus />
-            <div><em>Type your response and press Enter.</em></div>
-        }
-        else if (isInDialogue && dialogueChoices.Count > 0 && !isTypingDialogue)
-        {
-            <div class="dialogue-choices">
-                <p>Choose an option:</p>
-                @for (int i = 0; i < dialogueChoices.Count; i++)
+<div class="main-container game-bg-black">
+    <div class="game-content">
+        <div class="scene-header">
+            @if (GameContext.Player?.CurrentScene != null && GameContext.GameState != null)
+            {
+                int actNo = 1;
+                GameContext.GameState.TryGetCounter(GameStateKeyConstants.Counters.Player.CurrentActNo, out actNo);
+                string actLabel = "ACT " + IntToRomanConversionService.IntToRoman(actNo);
+                var scene = GameContext.Player.CurrentScene;
+                int sceneNo = 1;
+                GameContext.GameState.TryGetCounter(GameStateKeyConstants.Counters.Player.CurrentSceneNo, out sceneNo);
+                string sceneLabel;
+                string final;
+                if (sceneNo != 0)
                 {
-                    int choiceIndex = i; // Capture the index for the lambda
-                                         <button @onclick="() => SelectDialogueChoice(choiceIndex + 1)" class="choice-button">
-                                             [@(choiceIndex + 1)] @dialogueChoices[i]
-                                         </button>
+                    sceneLabel = IntToRomanConversionService.IntToRoman(sceneNo);
+                    final = $"{actLabel}: SCENE {sceneLabel} — {scene.DisplayName.ToUpper()}";
                 }
-            </div>
-        }
-        else if (!isInDialogue)
-        {
-            <input @bind="userInput"
-                   @bind:event="oninput"
-                   @onkeydown="HandleInput"
-                   placeholder="What will you do?" />
-            <div><em>Type your action and press Enter.</em></div>
-        }
-        else
-        {
-            <div class="dialogue-waiting">
-                <p>Listening...</p>
-            </div>
-        }
+                else
+                {
+                    sceneLabel = string.Empty;
+					final = $"{scene.DisplayName.ToUpper()}";
+                }
+				
+                <span class="scene-header-text">
+                    @final
+                </span>
+            }
+        </div>
+        <div class="game-screen">
+            <div class="game-output">@((MarkupString)gameText.Replace("\n", "<br />"))</div>
+            @if (isAwaitingPlayerInput)
+            {
+                <input @bind="userInput"
+                       @bind:event="oninput"
+                       @onkeydown="HandleInput"
+                       placeholder="@(isDialogueInput ? "What do you say?" : "What will you do?")" autofocus />
+                <div><em>Type your response and press Enter.</em></div>
+            }
+            else if (isInDialogue && dialogueChoices.Count > 0 && !isTypingDialogue)
+            {
+                <div class="dialogue-choices">
+                    <p>Choose an option:</p>
+                    @for (int i = 0; i < dialogueChoices.Count; i++)
+                    {
+                        int choiceIndex = i; // Capture the index for the lambda
+                                             <button @onclick="() => SelectDialogueChoice(choiceIndex + 1)" class="choice-button">
+                                                 [@(choiceIndex + 1)] @dialogueChoices[i]
+                                             </button>
+                    }
+                </div>
+            }
+            else if (!isInDialogue)
+            {
+                <input @bind="userInput"
+                       @bind:event="oninput"
+                       @onkeydown="HandleInput"
+                       placeholder="What will you do?" />
+                <div><em>Type your action and press Enter.</em></div>
+            }
+            else
+            {
+                <div class="dialogue-waiting">
+                    <p>@listeningText</p>
+                </div>
+            }
+        </div>
     </div>
-}
+    @if (!hasStarted || isFading)
+    {
+        <div class="title-screen @(isFading ? "fade-out" : "")">
+            <div class="title-logo">ASHBORNE</div>
+            <button class="begin-button" @onclick="BeginGame">Begin</button>
+        </div>
+    }
+</div>
 
 @* <div>
     <pre>
@@ -87,8 +101,8 @@ else
     private string userInput = "";
     private string gameText = "";
     private GameEngine engine;
-    private bool isInDialogue = false;
-    private bool isTypingDialogue = false;
+    private bool isInDialogue = true;
+    private bool isTypingDialogue = true;
     private List<string> dialogueChoices = new List<string>();
     private TaskCompletionSource<int> choiceCompletionSource;
     private bool isAwaitingPlayerInput = false;
@@ -96,6 +110,8 @@ else
     private TaskCompletionSource<string> playerInputTcs;
     private TaskCompletionSource<bool> choicesAvailableTcs;
     private bool hasStarted = false;
+    private bool isFading = false;
+    private const int FadeDurationMs = 1000;
 
     // Output queue for all output (lines, pauses, typewriter)
     private Queue<string> outputQueue = new Queue<string>();
@@ -103,6 +119,47 @@ else
 
     // Static instance for external access (used by InkRunner flush)
     public static Home? Instance;
+
+    private string listeningText = "Listening";
+    private System.Threading.Timer? listeningTimer;
+    private int listeningStep = 0;
+    private readonly string[] listeningStates = new[] { "Listening", "Listening.", "Listening..", "Listening..." };
+    private const int ListeningInterval = 400; // ms
+    private const int ListeningPause = 600; // ms after 'Listening...'
+    private bool listeningActive = false;
+    private bool prevListeningActive = false;
+
+    private void StartListeningAnimation()
+    {
+        listeningStep = 0;
+        listeningText = listeningStates[0];
+        listeningTimer?.Dispose();
+        listeningTimer = new System.Threading.Timer(_ =>
+        {
+            listeningStep = (listeningStep + 1) % listeningStates.Length;
+            listeningText = listeningStates[listeningStep];
+            InvokeAsync(StateHasChanged);
+            if (listeningStep == 0)
+            {
+                listeningTimer?.Change(ListeningPause, ListeningInterval);
+            }
+            else if (listeningStep == listeningStates.Length - 1)
+            {
+                listeningTimer?.Change(ListeningPause, (ListeningInterval + ListeningPause) / 2);
+            }
+            else
+            {
+                listeningTimer?.Change(ListeningInterval, ListeningInterval);
+            }
+        }, null, ListeningInterval, ListeningInterval);
+    }
+
+    private void StopListeningAnimation()
+    {
+        listeningTimer?.Dispose();
+        listeningTimer = null;
+        listeningText = listeningStates[0];
+    }
 
     protected override void OnInitialized()
     {
@@ -151,7 +208,7 @@ else
             };
         }
 
-        // Do NOT start the game loop here; it will be started after Begin is pressed.
+        // Do NOT start the game loop here; it will be started after fade.
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -161,6 +218,16 @@ else
             // Auto-scroll to bottom on initial page load
             await Task.Delay(100); // Small delay to ensure DOM is ready
             await AutoScrollToBottom();
+        }
+        // Start/stop listening animation based on correct condition
+        listeningActive = isInDialogue && !isAwaitingPlayerInput;
+        if (listeningActive != prevListeningActive)
+        {
+            if (listeningActive)
+                StartListeningAnimation();
+            else
+                StopListeningAnimation();
+            prevListeningActive = listeningActive;
         }
     }
 
@@ -203,6 +270,12 @@ else
         while (outputQueue.Count > 0)
         {
             var line = outputQueue.Dequeue();
+            if (line.Contains("__NL__"))
+            {
+                // Handle new line marker
+                gameText += "\n";
+                continue; // Do not add another new line after this
+            }
 #if DEBUG
             Console.WriteLine($"[DEBUG] ProcessOutputQueue: {line}");
 #endif
@@ -420,10 +493,14 @@ else
         }
     }
 
-    private void BeginGame()
+    private async void BeginGame()
     {
-        hasStarted = true;
+        isFading = true;
         StateHasChanged();
-        engine.StartGameLoopAsync();
+        engine.StartGameLoopAsync(); // Start the game loop immediately
+        await Task.Delay(FadeDurationMs);
+        hasStarted = true;
+        isFading = false;
+        StateHasChanged();
     }
 }
