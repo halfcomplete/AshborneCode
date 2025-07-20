@@ -6,11 +6,11 @@ namespace AshborneGame._Core.Globals.Constants
         /// <summary>
         /// Default type speed for Release builds in milliseconds per character.
         /// </summary>
-        public const int DefaultTypeSpeed = 30;
+        public const int DefaultTypeSpeed = 26;
         /// <summary>
         /// Default type speed modifiers for Debug builds as a multiplier for DefaultTypeSpeed.
         /// </summary>
-        public const float DefaultDebugTypeSpeedModifier = 0.5f;
+        public const float DefaultDebugTypeSpeedModifier = 0.1f;
         /// <summary>
         /// The multiplier for pauses after a full stop.
         /// </summary>
@@ -20,17 +20,21 @@ namespace AshborneGame._Core.Globals.Constants
         /// </summary>
         public const int CommaPauseMultiplier = 6;
         /// <summary>
-        /// The multiplier for pauses after a hyphen.
+        /// The multiplier for pauses after an em dash.
         /// </summary>
-        public const int HyphenPauseMultiplier = 7;
+        public const int EmDashPauseMultiplier = 7;
         /// <summary>
         /// The multiplier for pauses after a double quotation mark.
         /// </summary>
         public const int QuotationPauseMultiplier = 12;
         /// <summary>
-        /// The multiplier for pauses after a closing bracket.
+        /// The multiplier for pauses after a closing square bracket.
         /// </summary>
         public const int ClosingSquareBracketPauseMultiplier = 14;
+        /// <summary>
+        /// The multiplier for pauses after a closing bracket.
+        /// </summary>
+        public const int ClosingParenthesisPauseMultiplier = 13;
         /// <summary>
         /// The multiplier for pauses after a colon.
         /// </summary>
@@ -38,7 +42,7 @@ namespace AshborneGame._Core.Globals.Constants
         /// <summary>
         /// The multiplier for pauses after a new line.
         /// </summary>
-        public const int NewLinePauseMultiplier = 4;
+        public const int NewLinePauseMultiplier = 7;
         /// <summary>
         /// Inclusive minimum random pause duration in milliseconds.
         /// </summary>

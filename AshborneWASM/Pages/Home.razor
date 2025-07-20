@@ -85,14 +85,14 @@
     }
 </div>
 
-@* <div>
+<div>
     <pre>
         isInDialogue: @isInDialogue
         isAwaitingPlayerInput: @isAwaitingPlayerInput
         dialogueChoices.Count: @dialogueChoices.Count
         isTypingDialogue: @isTypingDialogue
     </pre>
-</div> *@
+</div>
 
 @code {
     [Inject] private HttpClient? Http { get; set; }
@@ -194,10 +194,15 @@
             GameContext.DialogueService.SetPlayerInputCallback(GetPlayerInputFromUIAsync);
             GameContext.DialogueService.DialogueComplete += async () =>
             {
-                isInDialogue = false;
-                isAwaitingPlayerInput = false;
-                userInput = "";
-                await InvokeAsync(StateHasChanged);
+                // Only set isInDialogue to false if not typewriting
+                if (!isTypingDialogue)
+                {
+                    isInDialogue = false;
+                    isAwaitingPlayerInput = false;
+                    userInput = "";
+                    await InvokeAsync(StateHasChanged);
+                }
+                // Otherwise, let the typewriter effect finish, then set isInDialogue = false at the end of HandleTypewriterEffect
             };
             GameContext.DialogueService.DialogueStart += async () =>
             {
@@ -272,6 +277,7 @@
             var line = outputQueue.Dequeue();
             if (line.Contains("__NL__"))
             {
+                dialogueChoices.Clear();
                 // Handle new line marker
                 gameText += "\n";
                 continue; // Do not add another new line after this
@@ -282,6 +288,7 @@
             // Handle special pause marker: ms__PAUSE__
             if (line.TrimEnd().EndsWith("__PAUSE__"))
             {
+                dialogueChoices.Clear();
                 var msStr = line.Substring(0, line.IndexOf("__PAUSE__"));
                 if (int.TryParse(msStr, out int ms))
                 {
@@ -300,6 +307,7 @@
             // Handle typewriter effect
             if (line.Contains("__TYPEWRITER_START__") && line.Contains("__TYPEWRITER_END__"))
             {
+                dialogueChoices.Clear();
                 await HandleTypewriterEffect(line);
                 continue;
             }
@@ -337,13 +345,15 @@
     private async Task HandleTypewriterEffect(string line)
     {
         // Parse ms value at the start of the line (e.g. "50__TYPEWRITER_START__...")
-        int ms = 30; // default
+        int ms = OutputConstants.DefaultTypeSpeed; // default
+        Console.WriteLine($"[DEBUG] Handling typewriter effect for line: {line}");
         int msEnd = line.IndexOf("__TYPEWRITER_START__");
         if (msEnd > 0)
         {
             string msStr = line.Substring(0, msEnd);
-            if (!int.TryParse(msStr, out ms)) ms = 30;
+            if (!int.TryParse(msStr, out ms)) ms = OutputConstants.DefaultTypeSpeed;
         }
+        Console.WriteLine($"[DEBUG] Typewriter effect with delay: {ms} ms");
         int startIndex = line.IndexOf("__TYPEWRITER_START__") + "__TYPEWRITER_START__".Length;
         int endIndex = line.IndexOf("__TYPEWRITER_END__");
         string message = line.Substring(startIndex, endIndex - startIndex);
@@ -457,17 +467,23 @@
             {
                 EnqueueOutput($"> {userInput}");
                 string command = userInput.Trim();
+                #if DEBUG
                 EnqueueOutput($"[DEBUG] Executing command: '{command}'");
                 EnqueueOutput($"[DEBUG] Player location: {GameContext.Player.CurrentLocation.Name}");
                 EnqueueOutput($"[DEBUG] Player sublocation: {(GameContext.Player.CurrentSublocation?.Name.ReferenceName ?? "None")}");
                 EnqueueOutput($"[DEBUG] Sublocation object: {(GameContext.Player.CurrentSublocation?.GameObject?.GetType().Name ?? "None")}");
+                #endif
                 engine.ReceiveCommand(command);
+                #if DEBUG
                 EnqueueOutput($"[DEBUG] Command execution completed");
+                #endif
             }
             catch (Exception ex)
             {
+                #if DEBUG
                 EnqueueOutput($"[ERROR] Command execution failed: {ex.Message}");
                 EnqueueOutput($"[ERROR] Stack trace: {ex.StackTrace}");
+                #endif
             }
             finally
             {

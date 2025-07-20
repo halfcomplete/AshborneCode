@@ -150,8 +150,8 @@ body {
 .game-output {
     width: 80%;
     max-width: 1500px;
-    min-height: 600px;
-    max-height: 600px;
+    min-height: 540px;
+    max-height: 540px;
     margin: 24px auto 0;
     padding: 2.2rem 2.5rem;
     background: linear-gradient(135deg, #23201b 80%, #2d2a25 100%);
@@ -182,11 +182,20 @@ body {
 
 /* Inputs & dialogues flush with output */
 input,
-.dialogue-choices,
 .dialogue-waiting {
     width: 80%;
     max-width: 1500px;
     height: 60px;
+    margin: 0 auto;
+    background: #23201b;
+    color: #f8eecb;
+    border: none;
+    outline: none;
+}
+
+.dialogue-choices {
+    width: 80%;
+    max-width: 1500px;
     margin: 0 auto;
     background: #23201b;
     color: #f8eecb;
@@ -225,7 +234,6 @@ input {
 .dialogue-waiting {
     width: 80%;
     max-width: 1500px;
-    height: 60px;
     margin: 0 auto 0;
     padding: 1rem 1.3rem;
     background: linear-gradient(135deg, #23201b 80%, #2d2a25 100%);
@@ -249,6 +257,10 @@ input {
         color: #ccc;
         font-weight: bold;
     }
+
+.dialogue-waiting {
+    height: 60px;
+}
 
 .choice-button {
     display: block;

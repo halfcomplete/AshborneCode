@@ -6,6 +6,7 @@ using AshborneGame._Core.Data.BOCS.ItemSystem;
 using System.Reflection.Metadata.Ecma335;
 using AshborneGame._Core.Globals.Enums;
 using System.IO;
+using AshborneGame._Core.Globals.Constants;
 #if BLAZOR
 using AshborneWASM.Pages;
 #endif
@@ -22,7 +23,6 @@ namespace AshborneGame._Core.SceneManagement
         private Player _player;
         private readonly GameStateManager _gameState;
         private readonly AppEnvironment _appEnvironment;
-        private readonly int _defaultWait = 80;
 
         private (string, int) _currentSilentPath = ("", 0);
 
@@ -163,6 +163,7 @@ namespace AshborneGame._Core.SceneManagement
                 bool sawEndMarker = false;
                 while (_story.canContinue)
                 {
+                    
                     string line = _story.Continue().Trim();
                     IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Line='{line}'", ConsoleMessageTypes.INFO);
 
@@ -222,12 +223,12 @@ namespace AshborneGame._Core.SceneManagement
                             }
                             else
                             {
-                                IOService.Output.WriteLine(line, _defaultWait);
+                                IOService.Output.WriteLine(line, OutputConstants.DefaultTypeSpeed);
                             }
                         }
                         else
                         {
-                            IOService.Output.WriteLine(line, _defaultWait);
+                            IOService.Output.WriteLine(line, OutputConstants.DefaultTypeSpeed);
                         }
                     }
                 }
