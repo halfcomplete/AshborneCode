@@ -26,6 +26,7 @@ namespace AshborneGame._Core.SceneManagement
         private readonly AppEnvironment _appEnvironment;
 
         private (string, int) _currentSilentPath = ("", 0);
+        private CancellationTokenSource? _silentPathCts = null;
 
         public string CurrentSilentPath
         {
@@ -231,7 +232,40 @@ namespace AshborneGame._Core.SceneManagement
 
                     if (_story.currentChoices.Count > 0) // Defensive check
                     {
+                        // --- Start silent path timer only when player is prompted for input ---
+                        if (!string.IsNullOrWhiteSpace(_currentSilentPath.Item1) && _currentSilentPath.Item2 > 0)
+                        {
+                            _silentPathCts?.Cancel();
+                            _silentPathCts = new CancellationTokenSource();
+                            var token = _silentPathCts.Token;
+                            string silentPath = _currentSilentPath.Item1;
+                            int silentMs = _currentSilentPath.Item2;
+                            var timerId = Guid.NewGuid();
+                            Console.WriteLine($"[{timerId}] Starting silent path timer to path {silentPath} for {silentMs} ms at {DateTime.Now:HH:mm:ss.fff}");
+                            _ = Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    await ReliableDelay(silentMs, token);
+                                    if (!token.IsCancellationRequested)
+                                    {
+                                        Console.WriteLine($"[{timerId}] Silent path timer completed at {DateTime.Now:HH:mm:ss.fff}");
+                                        await TryJumpToSilentPathAsync();
+                                        // Clear silent path after jumping
+                                        _currentSilentPath = ("", 0);
+                                    }
+                                }
+                                catch (TaskCanceledException)
+                                {
+                                    Console.WriteLine($"[{timerId}] Silent path timer caught TaskCanceledException at {DateTime.Now:HH:mm:ss.fff}");
+                                }
+                            }, token);
+                        }
+
                         int choice = await IOService.Input.GetChoiceInputAsync(_story.currentChoices.Count);
+                        // --- Cancel silent path timer and clear silent path as soon as a choice is made ---
+                        _silentPathCts?.Cancel();
+                        _currentSilentPath = ("", 0);
                         IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Choice {choice} selected at {DateTime.Now}", ConsoleMessageTypes.INFO);
                         // Defensive: Only process the choice if the story is still running and the choice is valid
                         if (_story.currentChoices.Count > 0 && choice > 0 && choice <= _story.currentChoices.Count)
@@ -393,6 +427,22 @@ namespace AshborneGame._Core.SceneManagement
                 return;
             _story.ChoosePathString(_currentSilentPath.Item1);
             await RunAsync();
+            // Clear silent path after jumping
+            _currentSilentPath = ("", 0);
+        }
+
+        // Reliable delay for WASM: loops in short intervals to avoid browser timer issues
+        private static async Task ReliableDelay(int totalMs, CancellationToken token)
+        {
+            int elapsed = 0;
+            int step = 200; // 200 ms steps
+            while (elapsed < totalMs)
+            {
+                int wait = Math.Min(step, totalMs - elapsed);
+                await Task.Delay(wait, token);
+                if (token.IsCancellationRequested) return;
+                elapsed += wait;
+            }
         }
 
         /// <summary>
