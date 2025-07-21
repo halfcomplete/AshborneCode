@@ -85,14 +85,14 @@
     }
 </div>
 
-<div>
+@* div>
     <pre>
         isInDialogue: @isInDialogue
         isAwaitingPlayerInput: @isAwaitingPlayerInput
         dialogueChoices.Count: @dialogueChoices.Count
         isTypingDialogue: @isTypingDialogue
     </pre>
-</div>
+</div> *@
 
 @code {
     [Inject] private HttpClient? Http { get; set; }
@@ -101,11 +101,78 @@
     private string userInput = "";
     private string gameText = "";
     private GameEngine engine;
-    private bool isInDialogue = true;
-    private bool isTypingDialogue = true;
-    private List<string> dialogueChoices = new List<string>();
+    private bool _isInDialogue = true;
+    private bool isInDialogue
+    {
+        get => _isInDialogue;
+        set
+        {
+            if (_isInDialogue != value)
+            {
+                var runner = GameContext.InkRunner;
+                var canContinue = runner?.Story?.canContinue;
+                var currentChoices = runner?.Story?.currentChoices?.Count;
+                var stack = Environment.StackTrace;
+                Console.WriteLine($"[DEBUG] isInDialogue changed from {_isInDialogue} to {value} at {DateTime.Now} | canContinue={canContinue} currentChoices={currentChoices}\nStack: {stack}");
+            }
+            _isInDialogue = value;
+        }
+    }
+
+    private bool _isTypingDialogue = false;
+    private bool isTypingDialogue
+    {
+        get => _isTypingDialogue;
+        set
+        {
+            if (_isTypingDialogue != value)
+            {
+                var runner = GameContext.InkRunner;
+                var canContinue = runner?.Story?.canContinue;
+                var currentChoices = runner?.Story?.currentChoices?.Count;
+                // var stack = Environment.StackTrace;
+                var stack = string.Empty;
+                Console.WriteLine($"[DEBUG] isTypingDialogue changed from {_isTypingDialogue} to {value} at {DateTime.Now} | canContinue={canContinue} currentChoices={currentChoices}\nStack: {stack}");
+            }
+            _isTypingDialogue = value;
+        }
+    }
+
+    private List<string> _dialogueChoices = new List<string>();
+    private List<string> dialogueChoices
+    {
+        get => _dialogueChoices;
+        set
+        {
+            if (_dialogueChoices != value)
+            {
+                var runner = GameContext.InkRunner;
+                var canContinue = runner?.Story?.canContinue;
+                var currentChoices = runner?.Story?.currentChoices?.Count;
+                var stack = Environment.StackTrace;
+                Console.WriteLine($"[DEBUG] dialogueChoices changed at {DateTime.Now} | newCount={value?.Count} canContinue={canContinue} currentChoices={currentChoices}\nStack: {stack}");
+            }
+            _dialogueChoices = value;
+        }
+    }
     private TaskCompletionSource<int> choiceCompletionSource;
-    private bool isAwaitingPlayerInput = false;
+    private bool _isAwaitingPlayerInput = false;
+    private bool isAwaitingPlayerInput
+    {
+        get => _isAwaitingPlayerInput;
+        set
+        {
+            if (_isAwaitingPlayerInput != value)
+            {
+                var runner = GameContext.InkRunner;
+                var canContinue = runner?.Story?.canContinue;
+                var currentChoices = runner?.Story?.currentChoices?.Count;
+                var stack = Environment.StackTrace;
+                Console.WriteLine($"[DEBUG] isAwaitingPlayerInput changed from {_isAwaitingPlayerInput} to {value} at {DateTime.Now} | canContinue={canContinue} currentChoices={currentChoices}\nStack: {stack}");
+            }
+            _isAwaitingPlayerInput = value;
+        }
+    }
     private bool isDialogueInput = false;
     private TaskCompletionSource<string> playerInputTcs;
     private TaskCompletionSource<bool> choicesAvailableTcs;
@@ -116,6 +183,7 @@
     // Output queue for all output (lines, pauses, typewriter)
     private Queue<string> outputQueue = new Queue<string>();
     private bool isProcessingQueue = false;
+    private bool pendingDialogueEnd = false; // <--- add this back
 
     // Static instance for external access (used by InkRunner flush)
     public static Home? Instance;
@@ -192,7 +260,7 @@
         if (GameContext.DialogueService != null)
         {
             GameContext.DialogueService.SetPlayerInputCallback(GetPlayerInputFromUIAsync);
-            GameContext.DialogueService.DialogueComplete += async () =>
+            @* GameContext.DialogueService.DialogueComplete += async () =>
             {
                 // Only set isInDialogue to false if not typewriting
                 if (!isTypingDialogue)
@@ -203,13 +271,24 @@
                     await InvokeAsync(StateHasChanged);
                 }
                 // Otherwise, let the typewriter effect finish, then set isInDialogue = false at the end of HandleTypewriterEffect
-            };
+            }; *@
             GameContext.DialogueService.DialogueStart += async () =>
+                            {
+                                isInDialogue = true;
+                                isAwaitingPlayerInput = false;
+                                userInput = "";
+                                await InvokeAsync(StateHasChanged);
+                            };
+        }
+
+        if (GameContext.InkRunner != null)
+        {
+            GameContext.InkRunner.OnDialogueEnd += () =>
             {
-                isInDialogue = true;
+                isInDialogue = false;
                 isAwaitingPlayerInput = false;
                 userInput = "";
-                await InvokeAsync(StateHasChanged);
+                InvokeAsync(StateHasChanged);
             };
         }
 
@@ -222,7 +301,7 @@
         {
             // Auto-scroll to bottom on initial page load
             await Task.Delay(100); // Small delay to ensure DOM is ready
-            await AutoScrollToBottom();
+            await AutoScrollToBottom(force:true);
         }
         // Start/stop listening animation based on correct condition
         listeningActive = isInDialogue && !isAwaitingPlayerInput;
@@ -275,6 +354,11 @@
         while (outputQueue.Count > 0)
         {
             var line = outputQueue.Dequeue();
+            if (line == "__END__")
+            {
+                pendingDialogueEnd = true;
+                continue;
+            }
             if (line.Contains("__NL__"))
             {
                 dialogueChoices.Clear();
@@ -286,15 +370,19 @@
             Console.WriteLine($"[DEBUG] ProcessOutputQueue: {line}");
 #endif
             // Handle special pause marker: ms__PAUSE__
-            if (line.TrimEnd().EndsWith("__PAUSE__"))
+            if (line.TrimEnd().EndsWith(OutputConstants.TypewriterPauseMarker))
             {
                 dialogueChoices.Clear();
-                var msStr = line.Substring(0, line.IndexOf("__PAUSE__"));
+                var msStr = line.Substring(0, line.IndexOf(OutputConstants.TypewriterPauseMarker));
                 if (int.TryParse(msStr, out int ms))
                 {
                     await InvokeAsync(StateHasChanged);
                     await Task.Yield();
+                    #if DEBUG
+                    await Task.Delay(Convert.ToInt32(Math.Round(ms * OutputConstants.DefaultDebugTypeSpeedModifier)));
+                    #else
                     await Task.Delay(ms);
+                    #endif
                 }
                 else
                 {
@@ -340,6 +428,18 @@
             await AutoScrollToBottom();
         }
         isProcessingQueue = false;
+
+        // After all output is processed and typewriter is done
+        if (pendingDialogueEnd && !isTypingDialogue)
+        {
+            Console.WriteLine($"[DEBUG] ProcessOutputQueue: Flushed output, ending dialogue at {DateTime.Now}");
+            isInDialogue = false;
+            isAwaitingPlayerInput = false;
+            userInput = "";
+            pendingDialogueEnd = false;
+            GameContext.InkRunner?.DialogueFinishedOutputting();
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task HandleTypewriterEffect(string line)
@@ -396,10 +496,23 @@
         }
         isTypingDialogue = false;
         await InvokeAsync(StateHasChanged);
+
+        // After typewriter effect, if pendingDialogueEnd is set and output queue is empty, end dialogue
+        if (pendingDialogueEnd && !isProcessingQueue)
+        {
+            Console.WriteLine($"[DEBUG] HandleTypewriterEffect: Flushed output, ending dialogue at {DateTime.Now}");
+            isInDialogue = false;
+            isAwaitingPlayerInput = false;
+            userInput = "";
+            pendingDialogueEnd = false;
+            GameContext.InkRunner?.DialogueFinishedOutputting();
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task<int> GetDialogueChoice(int choiceCount)
     {
+        Console.WriteLine($"[DEBUG] GetDialogueChoice called with count={choiceCount} at {DateTime.Now}, isInDialogue={isInDialogue}");
         choiceCompletionSource = new TaskCompletionSource<int>();
         dialogueChoices.Clear();
         await InvokeAsync(StateHasChanged);
@@ -408,33 +521,21 @@
         if (Instance != null)
             await Instance.FlushOutputQueueAsync();
 
-        bool hasSilent = !string.IsNullOrWhiteSpace(GameContext.InkRunner.CurrentSilentPath);
+        int choice = await choiceCompletionSource.Task;
+        dialogueChoices.Clear();
+        await InvokeAsync(StateHasChanged);
 
-        // If silent path is set, start silent timer
-        if (hasSilent)
+        // Defensive: If the story is finished after the choice, do not return a choice
+        if (GameContext.InkRunner == null || 
+            (GameContext.InkRunner.Story != null && 
+             !GameContext.InkRunner.Story.canContinue && 
+             (GameContext.InkRunner.Story.currentChoices == null || GameContext.InkRunner.Story.currentChoices.Count == 0)))
         {
-            var silentTask = Task.Delay(GameContext.InkRunner.SilentPathWait);
-            var choiceTask = choiceCompletionSource.Task;
-            var completedTask = await Task.WhenAny(choiceTask, silentTask);
+            Console.WriteLine("[DEBUG] GetDialogueChoice: Story is finished after waiting, not returning a choice.");
+            return -1;
+        }
 
-            if (completedTask == silentTask)
-            {
-                await GameContext.InkRunner.TryJumpToSilentPathAsync();
-                return -1; // sentinel for silent path
-            }
-            // If the user made a choice in time, return it
-            int choice = await choiceCompletionSource.Task;
-            dialogueChoices.Clear();
-            await InvokeAsync(StateHasChanged);
-            return choice;
-        }
-        else
-        {
-            int choice = await choiceCompletionSource.Task;
-            dialogueChoices.Clear();
-            await InvokeAsync(StateHasChanged);
-            return choice;
-        }
+        return choice;
     }
 
     private async Task SelectDialogueChoice(int choice)
@@ -492,13 +593,13 @@
         }
     }
 
-    private async Task AutoScrollToBottom()
+    private async Task AutoScrollToBottom(bool force = false)
     {
         try
         {
             if (JS != null)
             {
-                await JS.InvokeVoidAsync("scrollGameOutputToBottom", false); // false = instant
+                await JS.InvokeVoidAsync("scrollGameOutputToBottom", force);
                 await Task.Delay(10);
             }
         }

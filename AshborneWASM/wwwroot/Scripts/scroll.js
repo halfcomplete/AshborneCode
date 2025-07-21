@@ -1,6 +1,23 @@
-window.scrollGameOutputToBottom = function (smooth) {
+window.autoScrollGameOutput = true;
+
+window.scrollGameOutputToBottom = function (force) {
     var el = document.querySelector('.game-output');
-    if (el) {
-        el.scrollTo({ top: el.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+    if (!el) return;
+    if (window.autoScrollGameOutput || force) {
+        el.scrollTop = el.scrollHeight;
     }
-}; 
+};
+
+// Listen for user scroll events
+window.addEventListener('DOMContentLoaded', function () {
+    var el = document.querySelector('.game-output');
+    if (!el) return;
+    el.addEventListener('scroll', function () {
+        // If user is at the bottom (within 5px), enable auto-scroll
+        if (el.scrollTop + el.clientHeight >= el.scrollHeight - 5) {
+            window.autoScrollGameOutput = true;
+        } else {
+            window.autoScrollGameOutput = false;
+        }
+    });
+}); 

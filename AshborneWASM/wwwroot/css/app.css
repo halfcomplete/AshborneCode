@@ -160,7 +160,7 @@ body {
     border: 1.5px solid #bfae8e33;
     color: #fdfcf9;
     font-family: 'AnonymousPro-Regular', serif;
-    font-size: 1.18rem;
+    font-size: 1.12rem;
     line-height: 1.7;
     letter-spacing: 0.01em;
     overflow-y: auto;
@@ -318,7 +318,7 @@ input {
     }
 
     input {
-        width: 100%;
+        width: 80%;
         font-size: 1rem;
         padding: 10px;
         max-width: auto;

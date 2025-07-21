@@ -6,11 +6,11 @@ namespace AshborneGame._Core.Globals.Constants
         /// <summary>
         /// Default type speed for Release builds in milliseconds per character.
         /// </summary>
-        public const int DefaultTypeSpeed = 26;
+        public const int DefaultTypeSpeed = 29;
         /// <summary>
         /// Default type speed modifiers for Debug builds as a multiplier for DefaultTypeSpeed.
         /// </summary>
-        public const float DefaultDebugTypeSpeedModifier = 0.1f;
+        public const float DefaultDebugTypeSpeedModifier = 0.01f;
         /// <summary>
         /// The multiplier for pauses after a full stop.
         /// </summary>
@@ -67,6 +67,13 @@ namespace AshborneGame._Core.Globals.Constants
         /// The marker that indicates the end of a message that should be displayed with typewriter effect.
         /// </summary>
         public const string TypewriterEndMarker = "__TYPEWRITER_END__";
-        
+        /// <summary>
+        /// The marker that indicates a player input is required in Ink.
+        /// </summary>
+        public const string PlayerInputMarker = "__GET_PLAYER_INPUT__";
+        /// <summary>
+        /// The marker that indicatees the end of a dialogue in Ink.
+        /// </summary>
+        public const string DialogueEndMarker = "__END__";
     }
 }

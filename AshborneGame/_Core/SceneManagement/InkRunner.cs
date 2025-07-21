@@ -20,6 +20,7 @@ namespace AshborneGame._Core.SceneManagement
     public class InkRunner
     {
         private Story _story;
+        public Story Story => _story;
         private Player _player;
         private readonly GameStateManager _gameState;
         private readonly AppEnvironment _appEnvironment;
@@ -35,18 +36,6 @@ namespace AshborneGame._Core.SceneManagement
         {
             get => _currentSilentPath.Item2;
         }
-
-        private (string, int) _currentWarningPath = ("", 0);
-        public string CurrentWarningPath
-        {
-            get => _currentWarningPath.Item1;
-        }
-
-        public int WarningPathWait
-        {
-            get => _currentWarningPath.Item2;
-        }
-
 
         public bool IsRunning => _story != null && _story.canContinue;
 
@@ -152,7 +141,7 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public async Task RunAsync()
         {
-            IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: RunAsync started at {DateTime.Now}", ConsoleMessageTypes.INFO);
+            IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: RunAsync entered at {DateTime.Now}, canContinue={_story?.canContinue}, currentChoices={_story?.currentChoices?.Count}", ConsoleMessageTypes.INFO);
             if (_story == null)
                 throw new InvalidOperationException("No Ink story loaded.");
 
@@ -160,26 +149,25 @@ namespace AshborneGame._Core.SceneManagement
 
             while (true)
             {
-                bool sawEndMarker = false;
                 while (_story.canContinue)
                 {
                     
                     string line = _story.Continue().Trim();
                     IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Line='{line}'", ConsoleMessageTypes.INFO);
 
-                    if (line == "__END__")
+                    if (line.Equals(OutputConstants.DialogueEndMarker))
                     {
-                        IOService.Output.DisplayDebugMessage("[DEBUG] __END__ marker encountered. Ending dialogue.", ConsoleMessageTypes.INFO);
-                        sawEndMarker = true;
-                        break;
+                        IOService.Output.DisplayDebugMessage($"[DEBUG] {OutputConstants.DialogueEndMarker} marker encountered. Ending dialogue.", ConsoleMessageTypes.INFO);
+                        IOService.Output.WriteLine(line);
+                        return;
                     }
-                    if (line.TrimEnd().EndsWith("__PAUSE__"))
+                    if (line.TrimEnd().EndsWith(OutputConstants.TypewriterPauseMarker))
                     {
                         IOService.Output.WriteLine(line);
                         continue;
                     }
                     // Handle async player input in WASM
-                    if (line.StartsWith("__GET_PLAYER_INPUT__"))
+                    if (line.StartsWith(OutputConstants.PlayerInputMarker))
                     {
                         IOService.Output.DisplayDebugMessage($"InkRunner: Awaiting player input at {DateTime.Now}", ConsoleMessageTypes.INFO);
                         if (OperatingSystem.IsBrowser())
@@ -233,12 +221,6 @@ namespace AshborneGame._Core.SceneManagement
                     }
                 }
 
-                if (sawEndMarker)
-                {
-                    IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: End of story reached at {DateTime.Now}", ConsoleMessageTypes.INFO);
-                    break;
-                }
-
                 if (_story.currentChoices.Count > 0)
                 {
                     IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Presenting choices at {DateTime.Now}", ConsoleMessageTypes.INFO);
@@ -246,23 +228,34 @@ namespace AshborneGame._Core.SceneManagement
                     {
                         IOService.Output.WriteLine($"[{i + 1}] {_story.currentChoices[i].text}");
                     }
-#if BLAZOR
-                    // Wait for Blazor output queue to flush so choices are visible before input is awaited
-                    if (Home.Instance != null)
-                        await Home.Instance.FlushOutputQueueAsync();
-#endif
-                    int choice = await IOService.Input.GetChoiceInputAsync(_story.currentChoices.Count);
-                    IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Choice {choice} selected at {DateTime.Now}", ConsoleMessageTypes.INFO);
-                    _story.ChooseChoiceIndex(choice - 1);
+
+                    if (_story.currentChoices.Count > 0) // Defensive check
+                    {
+                        int choice = await IOService.Input.GetChoiceInputAsync(_story.currentChoices.Count);
+                        IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Choice {choice} selected at {DateTime.Now}", ConsoleMessageTypes.INFO);
+                        // Defensive: Only process the choice if the story is still running and the choice is valid
+                        if (_story.currentChoices.Count > 0 && choice > 0 && choice <= _story.currentChoices.Count)
+                        {
+                            _story.ChooseChoiceIndex(choice - 1);
+                        }
+                        else
+                        {
+                            IOService.Output.DisplayDebugMessage("[DEBUG] InkRunner: Invalid choice or story finished after choice selection. Skipping.", ConsoleMessageTypes.WARNING);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: No choices available after presenting choices. Skipping input.", ConsoleMessageTypes.WARNING);
+                        await Task.Delay(10);
+                    }
                 }
                 else
                 {
-                    // Wait for more content or choices, but do not spam debug messages
+                    IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: No choices available, waiting for more content.", ConsoleMessageTypes.INFO);
                     await Task.Delay(10);
                 }
-            }
-            IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: RunAsync finished at {DateTime.Now}", ConsoleMessageTypes.INFO);
-            
+            }            
         }
 
         private void InitialiseBindings()
@@ -374,6 +367,7 @@ namespace AshborneGame._Core.SceneManagement
         private Func<bool, Task<string>>? _getPlayerInputFromUIAsync;
         public void SetPlayerInputCallback(Func<bool, Task<string>> callback) => _getPlayerInputFromUIAsync = callback;
 
+        public event Action? OnDialogueEnd;
 
         /// <summary>
         /// Jump to a specific knot or stitch in the Ink story.
@@ -389,6 +383,12 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public async Task TryJumpToSilentPathAsync()
         {
+            IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: TryJumpToSilentPathAsync called, path={_currentSilentPath.Item1}, story canContinue={_story?.canContinue}", ConsoleMessageTypes.INFO);
+            if (_story == null || (!_story.canContinue && (_story.currentChoices == null || _story.currentChoices.Count == 0)))
+            {
+                IOService.Output.DisplayDebugMessage("[DEBUG] InkRunner: TryJumpToSilentPathAsync aborted, story is finished.", ConsoleMessageTypes.INFO);
+                return;
+            }
             if (string.IsNullOrWhiteSpace(_currentSilentPath.Item1))
                 return;
             _story.ChoosePathString(_currentSilentPath.Item1);
@@ -411,6 +411,9 @@ namespace AshborneGame._Core.SceneManagement
             return _story.variablesState[key];
         }
 
-        public delegate void OnDialogueFinished();
+        public void DialogueFinishedOutputting()
+        {
+            OnDialogueEnd?.Invoke();
+        }
     }
 }
