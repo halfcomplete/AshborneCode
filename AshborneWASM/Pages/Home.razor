@@ -5,6 +5,7 @@
 @using System.Diagnostics;
 @using AshborneGame.WebPort
 @using Microsoft.JSInterop
+@using System.Timers
 @page "/"
 @inject IJSRuntime JS
 
@@ -39,41 +40,57 @@
         </div>
         <div class="game-screen">
             <div class="game-output">@((MarkupString)gameText.Replace("\n", "<br />"))</div>
-            @if (isAwaitingPlayerInput)
-            {
-                <input @bind="userInput"
-                       @bind:event="oninput"
-                       @onkeydown="HandleInput"
-                       placeholder="@(isDialogueInput ? "What do you say?" : "What will you do?")" autofocus />
-                <div><em>Type your response and press Enter.</em></div>
-            }
-            else if (isInDialogue && dialogueChoices.Count > 0 && !isTypingDialogue)
-            {
-                <div class="dialogue-choices">
-                    <p>Choose an option:</p>
-                    @for (int i = 0; i < dialogueChoices.Count; i++)
-                    {
-                        int choiceIndex = i; // Capture the index for the lambda
-                                             <button @onclick="() => SelectDialogueChoice(choiceIndex + 1)" class="choice-button">
-                                                 [@(choiceIndex + 1)] @dialogueChoices[i]
-                                             </button>
-                    }
-                </div>
-            }
-            else if (!isInDialogue)
-            {
-                <input @bind="userInput"
-                       @bind:event="oninput"
-                       @onkeydown="HandleInput"
-                       placeholder="What will you do?" />
-                <div><em>Type your action and press Enter.</em></div>
-            }
-            else
-            {
-                <div class="dialogue-waiting">
-                    <p>@listeningText</p>
-                </div>
-            }
+            <div class="input-gif-overlay-container">
+                @if (isOssanethGifActive)
+                {
+                    <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                }
+                else
+                {
+                    <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                }
+                @if (isAwaitingPlayerInput)
+                {
+                    <input @bind="userInput"
+                           @bind:event="oninput"
+                           @onkeydown="HandleInput"
+                           placeholder="@(isDialogueInput ? "What do you say?" : "What will you do?")" autofocus />
+                    <div><em>Type your response and press Enter.</em></div>
+                }
+                else if (isInDialogue && dialogueChoices.Count > 0 && !isTypingDialogue)
+                {
+                    <div class="dialogue-choices" style="position: relative;">
+                        @if (silentTimerActive)
+                        {
+                            <div class="silent-timer">
+                                @silentTimerSecondsLeft s
+                            </div>
+                        }
+                        <p>Choose an option:</p>
+                        @for (int i = 0; i < dialogueChoices.Count; i++)
+                        {
+                            int choiceIndex = i; // Capture the index for the lambda
+                            <button @onclick="() => SelectDialogueChoice(choiceIndex + 1)" class="choice-button">
+                                [@(choiceIndex + 1)] @dialogueChoices[i]
+                            </button>
+                        }
+                    </div>
+                }
+                else if (!isInDialogue)
+                {
+                    <input @bind="userInput"
+                           @bind:event="oninput"
+                           @onkeydown="HandleInput"
+                           placeholder="What will you do?" />
+                    <div><em>Type your action and press Enter.</em></div>
+                }
+                else
+                {
+                    <div class="dialogue-waiting">
+                        <p>@listeningText</p>
+                    </div>
+                }
+            </div>
         </div>
     </div>
     @if (!hasStarted || isFading)
@@ -229,6 +246,56 @@
         listeningText = listeningStates[0];
     }
 
+    private bool silentTimerActive = false;
+    private int silentTimerSecondsLeft = 0;
+    private DateTime silentTimerEndTime;
+    private System.Timers.Timer? silentTimer;
+
+    private void StartSilentTimerUI(int ms)
+    {
+        silentTimerActive = true;
+        silentTimerEndTime = DateTime.UtcNow.AddMilliseconds(ms);
+        UpdateSilentTimerUI();
+        silentTimer?.Dispose();
+        silentTimer = new System.Timers.Timer(1000);
+        silentTimer.Elapsed += (s, e) =>
+        {
+            InvokeAsync(() => UpdateSilentTimerUI());
+        };
+        silentTimer.Start();
+    }
+
+    private void StopSilentTimerUI()
+    {
+        silentTimerActive = false;
+        silentTimerSecondsLeft = 0;
+        silentTimer?.Stop();
+        silentTimer?.Dispose();
+        silentTimer = null;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateSilentTimerUI()
+    {
+        var remaining = (int)Math.Ceiling((silentTimerEndTime - DateTime.UtcNow).TotalSeconds);
+        if (remaining <= 0)
+        {
+            StopSilentTimerUI();
+        }
+        else
+        {
+            silentTimerSecondsLeft = remaining;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private bool isOssanethGifActive = false;
+    private System.Threading.Timer? ossanethSigilTimer;
+    private readonly Random ossanethRandom = new Random();
+    private const int OssanethGifDurationMs = 666; // Adjust to match GIF length
+    private const int OssanethMinDelayMs = 3000;
+    private const int OssanethMaxDelayMs = 8000;
+
     protected override void OnInitialized()
     {
         Instance = this;
@@ -273,12 +340,12 @@
                 // Otherwise, let the typewriter effect finish, then set isInDialogue = false at the end of HandleTypewriterEffect
             }; *@
             GameContext.DialogueService.DialogueStart += async () =>
-                            {
-                                isInDialogue = true;
-                                isAwaitingPlayerInput = false;
-                                userInput = "";
-                                await InvokeAsync(StateHasChanged);
-                            };
+                                    {
+                                        isInDialogue = true;
+                                        isAwaitingPlayerInput = false;
+                                        userInput = "";
+                                        await InvokeAsync(StateHasChanged);
+                                    };
         }
 
         if (GameContext.InkRunner != null)
@@ -293,6 +360,7 @@
         }
 
         // Do NOT start the game loop here; it will be started after fade.
+        StartOssanethSigilTimer();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -405,6 +473,23 @@
                 int bracketEnd = line.IndexOf("]");
                 if (bracketEnd > 0 && int.TryParse(line.Substring(1, bracketEnd - 1), out int choiceNumber))
                 {
+                    if (GameContext.InkRunner != null && GameContext.InkRunner.Story != null &&
+                        GameContext.InkRunner.Story.currentChoices != null && choiceNumber > 0 && 
+                        choiceNumber == GameContext.InkRunner.Story.currentChoices.Count)
+                    {
+						// We are currently processing the last choice, so start the silent timer
+                        await GameContext.InkRunner.StartSilentTimer();
+                        // Start UI timer if silent path is set and > 0
+                        if (!string.IsNullOrWhiteSpace(GameContext.InkRunner.CurrentSilentPath) && GameContext.InkRunner.SilentPathWait > 0)
+                        {
+                            StartSilentTimerUI(GameContext.InkRunner.SilentPathWait);
+                        }
+                        else
+                        {
+                            StopSilentTimerUI();
+                        }
+                    }
+
                     string choiceText = line.Substring(bracketEnd + 1).Trim();
                     if (!string.IsNullOrWhiteSpace(choiceText))
                     {
@@ -540,6 +625,7 @@
 
     private async Task SelectDialogueChoice(int choice)
     {
+        StopSilentTimerUI();
         choiceCompletionSource?.TrySetResult(choice);
     }
 
@@ -619,5 +705,44 @@
         hasStarted = true;
         isFading = false;
         StateHasChanged();
+    }
+
+    private bool ShouldGifFadeOut => isInDialogue && dialogueChoices.Count > 0 && !isTypingDialogue;
+
+    private void StartOssanethSigilTimer()
+    {
+        int delay = ossanethRandom.Next(OssanethMinDelayMs, OssanethMaxDelayMs);
+        ossanethSigilTimer?.Dispose();
+        ossanethSigilTimer = new System.Threading.Timer(_ =>
+        {
+            if (!isOssanethGifActive)
+            {
+                isOssanethGifActive = true;
+                InvokeAsync(StateHasChanged);
+                // Show GIF for its duration, then revert to PNG
+                ossanethSigilTimer?.Dispose();
+                ossanethSigilTimer = new System.Threading.Timer(__ =>
+                {
+                    isOssanethGifActive = false;
+                    InvokeAsync(StateHasChanged);
+                    StartOssanethSigilTimer(); // Schedule next random swap
+                }, null, OssanethGifDurationMs, System.Threading.Timeout.Infinite);
+            }
+        }, null, delay, System.Threading.Timeout.Infinite);
+    }
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+        // Defensive: restart timer if component is re-rendered
+        if (ossanethSigilTimer == null)
+        {
+            StartOssanethSigilTimer();
+        }
+    }
+
+    public void Dispose()
+    {
+        ossanethSigilTimer?.Dispose();
     }
 }
