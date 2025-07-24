@@ -69,6 +69,8 @@ body {
         content: "An error has occurred.";
     }
 
+/* TODO: Add a background to the loading screen. */
+
 .loading-progress {
     position: relative;
     display: block;
@@ -86,7 +88,7 @@ body {
     }
 
         .loading-progress circle:last-child {
-            stroke: #1b6ec2;
+            stroke: #f8eecb;
             stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
             transition: stroke-dasharray 0.05s ease-in-out;
         }
@@ -180,7 +182,6 @@ body {
         border-radius: 8px;
     }
 
-/* Inputs & dialogues flush with output */
 input,
 .dialogue-waiting {
     width: 80%;
@@ -203,7 +204,6 @@ input,
     outline: none;
 }
 
-/* Input styling */
 input {
     width: 80%;
     max-width: 1500px;
@@ -330,6 +330,7 @@ input {
         border-radius: 0 0 6px 6px;
     }
 }
+
 .main-container {
     position: relative;
     width: 100vw;
@@ -338,9 +339,11 @@ input {
     min-width: 100vw;
     overflow: hidden;
 }
+
 .game-bg-black {
     background: #000 !important;
 }
+
 .title-screen {
     position: absolute;
     top: 0;
@@ -357,11 +360,13 @@ input {
     opacity: 1;
     pointer-events: all;
 }
+
 .title-screen.fade-out {
     opacity: 0;
     pointer-events: none;
     transition: opacity 1s;
 }
+
 .title-logo {
     font-family: 'IMFellEnglishSC', serif;
     font-size: 5rem;
@@ -372,6 +377,7 @@ input {
     text-align: center;
     user-select: none;
 }
+
 .begin-button {
     font-family: 'AnonymousPro-Regular', serif;
     font-size: 2rem;
@@ -387,10 +393,12 @@ input {
     font-weight: bold;
     letter-spacing: 0.08em;
 }
+
 .begin-button:hover, .begin-button:focus {
     transform: scale(1.04);
     outline: none;
 }
+
 .game-content {
     position: absolute;
     top: 0;
@@ -398,22 +406,32 @@ input {
     width: 100vw;
     height: 100vh;
     z-index: 1;
-    /* Always visible, no opacity or pointer-events toggling */
 }
 
 .input-gif-overlay-container {
-    position: relative;
     width: 100%;
     max-width: 1500px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    position: relative;
+    /* min-height removed to allow content to shrink to fit */
 }
 
-.input-gif-overlay-container input {
+.input-overlay-wrapper {
     position: relative;
+    width: 80%;
+    max-width: 1500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-overlay-wrapper input {
+    width: 100%;
     z-index: 2;
+    position: relative;
 }
 
 .input-overlay-gif {
@@ -426,12 +444,13 @@ input {
     opacity: 0.07;
     pointer-events: none;
     z-index: 3;
-    /* Stick out above and below input */
     transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .input-overlay-gif.fade-out {
     opacity: 0;
 }
+
 .input-overlay-gif.fade-in {
     opacity: 0.02;
 }
@@ -441,7 +460,7 @@ input {
     top: 0.5rem;
     right: 1.2rem;
     font-size: 1.1rem;
-    color: #c9862a;
+    color: #bd955d;
     font-weight: bold;
     background: rgba(59, 52, 42, 0.5);
     padding: 0.2em 0.8em;

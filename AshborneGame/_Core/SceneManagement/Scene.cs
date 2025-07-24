@@ -34,10 +34,11 @@ namespace AshborneGame._Core.SceneManagement
         /// <param name="id">Unique identifier.</param>
         /// <param name="displayName">Display name.</param>
         /// <param name="act">The act number of the scene.</param>
-        public Scene(string id, string displayName)
+        public Scene(string id, string displayName, List<Location>? locations = null)
         {
             ID = id;
             DisplayName = displayName;
+            Locations = locations ?? new List<Location>();
         }
 
         /// <summary>

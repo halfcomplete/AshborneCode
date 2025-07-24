@@ -16,8 +16,8 @@ namespace AshborneGame._Core.Game
         private bool _dialogueRunning { get; set; }
         private DialogueService _dialogueService;
 
-        private string _startingAct = "Act1";
-        private string _startingScene = "Scene1";
+        private string _startingActNo = "Act1";
+        private string _startingSceneNo = "Scene1";
         private string _startingSceneSection = "Intro_Dialogue";
 
         private Location _firstLocation;
@@ -61,9 +61,9 @@ namespace AshborneGame._Core.Game
             // Initialise the game state
             GameContext.GameState.StartTickLoop();
 
-            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
+            await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_{_startingSceneSection}");
 
-            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
+            await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_Ossaneth_Domain_Intro");
 
             GameContext.Player.SetupMoveTo(_firstLocation, _firstScene);
             // Display initial location description
@@ -77,7 +77,9 @@ namespace AshborneGame._Core.Game
                 new Location(
                     new LocationIdentifier("Eye Platform"),
                     "Eye Platform"),
-                "You glance around uneasily. The eye you stand on is unblinking and unmoving. Black clouds cover the sky, and the occasional lightning flashes are bright white against an otherwise dull and dark background.",
+                new LookDescription(
+                    "You glance around uneasily. The eye you stand on is unblinking and unmoving. Black clouds cover the sky, and the occasional lightning flashes are bright white against an otherwise dull and dark background.",
+                    "You look around once more. Nothing changes — but are the shards sharper now?"),
                 new FadingDescription(
                     "You feel sick and disoriented. It takes you a few moments to stabilise. Glancing around, you notice that you're standing on an eye-shaped platform overlooking a vast, swirling abyss. The air is thick with an otherworldly energy as mirrors and shards of glass spin wildly around you.",
                     "You are back on the platform. The eye beneath seems stronger now, the pupil having enlarged, as though it wants to see more. The abyss feels darker, heavier.",
@@ -142,11 +144,29 @@ namespace AshborneGame._Core.Game
                 .Once()
             );
 
-            var locations = new List<Location> { eyePlatform };
-            var ossanethDomain = new Scene("Ossaneth's Domain", "Ossaneth's Domain");
-            foreach (var loc in locations) ossanethDomain.AddLocation(loc);
+            Location hallOfMirrors = LocationFactory.CreateLocation(
+                new Location(
+                    new LocationIdentifier("Hall of Mirrors"),
+                    "Hall of Mirrors"),
+                new LookDescription(
+                    "You look around the hall. Everywhere, your reflection stares right back at you, each mirror containing an infinite universe of you's, and the black cover on your face. There is nowhere to hide from the Mask. There is nowhere to hide from the truth. THere is nowhere to hide from yourself.",
+                    "You look around the hall again. The mirrors remain ever so still, ever so silent, each Mask judging, ever so black, ever so ominous."
+                    ),
+                new FadingDescription(
+                    "You enter the Hall of Mirrors. In front of you is a long, stretching hallway that seems to go on forever, the wall, floor, and ceilings covered in mirrors. As you walk by, some reflections lag behind and others move before you. Some never blink while others walk with their eyes closed. But all look like you — and all wear Ossaneth.",
+                    "You enter the Hall of Mirrors again. Nothing seems to have changed, but you think that the reflections are diverging further and further away from what you do.",
+                    "For the fourth time, you enter the Hall of Mirrors. The reflections are increasingly clearer in some mirrors, while gone in others. For the first time, there are cracked mirrors dotted along the silver-lined hallway."),
+                new SensoryDescription(
+                    "",
+                    "The hallway is eerily quiet. Are the Masks commanding silence, or are you going insane?"),
+                new AmbientDescription(
+                    new Dictionary<TimeSpan, string>() { { TimeSpan.FromSeconds(12), "You stand still. Your reflections do not." } }));
 
-            var prologueLocation = LocationFactory.CreateLocation(new Location(), "This is a prologue location.", new FadingDescription(), new SensoryDescription());
+            LocationFactory.AddMutualExits(eyePlatform, hallOfMirrors, DirectionConstants.South);
+
+            var ossanethDomain = LocationFactory.CreateScene("Ossaneth's Domain", "Ossaneth's Domain", new List<Location> { eyePlatform, hallOfMirrors });
+
+            var prologueLocation = LocationFactory.CreateLocation(new Location(), new LookDescription(), new FadingDescription(), new SensoryDescription());
             var prologue = new Scene("Prologue", "Prologue");
 
             prologue.AddLocation(prologueLocation);
@@ -173,9 +193,9 @@ namespace AshborneGame._Core.Game
 
         public async Task StartGameLoop(Player player, GameStateManager gameState)
         {
-            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
+            await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_{_startingSceneSection}");
 
-            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
+            await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_Ossaneth_Domain_Intro");
 
             IOService.Output.WriteLine(player.CurrentLocation.GetDescription(player, gameState));
 

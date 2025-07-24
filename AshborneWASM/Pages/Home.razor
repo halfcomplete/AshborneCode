@@ -41,29 +41,31 @@
         <div class="game-screen">
             <div class="game-output">@((MarkupString)gameText.Replace("\n", "<br />"))</div>
             <div class="input-gif-overlay-container">
-                @if (isOssanethGifActive)
-                {
-                    <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
-                }
-                else
-                {
-                    <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
-                }
                 @if (isAwaitingPlayerInput)
                 {
-                    <input @bind="userInput"
-                           @bind:event="oninput"
-                           @onkeydown="HandleInput"
-                           placeholder="@(isDialogueInput ? "What do you say?" : "What will you do?")" autofocus />
+                    <div class="input-overlay-wrapper">
+                        <input @bind="userInput"
+                               @bind:event="oninput"
+                               @onkeydown="HandleInput"
+                               placeholder="@(isDialogueInput ? "What will you say?" : "What will you do?")" autofocus />
+                        @if (isOssanethGifActive)
+                        {
+                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                        }
+                        else
+                        {
+                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                        }
+                    </div>
                     <div><em>Type your response and press Enter.</em></div>
                 }
                 else if (isInDialogue && dialogueChoices.Count > 0 && !isTypingDialogue)
                 {
                     <div class="dialogue-choices" style="position: relative;">
-                        @if (silentTimerActive)
+                        @if (silentTimerActive && silentTimerSecondsLeft <= 10)
                         {
                             <div class="silent-timer">
-                                @silentTimerSecondsLeft s
+                                @silentTimerSecondsLeft
                             </div>
                         }
                         <p>Choose an option:</p>
@@ -78,10 +80,20 @@
                 }
                 else if (!isInDialogue)
                 {
-                    <input @bind="userInput"
-                           @bind:event="oninput"
-                           @onkeydown="HandleInput"
-                           placeholder="What will you do?" />
+                    <div class="input-overlay-wrapper">
+                        <input @bind="userInput"
+                               @bind:event="oninput"
+                               @onkeydown="HandleInput"
+                               placeholder="What will you do?" />
+                        @if (isOssanethGifActive)
+                        {
+                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                        }
+                        else
+                        {
+                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                        }
+                    </div>
                     <div><em>Type your action and press Enter.</em></div>
                 }
                 else

@@ -103,7 +103,7 @@ namespace AshborneGame._Core.SceneManagement
             Scene = new Scene("default_scene", "Default Scene");
             Name = new LocationIdentifier("Default Location");
             DescriptionComposer = new DescriptionComposer(
-                "You see a generic location.",
+                new LookDescription(),
                 new FadingDescription("You enter a new place.", "You are here again.", "You have been here many times."),
                 new SensoryDescription("A generic location.", "You hear ambient sounds."));
             ID = "default_location";
@@ -113,6 +113,7 @@ namespace AshborneGame._Core.SceneManagement
         /// Returns the appropriate description for the player and state.
         /// </summary>
         public string GetDescription(Player player, GameStateManager state) => DescriptionComposer.GetDescription(player, state);
+        public string GetLookDescription(Player player, GameStateManager state) => DescriptionComposer.GetLookDescription(player, state);
 
         public void SetDescriptionComposer(DescriptionComposer composer)
         {
