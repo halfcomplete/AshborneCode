@@ -73,38 +73,74 @@ body {
 
 .loading-progress {
     position: relative;
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     width: 8rem;
     height: 8rem;
-    margin: 20vh auto 1rem auto;
+    margin: 0 auto;
 }
 
-    .loading-progress circle {
-        fill: none;
-        stroke: #e0e0e0;
-        stroke-width: 0.6rem;
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
-    }
+.loading-progress-bar-container {
+    width: 60vw;
+    max-width: 600px;
+    min-width: 200px;
+    margin: 0 auto 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+}
 
-        .loading-progress circle:last-child {
-            stroke: #f8eecb;
-            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
-            transition: stroke-dasharray 0.05s ease-in-out;
-        }
+.loading-progress-bar-bg {
+    width: 100%;
+    height: 18px;
+    background: #23201b;
+    border-radius: 9px;
+    box-shadow: 0 2px 8px #0006, 0 1.5px 0 #bfae8e44 inset;
+    overflow: hidden;
+    border: 1.5px solid #bfae8e33;
+    position: relative;
+}
+
+.loading-progress-bar-fill {
+    width: calc(var(--blazor-load-percentage, 0%) * 1.15);
+    height: 100%;
+    background: linear-gradient(90deg, #bfae8e 60%, #8c7c5a 100%);
+    background: #f8eecb;
+    border-radius: 9px 0 0 9px;
+    transition: width 0.2s ease;
+}
 
 .loading-progress-text {
     font-family: AnonymousPro-Regular, serif;
-    position: absolute;
     text-align: center;
+    align-items: center;
+    justify-content: center;
     font-weight: bold;
     font-size: 20px;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+    margin-bottom: 1.2rem;
+    color: antiquewhite;
 }
 
     .loading-progress-text::after {
         content: var(--blazor-load-percentage-text, "Loading");
     }
+
+.loading-tip {
+    margin-top: 0.5rem;
+    font-family: 'IMFellEnglishSC', serif;
+    font-size: 1.1rem;
+    color: #f8eecb;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 8px #0004;
+    min-height: 1em;
+    max-width: 80vw;
+    margin-left: auto;
+    margin-right: auto;
+}
 
 .scene-header {
     position: sticky;
@@ -466,4 +502,14 @@ input {
     padding: 0.2em 0.8em;
     border-radius: 1em;
     z-index: 10;
+}
+
+#app {
+    min-height: 100vh;
+    min-width: 100vw;
+    background: #181818;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }

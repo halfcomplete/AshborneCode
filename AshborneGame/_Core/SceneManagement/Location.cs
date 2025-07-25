@@ -112,7 +112,14 @@ namespace AshborneGame._Core.SceneManagement
         /// <summary>
         /// Returns the appropriate description for the player and state.
         /// </summary>
-        public string GetDescription(Player player, GameStateManager state) => DescriptionComposer.GetDescription(player, state);
+        public string GetDescription(Player player, GameStateManager state)
+        {
+            StringBuilder description = new StringBuilder();
+            description.AppendLine(DescriptionComposer.GetDescription(player, state));
+            description.AppendLine(GetExits());
+
+            return description.ToString();
+        }
         public string GetLookDescription(Player player, GameStateManager state) => DescriptionComposer.GetLookDescription(player, state);
 
         public void SetDescriptionComposer(DescriptionComposer composer)
@@ -142,15 +149,11 @@ namespace AshborneGame._Core.SceneManagement
                 {
                     if (DirectionConstants.CardinalDirections.Contains(exit.Key))
                     {
-                        sb.AppendLine($"- {exit.Key} to {exit.Value.Name}");
+                        sb.AppendLine($"- {exit.Key} to {exit.Value.Name.DisplayName}");
                     }
                 }
 
-                if (Sublocations.Count == 0)
-                {
-                    sb.AppendLine(" However, there is nothing of note here.");
-                }
-                else
+                if (Sublocations.Count > 0)
                 {
                     sb.AppendLine(" You can also go to:");
                 }

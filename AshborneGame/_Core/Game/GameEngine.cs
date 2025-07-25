@@ -162,7 +162,25 @@ namespace AshborneGame._Core.Game
                 new AmbientDescription(
                     new Dictionary<TimeSpan, string>() { { TimeSpan.FromSeconds(12), "You stand still. Your reflections do not." } }));
 
+            Location chamberOfCycles = LocationFactory.CreateLocation(
+                new Location(
+                    new LocationIdentifier("Chamber of Cycles"),
+                    "Chamber of Cycles"),
+                new LookDescription(
+                    "You look around the chamber, inspecting the clocks further. The clocks are broken — a tick forward is immediately followed by a jump back. Time isn't moving forward. Not anymore.",
+                    "You look around the chamber again. Still, the clocks are broken. Time is frozen. Tick. Tock. Tick. Tock."),
+                new FadingDescription(
+                    "You enter the Chamber of Cycles. It is a circular room covered top to bottom with clocks of every century, each ticking to a separate rhythm. In the centre lies a single, looming hourglass. It's almost finished. The clocks talk to you. Tick. Tock. Tick. Tock.",
+                    "You are back in the Chamber of Cycles. The clocks seem to be ticking faster now, with just a little sand left in the massive hourglass. ",
+                    "For the fourth time, you enter the Chamber of Cycles. Some clocks are shattered now. The hourglass is cracking. Is time... breaking?"),
+                new SensoryDescription(
+                    "Dust covers every inch of the chamber.",
+                    "The ticks form a strange, horrible cacophony. Tick. Tick. Tock. Tock."
+                    ),
+                new AmbientDescription(new Dictionary<TimeSpan, string>() { { TimeSpan.FromSeconds(10), "Tick. Tock. Tick. Tock." } }));
+
             LocationFactory.AddMutualExits(eyePlatform, hallOfMirrors, DirectionConstants.South);
+            LocationFactory.AddMutualExits(eyePlatform, chamberOfCycles, DirectionConstants.West);
 
             var ossanethDomain = LocationFactory.CreateScene("Ossaneth's Domain", "Ossaneth's Domain", new List<Location> { eyePlatform, hallOfMirrors });
 
