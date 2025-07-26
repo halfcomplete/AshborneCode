@@ -18,27 +18,26 @@ namespace AshborneGame._Core.Game
         private bool _dialogueRunning { get; set; }
         private DialogueService _dialogueService;
 
-        private string _startingAct = "Act1";
-        private string _startingScene = "Scene1";
+        private string _startingActNo = "Act1";
+        private string _startingSceneNo = "Scene1";
         private string _startingSceneSection = "Intro_Dialogue";
 
-        private AmbientTimerManager? _eyePlatformAmbientManager;
-        private Location? _eyePlatform;
-        private bool _inputPausedForAmbient = false;
-
+        private Location _firstLocation;
+        private Scene _firstScene;
         public GameEngine(IInputHandler input, IOutputHandler output, AppEnvironment appEnvironment)
         {
             IOService.Initialise(input, output);
 
             Player player = new Player("Hero");
             var gameState = new GameStateManager(player);
+            gameState.SetCounter(GameStateKeyConstants.Counters.Player.CurrentActNo, 1);
             var inkRunner = new InkRunner(gameState, player, appEnvironment);
             _dialogueService = new DialogueService(inkRunner);
 
             GameContext.Initialise(player, gameState, _dialogueService, inkRunner, this);
             gameState.InitialiseMasks(MaskInitialiser.InitialiseMasks());
 
-            (Location startingLocation, Scene startingLocationGroup) = InitialiseStartingLocation(player);
+            ((Location startingLocation, Scene startingLocationGroup), (_firstLocation, _firstScene)) = InitialiseStartingLocation(player);
             player.SetupMoveTo(startingLocation, startingLocationGroup);
 
             // Find the eyePlatform location and set up the ambient manager
@@ -120,22 +119,25 @@ namespace AshborneGame._Core.Game
             // Initialise the game state
             GameContext.GameState.StartTickLoop();
 
-            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
+            await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_{_startingSceneSection}");
 
-            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
+            await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_Ossaneth_Domain_Intro");
 
+            GameContext.Player.SetupMoveTo(_firstLocation, _firstScene);
             // Display initial location description
             ILocation location = GameContext.Player.CurrentLocation;
             IOService.Output.WriteLine(location.GetDescription(GameContext.Player, GameContext.GameState));
         }
 
-        private (Location, Scene) InitialiseStartingLocation(Player player)
+        private ((Location, Scene), (Location, Scene)) InitialiseStartingLocation(Player player)
         {
             Location eyePlatform = LocationFactory.CreateLocation(
                 new Location(
                     new LocationIdentifier("Eye Platform"),
                     "Eye Platform"),
-                "You glance around uneasily. The eye you stand on is unblinking and unmoving. Black clouds cover the sky, and the occasional lightning flashes are bright white against an otherwise dull and dark background.",
+                new LookDescription(
+                    "You glance around uneasily. The eye you stand on is unblinking and unmoving. Black clouds cover the sky, and the occasional lightning flashes are bright white against an otherwise dull and dark background.",
+                    "You look around once more. Nothing changes — but are the shards sharper now?"),
                 new FadingDescription(
                     "You feel sick and disoriented. It takes you a few moments to stabilise. Glancing around, you notice that you're standing on an eye-shaped platform overlooking a vast, swirling abyss. The air is thick with an otherworldly energy as mirrors and shards of glass spin wildly around you.",
                     "You are back on the platform. The eye beneath seems stronger now, the pupil having enlarged, as though it wants to see more. The abyss feels darker, heavier.",
@@ -200,17 +202,53 @@ namespace AshborneGame._Core.Game
                 .Once()
             );
 
-            var locations = new List<Location> { eyePlatform };
-            var ossanethDomain = new Scene("Ossaneth's Domain", "Ossaneth's Domain");
-            foreach (var loc in locations) ossanethDomain.AddLocation(loc);
+            Location hallOfMirrors = LocationFactory.CreateLocation(
+                new Location(
+                    new LocationIdentifier("Hall of Mirrors"),
+                    "Hall of Mirrors"),
+                new LookDescription(
+                    "You look around the hall. Everywhere, your reflection stares right back at you, each mirror containing an infinite universe of you's, and the black cover on your face. There is nowhere to hide from the Mask. There is nowhere to hide from the truth. THere is nowhere to hide from yourself.",
+                    "You look around the hall again. The mirrors remain ever so still, ever so silent, each Mask judging, ever so black, ever so ominous."
+                    ),
+                new FadingDescription(
+                    "You enter the Hall of Mirrors. In front of you is a long, stretching hallway that seems to go on forever, the wall, floor, and ceilings covered in mirrors. As you walk by, some reflections lag behind and others move before you. Some never blink while others walk with their eyes closed. But all look like you — and all wear Ossaneth.",
+                    "You enter the Hall of Mirrors again. Nothing seems to have changed, but you think that the reflections are diverging further and further away from what you do.",
+                    "For the fourth time, you enter the Hall of Mirrors. The reflections are increasingly clearer in some mirrors, while gone in others. For the first time, there are cracked mirrors dotted along the silver-lined hallway."),
+                new SensoryDescription(
+                    "",
+                    "The hallway is eerily quiet. Are the Masks commanding silence, or are you going insane?"),
+                new AmbientDescription(
+                    new Dictionary<TimeSpan, string>() { { TimeSpan.FromSeconds(12), "You stand still. Your reflections do not." } }));
 
-            var prologueLocation = LocationFactory.CreateLocation(new Location(), "This is a prologue location.", new FadingDescription(), new SensoryDescription());
+            Location chamberOfCycles = LocationFactory.CreateLocation(
+                new Location(
+                    new LocationIdentifier("Chamber of Cycles"),
+                    "Chamber of Cycles"),
+                new LookDescription(
+                    "You look around the chamber, inspecting the clocks further. The clocks are broken — a tick forward is immediately followed by a jump back. Time isn't moving forward. Not anymore.",
+                    "You look around the chamber again. Still, the clocks are broken. Time is frozen. Tick. Tock. Tick. Tock."),
+                new FadingDescription(
+                    "You enter the Chamber of Cycles. It is a circular room covered top to bottom with clocks of every century, each ticking to a separate rhythm. In the centre lies a single, looming hourglass. It's almost finished. The clocks talk to you. Tick. Tock. Tick. Tock.",
+                    "You are back in the Chamber of Cycles. The clocks seem to be ticking faster now, with just a little sand left in the massive hourglass. ",
+                    "For the fourth time, you enter the Chamber of Cycles. Some clocks are shattered now. The hourglass is cracking. Is time... breaking?"),
+                new SensoryDescription(
+                    "Dust covers every inch of the chamber.",
+                    "The ticks form a strange, horrible cacophony. Tick. Tick. Tock. Tock."
+                    ),
+                new AmbientDescription(new Dictionary<TimeSpan, string>() { { TimeSpan.FromSeconds(10), "Tick. Tock. Tick. Tock." } }));
+
+            LocationFactory.AddMutualExits(eyePlatform, hallOfMirrors, DirectionConstants.South);
+            LocationFactory.AddMutualExits(eyePlatform, chamberOfCycles, DirectionConstants.West);
+
+            var ossanethDomain = LocationFactory.CreateScene("Ossaneth's Domain", "Ossaneth's Domain", new List<Location> { eyePlatform, hallOfMirrors });
+
+            var prologueLocation = LocationFactory.CreateLocation(new Location(), new LookDescription(), new FadingDescription(), new SensoryDescription());
             var prologue = new Scene("Prologue", "Prologue");
 
             prologue.AddLocation(prologueLocation);
-            GameContext.GameState.SetCounter("player.current_scene_no", 1);
+            GameContext.GameState.SetCounter(GameStateKeyConstants.Counters.Player.CurrentSceneNo, 0);
 
-            return (eyePlatform, ossanethDomain);
+            return ((prologueLocation, prologue), (eyePlatform, ossanethDomain));
         }
 
 
@@ -231,9 +269,9 @@ namespace AshborneGame._Core.Game
 
         public async Task StartGameLoop(Player player, GameStateManager gameState)
         {
-            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_{_startingSceneSection}");
+            await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_{_startingSceneSection}");
 
-            await _dialogueService.StartDialogue($"{_startingAct}_{_startingScene}_Ossaneth_Domain_Intro");
+            await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_Ossaneth_Domain_Intro");
 
             IOService.Output.WriteLine(player.CurrentLocation.GetDescription(player, gameState));
 
