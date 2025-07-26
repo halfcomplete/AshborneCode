@@ -34,6 +34,10 @@ namespace AshborneGame._Core.Globals.Services
             {
                 delay = (ms + randomVariation) * OutputConstants.ClosingSquareBracketPauseMultiplier;
             }
+            else if (letter.Equals(')') && isEnd) // If we reach a closing parenthesis and it's the end of the message / sentence
+            {
+                delay = (ms + randomVariation) * OutputConstants.ClosingParenthesisPauseMultiplier;
+            }
             else
             {
                 delay = (ms + randomVariation); // Default type speed

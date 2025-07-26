@@ -2,6 +2,7 @@
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem;
 using AshborneGame._Core.Game.Events;
+using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.SceneManagement;
 using Ink.Runtime;
 using System.ComponentModel.DataAnnotations;
@@ -301,9 +302,9 @@ namespace AshborneGame._Core.Game
             {
                 // We've moved to a new scene
                 // Increment the scene number
-                if (!TryDecrementCounter("player.current_scene_no"))
+                if (!TryDecrementCounter(GameStateKeyConstants.Counters.Player.CurrentSceneNo))
                 {
-                    SetCounter("player.current_scene_no", 1);
+                    SetCounter(GameStateKeyConstants.Counters.Player.CurrentSceneNo, 0);
                 }
                 // Change the player's scene
                 GameContext.Player.MoveTo(GameContext.Player.CurrentLocation.Scene);
