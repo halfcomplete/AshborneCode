@@ -226,6 +226,18 @@
     private bool listeningActive = false;
     private bool prevListeningActive = false;
 
+    private bool silentTimerActive = false;
+    private int silentTimerSecondsLeft = 0;
+    private DateTime silentTimerEndTime;
+    private System.Timers.Timer? silentTimer;
+
+    private bool isOssanethGifActive = false;
+    private System.Threading.Timer? ossanethSigilTimer;
+    private readonly Random ossanethRandom = new Random();
+    private const int OssanethGifDurationMs = 633; // Adjust to match GIF length
+    private const int OssanethMinDelayMs = 3000;
+    private const int OssanethMaxDelayMs = 8000;
+
     private void StartListeningAnimation()
     {
         listeningStep = 0;
@@ -257,11 +269,6 @@
         listeningTimer = null;
         listeningText = listeningStates[0];
     }
-
-    private bool silentTimerActive = false;
-    private int silentTimerSecondsLeft = 0;
-    private DateTime silentTimerEndTime;
-    private System.Timers.Timer? silentTimer;
 
     private void StartSilentTimerUI(int ms)
     {
@@ -300,13 +307,6 @@
             InvokeAsync(StateHasChanged);
         }
     }
-
-    private bool isOssanethGifActive = false;
-    private System.Threading.Timer? ossanethSigilTimer;
-    private readonly Random ossanethRandom = new Random();
-    private const int OssanethGifDurationMs = 666; // Adjust to match GIF length
-    private const int OssanethMinDelayMs = 3000;
-    private const int OssanethMaxDelayMs = 8000;
 
     protected override void OnInitialized()
     {
