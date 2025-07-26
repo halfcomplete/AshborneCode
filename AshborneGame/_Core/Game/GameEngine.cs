@@ -7,6 +7,8 @@ using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.SceneManagement;
+using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace AshborneGame._Core.Game
 {
@@ -22,7 +24,6 @@ namespace AshborneGame._Core.Game
 
         private Location _firstLocation;
         private Scene _firstScene;
-
         public GameEngine(IInputHandler input, IOutputHandler output, AppEnvironment appEnvironment)
         {
             IOService.Initialise(input, output);
@@ -38,6 +39,63 @@ namespace AshborneGame._Core.Game
 
             ((Location startingLocation, Scene startingLocationGroup), (_firstLocation, _firstScene)) = InitialiseStartingLocation(player);
             player.SetupMoveTo(startingLocation, startingLocationGroup);
+
+            // Find the eyePlatform location and set up the ambient manager
+            _eyePlatform = startingLocation;
+            if (_eyePlatform.DescriptionComposer.Ambient != null)
+            {
+                _eyePlatformAmbientManager = new AmbientTimerManager(_eyePlatform);
+                if (OperatingSystem.IsBrowser())
+                {
+                    // Web/Blazor: use async output
+                    _eyePlatformAmbientManager.OnAmbientDescriptionTriggeredAsync += async desc =>
+                    {
+                        _inputPausedForAmbient = true;
+                        // Try to use WriteLineAsync if available
+                        var webOutput = output as dynamic;
+                        if (webOutput != null && webOutput.WriteLineAsync != null)
+                        {
+                            await webOutput.WriteLineAsync(desc);
+                            await webOutput.WriteLineAsync(""); // Just a new line for spacing
+                        }
+                        else
+                        {
+                            // fallback to sync
+                            output.WriteLine(desc);
+                            output.WriteLine("");
+                        }
+                        // Do NOT output '> ' in web
+                        _eyePlatformAmbientManager.OnAmbientDescriptionComplete();
+                    };
+                }
+                else
+                {
+                    // Console: remove '> ', output ambient, then restore prompt
+                    _eyePlatformAmbientManager.OnAmbientDescriptionTriggered += desc =>
+                    {
+                        _inputPausedForAmbient = true;
+                        // Remove last two characters (the prompt)
+                        try
+                        {
+                            int left = Console.CursorLeft;
+                            int top = Console.CursorTop;
+                            if (left >= 2)
+                            {
+                                Console.SetCursorPosition(left - 2, top);
+                                Console.Write("  ");
+                                Console.SetCursorPosition(left - 2, top);
+                            }
+                        }
+                        catch { /* ignore if not in a real console */ }
+                        output.WriteLine(desc);
+                        output.WriteLine("");
+                        output.Write("> ");
+                        _eyePlatformAmbientManager.OnAmbientDescriptionComplete();
+                    };
+                }
+                _eyePlatformAmbientManager.OnInputPaused += () => { _inputPausedForAmbient = true; };
+                _eyePlatformAmbientManager.OnInputResumed += () => { _inputPausedForAmbient = false; };
+            }
             _dialogueService.DialogueStart += async () =>
             {
                 _dialogueRunning = true;
@@ -217,22 +275,38 @@ namespace AshborneGame._Core.Game
 
             IOService.Output.WriteLine(player.CurrentLocation.GetDescription(player, gameState));
 
-            gameState.StartTickLoop();
+            if (player.CurrentLocation == _eyePlatform && _eyePlatformAmbientManager != null)
+            {
+                _eyePlatformAmbientManager.OnEnterEyePlatform();
+            }
 
+            gameState.StartTickLoop();
             _isRunning = true;
             while (_isRunning)
             {
                 if (_dialogueRunning) continue;
 
-                string input = IOService.Input.GetPlayerInput().Trim().ToLowerInvariant();
+                // Wait if input is paused for ambient
+                while (_inputPausedForAmbient)
+                {
+                    Thread.Sleep(100);
+                }
 
-                if (string.IsNullOrWhiteSpace(input))
+                string inputStr = IOService.Input.GetPlayerInput().Trim().ToLowerInvariant();
+
+                if (string.IsNullOrWhiteSpace(inputStr))
                 {
                     IOService.Output.DisplayFailMessage("You must enter a command.");
                     continue;
                 }
 
-                var splitInput = input.Split(' ').ToList();
+                // If on eyePlatform, reset ambient timers
+                if (player.CurrentLocation == _eyePlatform && _eyePlatformAmbientManager != null)
+                {
+                    _eyePlatformAmbientManager.OnPlayerCommandInput();
+                }
+
+                var splitInput = inputStr.Split(' ').ToList();
                 var action = CommandManager.ExtractAction(splitInput, out List<string> args);
 
                 bool isValidCommand = CommandManager.TryExecute(action, args, player);
@@ -241,13 +315,35 @@ namespace AshborneGame._Core.Game
                 {
                     IOService.Output.DisplayFailMessage("Invalid command. Please try again or type 'help' for assistance.");
 
-                    input = IOService.Input.GetPlayerInput().Trim();
-                    if (string.IsNullOrWhiteSpace(input)) continue;
+                    // Wait if input is paused for ambient
+                    while (_inputPausedForAmbient)
+                    {
+                        Thread.Sleep(100);
+                    }
 
-                    splitInput = input.Split(' ').ToList();
+                    inputStr = IOService.Input.GetPlayerInput().Trim();
+                    if (string.IsNullOrWhiteSpace(inputStr)) continue;
+
+                    // If on eyePlatform, reset ambient timers
+                    if (player.CurrentLocation == _eyePlatform && _eyePlatformAmbientManager != null)
+                    {
+                        _eyePlatformAmbientManager.OnPlayerCommandInput();
+                    }
+
+                    splitInput = inputStr.Split(' ').ToList();
                     action = CommandManager.ExtractAction(splitInput, out var args2);
 
                     isValidCommand = CommandManager.TryExecute(action, args2, player);
+                }
+
+                // If the player moved to a new location, handle ambient manager
+                if (player.CurrentLocation != _eyePlatform && _eyePlatformAmbientManager != null)
+                {
+                    _eyePlatformAmbientManager.OnExitEyePlatform();
+                }
+                else if (player.CurrentLocation == _eyePlatform && _eyePlatformAmbientManager != null)
+                {
+                    _eyePlatformAmbientManager.OnEnterEyePlatform();
                 }
             }
             gameState.StopTickLoop();

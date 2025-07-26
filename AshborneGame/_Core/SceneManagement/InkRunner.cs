@@ -159,7 +159,6 @@ namespace AshborneGame._Core.SceneManagement
                     if (line.Equals(OutputConstants.DialogueEndMarker))
                     {
                         IOService.Output.DisplayDebugMessage($"[DEBUG] {OutputConstants.DialogueEndMarker} marker encountered. Ending dialogue.", ConsoleMessageTypes.INFO);
-                        IOService.Output.WriteLine(line);
                         return;
                     }
                     if (line.TrimEnd().EndsWith(OutputConstants.TypewriterPauseMarker))
@@ -167,8 +166,16 @@ namespace AshborneGame._Core.SceneManagement
                         IOService.Output.WriteLine(line);
                         continue;
                     }
+                    // Handle new line marker
+                    if (line.Equals(OutputConstants.NewLineMarker))
+                    {
+                        IOService.Output.DisplayDebugMessage($"[DEBUG] {OutputConstants.NewLineMarker} marker encountered. Moving to new line.", ConsoleMessageTypes.INFO);
+                        IOService.Output.WriteLine("", OutputConstants.DefaultTypeSpeed * OutputConstants.NewLinePauseMultiplier);
+                        continue; // Do not add new line marker to output buffer
+                    }
                     // Handle async player input in WASM
                     if (line.StartsWith(OutputConstants.PlayerInputMarker))
+                    if (line.StartsWith(OutputConstants.GetPlayerInputMarker))
                     {
                         IOService.Output.DisplayDebugMessage($"InkRunner: Awaiting player input at {DateTime.Now}", ConsoleMessageTypes.INFO);
                         if (OperatingSystem.IsBrowser())
@@ -199,24 +206,26 @@ namespace AshborneGame._Core.SceneManagement
 
                     List<string> rawTags = _story.currentTags ?? new();
                     List<string> lineTags = rawTags.Except(_globalSceneTags).ToList();
-                    IOService.Output.DisplayDebugMessage(line, ConsoleMessageTypes.INFO);
                     IOService.Output.DisplayDebugMessage(string.Join(' ', lineTags) ?? string.Empty, ConsoleMessageTypes.INFO);
                     if (!string.IsNullOrWhiteSpace(line))
                     {
-                        string? targetTag = lineTags.FirstOrDefault(t => t.StartsWith("slow:"));
+                        string? targetTag = lineTags.FirstOrDefault(t => t.StartsWith(OutputConstants.SpeedTag));
                         if (targetTag != null)
                         {
                             if (int.TryParse(targetTag.AsSpan(5), out int ms))
                             {
+                                IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Custom speed tag found: {targetTag}. Using {ms} ms for typewriter effect.", ConsoleMessageTypes.INFO);
                                 IOService.Output.WriteLine(line, ms);
                             }
                             else
                             {
+                                IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Invalid speed tag format: {targetTag}. Using default speed of {OutputConstants.DefaultTypeSpeed} ms.", ConsoleMessageTypes.INFO);
                                 IOService.Output.WriteLine(line, OutputConstants.DefaultTypeSpeed);
                             }
                         }
                         else
                         {
+                            IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: No speed tag found. Using default speed of {OutputConstants.DefaultTypeSpeed} ms.", ConsoleMessageTypes.INFO);
                             IOService.Output.WriteLine(line, OutputConstants.DefaultTypeSpeed);
                         }
                     }

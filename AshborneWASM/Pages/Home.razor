@@ -114,7 +114,7 @@
     }
 </div>
 
-@* div>
+@* <div>
     <pre>
         isInDialogue: @isInDialogue
         isAwaitingPlayerInput: @isAwaitingPlayerInput
@@ -472,16 +472,30 @@
                 }
                 continue; // Do not add pause marker to output buffer
             }
+
+            // Handle new line marker
+            if (line.Equals(OutputConstants.NewLineMarker))
+            {
+                Console.WriteLine($"[DEBUG] Detected new line marker in line: {line}");
+                gameText += "\n";
+                await InvokeAsync(StateHasChanged);
+                await AutoScrollToBottom();
+                await Task.Delay(OutputConstants.DefaultTypeSpeed * OutputConstants.NewLinePauseMultiplier);
+                continue; // Do not add new line marker to output buffer
+            }
+
             // Handle typewriter effect
-            if (line.Contains("__TYPEWRITER_START__") && line.Contains("__TYPEWRITER_END__"))
+            if (line.Contains(OutputConstants.TypewriterStartMarker) && line.Contains(OutputConstants.TypewriterEndMarker))
             {
                 dialogueChoices.Clear();
                 await HandleTypewriterEffect(line);
                 continue;
             }
+
             // Dialogue choice line
             if (line.Trim().StartsWith("[") && line.Contains("]") && line.Trim().Length > 2)
             {
+                Console.WriteLine($"[DEBUG] Detected dialogue choice in line: {line}");
                 int bracketEnd = line.IndexOf("]");
                 if (bracketEnd > 0 && int.TryParse(line.Substring(1, bracketEnd - 1), out int choiceNumber))
                 {
@@ -512,6 +526,7 @@
                     }
                 }
             }
+
             // Normal line
             if (!string.IsNullOrWhiteSpace(line))
             {
@@ -544,19 +559,24 @@
         // Parse ms value at the start of the line (e.g. "50__TYPEWRITER_START__...")
         int ms = OutputConstants.DefaultTypeSpeed; // default
         Console.WriteLine($"[DEBUG] Handling typewriter effect for line: {line}");
-        int msEnd = line.IndexOf("__TYPEWRITER_START__");
+        int msEnd = line.IndexOf(OutputConstants.TypewriterPauseMarker);
         if (msEnd > 0)
         {
             string msStr = line.Substring(0, msEnd);
             if (!int.TryParse(msStr, out ms)) ms = OutputConstants.DefaultTypeSpeed;
         }
         Console.WriteLine($"[DEBUG] Typewriter effect with delay: {ms} ms");
-        int startIndex = line.IndexOf("__TYPEWRITER_START__") + "__TYPEWRITER_START__".Length;
-        int endIndex = line.IndexOf("__TYPEWRITER_END__");
+        int startIndex = line.IndexOf(OutputConstants.TypewriterStartMarker) + OutputConstants.TypewriterStartMarker.Length;
+        Console.WriteLine("[DEBUG] Start index for typewriter effect: " + startIndex);
+        int endIndex = line.IndexOf(OutputConstants.TypewriterEndMarker);
+		    Console.WriteLine("[DEBUG] End index for typewriter effect: " + endIndex);
         string message = line.Substring(startIndex, endIndex - startIndex);
+		    Console.WriteLine($"[DEBUG] Typewriter message: {message}");
 
         isTypingDialogue = true;
+        Console.WriteLine($"[DEBUG] isTypingDialogue set to true for message: {message}");
         await InvokeAsync(StateHasChanged);
+        Console.WriteLine($"[DEBUG] InvokeAsync called after setting isTypingDialogue");
 
         // Split into lines and type each line separately
         string[] lines = message.Split('\n');
@@ -564,9 +584,11 @@
 
         foreach (var msgLine in lines)
         {
+			      Console.WriteLine($"[DEBUG] Typing line: {msgLine}");
             string typedLine = "";
             for (int i = 0; i < msgLine.Length; i++)
             {
+				        Console.WriteLine($"[DEBUG] Typing character: {msgLine[i]} at index {i}");
                 typedLine += msgLine[i];
                 gameText = string.Join('\n', buffer) + (buffer.Count > 0 ? "\n" : "") + typedLine;
                 await InvokeAsync(StateHasChanged);
@@ -591,6 +613,7 @@
             await Task.Delay(ms * OutputConstants.NewLinePauseMultiplier);
 #endif
         }
+		Console.WriteLine($"[DEBUG] Finished typing dialogue: {message}");
         isTypingDialogue = false;
         await InvokeAsync(StateHasChanged);
 

@@ -1,4 +1,5 @@
-﻿using AshborneGame._Core.Globals.Enums;
+﻿using AshborneGame._Core.Globals.Constants;
+using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Interfaces;
 
 namespace AshborneGame.WebPort
@@ -36,7 +37,7 @@ namespace AshborneGame.WebPort
 
         public async void Write(string message, int ms)
         {
-            await _writeLineCallback?.Invoke($"{ms}__TYPEWRITER_START__{message}__TYPEWRITER_END__");
+            await _writeLineCallback?.Invoke($"{ms}{OutputConstants.TypewriterStartMarker}{message}{OutputConstants.TypewriterEndMarker}");
         }
 
         // IOutputHandler.WriteLine(string) implementation (void)
@@ -56,7 +57,7 @@ namespace AshborneGame.WebPort
 
         public async void WriteLine(string message, int ms)
         {
-            await _writeLineCallback?.Invoke($"{ms}__TYPEWRITER_START__{message}__TYPEWRITER_END__\n");
+            await _writeLineCallback?.Invoke($"{ms}{OutputConstants.TypewriterStartMarker}{message}{OutputConstants.TypewriterEndMarker}\n");
         }
 
         public void DisplayFailMessage(string message)
