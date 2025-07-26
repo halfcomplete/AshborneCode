@@ -25,7 +25,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             {
                 if (!item.TryGetBehaviour<IIdentifiable>(out var identifiableBehaviour))
                 {
-                    IOService.Output.DisplayFailMessage($"{item.Name} cannot be identified.");
+                    IOService.Output.DisplayFailMessage($"{item.Name} cannot be inspected.");
                     return false;
                 }
                 IOService.Output.WriteLine($"Identifying {item.Name}: {item.Description}");

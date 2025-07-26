@@ -5,111 +5,47 @@
 @using System.Diagnostics;
 @using AshborneGame.WebPort
 @using Microsoft.JSInterop
-@using System.Timers
 @page "/"
 @inject IJSRuntime JS
 
-<div class="main-container game-bg-black">
-    <div class="game-content">
-        <div class="scene-header">
-            @if (GameContext.Player?.CurrentScene != null && GameContext.GameState != null)
+<h1 class="text-center">ASHBORNE</h1>
+
+<div class="game-screen">
+    <div class="game-output">@gameText</div>
+
+    @if (isAwaitingPlayerInput)
+    {
+        <input @bind="userInput"
+               @bind:event="oninput"
+               @onkeydown="HandleInput"
+               placeholder="@(isDialogueInput ? "What do you say?" : "What will you do?")" autofocus />
+        <div><em>Type your response and press Enter.</em></div>
+    }
+    else if (isInDialogue && dialogueChoices.Count > 0 && !isTypingDialogue)
+    {
+        <div class="dialogue-choices">
+            <p>Choose an option:</p>
+            @for (int i = 0; i < dialogueChoices.Count; i++)
             {
-                int actNo = 1;
-                GameContext.GameState.TryGetCounter(GameStateKeyConstants.Counters.Player.CurrentActNo, out actNo);
-                string actLabel = "ACT " + IntToRomanConversionService.IntToRoman(actNo);
-                var scene = GameContext.Player.CurrentScene;
-                int sceneNo = 1;
-                GameContext.GameState.TryGetCounter(GameStateKeyConstants.Counters.Player.CurrentSceneNo, out sceneNo);
-                string sceneLabel;
-                string final;
-                if (sceneNo != 0)
-                {
-                    sceneLabel = IntToRomanConversionService.IntToRoman(sceneNo);
-                    final = $"{actLabel}: SCENE {sceneLabel} — {scene.DisplayName.ToUpper()}";
-                }
-                else
-                {
-                    sceneLabel = string.Empty;
-					final = $"{scene.DisplayName.ToUpper()}";
-                }
-				
-                <span class="scene-header-text">
-                    @final
-                </span>
+                int choiceIndex = i; // Capture the index for the lambda
+                                     <button @onclick="() => SelectDialogueChoice(choiceIndex + 1)" class="choice-button">
+                                         [@(choiceIndex + 1)] @dialogueChoices[i]
+                                     </button>
             }
         </div>
-        <div class="game-screen">
-            <div class="game-output">@((MarkupString)gameText.Replace("\n", "<br />"))</div>
-            <div class="input-gif-overlay-container">
-                @if (isAwaitingPlayerInput)
-                {
-                    <div class="input-overlay-wrapper">
-                        <input @bind="userInput"
-                               @bind:event="oninput"
-                               @onkeydown="HandleInput"
-                               placeholder="@(isDialogueInput ? "What will you say?" : "What will you do?")" autofocus />
-                        @if (isOssanethGifActive)
-                        {
-                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
-                        }
-                        else
-                        {
-                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
-                        }
-                    </div>
-                    <div><em>Type your response and press Enter.</em></div>
-                }
-                else if (isInDialogue && dialogueChoices.Count > 0 && !isTypingDialogue)
-                {
-                    <div class="dialogue-choices" style="position: relative;">
-                        @if (silentTimerActive && silentTimerSecondsLeft <= 10)
-                        {
-                            <div class="silent-timer">
-                                @silentTimerSecondsLeft
-                            </div>
-                        }
-                        <p>Choose an option:</p>
-                        @for (int i = 0; i < dialogueChoices.Count; i++)
-                        {
-                            int choiceIndex = i; // Capture the index for the lambda
-                            <button @onclick="() => SelectDialogueChoice(choiceIndex + 1)" class="choice-button">
-                                [@(choiceIndex + 1)] @dialogueChoices[i]
-                            </button>
-                        }
-                    </div>
-                }
-                else if (!isInDialogue)
-                {
-                    <div class="input-overlay-wrapper">
-                        <input @bind="userInput"
-                               @bind:event="oninput"
-                               @onkeydown="HandleInput"
-                               placeholder="What will you do?" />
-                        @if (isOssanethGifActive)
-                        {
-                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
-                        }
-                        else
-                        {
-                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
-                        }
-                    </div>
-                    <div><em>Type your action and press Enter.</em></div>
-                }
-                else
-                {
-                    <div class="dialogue-waiting">
-                        <p>@listeningText</p>
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
-    @if (!hasStarted || isFading)
+    }
+    else if (!isInDialogue)
     {
-        <div class="title-screen @(isFading ? "fade-out" : "")">
-            <div class="title-logo">ASHBORNE</div>
-            <button class="begin-button" @onclick="BeginGame">Begin</button>
+        <input @bind="userInput"
+               @bind:event="oninput"
+               @onkeydown="HandleInput"
+               placeholder="What will you do?" />
+        <div><em>Type your action and press Enter.</em></div>
+    }
+    else
+    {
+        <div class="dialogue-waiting">
+            <p>Listening...</p>
         </div>
     }
 </div>
@@ -130,183 +66,21 @@
     private string userInput = "";
     private string gameText = "";
     private GameEngine engine;
-    private bool _isInDialogue = true;
-    private bool isInDialogue
-    {
-        get => _isInDialogue;
-        set
-        {
-            if (_isInDialogue != value)
-            {
-                var runner = GameContext.InkRunner;
-                var canContinue = runner?.Story?.canContinue;
-                var currentChoices = runner?.Story?.currentChoices?.Count;
-                var stack = Environment.StackTrace;
-                Console.WriteLine($"[DEBUG] isInDialogue changed from {_isInDialogue} to {value} at {DateTime.Now} | canContinue={canContinue} currentChoices={currentChoices}\nStack: {stack}");
-            }
-            _isInDialogue = value;
-        }
-    }
-
-    private bool _isTypingDialogue = false;
-    private bool isTypingDialogue
-    {
-        get => _isTypingDialogue;
-        set
-        {
-            if (_isTypingDialogue != value)
-            {
-                var runner = GameContext.InkRunner;
-                var canContinue = runner?.Story?.canContinue;
-                var currentChoices = runner?.Story?.currentChoices?.Count;
-                // var stack = Environment.StackTrace;
-                var stack = string.Empty;
-                Console.WriteLine($"[DEBUG] isTypingDialogue changed from {_isTypingDialogue} to {value} at {DateTime.Now} | canContinue={canContinue} currentChoices={currentChoices}\nStack: {stack}");
-            }
-            _isTypingDialogue = value;
-        }
-    }
-
-    private List<string> _dialogueChoices = new List<string>();
-    private List<string> dialogueChoices
-    {
-        get => _dialogueChoices;
-        set
-        {
-            if (_dialogueChoices != value)
-            {
-                var runner = GameContext.InkRunner;
-                var canContinue = runner?.Story?.canContinue;
-                var currentChoices = runner?.Story?.currentChoices?.Count;
-                var stack = Environment.StackTrace;
-                Console.WriteLine($"[DEBUG] dialogueChoices changed at {DateTime.Now} | newCount={value?.Count} canContinue={canContinue} currentChoices={currentChoices}\nStack: {stack}");
-            }
-            _dialogueChoices = value;
-        }
-    }
+    private bool isInDialogue = false;
+    private bool isTypingDialogue = false;
+    private List<string> dialogueChoices = new List<string>();
     private TaskCompletionSource<int> choiceCompletionSource;
-    private bool _isAwaitingPlayerInput = false;
-    private bool isAwaitingPlayerInput
-    {
-        get => _isAwaitingPlayerInput;
-        set
-        {
-            if (_isAwaitingPlayerInput != value)
-            {
-                var runner = GameContext.InkRunner;
-                var canContinue = runner?.Story?.canContinue;
-                var currentChoices = runner?.Story?.currentChoices?.Count;
-                var stack = Environment.StackTrace;
-                Console.WriteLine($"[DEBUG] isAwaitingPlayerInput changed from {_isAwaitingPlayerInput} to {value} at {DateTime.Now} | canContinue={canContinue} currentChoices={currentChoices}\nStack: {stack}");
-            }
-            _isAwaitingPlayerInput = value;
-        }
-    }
+    private bool isAwaitingPlayerInput = false;
     private bool isDialogueInput = false;
     private TaskCompletionSource<string> playerInputTcs;
     private TaskCompletionSource<bool> choicesAvailableTcs;
-    private bool hasStarted = false;
-    private bool isFading = false;
-    private const int FadeDurationMs = 1000;
 
     // Output queue for all output (lines, pauses, typewriter)
     private Queue<string> outputQueue = new Queue<string>();
     private bool isProcessingQueue = false;
-    private bool pendingDialogueEnd = false; // <--- add this back
 
     // Static instance for external access (used by InkRunner flush)
     public static Home? Instance;
-
-    private string listeningText = "Listening";
-    private System.Threading.Timer? listeningTimer;
-    private int listeningStep = 0;
-    private readonly string[] listeningStates = new[] { "Listening", "Listening.", "Listening..", "Listening..." };
-    private const int ListeningInterval = 400; // ms
-    private const int ListeningPause = 600; // ms after 'Listening...'
-    private bool listeningActive = false;
-    private bool prevListeningActive = false;
-
-    private bool silentTimerActive = false;
-    private int silentTimerSecondsLeft = 0;
-    private DateTime silentTimerEndTime;
-    private System.Timers.Timer? silentTimer;
-
-    private bool isOssanethGifActive = false;
-    private System.Threading.Timer? ossanethSigilTimer;
-    private readonly Random ossanethRandom = new Random();
-    private const int OssanethGifDurationMs = 633; // Adjust to match GIF length
-    private const int OssanethMinDelayMs = 3000;
-    private const int OssanethMaxDelayMs = 8000;
-
-    private void StartListeningAnimation()
-    {
-        listeningStep = 0;
-        listeningText = listeningStates[0];
-        listeningTimer?.Dispose();
-        listeningTimer = new System.Threading.Timer(_ =>
-        {
-            listeningStep = (listeningStep + 1) % listeningStates.Length;
-            listeningText = listeningStates[listeningStep];
-            InvokeAsync(StateHasChanged);
-            if (listeningStep == 0)
-            {
-                listeningTimer?.Change(ListeningPause, ListeningInterval);
-            }
-            else if (listeningStep == listeningStates.Length - 1)
-            {
-                listeningTimer?.Change(ListeningPause, (ListeningInterval + ListeningPause) / 2);
-            }
-            else
-            {
-                listeningTimer?.Change(ListeningInterval, ListeningInterval);
-            }
-        }, null, ListeningInterval, ListeningInterval);
-    }
-
-    private void StopListeningAnimation()
-    {
-        listeningTimer?.Dispose();
-        listeningTimer = null;
-        listeningText = listeningStates[0];
-    }
-
-    private void StartSilentTimerUI(int ms)
-    {
-        silentTimerActive = true;
-        silentTimerEndTime = DateTime.UtcNow.AddMilliseconds(ms);
-        UpdateSilentTimerUI();
-        silentTimer?.Dispose();
-        silentTimer = new System.Timers.Timer(1000);
-        silentTimer.Elapsed += (s, e) =>
-        {
-            InvokeAsync(() => UpdateSilentTimerUI());
-        };
-        silentTimer.Start();
-    }
-
-    private void StopSilentTimerUI()
-    {
-        silentTimerActive = false;
-        silentTimerSecondsLeft = 0;
-        silentTimer?.Stop();
-        silentTimer?.Dispose();
-        silentTimer = null;
-        InvokeAsync(StateHasChanged);
-    }
-
-    private void UpdateSilentTimerUI()
-    {
-        var remaining = (int)Math.Ceiling((silentTimerEndTime - DateTime.UtcNow).TotalSeconds);
-        if (remaining <= 0)
-        {
-            StopSilentTimerUI();
-        }
-        else
-        {
-            silentTimerSecondsLeft = remaining;
-            InvokeAsync(StateHasChanged);
-        }
-    }
 
     protected override void OnInitialized()
     {
@@ -339,40 +113,24 @@
         if (GameContext.DialogueService != null)
         {
             GameContext.DialogueService.SetPlayerInputCallback(GetPlayerInputFromUIAsync);
-            @* GameContext.DialogueService.DialogueComplete += async () =>
-            {
-                // Only set isInDialogue to false if not typewriting
-                if (!isTypingDialogue)
-                {
-                    isInDialogue = false;
-                    isAwaitingPlayerInput = false;
-                    userInput = "";
-                    await InvokeAsync(StateHasChanged);
-                }
-                // Otherwise, let the typewriter effect finish, then set isInDialogue = false at the end of HandleTypewriterEffect
-            }; *@
-            GameContext.DialogueService.DialogueStart += async () =>
-                                    {
-                                        isInDialogue = true;
-                                        isAwaitingPlayerInput = false;
-                                        userInput = "";
-                                        await InvokeAsync(StateHasChanged);
-                                    };
-        }
-
-        if (GameContext.InkRunner != null)
-        {
-            GameContext.InkRunner.OnDialogueEnd += () =>
+            GameContext.DialogueService.DialogueComplete += async () =>
             {
                 isInDialogue = false;
                 isAwaitingPlayerInput = false;
                 userInput = "";
-                InvokeAsync(StateHasChanged);
+                await InvokeAsync(StateHasChanged);
+            };
+            GameContext.DialogueService.DialogueStart += async () =>
+            {
+                isInDialogue = true;
+                isAwaitingPlayerInput = false;
+                userInput = "";
+                await InvokeAsync(StateHasChanged);
             };
         }
 
-        // Do NOT start the game loop here; it will be started after fade.
-        StartOssanethSigilTimer();
+        // Start the game without the blocking loop
+        engine.StartGameLoopAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -381,17 +139,7 @@
         {
             // Auto-scroll to bottom on initial page load
             await Task.Delay(100); // Small delay to ensure DOM is ready
-            await AutoScrollToBottom(force:true);
-        }
-        // Start/stop listening animation based on correct condition
-        listeningActive = isInDialogue && !isAwaitingPlayerInput;
-        if (listeningActive != prevListeningActive)
-        {
-            if (listeningActive)
-                StartListeningAnimation();
-            else
-                StopListeningAnimation();
-            prevListeningActive = listeningActive;
+            await AutoScrollToBottom();
         }
     }
 
@@ -434,35 +182,19 @@
         while (outputQueue.Count > 0)
         {
             var line = outputQueue.Dequeue();
-            if (line == "__END__")
-            {
-                pendingDialogueEnd = true;
-                continue;
-            }
-            if (line.Contains("__NL__"))
-            {
-                dialogueChoices.Clear();
-                // Handle new line marker
-                gameText += "\n";
-                continue; // Do not add another new line after this
-            }
 #if DEBUG
             Console.WriteLine($"[DEBUG] ProcessOutputQueue: {line}");
 #endif
             // Handle special pause marker: ms__PAUSE__
-            if (line.TrimEnd().EndsWith(OutputConstants.TypewriterPauseMarker))
+            if (line.TrimEnd().EndsWith(OutputConstants.PauseMarker))
             {
-                dialogueChoices.Clear();
-                var msStr = line.Substring(0, line.IndexOf(OutputConstants.TypewriterPauseMarker));
+                Console.WriteLine($"[DEBUG] Detected pause marker in line: {line}");
+                var msStr = line.Substring(0, line.IndexOf(OutputConstants.PauseMarker));
                 if (int.TryParse(msStr, out int ms))
                 {
                     await InvokeAsync(StateHasChanged);
                     await Task.Yield();
-                    #if DEBUG
-                    await Task.Delay(Convert.ToInt32(Math.Round(ms * OutputConstants.DefaultDebugTypeSpeedModifier)));
-                    #else
                     await Task.Delay(ms);
-                    #endif
                 }
                 else
                 {
@@ -487,7 +219,7 @@
             // Handle typewriter effect
             if (line.Contains(OutputConstants.TypewriterStartMarker) && line.Contains(OutputConstants.TypewriterEndMarker))
             {
-                dialogueChoices.Clear();
+                Console.WriteLine($"[DEBUG] Detected typewriter effect in line: {line}");
                 await HandleTypewriterEffect(line);
                 continue;
             }
@@ -499,23 +231,6 @@
                 int bracketEnd = line.IndexOf("]");
                 if (bracketEnd > 0 && int.TryParse(line.Substring(1, bracketEnd - 1), out int choiceNumber))
                 {
-                    if (GameContext.InkRunner != null && GameContext.InkRunner.Story != null &&
-                        GameContext.InkRunner.Story.currentChoices != null && choiceNumber > 0 && 
-                        choiceNumber == GameContext.InkRunner.Story.currentChoices.Count)
-                    {
-						// We are currently processing the last choice, so start the silent timer
-                        await GameContext.InkRunner.StartSilentTimer();
-                        // Start UI timer if silent path is set and > 0
-                        if (!string.IsNullOrWhiteSpace(GameContext.InkRunner.CurrentSilentPath) && GameContext.InkRunner.SilentPathWait > 0)
-                        {
-                            StartSilentTimerUI(GameContext.InkRunner.SilentPathWait);
-                        }
-                        else
-                        {
-                            StopSilentTimerUI();
-                        }
-                    }
-
                     string choiceText = line.Substring(bracketEnd + 1).Trim();
                     if (!string.IsNullOrWhiteSpace(choiceText))
                     {
@@ -540,38 +255,25 @@
             await AutoScrollToBottom();
         }
         isProcessingQueue = false;
-
-        // After all output is processed and typewriter is done
-        if (pendingDialogueEnd && !isTypingDialogue)
-        {
-            Console.WriteLine($"[DEBUG] ProcessOutputQueue: Flushed output, ending dialogue at {DateTime.Now}");
-            isInDialogue = false;
-            isAwaitingPlayerInput = false;
-            userInput = "";
-            pendingDialogueEnd = false;
-            GameContext.InkRunner?.DialogueFinishedOutputting();
-            await InvokeAsync(StateHasChanged);
-        }
     }
 
     private async Task HandleTypewriterEffect(string line)
     {
         // Parse ms value at the start of the line (e.g. "50__TYPEWRITER_START__...")
-        int ms = OutputConstants.DefaultTypeSpeed; // default
-        Console.WriteLine($"[DEBUG] Handling typewriter effect for line: {line}");
-        int msEnd = line.IndexOf(OutputConstants.TypewriterPauseMarker);
+        int ms = 30; // default
+        int msEnd = line.IndexOf(OutputConstants.TypewriterStartMarker);
         if (msEnd > 0)
         {
             string msStr = line.Substring(0, msEnd);
-            if (!int.TryParse(msStr, out ms)) ms = OutputConstants.DefaultTypeSpeed;
+            if (!int.TryParse(msStr, out ms)) ms = 30;
         }
         Console.WriteLine($"[DEBUG] Typewriter effect with delay: {ms} ms");
         int startIndex = line.IndexOf(OutputConstants.TypewriterStartMarker) + OutputConstants.TypewriterStartMarker.Length;
         Console.WriteLine("[DEBUG] Start index for typewriter effect: " + startIndex);
         int endIndex = line.IndexOf(OutputConstants.TypewriterEndMarker);
-		    Console.WriteLine("[DEBUG] End index for typewriter effect: " + endIndex);
+		Console.WriteLine("[DEBUG] End index for typewriter effect: " + endIndex);
         string message = line.Substring(startIndex, endIndex - startIndex);
-		    Console.WriteLine($"[DEBUG] Typewriter message: {message}");
+		Console.WriteLine($"[DEBUG] Typewriter message: {message}");
 
         isTypingDialogue = true;
         Console.WriteLine($"[DEBUG] isTypingDialogue set to true for message: {message}");
@@ -584,11 +286,11 @@
 
         foreach (var msgLine in lines)
         {
-			      Console.WriteLine($"[DEBUG] Typing line: {msgLine}");
+			Console.WriteLine($"[DEBUG] Typing line: {msgLine}");
             string typedLine = "";
             for (int i = 0; i < msgLine.Length; i++)
             {
-				        Console.WriteLine($"[DEBUG] Typing character: {msgLine[i]} at index {i}");
+				Console.WriteLine($"[DEBUG] Typing character: {msgLine[i]} at index {i}");
                 typedLine += msgLine[i];
                 gameText = string.Join('\n', buffer) + (buffer.Count > 0 ? "\n" : "") + typedLine;
                 await InvokeAsync(StateHasChanged);
@@ -616,23 +318,10 @@
 		Console.WriteLine($"[DEBUG] Finished typing dialogue: {message}");
         isTypingDialogue = false;
         await InvokeAsync(StateHasChanged);
-
-        // After typewriter effect, if pendingDialogueEnd is set and output queue is empty, end dialogue
-        if (pendingDialogueEnd && !isProcessingQueue)
-        {
-            Console.WriteLine($"[DEBUG] HandleTypewriterEffect: Flushed output, ending dialogue at {DateTime.Now}");
-            isInDialogue = false;
-            isAwaitingPlayerInput = false;
-            userInput = "";
-            pendingDialogueEnd = false;
-            GameContext.InkRunner?.DialogueFinishedOutputting();
-            await InvokeAsync(StateHasChanged);
-        }
     }
 
     private async Task<int> GetDialogueChoice(int choiceCount)
     {
-        Console.WriteLine($"[DEBUG] GetDialogueChoice called with count={choiceCount} at {DateTime.Now}, isInDialogue={isInDialogue}");
         choiceCompletionSource = new TaskCompletionSource<int>();
         dialogueChoices.Clear();
         await InvokeAsync(StateHasChanged);
@@ -641,26 +330,37 @@
         if (Instance != null)
             await Instance.FlushOutputQueueAsync();
 
-        int choice = await choiceCompletionSource.Task;
-        dialogueChoices.Clear();
-        await InvokeAsync(StateHasChanged);
+        bool hasSilent = !string.IsNullOrWhiteSpace(GameContext.InkRunner.CurrentSilentPath);
 
-        // Defensive: If the story is finished after the choice, do not return a choice
-        if (GameContext.InkRunner == null || 
-            (GameContext.InkRunner.Story != null && 
-             !GameContext.InkRunner.Story.canContinue && 
-             (GameContext.InkRunner.Story.currentChoices == null || GameContext.InkRunner.Story.currentChoices.Count == 0)))
+        // If silent path is set, start silent timer
+        if (hasSilent)
         {
-            Console.WriteLine("[DEBUG] GetDialogueChoice: Story is finished after waiting, not returning a choice.");
-            return -1;
-        }
+            var silentTask = Task.Delay(GameContext.InkRunner.SilentPathWait);
+            var choiceTask = choiceCompletionSource.Task;
+            var completedTask = await Task.WhenAny(choiceTask, silentTask);
 
-        return choice;
+            if (completedTask == silentTask)
+            {
+                await GameContext.InkRunner.TryJumpToSilentPathAsync();
+                return -1; // sentinel for silent path
+            }
+            // If the user made a choice in time, return it
+            int choice = await choiceCompletionSource.Task;
+            dialogueChoices.Clear();
+            await InvokeAsync(StateHasChanged);
+            return choice;
+        }
+        else
+        {
+            int choice = await choiceCompletionSource.Task;
+            dialogueChoices.Clear();
+            await InvokeAsync(StateHasChanged);
+            return choice;
+        }
     }
 
     private async Task SelectDialogueChoice(int choice)
     {
-        StopSilentTimerUI();
         choiceCompletionSource?.TrySetResult(choice);
     }
 
@@ -689,23 +389,17 @@
             {
                 EnqueueOutput($"> {userInput}");
                 string command = userInput.Trim();
-                #if DEBUG
                 EnqueueOutput($"[DEBUG] Executing command: '{command}'");
                 EnqueueOutput($"[DEBUG] Player location: {GameContext.Player.CurrentLocation.Name}");
                 EnqueueOutput($"[DEBUG] Player sublocation: {(GameContext.Player.CurrentSublocation?.Name.ReferenceName ?? "None")}");
                 EnqueueOutput($"[DEBUG] Sublocation object: {(GameContext.Player.CurrentSublocation?.GameObject?.GetType().Name ?? "None")}");
-                #endif
                 engine.ReceiveCommand(command);
-                #if DEBUG
                 EnqueueOutput($"[DEBUG] Command execution completed");
-                #endif
             }
             catch (Exception ex)
             {
-                #if DEBUG
                 EnqueueOutput($"[ERROR] Command execution failed: {ex.Message}");
                 EnqueueOutput($"[ERROR] Stack trace: {ex.StackTrace}");
-                #endif
             }
             finally
             {
@@ -714,13 +408,13 @@
         }
     }
 
-    private async Task AutoScrollToBottom(bool force = false)
+    private async Task AutoScrollToBottom()
     {
         try
         {
             if (JS != null)
             {
-                await JS.InvokeVoidAsync("scrollGameOutputToBottom", force);
+                await JS.InvokeVoidAsync("scrollGameOutputToBottom", false); // false = instant
                 await Task.Delay(10);
             }
         }
@@ -729,55 +423,5 @@
             gameText += $"\n[ERROR] JS interop failed: {ex.Message}\n";
             await InvokeAsync(StateHasChanged);
         }
-    }
-
-    private async void BeginGame()
-    {
-        isFading = true;
-        StateHasChanged();
-        engine.StartGameLoopAsync(); // Start the game loop immediately
-        await Task.Delay(FadeDurationMs);
-        hasStarted = true;
-        isFading = false;
-        StateHasChanged();
-    }
-
-    private bool ShouldGifFadeOut => isInDialogue && dialogueChoices.Count > 0 && !isTypingDialogue;
-
-    private void StartOssanethSigilTimer()
-    {
-        int delay = ossanethRandom.Next(OssanethMinDelayMs, OssanethMaxDelayMs);
-        ossanethSigilTimer?.Dispose();
-        ossanethSigilTimer = new System.Threading.Timer(_ =>
-        {
-            if (!isOssanethGifActive)
-            {
-                isOssanethGifActive = true;
-                InvokeAsync(StateHasChanged);
-                // Show GIF for its duration, then revert to PNG
-                ossanethSigilTimer?.Dispose();
-                ossanethSigilTimer = new System.Threading.Timer(__ =>
-                {
-                    isOssanethGifActive = false;
-                    InvokeAsync(StateHasChanged);
-                    StartOssanethSigilTimer(); // Schedule next random swap
-                }, null, OssanethGifDurationMs, System.Threading.Timeout.Infinite);
-            }
-        }, null, delay, System.Threading.Timeout.Infinite);
-    }
-
-    public override async Task SetParametersAsync(ParameterView parameters)
-    {
-        await base.SetParametersAsync(parameters);
-        // Defensive: restart timer if component is re-rendered
-        if (ossanethSigilTimer == null)
-        {
-            StartOssanethSigilTimer();
-        }
-    }
-
-    public void Dispose()
-    {
-        ossanethSigilTimer?.Dispose();
     }
 }

@@ -21,10 +21,6 @@
 	</ItemGroup>
 
     <ItemGroup>
-      <None Include="wwwroot\.nojekyll" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Layout\" />
-    </ItemGroup>
+		<None Include="wwwroot\.nojekyll" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+	</ItemGroup>
 </Project>

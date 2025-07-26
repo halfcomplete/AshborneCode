@@ -55,7 +55,7 @@
             });
         }
     </script>
-    <!--<link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />-->
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <link href="AshborneWASM.styles.css" rel="stylesheet" />
@@ -66,13 +66,11 @@
 
 <body>
     <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
         <div class="loading-progress-text"></div>
-        <div class="loading-progress-bar-container">
-            <div class="loading-progress-bar-bg">
-                <div class="loading-progress-bar-fill" id="loading-progress-bar-fill"></div>
-            </div>
-        </div>
-        <div class="loading-tip" id="loading-tip"></div>
     </div>
 
     <div id="blazor-error-ui">
@@ -134,44 +132,6 @@
         window.addEventListener('load', function() {
             setTimeout(window.testUrlResolution, 1000);
         });
-
-        // Loading bar progress update (simulate or use real value if available)
-        window.setLoadingProgress = function(percent) {
-            var bar = document.getElementById('loading-progress-bar-fill');
-            if (bar) {
-                bar.style.width = percent + '%';
-            }
-        };
-
-        // Tips logic
-        (function() {
-            var tips = [
-                "You can type 'help' at any time for a list of commands — if you're allowed to!",
-                "Explore every location — there may be hidden secrets.",
-                "Pay attention to the descriptions. They may contain clues...",
-                "You can view your inventory with the command 'inventory'.",
-                "Not all dangers can be fought. Sometimes, running is wise.",
-                "Use 'look' to re-examine your surroundings.",
-                "Some doors require special keys or actions to open.",
-                "Watch out for the Eye...",
-                "Don't wear Masks for too long..."
-            ];
-            var shownTips = [];
-            var tipDiv = document.getElementById('loading-tip');
-            function showRandomTip() {
-                if (tips.length === 0) {
-                    // Reset pool if all tips shown
-                    tips = shownTips;
-                    shownTips = [];
-                }
-                var idx = Math.floor(Math.random() * tips.length);
-                var tip = tips.splice(idx, 1)[0];
-                shownTips.push(tip);
-                if (tipDiv) tipDiv.textContent = tip;
-            }
-            showRandomTip();
-            setInterval(showRandomTip, 4000);
-        })();
     </script>
     <script src="Scripts/scroll.js"></script>
 </body>

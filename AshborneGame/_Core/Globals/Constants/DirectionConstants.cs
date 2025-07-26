@@ -18,15 +18,6 @@ namespace AshborneGame._Core.Globals.Constants
             North, South, East, West
         ];
 
-        public static IReadOnlyDictionary<string, string> CardinalDirectionOppositesMap =
-        new Dictionary<string, string>
-        {
-            { North, South },
-            { South, North },
-            { East, West },
-            { West, East }
-        };
-
         public const string Back = "back";
         public const string Up = "up";
         public const string Down = "down";

@@ -72,7 +72,7 @@ namespace AshborneGame._Core._Player
             var descriptor = new LocationIdentifier("test location");
             CurrentLocation = LocationFactory.CreateLocation(
                 new Location(descriptor, descriptor.DisplayName),
-                new LookDescription(),
+                "You see a generic location.",
                 new FadingDescription("You enter a new place.", "You are here again.", "You have been here many times."),
                 new SensoryDescription("A generic location.", "You hear ambient sounds.")
             );
@@ -101,7 +101,7 @@ namespace AshborneGame._Core._Player
             var descriptor = new LocationIdentifier("Placeholder");
             CurrentLocation = LocationFactory.CreateLocation(
                 new Location(descriptor, descriptor.DisplayName),
-                new LookDescription(),
+                "You see a placeholder location.",
                 new FadingDescription("You enter a placeholder place.", "You are at the placeholder place again.", "You have been here many times."),
                 new SensoryDescription("A placeholder location.", "You hear placeholder sounds.")
             );
@@ -148,28 +148,15 @@ namespace AshborneGame._Core._Player
         public void MoveTo(Scene newScene)
         {
             CurrentScene = newScene;
-            if (OperatingSystem.IsBrowser())
-            {
-                // In Blazor, don't write the scene header to the console
-                // Instead, the scene header is displayed in the UI
-                return;
-            }
             IOService.Output.WriteLine(newScene.GetHeader());
         }
 
         public void SetupMoveTo(Location newLocation, Scene newScene)
         {
-            Console.WriteLine($"Set up move to location: {newLocation.Name} in scene: {newScene.DisplayName}");
             CurrentScene = newScene;
             CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
             CurrentSublocation = null;
             GameContext.GameState.OnPlayerEnterLocation(newLocation);
-            if (OperatingSystem.IsBrowser())
-            {
-                // In Blazor, don't write the scene header to the console
-                // Instead, the scene header is displayed in the UI
-                return;
-            }
             IOService.Output.WriteLine(newScene.GetHeader());
         }
 
