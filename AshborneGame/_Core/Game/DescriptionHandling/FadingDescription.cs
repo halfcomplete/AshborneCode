@@ -24,7 +24,7 @@ namespace AshborneGame._Core.Game.DescriptionHandling
         public string FourthTime { get; private set; }
 
         /// <summary>
-        /// Description for the third, fifth and beyond times this is described. Optional.
+        /// Description for the fifth and beyond times this is described. Optional.
         /// </summary>
         public string? UnchangedTime { get; private set; }
 

@@ -49,20 +49,5 @@ namespace AshborneGame._Core.Globals.Constants
                 public const string SomeEventKey = "Events.SomeEventKey";
             }
         }
-
-        public static class Counters
-        {
-            public static class Player
-            {
-                /// <summary>
-                /// The player's current scene number.
-                /// </summary>
-                public static readonly GameStateKey CurrentSceneNo = new("Counters.Player.CurrentSceneNo");
-                /// <summary>
-                /// The player's current act number.
-                /// </summary>
-                public static readonly GameStateKey CurrentActNo = new("Counters.Player.CurrentActNo");
-            }
-        }
     }
 }

@@ -39,13 +39,11 @@ namespace AshborneGame._Core.Game.DescriptionHandling
 
         public string GetRandomDescription()
         {
-            List<string> availableDescriptions = [];
-
-            if (!string.IsNullOrEmpty(Visual))
-                availableDescriptions.Add(Visual);
-
-            if (!string.IsNullOrEmpty(Auditory))
-                availableDescriptions.Add(Auditory);
+            var availableDescriptions = new List<string>
+            {
+                Visual,
+                Auditory
+            };
 
             if (!string.IsNullOrEmpty(Tactile))
                 availableDescriptions.Add(Tactile!);
@@ -58,12 +56,9 @@ namespace AshborneGame._Core.Game.DescriptionHandling
 
             if (availableDescriptions.Count == 0)
                 return string.Empty;
-            
-            int descriptionCount = availableDescriptions.Count;
-            if (descriptionCount == 0)
-                return string.Empty;
+
             var random = new Random();
-            int index = random.Next(descriptionCount);
+            int index = random.Next(availableDescriptions.Count);
             return availableDescriptions[index];
         }
     }

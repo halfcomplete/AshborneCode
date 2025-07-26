@@ -1,26 +1,25 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.SceneManagement;
-using System.Linq;
 using System.Text;
 
 namespace AshborneGame._Core.Game.DescriptionHandling
 {
     public class DescriptionComposer
     {
-        public LookDescription Look { get; private set; }
+        public string LookDescription { get; init; }
         public FadingDescription Fading { get; private set; }
         public SensoryDescription Sensory { get; private set; }
         public AmbientDescription? Ambient { get; private set; }
         public ConditionalDescription? Conditional { get; private set; }
 
         public DescriptionComposer(
-            LookDescription lookDescription,
+            string lookDescription,
             FadingDescription fading,
             SensoryDescription sensory,
             AmbientDescription? ambient = null,
             ConditionalDescription? conditional = null)
         {
-            Look = lookDescription;
+            LookDescription = lookDescription;
             Fading = fading ?? throw new ArgumentNullException(nameof(fading), "Fading description cannot be null.");
             Sensory = sensory ?? throw new ArgumentNullException(nameof(sensory), "Sensory description cannot be null.");
             Ambient = ambient;
@@ -29,7 +28,6 @@ namespace AshborneGame._Core.Game.DescriptionHandling
 
         public DescriptionComposer()
         {
-            Look = new LookDescription();
             Fading = new FadingDescription();
             Sensory = new SensoryDescription();
         }
@@ -46,17 +44,13 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             {
                 description.Append(Fading.SecondTime);
             }
-            else if (player.CurrentLocation.VisitCount == 4)
+            else if (player.CurrentLocation.VisitCount < 5)
             {
                 description.Append(Fading.FourthTime);
             }
             else if (Fading.UnchangedTime != null)
             {
                 description.Append(Fading.UnchangedTime);
-            }
-            else
-            {
-                description.Append($"You go back to {player.CurrentLocation.Name.DisplayName}. It hasn't changed since you last came.");
             }
 
             // Add ambient snippets if available
@@ -70,36 +64,17 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             {
                 description.Append(" " + Conditional.GetDescription());
             }
-
             return description.ToString();
         }
 
-        public string GetLookDescription(Player player, GameStateManager gameState)
+        public string GetLookDescription()
         {
-            StringBuilder description = new StringBuilder();
-            if (Look.LookCount == 0)
+            if (string.IsNullOrEmpty(LookDescription))
             {
-                description.Append(Look.FirstLook);
-            }
-            else if (Look.LookCount == 1)
-            {
-                description.Append(Look.SecondLook);
-            }
-            else if (Look.LookCount >= 2)
-            {
-                description.Append(Look.RepeatLook);
+                return "There's nothing much to see here.";
             }
 
-            // Add conditional snippets if available
-            if (Conditional != null)
-            {
-                description.Append(" " + Conditional.GetDescription());
-            }
-
-            // Increment the look count
-            Look.LookCount++;
-
-            return description.ToString();
+            return LookDescription;
         }
     }
 }

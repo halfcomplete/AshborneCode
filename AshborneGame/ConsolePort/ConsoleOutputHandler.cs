@@ -55,7 +55,7 @@ namespace AshborneGame.ConsolePort
                 var msStr = message.Substring(0, message.IndexOf(OutputConstants.PauseMarker));
                 if (int.TryParse(msStr, out int t))
                 {
-                    Thread.Sleep(10);
+                    Thread.Sleep(t);
                 }
                 else
                 {

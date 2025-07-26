@@ -20,13 +20,11 @@ namespace AshborneGame._Core.SceneManagement
     public class InkRunner
     {
         private Story _story;
-        public Story Story => _story;
         private Player _player;
         private readonly GameStateManager _gameState;
         private readonly AppEnvironment _appEnvironment;
 
         private (string, int) _currentSilentPath = ("", 0);
-        private CancellationTokenSource? _silentPathCts = null;
 
         public string CurrentSilentPath
         {
@@ -37,6 +35,18 @@ namespace AshborneGame._Core.SceneManagement
         {
             get => _currentSilentPath.Item2;
         }
+
+        private (string, int) _currentWarningPath = ("", 0);
+        public string CurrentWarningPath
+        {
+            get => _currentWarningPath.Item1;
+        }
+
+        public int WarningPathWait
+        {
+            get => _currentWarningPath.Item2;
+        }
+
 
         public bool IsRunning => _story != null && _story.canContinue;
 
@@ -142,7 +152,7 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public async Task RunAsync()
         {
-            IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: RunAsync entered at {DateTime.Now}, canContinue={_story?.canContinue}, currentChoices={_story?.currentChoices?.Count}", ConsoleMessageTypes.INFO);
+            IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: RunAsync started at {DateTime.Now}", ConsoleMessageTypes.INFO);
             if (_story == null)
                 throw new InvalidOperationException("No Ink story loaded.");
 
@@ -150,18 +160,19 @@ namespace AshborneGame._Core.SceneManagement
 
             while (true)
             {
+                bool sawEndMarker = false;
                 while (_story.canContinue)
                 {
-                    
                     string line = _story.Continue().Trim();
                     IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Line='{line}'", ConsoleMessageTypes.INFO);
 
-                    if (line.Equals(OutputConstants.DialogueEndMarker))
+                    if (line == OutputConstants.EndMarker)
                     {
-                        IOService.Output.DisplayDebugMessage($"[DEBUG] {OutputConstants.DialogueEndMarker} marker encountered. Ending dialogue.", ConsoleMessageTypes.INFO);
-                        return;
+                        IOService.Output.DisplayDebugMessage($"[DEBUG] {OutputConstants.EndMarker} marker encountered. Ending dialogue.", ConsoleMessageTypes.INFO);
+                        sawEndMarker = true;
+                        break;
                     }
-                    if (line.TrimEnd().EndsWith(OutputConstants.TypewriterPauseMarker))
+                    if (line.TrimEnd().EndsWith(OutputConstants.PauseMarker))
                     {
                         IOService.Output.WriteLine(line);
                         continue;
@@ -174,7 +185,6 @@ namespace AshborneGame._Core.SceneManagement
                         continue; // Do not add new line marker to output buffer
                     }
                     // Handle async player input in WASM
-                    if (line.StartsWith(OutputConstants.PlayerInputMarker))
                     if (line.StartsWith(OutputConstants.GetPlayerInputMarker))
                     {
                         IOService.Output.DisplayDebugMessage($"InkRunner: Awaiting player input at {DateTime.Now}", ConsoleMessageTypes.INFO);
@@ -231,6 +241,12 @@ namespace AshborneGame._Core.SceneManagement
                     }
                 }
 
+                if (sawEndMarker)
+                {
+                    IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: End of story reached at {DateTime.Now}", ConsoleMessageTypes.INFO);
+                    break;
+                }
+
                 if (_story.currentChoices.Count > 0)
                 {
                     IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Presenting choices at {DateTime.Now}", ConsoleMessageTypes.INFO);
@@ -238,71 +254,23 @@ namespace AshborneGame._Core.SceneManagement
                     {
                         IOService.Output.WriteLine($"[{i + 1}] {_story.currentChoices[i].text}");
                     }
-
-                    // --- Start silent path timer only when player is prompted for input and this isn't browser ---
-                    if (!string.IsNullOrWhiteSpace(_currentSilentPath.Item1) && _currentSilentPath.Item2 > 0 && !OperatingSystem.IsBrowser())
-                    {
-                        await StartSilentTimer();
-                    }
-
+#if BLAZOR
+                    // Wait for Blazor output queue to flush so choices are visible before input is awaited
+                    if (Home.Instance != null)
+                        await Home.Instance.FlushOutputQueueAsync();
+#endif
                     int choice = await IOService.Input.GetChoiceInputAsync(_story.currentChoices.Count);
-                    // --- Cancel silent path timer and clear silent path as soon as a choice is made ---
-                    await StopSilentTimer();
-                    _currentSilentPath = ("", 0);
-
                     IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Choice {choice} selected at {DateTime.Now}", ConsoleMessageTypes.INFO);
-                    // Defensive: Only process the choice if the story is still running and the choice is valid
-                    if (_story.currentChoices.Count > 0 && choice > 0 && choice <= _story.currentChoices.Count)
-                    {
-                        _story.ChooseChoiceIndex(choice - 1);
-                    }
-                    else
-                    {
-                        IOService.Output.DisplayDebugMessage("[DEBUG] InkRunner: Invalid choice or story finished after choice selection. Skipping.", ConsoleMessageTypes.WARNING);
-                        return;
-                    }
+                    _story.ChooseChoiceIndex(choice - 1);
                 }
                 else
                 {
-                    IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: No choices available, waiting for more content.", ConsoleMessageTypes.INFO);
+                    // Wait for more content or choices, but do not spam debug messages
                     await Task.Delay(10);
                 }
-            }            
-        }
-
-        public async Task StartSilentTimer()
-        {
-            Console.WriteLine("timer ms: ", _currentSilentPath.Item2);
-            await StopSilentTimer();
-            _silentPathCts = new CancellationTokenSource();
-            var token = _silentPathCts.Token;
-            string silentPath = _currentSilentPath.Item1;
-            int silentMs = _currentSilentPath.Item2;
-            var timerId = Guid.NewGuid();
-            Console.WriteLine($"[{timerId}] Starting silent path timer to path {silentPath} for {silentMs} ms at {DateTime.Now:HH:mm:ss.fff}");
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await ReliableDelay(silentMs, token);
-                    if (!token.IsCancellationRequested)
-                    {
-                        Console.WriteLine($"[{timerId}] Silent path timer completed at {DateTime.Now:HH:mm:ss.fff}");
-                        await TryJumpToSilentPathAsync();
-                        // Clear silent path after jumping
-                        _currentSilentPath = ("", 0);
-                    }
-                }
-                catch (TaskCanceledException)
-                {
-                    Console.WriteLine($"[{timerId}] Silent path timer caught TaskCanceledException at {DateTime.Now:HH:mm:ss.fff}");
-                }
-            }, token);
-        }
-
-        public async Task StopSilentTimer()
-        {
-            _silentPathCts?.Cancel();
+            }
+            IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: RunAsync finished at {DateTime.Now}", ConsoleMessageTypes.INFO);
+            
         }
 
         private void InitialiseBindings()
@@ -414,7 +382,6 @@ namespace AshborneGame._Core.SceneManagement
         private Func<bool, Task<string>>? _getPlayerInputFromUIAsync;
         public void SetPlayerInputCallback(Func<bool, Task<string>> callback) => _getPlayerInputFromUIAsync = callback;
 
-        public event Action? OnDialogueEnd;
 
         /// <summary>
         /// Jump to a specific knot or stitch in the Ink story.
@@ -430,32 +397,10 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public async Task TryJumpToSilentPathAsync()
         {
-            IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: TryJumpToSilentPathAsync called, path={_currentSilentPath.Item1}, story canContinue={_story?.canContinue}", ConsoleMessageTypes.INFO);
-            if (_story == null || (!_story.canContinue && (_story.currentChoices == null || _story.currentChoices.Count == 0)))
-            {
-                IOService.Output.DisplayDebugMessage("[DEBUG] InkRunner: TryJumpToSilentPathAsync aborted, story is finished.", ConsoleMessageTypes.INFO);
-                return;
-            }
             if (string.IsNullOrWhiteSpace(_currentSilentPath.Item1))
                 return;
             _story.ChoosePathString(_currentSilentPath.Item1);
             await RunAsync();
-            // Clear silent path after jumping
-            _currentSilentPath = ("", 0);
-        }
-
-        // Reliable delay for WASM: loops in short intervals to avoid browser timer issues
-        private static async Task ReliableDelay(int totalMs, CancellationToken token)
-        {
-            int elapsed = 0;
-            int step = 200; // 200 ms steps
-            while (elapsed < totalMs)
-            {
-                int wait = Math.Min(step, totalMs - elapsed);
-                await Task.Delay(wait, token);
-                if (token.IsCancellationRequested) return;
-                elapsed += wait;
-            }
         }
 
         /// <summary>
@@ -474,9 +419,6 @@ namespace AshborneGame._Core.SceneManagement
             return _story.variablesState[key];
         }
 
-        public void DialogueFinishedOutputting()
-        {
-            OnDialogueEnd?.Invoke();
-        }
+        public delegate void OnDialogueFinished();
     }
 }

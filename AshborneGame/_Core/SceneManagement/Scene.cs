@@ -1,8 +1,5 @@
 ﻿using AshborneGame._Core.Game;
-using AshborneGame._Core.Globals.Constants;
-using AshborneGame._Core.Globals.Services;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace AshborneGame._Core.SceneManagement
@@ -34,11 +31,10 @@ namespace AshborneGame._Core.SceneManagement
         /// <param name="id">Unique identifier.</param>
         /// <param name="displayName">Display name.</param>
         /// <param name="act">The act number of the scene.</param>
-        public Scene(string id, string displayName, List<Location>? locations = null)
+        public Scene(string id, string displayName)
         {
             ID = id;
             DisplayName = displayName;
-            Locations = locations ?? new List<Location>();
         }
 
         /// <summary>
@@ -54,16 +50,12 @@ namespace AshborneGame._Core.SceneManagement
         public string GetHeader()
         {
             StringBuilder header = new StringBuilder();
-            if (!GameContext.GameState.TryGetCounter(GameStateKeyConstants.Counters.Player.CurrentActNo, out int actNo))
+            header.AppendLine("ACT 1"); // Placeholder
+            if (!GameContext.GameState.TryGetCounter("player.current_scene_no", out int sceneNo))
             {
-                throw new Exception($"Get counter '{GameStateKeyConstants.Counters.Player.CurrentActNo}' in Scene.cs failed. Counter does not exist.");
+                throw new Exception("Get counter 'player.current_scene_no' in Scene.cs failed. Counter does not exist.");
             }
-            header.AppendLine($"ACT {IntToRomanConversionService.IntToRoman(actNo)}"); // Placeholder
-            if (!GameContext.GameState.TryGetCounter(GameStateKeyConstants.Counters.Player.CurrentSceneNo, out int sceneNo))
-            {
-                throw new Exception($"Get counter '{GameStateKeyConstants.Counters.Player.CurrentSceneNo}' in Scene.cs failed. Counter does not exist.");
-            }
-            header.AppendLine($"SCENE {IntToRomanConversionService.IntToRoman(sceneNo)}");
+            header.AppendLine($"SCENE {sceneNo}");
             header.AppendLine($"--------");
             header.AppendLine(DisplayName);
             return header.ToString();
