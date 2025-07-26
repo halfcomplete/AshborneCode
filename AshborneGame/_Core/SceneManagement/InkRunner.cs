@@ -161,7 +161,7 @@ namespace AshborneGame._Core.SceneManagement
                         IOService.Output.DisplayDebugMessage($"[DEBUG] {OutputConstants.DialogueEndMarker} marker encountered. Ending dialogue.", ConsoleMessageTypes.INFO);
                         return;
                     }
-                    if (line.TrimEnd().EndsWith(OutputConstants.TypewriterPauseMarker))
+                    if (line.TrimEnd().EndsWith(OutputConstants.DialoguePauseMarker))
                     {
                         IOService.Output.WriteLine(line);
                         continue;
@@ -174,7 +174,7 @@ namespace AshborneGame._Core.SceneManagement
                         continue; // Do not add new line marker to output buffer
                     }
                     // Handle async player input in WASM
-                    if (line.StartsWith(OutputConstants.PlayerInputMarker))
+                    if (line.StartsWith(OutputConstants.GetPlayerInputMarker))
                     if (line.StartsWith(OutputConstants.GetPlayerInputMarker))
                     {
                         IOService.Output.DisplayDebugMessage($"InkRunner: Awaiting player input at {DateTime.Now}", ConsoleMessageTypes.INFO);
@@ -209,7 +209,7 @@ namespace AshborneGame._Core.SceneManagement
                     IOService.Output.DisplayDebugMessage(string.Join(' ', lineTags) ?? string.Empty, ConsoleMessageTypes.INFO);
                     if (!string.IsNullOrWhiteSpace(line))
                     {
-                        string? targetTag = lineTags.FirstOrDefault(t => t.StartsWith(OutputConstants.SpeedTag));
+                        string? targetTag = lineTags.FirstOrDefault(t => t.StartsWith(OutputConstants.DialogueSpeedTag));
                         if (targetTag != null)
                         {
                             if (int.TryParse(targetTag.AsSpan(5), out int ms))

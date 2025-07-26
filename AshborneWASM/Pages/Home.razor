@@ -450,10 +450,10 @@
             Console.WriteLine($"[DEBUG] ProcessOutputQueue: {line}");
 #endif
             // Handle special pause marker: ms__PAUSE__
-            if (line.TrimEnd().EndsWith(OutputConstants.TypewriterPauseMarker))
+            if (line.TrimEnd().EndsWith(OutputConstants.DialoguePauseMarker))
             {
                 dialogueChoices.Clear();
-                var msStr = line.Substring(0, line.IndexOf(OutputConstants.TypewriterPauseMarker));
+                var msStr = line.Substring(0, line.IndexOf(OutputConstants.DialoguePauseMarker));
                 if (int.TryParse(msStr, out int ms))
                 {
                     await InvokeAsync(StateHasChanged);
@@ -559,7 +559,7 @@
         // Parse ms value at the start of the line (e.g. "50__TYPEWRITER_START__...")
         int ms = OutputConstants.DefaultTypeSpeed; // default
         Console.WriteLine($"[DEBUG] Handling typewriter effect for line: {line}");
-        int msEnd = line.IndexOf(OutputConstants.TypewriterPauseMarker);
+        int msEnd = line.IndexOf(OutputConstants.DialoguePauseMarker);
         if (msEnd > 0)
         {
             string msStr = line.Substring(0, msEnd);

@@ -65,7 +65,7 @@ namespace AshborneGame._Core.Globals.Constants
         /// <summary>
         /// The marker that indicates this line should be processed as a pause effect. Positioned at the end of the line after the pause duration in milliseconds.
         /// </summary>
-        public const string PauseMarker = "__PAUSE__";
+        public const string DialoguePauseMarker = "__PAUSE__";
 
         /// <summary>
         /// Default pause duration in milliseconds when a pause duration is not specified in a __PAUSE__ marker.
@@ -95,11 +95,11 @@ namespace AshborneGame._Core.Globals.Constants
         /// <summary>
         /// The marker that indicates the end of the ink file.
         /// </summary>
-        public const string EndMarker = "__END__";
+        public const string DialogueEndMarker = "__END__";
 
         /// <summary>
         /// The beginning of the tag that indicates a custom typewriter effect speed for the next line.
         /// </summary>
-        public const string SpeedTag = "slow:";
+        public const string DialogueSpeedTag = "slow:";
     }
 }
