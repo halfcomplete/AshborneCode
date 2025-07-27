@@ -1,5 +1,8 @@
 ﻿using AshborneGame._Core._Player;
+using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.ItemSystem;
+using AshborneGame._Core.Data.BOCS.NPCSystem;
+using AshborneGame._Core.Data.BOCS.ObjectSystem;
 using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Constants;
@@ -68,7 +71,7 @@ namespace AshborneGame._Core.Game
             GameContext.Player.SetupMoveTo(_firstLocation, _firstScene);
             // Display initial location description
             ILocation location = GameContext.Player.CurrentLocation;
-            IOService.Output.WriteLine(location.GetDescription(GameContext.Player, GameContext.GameState));
+            IOService.Output.WriteLine(location.GetDescription(GameContext.Player, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
         }
 
         private ((Location, Scene), (Location, Scene)) InitialiseStartingLocation(Player player)
@@ -149,7 +152,7 @@ namespace AshborneGame._Core.Game
                     new LocationIdentifier("Hall of Mirrors"),
                     "Hall of Mirrors"),
                 new LookDescription(
-                    "You look around the hall. Everywhere, your reflection stares right back at you, each mirror containing an infinite universe of you's, and the black cover on your face. There is nowhere to hide from the Mask. There is nowhere to hide from the truth. THere is nowhere to hide from yourself.",
+                    "You look around the hall. Everywhere, your reflection stares right back at you, each mirror containing an infinite universe of you's, and the black cover on your face. There is nowhere to hide from the Mask. There is nowhere to hide from the truth. There is nowhere to hide from yourself.",
                     "You look around the hall again. The mirrors remain ever so still, ever so silent, each Mask judging, ever so black, ever so ominous."
                     ),
                 new FadingDescription(
@@ -179,8 +182,34 @@ namespace AshborneGame._Core.Game
                     ),
                 new AmbientDescription(new Dictionary<TimeSpan, string>() { { TimeSpan.FromSeconds(10), "Tick. Tock. Tick. Tock." } }));
 
+            Location templeOfTheBound = LocationFactory.CreateLocation(
+                new Location(
+                    new LocationIdentifier("Temple of the Bound One"),
+                    "Temple of the Bound"),
+                new LookDescription(
+                    "You look around the temple. The strange, alien symbols covering the walls are each etched deep into rough bricks the size of a person. You cannot read them, but as your eyes jump from one symbol to another, they glow ever so slightly against the dark. The characters are beautiful, each line a river of the unknown.",
+                    "You look around the temple again. The prisoner shuffles slightly.",
+                    "Turning your head, you peel your eyes for anything that has changed. Nothing has."),
+                new FadingDescription(
+                    "You walk inside the Temple of the Bound to a massive, dark area. Unknown inscriptions on the wall glow faintly. The air is damp.",
+                    "You return to the Temple of the Bound. One of the candles in the middle have gone out.",
+                    "You go back to the Temple of the Bound. The symbols on the wall are stronger, denser, more... powerful. You feel your hair bristle. You shouldn't be here."),
+                new SensoryDescription(
+                    "The vaulted ceiling is covered in hanging moss and leaves.",
+                    "Whispers of magic and memory dance in the air. Is that coming from the runes?"));
+
+            NPC boundOne = NPCFactory.CreateTalkableNPC("Bound One", "It's a sad, chained man with messy, overgrown hair and bloodred eyes.", "Act1_Scene1_Prisoner_Dialogue");
+            templeOfTheBound.AddSublocation(new Sublocation(templeOfTheBound, boundOne, new LocationIdentifier("circle of candles", new List<string>() { "circle", "candles", "candle circle" }), new DescriptionComposer(
+                new LookDescription("You look closer at the circle. It's made up of 12 white wax candles placed precisely around the prisoner. Beneath the candles and the prisoner is a scrawled red 12-pointed star, with the centre circle formed by the intersecting lines slightly aflame. Shadows dance on the floor. You shiver. The fire is not warm.",
+                "You look at the circle again. The shadows seem to have grown larger and sharper. Or is the eerie holiness of the temple finally getting to your mind."),
+                new FadingDescription("You walk up to the prisoner. They are a sorry sight — crippled, ragged, and chained to the ground, they are surrounded by a circle of candles, as though a ritual will take place soon. Or has it already finished? You wouldn't be surprised if that were the case.",
+                "You walk up to the prisoner again. The candles dim ever so slightly as your movement shakes the otherwise still air.",
+                "You go to the prisoner again. The candles and shadows tire of your presence. And perhaps the prisoner does too."),
+                new SensoryDescription("The flames are red and wild — almost as wild as the prisoner.",
+                "It is quiet save for the soft crackling of the candles.")), "circle of candles", OutputConstants.ShortenedCentre, "a circle of dimly lit candles surrounding a chained prisoner"));
             LocationFactory.AddMutualExits(eyePlatform, hallOfMirrors, DirectionConstants.South);
             LocationFactory.AddMutualExits(eyePlatform, chamberOfCycles, DirectionConstants.West);
+            LocationFactory.AddMutualExits(eyePlatform, templeOfTheBound, DirectionConstants.North);
 
             var ossanethDomain = LocationFactory.CreateScene("Ossaneth's Domain", "Ossaneth's Domain", new List<Location> { eyePlatform, hallOfMirrors });
 

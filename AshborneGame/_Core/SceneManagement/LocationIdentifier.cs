@@ -26,24 +26,25 @@ namespace AshborneGame._Core.SceneManagement
         /// <summary>
         /// List of synonyms for parsing and matching.
         /// </summary>
-        public List<string> Synonyms { get; } = new();
+        public List<string> Synonyms { get; }
 
         /// <summary>
         /// Creates a new LocationDescriptor.
         /// </summary>
-        public LocationIdentifier(string referenceName, string article = "the")
+        public LocationIdentifier(string referenceName, List<string>? synonyms = null, string article = "the")
         {
             ReferenceName = referenceName;
+            Synonyms = synonyms ?? new List<string>();
             Article = article;
         }
 
         /// <summary>
-        /// Checks if the input matches the reference name or any synonym.
+        /// Checks if the input matches the reference name, display name, or any synonym.
         /// </summary>
         public bool Matches(string input)
         {
             input = input.ToLowerInvariant();
-            return input == ReferenceName.ToLowerInvariant() || Synonyms.Any(s => s.ToLowerInvariant() == input);
+            return input == ReferenceName.ToLowerInvariant() || input == DisplayName || Synonyms.Any(s => s.ToLowerInvariant() == input) || Synonyms.Any(s => (Article + " " + s.ToLowerInvariant()) == input);
         }
     }
 } 

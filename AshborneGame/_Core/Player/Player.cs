@@ -135,14 +135,14 @@ namespace AshborneGame._Core._Player
             CurrentLocation = newLocation;
             CurrentSublocation = null;
             GameContext.GameState.OnPlayerEnterLocation(newLocation);
-            IOService.Output.WriteLine(newLocation.GetDescription(this, GameContext.GameState));
+            IOService.Output.WriteLine(newLocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
         }
 
         public void MoveTo(Sublocation newSublocation)
         {
             CurrentSublocation = newSublocation;
-            GameContext.GameState.OnPlayerEnterLocation(newSublocation.ParentLocation);
-            IOService.Output.WriteLine(newSublocation.GetDescription(this, GameContext.GameState));
+            //GameContext.GameState.OnPlayerEnterLocation(newSublocation.ParentLocation);
+            IOService.Output.WriteLine(newSublocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
         }
 
         public void MoveTo(Scene newScene)
@@ -247,6 +247,7 @@ namespace AshborneGame._Core._Player
                 MoveTo(sublocation);
                 return true;
             }
+
             return false;
         }
 

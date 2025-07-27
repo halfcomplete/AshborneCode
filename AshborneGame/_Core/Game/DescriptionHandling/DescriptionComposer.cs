@@ -1,4 +1,5 @@
 ﻿using AshborneGame._Core._Player;
+using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.SceneManagement;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,26 @@ namespace AshborneGame._Core.Game.DescriptionHandling
         public SensoryDescription Sensory { get; private set; }
         public AmbientDescription? Ambient { get; private set; }
         public ConditionalDescription? Conditional { get; private set; }
+
+        private readonly Dictionary<string, string> positionalPhrases = new()
+        {
+            { OutputConstants.ShortenedCentre, "In the centre" },
+            { OutputConstants.ShortenedRight, "On the right" },
+            { OutputConstants.ShortenedLeft, "On the left" },
+            { OutputConstants.ShortenedAtTop, "At the top" },
+            { OutputConstants.ShortenedAtBottom, "At the bottom" },
+            { OutputConstants.ShortenedAtFront, "At the front" },
+            { OutputConstants.ShortenedAtBack, "At the back" },
+            { OutputConstants.ShortenedAtMiddle, "At the middle" },
+            { OutputConstants.ShortenedOnTop, "On the top" },
+            { OutputConstants.ShortenedOnBottom, "On the bottom" },
+            { OutputConstants.ShortenedInFront, "In the front" },
+            { OutputConstants.ShortenedInBack, "In the back" },
+            { OutputConstants.ShortenedInMiddle, "In the middle" },
+            { OutputConstants.ShortenedBehind, "Behind" },
+            { OutputConstants.ShortenedAbove, "Above" },
+            { OutputConstants.ShortenedBelow, "Below" }
+        };
 
         public DescriptionComposer(
             LookDescription lookDescription,
@@ -69,6 +90,15 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             if (Conditional != null)
             {
                 description.Append(" " + Conditional.GetDescription());
+            }
+
+            // Add sublocation snippets if available and not currently in a sublocation
+            if (player.CurrentSublocation == null)
+            {
+                foreach (var sublocation in player.CurrentLocation.Sublocations)
+                {
+                    description.Append(" " + positionalPhrases[sublocation.ShortenedPositionalPhrase] + " is " + sublocation.ShortRefDesc + ".");
+                }
             }
 
             return description.ToString();

@@ -10,6 +10,13 @@ namespace AshborneGame._Core.Globals.Services
         public static string DialogueRootPath { get; } =
             @"D:\C# Projects\AshborneCode\AshborneGame\_Core\Data\Dialogue";
 
+        /// <summary>
+        /// Returns the full file path (relative from Dialogue/ if in browser, absolute if in console).
+        /// </summary>
+        /// <param name="scriptFilename">The ink file name without extensions to get the full path from.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">Thrown when the provided file name is null or empty.</exception>
+        /// <exception cref="FileNotFoundException">Thrown when the provided file name does not exist in the calculated path.</exception>
         public static string FromDialogue(string scriptFilename)
         {
             if (string.IsNullOrWhiteSpace(scriptFilename))

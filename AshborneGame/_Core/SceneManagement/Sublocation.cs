@@ -20,7 +20,11 @@ namespace AshborneGame._Core.SceneManagement
         /// <summary>
         /// The object that is at this sublocation.
         /// </summary>
-        public BOCSGameObject GameObject { get; }
+        public BOCSGameObject FocusObject { get; }
+
+        public string ShortenedPositionalPhrase { get; init; }
+
+        public string ShortRefDesc { get; init; }
 
         public DescriptionComposer DescriptionComposer { get; private set; }
 
@@ -72,14 +76,16 @@ namespace AshborneGame._Core.SceneManagement
         /// <param name="name">LocationDescriptor for naming and parsing.</param>
         /// <param name="desc">Narrative profile for descriptions.</param>
         /// <param name="id">Unique identifier.</param>
-        public Sublocation(Location parent, GameObject focusObject, LocationIdentifier name, DescriptionComposer desc, string id)
+        public Sublocation(Location parent, BOCSGameObject focusObject, LocationIdentifier name, DescriptionComposer desc, string id, string shortenedPositionalPhrase, string shortRefDesc)
         {
             ParentLocation = parent;
-            GameObject = focusObject;
+            FocusObject = focusObject;
             Name = name;
             DescriptionComposer = desc;
             ID = id;
             Exits = new Dictionary<string, Location> { { "back", parent } };
+            ShortenedPositionalPhrase = shortenedPositionalPhrase;
+            ShortRefDesc = shortRefDesc;
         }
 
         /// <summary>

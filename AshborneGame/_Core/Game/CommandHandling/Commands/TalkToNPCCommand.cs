@@ -25,14 +25,14 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                 IOService.Output.DisplayFailMessage("You are not in a place where you can talk.");
                 return false;
             }
-            if (player.CurrentSublocation.GameObject is not NPC)
+            if (player.CurrentSublocation.FocusObject is not NPC)
             {
                 IOService.Output.DisplayFailMessage($"There is no one to talk to.");
                 return false;
             }
 
             Sublocation sublocation = player.CurrentSublocation!;
-            NPC npc = (NPC)sublocation.GameObject;
+            NPC npc = (NPC)sublocation.FocusObject;
 
             // Check if the NPC's name matches the target name (case-insensitive, partial match)
             if (!npc.Name.ToLowerInvariant().Contains(targetName.ToLowerInvariant()))
@@ -41,6 +41,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                 return false;
             }
 
+            // May cause an issue where this method returns true before the dialogue begins
             npc.Talk(player);
             return true;
         }

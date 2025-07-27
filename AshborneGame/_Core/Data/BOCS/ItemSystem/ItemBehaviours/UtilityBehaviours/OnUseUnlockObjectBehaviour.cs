@@ -30,7 +30,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviou
             // If we're in a sublocation, get the object directly
             if (player.CurrentSublocation != null)
             {
-                targetObject = player.CurrentSublocation.GameObject;
+                targetObject = player.CurrentSublocation.FocusObject;
             }
             else // If we're in a regular location, output and return
             {

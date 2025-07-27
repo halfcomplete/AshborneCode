@@ -75,5 +75,22 @@ namespace AshborneGame._Core.Globals.Constants
         /// The marker that indicatees the end of a dialogue in Ink.
         /// </summary>
         public const string DialogueEndMarker = "__END__";
+
+        public const string ShortenedCentre = "centre";
+        public const string ShortenedRight = "right";
+        public const string ShortenedLeft = "left";
+        public const string ShortenedAtTop = "at top";
+        public const string ShortenedAtBottom = "at bottom";
+        public const string ShortenedAtFront = "at front";
+        public const string ShortenedAtBack = "at back";
+        public const string ShortenedAtMiddle = "at middle";
+        public const string ShortenedOnTop = "on top";
+        public const string ShortenedOnBottom = "on bottom";
+        public const string ShortenedInFront = "in front";
+        public const string ShortenedInBack = "in back";
+        public const string ShortenedInMiddle = "in middle";
+        public const string ShortenedBehind = "behind";
+        public const string ShortenedAbove = "above";
+        public const string ShortenedBelow = "below";
     }
 }

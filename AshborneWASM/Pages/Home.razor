@@ -80,21 +80,30 @@
                 }
                 else if (!isInDialogue)
                 {
-                    <div class="input-overlay-wrapper">
-                        <input @bind="userInput"
-                               @bind:event="oninput"
-                               @onkeydown="HandleInput"
-                               placeholder="What will you do?" />
-                        @if (isOssanethGifActive)
-                        {
-                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
-                        }
-                        else
-                        {
-                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
-                        }
-                    </div>
-                    <div><em>Type your action and press Enter.</em></div>
+                    @if (isTypingDialogue)
+                    {
+                        <div class="dialogue-waiting">
+                            <p>@waitingText</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="input-overlay-wrapper">
+                            <input @bind="userInput"
+                                   @bind:event="oninput"
+                                   @onkeydown="HandleInput"
+                                   placeholder="What will you do?" />
+                            @if (isOssanethGifActive)
+                            {
+                                <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                            }
+                            else
+                            {
+                                <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                            }
+                        </div>
+                        <div><em>Type your action and press Enter.</em></div>
+                    }
                 }
                 else
                 {
@@ -226,6 +235,13 @@
     private bool listeningActive = false;
     private bool prevListeningActive = false;
 
+    private string waitingText = "Waiting";
+    private System.Threading.Timer? waitingTimer;
+    private int waitingStep = 0;
+    private readonly string[] waitingStates = new[] { "Waiting", "Waiting.", "Waiting..", "Waiting..." };
+    private bool waitingActive = false;
+    private bool prevWaitingActive = false;
+
     private bool silentTimerActive = false;
     private int silentTimerSecondsLeft = 0;
     private DateTime silentTimerEndTime;
@@ -268,6 +284,38 @@
         listeningTimer?.Dispose();
         listeningTimer = null;
         listeningText = listeningStates[0];
+    }
+
+    private void StartWaitingAnimation()
+    {
+        waitingStep = 0;
+        waitingText = waitingStates[0];
+        waitingTimer?.Dispose();
+        waitingTimer = new System.Threading.Timer(_ =>
+        {
+            waitingStep = (waitingStep + 1) % waitingStates.Length;
+            waitingText = waitingStates[waitingStep];
+            InvokeAsync(StateHasChanged);
+            if (waitingStep == 0)
+            {
+                waitingTimer?.Change(ListeningPause, ListeningInterval);
+            }
+            else if (waitingStep == waitingStates.Length - 1)
+            {
+                waitingTimer?.Change(ListeningPause, (ListeningInterval + ListeningPause) / 2);
+            }
+            else
+            {
+                waitingTimer?.Change(ListeningInterval, ListeningInterval);
+            }
+        }, null, ListeningInterval, ListeningInterval);
+    }
+
+    private void StopWaitingAnimation()
+    {
+        waitingTimer?.Dispose();
+        waitingTimer = null;
+        waitingText = waitingStates[0];
     }
 
     private void StartSilentTimerUI(int ms)
@@ -392,6 +440,17 @@
             else
                 StopListeningAnimation();
             prevListeningActive = listeningActive;
+        }
+
+        // Start/stop waiting animation when typewriting outside of dialogue
+        waitingActive = !isInDialogue && isTypingDialogue;
+        if (waitingActive != prevWaitingActive)
+        {
+            if (waitingActive)
+                StartWaitingAnimation();
+            else
+                StopWaitingAnimation();
+            prevWaitingActive = waitingActive;
         }
     }
 
@@ -670,7 +729,7 @@
                 EnqueueOutput($"[DEBUG] Executing command: '{command}'");
                 EnqueueOutput($"[DEBUG] Player location: {GameContext.Player.CurrentLocation.Name}");
                 EnqueueOutput($"[DEBUG] Player sublocation: {(GameContext.Player.CurrentSublocation?.Name.ReferenceName ?? "None")}");
-                EnqueueOutput($"[DEBUG] Sublocation object: {(GameContext.Player.CurrentSublocation?.GameObject?.GetType().Name ?? "None")}");
+                EnqueueOutput($"[DEBUG] Sublocation object: {(GameContext.Player.CurrentSublocation?.FocusObject?.GetType().Name ?? "None")}");
                 #endif
                 engine.ReceiveCommand(command);
                 #if DEBUG
@@ -756,5 +815,7 @@
     public void Dispose()
     {
         ossanethSigilTimer?.Dispose();
+        listeningTimer?.Dispose();
+        waitingTimer?.Dispose();
     }
 }

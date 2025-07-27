@@ -6,6 +6,7 @@ using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.SceneManagement;
 using Ink.Runtime;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 
 namespace AshborneGame._Core.Game
 {
@@ -295,10 +296,30 @@ namespace AshborneGame._Core.Game
             _locationEnteredTime = DateTime.UtcNow;
             _realTimeInCurrentLocation = TimeSpan.Zero;
 
-            if (!_locationDurations.ContainsKey(location))
-                _locationDurations[location] = TimeSpan.Zero;
+            if (!_locationDurations.ContainsKey(_currentLocation))
+                _locationDurations[_currentLocation] = TimeSpan.Zero;
 
-            if (!GameContext.Player.CurrentScene.Locations.Contains(GameContext.Player.CurrentLocation))
+            if (GameContext.Player == null)
+            {
+                throw new InvalidOperationException("GameContext.Player is null. Cannot set current location.");
+            }
+
+            if (location == null)
+            {
+                throw new ArgumentNullException(nameof(location), "Location cannot be null.");
+            }
+
+            if (GameContext.Player.CurrentScene == null)
+            {
+                throw new InvalidOperationException("GameContext.Player.CurrentScene is null. Cannot set current location.");
+            }
+
+            if (GameContext.Player.CurrentScene.Locations == null)
+            {
+                throw new InvalidOperationException("GameContext.Player.CurrentScene.Locations is null. Cannot set current location.");
+            }
+
+            if (!GameContext.Player.CurrentScene.Locations.Contains(_currentLocation))
             {
                 // We've moved to a new scene
                 // Increment the scene number

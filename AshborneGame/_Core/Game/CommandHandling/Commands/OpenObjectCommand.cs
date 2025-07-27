@@ -25,7 +25,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             string objectName = string.Join(" ", args).Trim();
             Sublocation? sublocation = player.CurrentSublocation;
             IEnumerable<IInteractable>? allIInteractableBehaviours = null;
-            allIInteractableBehaviours = sublocation?.GameObject.GetAllBehaviours<IInteractable>();
+            allIInteractableBehaviours = sublocation?.FocusObject.GetAllBehaviours<IInteractable>();
 
             if (allIInteractableBehaviours == null)
             {

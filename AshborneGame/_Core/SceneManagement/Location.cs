@@ -161,7 +161,7 @@ namespace AshborneGame._Core.SceneManagement
 
             foreach (var sublocation in Sublocations)
             {
-                sb.AppendLine($"- {sublocation.Name}");
+                sb.AppendLine($"- {sublocation.Name.DisplayName}");
             }
 
             return sb.ToString();
