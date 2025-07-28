@@ -7,7 +7,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 {
     internal class GoCommand : ICommand
     {
-        public string Name => "go";
+        public List<string> Names => ["go"];
         public string Description => "Takes the player to a new location based on direction.";
 
         public bool TryExecute(List<string> args, Player player)

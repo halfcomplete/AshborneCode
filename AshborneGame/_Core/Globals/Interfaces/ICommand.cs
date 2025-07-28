@@ -4,8 +4,8 @@ namespace AshborneGame._Core.Globals.Interfaces
 {
     public interface ICommand
     {
-        string Name { get; }
+        List<string> Names { get; }
         string Description { get; }
-        bool TryExecute(List<string> arguments, _Player.Player player);
+        bool TryExecute(List<string> arguments, Player player);
     }
 }

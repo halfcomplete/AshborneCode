@@ -38,6 +38,8 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public Dictionary<string, (Func<string> message, Action effect)> CustomCommands { get; } = new();
 
+        public int VisitCount { get; set; } = 0;
+
         /// <summary>
         /// Adds custom commands to this sublocation.
         /// </summary>

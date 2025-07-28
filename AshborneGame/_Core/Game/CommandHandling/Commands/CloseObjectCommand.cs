@@ -10,7 +10,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 {
     public class CloseObjectCommand : ICommand
     {
-        public string Name => "close";
+        public List<string> Names => ["close"];
         public string Description => "Closes an object.";
 
         public bool TryExecute(List<string> args, Player player)

@@ -8,7 +8,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 {
     internal class InspectItemCommand : ICommand
     {
-        public string Name => "inspect";
+        public List<string> Names => ["inspect"];
         public string Description => "Inspect an an in-game item for details.";
 
         public bool TryExecute(List<string> args, Player player)

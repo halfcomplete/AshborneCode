@@ -1,6 +1,7 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.SceneManagement;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Text;
 
@@ -93,15 +94,56 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             }
 
             // Add sublocation snippets if available and not currently in a sublocation
-            if (player.CurrentSublocation == null)
+            if (player.CurrentSublocation == null && player.CurrentLocation.Sublocations.Count > 0)
             {
-                foreach (var sublocation in player.CurrentLocation.Sublocations)
+                var names = player.CurrentLocation.Sublocations
+                    .Select(s => s.ShortRefDesc);
+
+                var joined = NaturalJoin(names);
+
+                var random = new Random();
+                int chance = random.Next(0, 5);
+                if (chance == 0)
                 {
-                    description.Append(" " + positionalPhrases[sublocation.ShortenedPositionalPhrase] + " is " + sublocation.ShortRefDesc + ".");
+                    description.Append(" You can also see ");
                 }
+                else if (chance == 1)
+                {
+                    description.Append(" You also notice ");
+                }
+                else if (chance == 2)
+                {
+                    description.Append(" Near you, you also see ");
+                }
+                else if (chance == 3)
+                {
+                    description.Append(" There is also ");
+                }
+                else
+                {
+                    description.Append(" Here there is also ");
+                }
+                    
+                description.Append(joined);
+                description.Append(".");
             }
 
             return description.ToString();
+        }
+
+        private string NaturalJoin(IEnumerable<string> items)
+        {
+            var list = items.ToList();
+            if (list.Count == 0)
+                return string.Empty;
+            if (list.Count == 1)
+                return list[0];
+            if (list.Count == 2)
+                return $"{list[0]} and {list[1]}";
+
+            // 3+ items: "A, B, C, and D"
+            var allButLast = string.Join(", ", list.Take(list.Count - 1));
+            return $"{allButLast}, and {list.Last()}";
         }
 
         public string GetLookDescription(Player player, GameStateManager gameState)

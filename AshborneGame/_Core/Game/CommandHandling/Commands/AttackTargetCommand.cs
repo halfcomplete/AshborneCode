@@ -9,7 +9,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 {
     public class AttackTargetCommand : ICommand
     {
-        public string Name => "attack";
+        public List<string> Names => ["attack"];
         public string Description => "Attacks a target.";
 
         public bool TryExecute(List<string> args, _Player.Player player)

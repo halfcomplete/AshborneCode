@@ -9,7 +9,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 {
     public class UseCommand : ICommand
     {
-        public string Name { get; } = "use";
+        public List<string> Names { get; } = ["use"];
         public string Description { get; } = "Use an item from your inventory.";
 
         public bool TryExecute(List<string> args, Player player)

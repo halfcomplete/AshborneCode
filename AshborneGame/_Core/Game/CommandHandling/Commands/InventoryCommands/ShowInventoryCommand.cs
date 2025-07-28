@@ -6,7 +6,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 {
     public class ShowInventoryCommand : ICommand
     {
-        public string Name => "inventory";
+        public List<string> Names => ["inventory"];
         public string Description => "Displays your current inventory.";
 
         public bool TryExecute(List<string> args, Player player)

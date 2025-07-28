@@ -40,6 +40,8 @@ namespace AshborneGame._Core.Globals.Interfaces
         /// </summary>
         Dictionary<string, (Func<string> message, Action effect)> CustomCommands { get; }
 
+        int VisitCount { get; set; }
+
         /// <summary>
         /// Returns the appropriate description for the player and state.
         /// </summary>
@@ -72,5 +74,10 @@ namespace AshborneGame._Core.Globals.Interfaces
         /// Removes a custom command by its string key.
         /// </summary>
         void RemoveCustomCommand(string command);
+
+        public void IncrementVisitCount()
+        {
+            VisitCount++;
+        }
     }
 }

@@ -6,7 +6,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 {
     internal class ExitGameCommand : ICommand
     {
-        public string Name => "exit";
+        public List<string> Names => ["exit"];
         public string Description => "Exits the game.";
 
         public bool TryExecute(List<string> args, Player player)

@@ -9,7 +9,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 {
     public class TalkToNPCCommand : ICommand
     {
-        public string Name => "talk to";
+        public List<string> Names => ["talk to"];
         public string Description => "Begins a conversation with an NPC.";
 
         public bool TryExecute(List<string> args, Player player)

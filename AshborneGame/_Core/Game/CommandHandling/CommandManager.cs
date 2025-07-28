@@ -12,8 +12,8 @@ namespace AshborneGame._Core.Game.CommandHandling
 {
     public static class CommandManager
     {
-        public static IReadOnlyDictionary<string, ICommand> Commands => _commands;
-        private static Dictionary<string, ICommand> _commands = new();
+        public static IReadOnlyDictionary<List<string>, ICommand> Commands => _commands;
+        private static Dictionary<List<string>, ICommand> _commands = new();
 
         static CommandManager()
         {
@@ -36,7 +36,9 @@ namespace AshborneGame._Core.Game.CommandHandling
 
         public static void RegisterCommand(ICommand command)
         {
-            _commands[command.Name.ToLower()] = command;
+            var keywords = command.Names.ConvertAll(name => name.ToLowerInvariant());
+
+            _commands[keywords] = command;
         }
 
         public static bool TryExecute(string action, List<string> args, Player player)

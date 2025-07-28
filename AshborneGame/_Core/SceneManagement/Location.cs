@@ -49,7 +49,7 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public Dictionary<string, (Func<string> message, Action effect)> CustomCommands { get; } = new();
 
-        public int VisitCount { get; private set; } = 0;
+        public int VisitCount { get; set; } = 0;
 
         /// <summary>
         /// Adds custom commands to this location.
@@ -155,7 +155,7 @@ namespace AshborneGame._Core.SceneManagement
 
                 if (Sublocations.Count > 0)
                 {
-                    sb.AppendLine(" You can also go to:");
+                    sb.AppendLine("\n You can also go to:");
                 }
             }
 
@@ -165,11 +165,6 @@ namespace AshborneGame._Core.SceneManagement
             }
 
             return sb.ToString();
-        }
-
-        public void IncrementVisitCount()
-        {
-            VisitCount++;
         }
     }
 }
