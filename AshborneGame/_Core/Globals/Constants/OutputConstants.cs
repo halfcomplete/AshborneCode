@@ -6,7 +6,7 @@ namespace AshborneGame._Core.Globals.Constants
         /// <summary>
         /// Default type speed for Release builds in milliseconds per character.
         /// </summary>
-        public const int DefaultTypeSpeed = 29;
+        public const int DefaultTypeSpeed = 22;
         /// <summary>
         /// Default type speed modifiers for Debug builds as a multiplier for DefaultTypeSpeed.
         /// </summary>
@@ -75,6 +75,11 @@ namespace AshborneGame._Core.Globals.Constants
         /// The marker that indicatees the end of a dialogue in Ink.
         /// </summary>
         public const string DialogueEndMarker = "__END__";
+
+        /// <summary>
+        /// Multiplier for non-dialogue output speed (e.g., 1.2x faster).
+        /// </summary>
+        public const float NonDialogueOutputSpeedMultiplier = 2f;
 
         public const string ShortenedCentre = "centre";
         public const string ShortenedRight = "right";

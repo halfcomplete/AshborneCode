@@ -23,7 +23,9 @@ namespace AshborneGame.ConsolePort
                 Console.Write(letter);
 
                 bool isEnd = message.Count() == i + 1 || message[i + 1].Equals(' ') || (i + 2 == message.Length && message.Substring(i + 3).Equals("\n")); // Check if this is the end of the message or sentence
-                Thread.Sleep(CharacterOutputDelayCalculator.CalculateDebugDelay(letter, ms, isEnd));
+                // Only apply non-dialogue output speed multiplier if not dialogue
+                int adjustedMs = ms == OutputConstants.DefaultTypeSpeed ? ms : (int)(ms * OutputConstants.NonDialogueOutputSpeedMultiplier);
+                Thread.Sleep(CharacterOutputDelayCalculator.CalculateDebugDelay(letter, adjustedMs, isEnd));
 
                 i += 1;
             }
@@ -34,7 +36,9 @@ namespace AshborneGame.ConsolePort
                 Console.Write(letter);
 
                 bool isEnd = message.Length == i + 1 || message[i + 1].Equals(' ') || (i + 2 == message.Length && message.Substring(i + 1).Equals("\n")); // Check if this is the end of the message or sentence
-                Thread.Sleep(CharacterOutputDelayCalculator.CalculateDelay(letter, ms, isEnd));
+                // Only apply non-dialogue output speed multiplier if not dialogue
+                int adjustedMs = ms == OutputConstants.DefaultTypeSpeed ? ms : (int)(ms * OutputConstants.NonDialogueOutputSpeedMultiplier);
+                Thread.Sleep(CharacterOutputDelayCalculator.CalculateDelay(letter, adjustedMs, isEnd));
 
                 i += 1;
             }
@@ -68,13 +72,15 @@ namespace AshborneGame.ConsolePort
 
             int modification = GameContext.Random.Next(OutputConstants.RandomPauseMin, OutputConstants.RandomPauseMax + 1); // Randomly modify the delay
             Console.WriteLine();
-            Thread.Sleep((ms + modification) * OutputConstants.NewLinePauseMultiplier);
+            int adjustedMs = ms == OutputConstants.DefaultTypeSpeed ? ms : (int)(ms * OutputConstants.NonDialogueOutputSpeedMultiplier); // Only apply multiplier if not dialogue
+            Thread.Sleep((adjustedMs + modification) * OutputConstants.NewLinePauseMultiplier);
 #else
             Write(message, ms);
 
             int modification = GameContext.Random.Next(OutputConstants.RandomPauseMin, OutputConstants.RandomPauseMax + 1); // Randomly modify the delay
             Console.WriteLine();
-            Thread.Sleep((ms + modification) * OutputConstants.NewLinePauseMultiplier);
+            int adjustedMs = ms == OutputConstants.DefaultTypeSpeed ? ms : (int)(ms * OutputConstants.NonDialogueOutputSpeedMultiplier); // Only apply multiplier if not dialogue
+            Thread.Sleep((adjustedMs + modification) * OutputConstants.NewLinePauseMultiplier);
 #endif
         }
 

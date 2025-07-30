@@ -48,13 +48,16 @@
                                @bind:event="oninput"
                                @onkeydown="HandleInput"
                                placeholder="@(isDialogueInput ? "What will you say?" : "What will you do?")" autofocus />
-                        @if (isOssanethGifActive)
+                        @if (GameContext.Player.EquippedItems["face"]?.Name == "Ossaneth")
                         {
-                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
-                        }
-                        else
-                        {
-                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                            @if (isOssanethGifActive)
+                            {
+                                <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                            }
+                            else
+                            {
+                                <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                            }
                         }
                     </div>
                     <div><em>Type your response and press Enter.</em></div>
@@ -93,13 +96,16 @@
                                    @bind:event="oninput"
                                    @onkeydown="HandleInput"
                                    placeholder="What will you do?" />
-                            @if (isOssanethGifActive)
+                            @if (GameContext.Player.EquippedItems["face"]?.Name == "Ossaneth")
                             {
-                                <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
-                            }
-                            else
-                            {
-                                <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                                @if (isOssanethGifActive)
+                                {
+                                    <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                                }
+                                else
+                                {
+                                    <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                                }
                             }
                         </div>
                         <div><em>Type your action and press Enter.</em></div>
@@ -116,9 +122,15 @@
     </div>
     @if (!hasStarted || isFading)
     {
-        <div class="title-screen @(isFading ? "fade-out" : "")">
+        <div class="title-screen @(isFading ? "fade-out" : "") @(isIntroTransitioning ? "fade-overlap" : "")">
             <div class="title-logo">ASHBORNE</div>
             <button class="begin-button" @onclick="BeginGame">Begin</button>
+        </div>
+    }
+    @if (introPhase > 0 || isIntroTransitioning)
+    {
+        <div class="intro-screen @(introFading ? "fade-out" : "fade-in")">
+            <div class="intro-text @(introTextFading ? "fade-out" : "fade-in") @(isFinalPhase ? "final-phase" : "")">@introText</div>
         </div>
     }
 </div>
@@ -218,6 +230,17 @@
     private bool isFading = false;
     private const int FadeDurationMs = 1000;
 
+    // Intro sequence variables
+    private int introPhase = 0;
+    private string introText = "";
+    private bool introFading = false;
+    private const int IntroDelayMs = 2000;
+    private const int IntroFadeDurationMs = 800;
+    private const int Phase1DurationMs = 5000; // 5 seconds for phase 1
+    private const int Phase2DurationMs = 3000; // 3 seconds for phase 2
+    private const int Phase3DurationMs = 4000; // 4 seconds for phase 3
+    private const int FinalPhaseDurationMs = 5000; // 5 seconds for final phase enlargement
+
     // Output queue for all output (lines, pauses, typewriter)
     private Queue<string> outputQueue = new Queue<string>();
     private bool isProcessingQueue = false;
@@ -253,6 +276,10 @@
     private const int OssanethGifDurationMs = 633; // Adjust to match GIF length
     private const int OssanethMinDelayMs = 3000;
     private const int OssanethMaxDelayMs = 8000;
+
+    private bool isIntroTransitioning = false; // New: tracks if we're crossfading title→intro
+    private bool introTextFading = false; // New: tracks if intro text is fading
+    private bool isFinalPhase = false; // New: tracks if we're in the final ASHBORNE phase
 
     private void StartListeningAnimation()
     {
@@ -633,11 +660,41 @@
                 char letter = msgLine[i];
                 bool isEnd = message.Count() == i + 1 || message[i + 1].Equals(' ') || (i + 2 == message.Length && message.Substring(i + 1).Equals("\n")); // Check if this is the end of the message or sentence
 
+                // Calculate delay with special handling for non-dialogue output
+                int delay;
+                if (ms == OutputConstants.DefaultTypeSpeed)
+                {
+                    // Dialogue output - use normal calculation
 #if DEBUG
-                await Task.Delay(CharacterOutputDelayCalculator.CalculateDebugDelay(letter, ms, isEnd));
+                    delay = CharacterOutputDelayCalculator.CalculateDebugDelay(letter, ms, isEnd);
 #else
-                await Task.Delay(CharacterOutputDelayCalculator.CalculateDelay(letter, ms, isEnd));
+                    delay = CharacterOutputDelayCalculator.CalculateDelay(letter, ms, isEnd);
 #endif
+                }
+                else
+                {
+                    // Non-dialogue output - apply 1.2x multiplier only to normal characters
+                    int baseDelay;
+#if DEBUG
+                    baseDelay = CharacterOutputDelayCalculator.CalculateDebugDelay(letter, ms, isEnd);
+#else
+                    baseDelay = CharacterOutputDelayCalculator.CalculateDelay(letter, ms, isEnd);
+#endif
+                    
+                    // Check if this is a punctuation character that should keep normal speed
+                    bool isPunctuation = letter == '.' || letter == '—' || letter == ',' || letter == '"' || letter == ':' || letter == ']' || letter == ')';
+                    
+                    if (isPunctuation)
+                    {
+                        delay = baseDelay; // Keep normal speed for punctuation
+                    }
+                    else
+                    {
+                        delay = (int)(baseDelay * OutputConstants.NonDialogueOutputSpeedMultiplier); // Apply 1.2x for normal characters
+                    }
+                }
+
+                await Task.Delay(delay);
             }
             buffer.Add(typedLine); // Add finished line to buffer
             gameText = string.Join('\n', buffer);
@@ -769,12 +826,64 @@
 
     private async void BeginGame()
     {
+        isIntroTransitioning = true;
         isFading = true;
         StateHasChanged();
-        engine.StartGameLoopAsync(); // Start the game loop immediately
-        await Task.Delay(FadeDurationMs);
+        await Task.Delay(FadeDurationMs); // Let title screen fully fade out
         hasStarted = true;
         isFading = false;
+        StateHasChanged();
+        await Task.Delay(2000); // 2 second pause with just background
+        isIntroTransitioning = false;
+        StateHasChanged();
+        introPhase = 1;
+        introText = "All the world's a stage, and all the men and women merely players.";
+        introFading = false;
+        introTextFading = true; // Start with text faded out
+        StateHasChanged();
+        await Task.Delay(50); // Brief delay to ensure fade-in animation triggers
+        introTextFading = false; // Trigger fade-in
+        StateHasChanged();
+        await StartIntroSequence();
+        engine.StartGameLoopAsync();
+        StateHasChanged();
+    }
+
+    private async Task StartIntroSequence()
+    {
+        // Phase 1 already set by BeginGame
+        await Task.Delay(Phase1DurationMs);
+        // Phase 2
+        introTextFading = true;
+        StateHasChanged();
+        await Task.Delay(IntroFadeDurationMs);
+        introText = "But who wrote the script?";
+        introTextFading = false;
+        StateHasChanged();
+        await Task.Delay(Phase2DurationMs);
+        // Phase 3
+        introTextFading = true;
+        StateHasChanged();
+        await Task.Delay(IntroFadeDurationMs);
+        introText = "And who dares rewrite it?";
+        introTextFading = false;
+        StateHasChanged();
+        await Task.Delay(Phase3DurationMs);
+        // Final Phase: ASHBORNE
+        introTextFading = true;
+        StateHasChanged();
+        await Task.Delay(IntroFadeDurationMs);
+        introText = "ASHBORNE";
+        introTextFading = false;
+        isFinalPhase = true;
+        StateHasChanged();
+        await Task.Delay(FinalPhaseDurationMs);
+        // Fade out intro and start game
+        introFading = true;
+        StateHasChanged();
+        await Task.Delay(IntroFadeDurationMs);
+        introPhase = 0;
+        isFinalPhase = false;
         StateHasChanged();
     }
 
@@ -782,6 +891,12 @@
 
     private void StartOssanethSigilTimer()
     {
+        if (GameContext.Player.EquippedItems["face"]?.Name != "Ossaneth")
+        {
+            isOssanethGifActive = false;
+            ossanethSigilTimer?.Dispose();
+            return;
+        }
         int delay = ossanethRandom.Next(OssanethMinDelayMs, OssanethMaxDelayMs);
         ossanethSigilTimer?.Dispose();
         ossanethSigilTimer = new System.Threading.Timer(_ =>
@@ -805,10 +920,16 @@
     public override async Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);
-        // Defensive: restart timer if component is re-rendered
-        if (ossanethSigilTimer == null)
+        // Defensive: restart timer if component is re-rendered and mask is equipped
+        if (ossanethSigilTimer == null && GameContext.Player.EquippedItems["face"]?.Name == "Ossaneth")
         {
             StartOssanethSigilTimer();
+        }
+        else if (GameContext.Player.EquippedItems["face"]?.Name != "Ossaneth")
+        {
+            isOssanethGifActive = false;
+            ossanethSigilTimer?.Dispose();
+            ossanethSigilTimer = null;
         }
     }
 

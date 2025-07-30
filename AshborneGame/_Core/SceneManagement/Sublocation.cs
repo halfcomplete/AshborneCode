@@ -78,6 +78,8 @@ namespace AshborneGame._Core.SceneManagement
         /// <param name="name">LocationDescriptor for naming and parsing.</param>
         /// <param name="desc">Narrative profile for descriptions.</param>
         /// <param name="id">Unique identifier.</param>
+        /// <param name="shortenedPositionalPhrase">From OutputConstants, where the sublocation is relative to the parent location.</param>
+        /// <param name="shortRefDesc">Used when listing the sublocations in the parent location.</param>
         public Sublocation(Location parent, BOCSGameObject focusObject, LocationIdentifier name, DescriptionComposer desc, string id, string shortenedPositionalPhrase, string shortRefDesc)
         {
             ParentLocation = parent;

@@ -12,6 +12,7 @@ using AshborneGame._Core.SceneManagement;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Constants;
+using System.Net.Mail;
 
 namespace AshborneGame._Core._Player
 {
@@ -126,22 +127,41 @@ namespace AshborneGame._Core._Player
         }
 
         /// <summary>
-        /// Moves the player to a sublocation.
+        /// Moves the player to a location. Sets sublocation to null.
         /// </summary>
         /// <param name="newLocation">The sublocation to move to.</param>
         /// <exception cref="ArgumentNullException">Thrown when newLocation is null.</exception>
         public void MoveTo(Location newLocation)
         {
+            if (CurrentSublocation == null)
+            {
+                // If the player is not in a sublocation
+                GameContext.GameState.OnPlayerEnterLocation(newLocation);
+            }
             CurrentLocation = newLocation;
             CurrentSublocation = null;
-            GameContext.GameState.OnPlayerEnterLocation(newLocation);
+            
             IOService.Output.WriteLine(newLocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
+        }
+
+        /// <summary>
+        /// Same as MoveTo, but prints 'You are back at {location name}.'
+        public void ForceMoveTo(Location newLocation)
+        {
+            if (CurrentSublocation == null)
+            {
+                // If the player is not in a sublocation
+                GameContext.GameState.OnPlayerEnterLocation(newLocation);
+            }
+            CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
+            CurrentSublocation = null;
+
+            IOService.Output.WriteLine($"You are back at {CurrentLocation.Name.DisplayName}.", OutputConstants.DefaultTypeSpeed);
         }
 
         public void MoveTo(Sublocation newSublocation)
         {
             CurrentSublocation = newSublocation;
-            //GameContext.GameState.OnPlayerEnterLocation(newSublocation.ParentLocation);
             IOService.Output.WriteLine(newSublocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
         }
 

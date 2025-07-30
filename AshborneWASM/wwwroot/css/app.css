@@ -403,6 +403,69 @@ input {
     transition: opacity 1s;
 }
 
+.title-screen.fade-overlap {
+    z-index: 11;
+}
+
+.intro-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 50%, #1a1a1a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    opacity: 1;
+    transition: opacity 0.8s ease-in-out;
+}
+
+.intro-screen.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.intro-screen.fade-in {
+    opacity: 1;
+}
+
+.intro-text {
+    font-family: 'IMFellEnglishSC', serif;
+    font-size: 2.5rem;
+    color: #f8eecb;
+    letter-spacing: 0.1em;
+    text-shadow: 0 4px 32px #000a, 0 2px 8px #bfae8e44;
+    text-align: center;
+    user-select: none;
+    max-width: 80%;
+    line-height: 1.4;
+}
+
+.intro-text.fade-in {
+    opacity: 1;
+    transition: opacity 0.8s ease-in-out;
+}
+.intro-text.fade-out {
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+}
+
+.intro-text.final-phase {
+    font-size: 4rem;
+    animation: enlargeText 5s ease-in-out forwards;
+}
+
+@keyframes enlargeText {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1.2);
+    }
+}
+
 .title-logo {
     font-family: 'IMFellEnglishSC', serif;
     font-size: 5rem;

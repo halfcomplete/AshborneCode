@@ -21,7 +21,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             for (int i = 0; i < CommandManager.Commands.Count; i++)
             {
                 var command = CommandManager.Commands[CommandManager.Commands.Keys.ToList()[i]];
-                IOService.Output.WriteLine($"{i + 1}. '{command.Names}' - {command.Description}");
+                IOService.Output.WriteLine($"{i + 1}. '{command.Names[0]}' - {command.Description}");
             }
 
             return true;

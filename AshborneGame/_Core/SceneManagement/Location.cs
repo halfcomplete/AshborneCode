@@ -81,6 +81,19 @@ namespace AshborneGame._Core.SceneManagement
         }
 
         /// <summary>
+        /// Removes a sublocation from this location. If the player is in that sublocation, they are moved back to the parent location.
+        /// </summary>
+        public void RemoveSublocation(Sublocation sublocation)
+        {
+            if (Sublocations.Contains(sublocation))
+                Sublocations.Remove(sublocation);
+            if (GameContext.Player.CurrentSublocation == sublocation)
+            {
+                GameContext.Player.ForceMoveTo(this);
+            }
+        }
+
+        /// <summary>
         /// Creates a new Location.
         /// </summary>
         /// <param name="name">LocationDescriptor for naming and parsing.</param>

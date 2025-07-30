@@ -36,7 +36,9 @@ namespace AshborneGame.WebPort
 
         public async void Write(string message, int ms)
         {
-            await _writeLineCallback?.Invoke($"{ms}__TYPEWRITER_START__{message}__TYPEWRITER_END__");
+            // Only apply non-dialogue output speed multiplier if not dialogue
+            int adjustedMs = ms == AshborneGame._Core.Globals.Constants.OutputConstants.DefaultTypeSpeed ? ms : (int)(ms * AshborneGame._Core.Globals.Constants.OutputConstants.NonDialogueOutputSpeedMultiplier);
+            await _writeLineCallback?.Invoke($"{adjustedMs}__TYPEWRITER_START__{message}__TYPEWRITER_END__");
         }
 
         // IOutputHandler.WriteLine(string) implementation (void)
@@ -56,7 +58,9 @@ namespace AshborneGame.WebPort
 
         public async void WriteLine(string message, int ms)
         {
-            await _writeLineCallback?.Invoke($"{ms}__TYPEWRITER_START__{message}__TYPEWRITER_END__\n");
+            // Only apply non-dialogue output speed multiplier if not dialogue
+            int adjustedMs = ms == AshborneGame._Core.Globals.Constants.OutputConstants.DefaultTypeSpeed ? ms : (int)(ms * AshborneGame._Core.Globals.Constants.OutputConstants.NonDialogueOutputSpeedMultiplier);
+            await _writeLineCallback?.Invoke($"{adjustedMs}__TYPEWRITER_START__{message}__TYPEWRITER_END__\n");
         }
 
         public void DisplayFailMessage(string message)
