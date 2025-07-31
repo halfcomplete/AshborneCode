@@ -5,6 +5,7 @@ using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.Data.BOCS.ObjectSystem;
 using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Game.DescriptionHandling;
+using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Interfaces;
@@ -49,7 +50,17 @@ namespace AshborneGame._Core.Game
             {
                 _dialogueRunning = false;
             };
+            
+            // Subscribe to dreamspace outro event
+            EventBus.Subscribe("player.dreamspace.outro.triggered", OnDreamspaceOutroTriggered);
+            
             InitialiseGameWorld(player);
+        }
+
+        private void OnDreamspaceOutroTriggered(GameEvent evt)
+        {
+            // Start the outro dialogue
+            _dialogueService.StartDialogue("Act1_Scene1_Ossaneth_Domain_Outro");
         }
 
         public void Start()
@@ -174,7 +185,7 @@ namespace AshborneGame._Core.Game
                 new DescriptionComposer(
                     new LookDescription("You look at the shard. It is a small piece of a broken mirror, but it seems to reflect deeper than a normal mirror. You can see your reflection, but it feels... empty.",
                         "You look at the shard again. It still feels empty, but you can't shake the feeling that it is important."),
-                    new FadingDescription("You walk up to the shard of mirror. It is small and broken, but it seems to reflect deeper than a normal mirror.",
+                    new FadingDescription("You walk up to the shard of mirror. It is small and broken, but it seems to reflect deeper than a normal mirror can. Perhaps storing it for later will be beneficial.\n",
                         "You walk up to the shard again. It still feels empty, but you can't shake the feeling that it is important.",
                         "You go to the shard again. It still feels empty, but you can't shake the feeling that it is important."),
                     new SensoryDescription("The shard is cold to the touch.", "It is eerily quiet here.")),
@@ -187,7 +198,7 @@ namespace AshborneGame._Core.Game
                 () => { });
 
             mirrorShardSublocation.AddCustomCommand(new List<string> { "take it", "pick it up", "pick up shard", "pick shard", "take shard", "take shard of mirror", "pick up mirror shard", "take mirror shard", "pick up shard of mirror" },
-                () => $"You pick up the {mirrorShard.Name}. It is sharp and cold against your hand. Maybe it could be useful later.",
+                () => $"\nYou pick up the {mirrorShard.Name}. It is sharp and cold against your hand. Maybe it could be useful later.",
                 () =>
                 {
                     GameContext.Player.Inventory.AddItem(mirrorShard, 1);

@@ -330,6 +330,55 @@ namespace AshborneGame._Core.Game
                 // Change the player's scene
                 GameContext.Player.MoveTo(GameContext.Player.CurrentLocation.Scene);
             }
+
+            // Check if this is a Dreamspace location and track it
+            CheckDreamspaceLocationProgress(location);
+        }
+
+        private void CheckDreamspaceLocationProgress(Location location)
+        {
+            // Only track locations in Ossaneth's Domain (Dreamspace)
+            if (location.Scene?.DisplayName != "Ossaneth's Domain")
+                return;
+
+            // Skip Eye Platform as specified
+            if (location.Name.ReferenceName == "Eye Platform")
+                return;
+
+            // Set flag for this specific location being visited
+            string locationFlagKey = $"Flags.Player.Actions.In.OssanethDreamspace_Visited{location.Name.ReferenceName.Replace(" ", "")}";
+            SetFlag(locationFlagKey, true);
+
+            // Count visited Dreamspace locations (excluding Eye Platform)
+            int visitedCount = 0;
+            var dreamspaceLocations = new[] { "Hall of Mirrors", "Chamber of Cycles", "Temple of the Bound", "Throne Room" };
+            
+            foreach (var locName in dreamspaceLocations)
+            {
+                string flagKey = $"Flags.Player.Actions.In.OssanethDreamspace_Visited{locName.Replace(" ", "")}";
+                if (TryGetFlag(flagKey, out bool visited) && visited)
+                {
+                    visitedCount++;
+                }
+            }
+
+            // Check if we've reached the threshold (2 locations excluding Eye Platform)
+            if (visitedCount >= 2)
+            {
+                // Check if we've already triggered the outro to avoid duplicates
+                if (!TryGetFlag("Flags.Player.Actions.In.OssanethDreamspace_OutroTriggered", out bool outroTriggered) || !outroTriggered)
+                {
+                    SetFlag("Flags.Player.Actions.In.OssanethDreamspace_OutroTriggered", true);
+                    
+                    // Publish event for the outro dialogue
+                    var outroEvent = new GameEvent("player.dreamspace.outro.triggered", new Dictionary<string, object>
+                    {
+                        { "visited_count", visitedCount },
+                        { "location_name", location.Name.ReferenceName }
+                    });
+                    EventBus.Call(outroEvent);
+                }
+            }
         }
 
 

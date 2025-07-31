@@ -128,6 +128,8 @@ namespace AshborneGame._Core.Game.DescriptionHandling
                 description.Append(".");
             }
 
+            description.Append("\n");
+
             return description.ToString();
         }
 
@@ -170,6 +172,8 @@ namespace AshborneGame._Core.Game.DescriptionHandling
 
             // Increment the look count
             Look.LookCount++;
+
+            description.Append("\n");
 
             return description.ToString();
         }

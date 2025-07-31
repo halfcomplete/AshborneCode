@@ -133,6 +133,7 @@ namespace AshborneGame._Core.SceneManagement
 
             return description.ToString();
         }
+
         public string GetLookDescription(Player player, GameStateManager state) => DescriptionComposer.GetLookDescription(player, state);
 
         public void SetDescriptionComposer(DescriptionComposer composer)
@@ -157,7 +158,7 @@ namespace AshborneGame._Core.SceneManagement
             }
             else
             {
-                sb.AppendLine("\nFrom here you can leave:");
+                sb.AppendLine("From here you can leave:");
                 foreach (var exit in Exits)
                 {
                     if (DirectionConstants.CardinalDirections.Contains(exit.Key))

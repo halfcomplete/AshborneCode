@@ -244,9 +244,8 @@
     // Output queue for all output (lines, pauses, typewriter)
     private Queue<string> outputQueue = new Queue<string>();
     private bool isProcessingQueue = false;
-    private bool pendingDialogueEnd = false; // <--- add this back
+    private bool pendingDialogueEnd = false;
 
-    // Static instance for external access (used by InkRunner flush)
     public static Home? Instance;
 
     private string listeningText = "Listening";
@@ -273,13 +272,13 @@
     private bool isOssanethGifActive = false;
     private System.Threading.Timer? ossanethSigilTimer;
     private readonly Random ossanethRandom = new Random();
-    private const int OssanethGifDurationMs = 633; // Adjust to match GIF length
+    private const int OssanethGifDurationMs = 633;
     private const int OssanethMinDelayMs = 3000;
     private const int OssanethMaxDelayMs = 8000;
 
-    private bool isIntroTransitioning = false; // New: tracks if we're crossfading title→intro
-    private bool introTextFading = false; // New: tracks if intro text is fading
-    private bool isFinalPhase = false; // New: tracks if we're in the final ASHBORNE phase
+    private bool isIntroTransitioning = false;
+    private bool introTextFading = false;
+    private bool isFinalPhase = false;
 
     private void StartListeningAnimation()
     {

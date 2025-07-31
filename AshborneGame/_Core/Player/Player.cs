@@ -141,7 +141,9 @@ namespace AshborneGame._Core._Player
             CurrentLocation = newLocation;
             CurrentSublocation = null;
             
+
             IOService.Output.WriteLine(newLocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
+            CurrentLocation.VisitCount++;
         }
 
         /// <summary>
@@ -155,13 +157,16 @@ namespace AshborneGame._Core._Player
             }
             CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
             CurrentSublocation = null;
+            
 
-            IOService.Output.WriteLine($"You are back at {CurrentLocation.Name.DisplayName}.", OutputConstants.DefaultTypeSpeed);
+            IOService.Output.WriteLine($"You are back at {CurrentLocation.Name.DisplayName}.\n\n", OutputConstants.DefaultTypeSpeed);
+            CurrentLocation.VisitCount++;
         }
 
         public void MoveTo(Sublocation newSublocation)
         {
             CurrentSublocation = newSublocation;
+            CurrentSublocation.VisitCount = 0;
             IOService.Output.WriteLine(newSublocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
         }
 
@@ -190,7 +195,9 @@ namespace AshborneGame._Core._Player
                 // Instead, the scene header is displayed in the UI
                 return;
             }
+            
             IOService.Output.WriteLine(newScene.GetHeader());
+            CurrentLocation.VisitCount++;
         }
 
         /// <summary>
