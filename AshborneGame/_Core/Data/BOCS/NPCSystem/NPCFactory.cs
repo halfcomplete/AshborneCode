@@ -29,7 +29,35 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
                 throw new ArgumentException("Dialogue file name cannot be null or empty.", nameof(dialogueFileName));
             }
 
-            NPC npc = new NPC(name, description, dialogueFileName);
+            NPC npc = new NPC(name, description, null, dialogueFileName);
+            return npc;
+        }
+
+        /// <summary>
+        /// Creates a talkable NPC with a name, description, dialogue file, and synonyms.
+        /// </summary>
+        /// <param name="name">The NPC's name.</param>
+        /// <param name="description">The NPC's description.</param>
+        /// <param name="dialogueFileName">The dialogue file name to jump to when it is talked to, without a path nor extension.</param>
+        /// <param name="synonyms">List of synonyms for the NPC's name.</param>
+        /// <returns>The talkable NPC.</returns>
+        /// <exception cref="ArgumentException">Thrown when either of the arguments are null or empty.</exception>
+        public static NPC CreateTalkableNPC(string name, string description, string dialogueFileName, List<string> synonyms)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("Name cannot be null or empty.", nameof(name));
+            }
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                throw new ArgumentException("Description cannot be null or empty.", nameof(description));
+            }
+            if (string.IsNullOrEmpty(dialogueFileName))
+            {
+                throw new ArgumentException("Dialogue file name cannot be null or empty.", nameof(dialogueFileName));
+            }
+
+            NPC npc = new NPC(name, description, null, dialogueFileName, synonyms);
             return npc;
         }
 

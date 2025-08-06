@@ -59,16 +59,30 @@ namespace AshborneGame._Core.Game.DescriptionHandling
         public string GetDescription(Player player, GameStateManager gameState)
         {
             StringBuilder description = new StringBuilder();
+            
+            // Determine which visit count to use based on whether player is in a sublocation or location
+            int visitCount;
+            if (player.CurrentSublocation != null)
+            {
+                // Player is in a sublocation, use sublocation visit count
+                visitCount = player.CurrentSublocation.VisitCount;
+            }
+            else
+            {
+                // Player is in a location, use location visit count
+                visitCount = player.CurrentLocation.VisitCount;
+            }
+            
             // Add fading descriptions based on visit count
-            if (player.CurrentLocation.VisitCount == 0)
+            if (visitCount == 0)
             {
                 description.Append(Fading.FirstTime);
             }
-            else if (player.CurrentLocation.VisitCount == 1)
+            else if (visitCount == 1)
             {
                 description.Append(Fading.SecondTime);
             }
-            else if (player.CurrentLocation.VisitCount == 4)
+            else if (visitCount == 4)
             {
                 description.Append(Fading.FourthTime);
             }
@@ -78,7 +92,9 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             }
             else
             {
-                description.Append($"You go back to {player.CurrentLocation.Name.DisplayName}. It hasn't changed since you last came.");
+                // Use appropriate name based on whether player is in sublocation or location
+                string displayName = player.CurrentSublocation?.Name.DisplayName ?? player.CurrentLocation.Name.DisplayName;
+                description.Append($"You go back to {displayName}. It hasn't changed since you last came.");
             }
 
             // Add ambient snippets if available

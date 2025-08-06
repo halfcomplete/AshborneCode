@@ -3,6 +3,7 @@
 @using AshborneGame._Core.Globals.Constants
 @using AshborneGame._Core.Globals.Services
 @using System.Diagnostics;
+@using System.Text;
 @using AshborneGame.WebPort
 @using Microsoft.JSInterop
 @using System.Timers
@@ -558,7 +559,7 @@
                 continue; // Do not add pause marker to output buffer
             }
             // Handle typewriter effect
-            if (line.Contains("__TYPEWRITER_START__") && line.Contains("__TYPEWRITER_END__"))
+            if (line.Contains(OutputConstants.TypewriterStartMarker) && line.Contains(OutputConstants.TypewriterEndMarker))
             {
                 dialogueChoices.Clear();
                 await HandleTypewriterEffect(line);
@@ -626,26 +627,30 @@
 
     private async Task HandleTypewriterEffect(string line)
     {
-        // Parse ms value at the start of the line (e.g. "50__TYPEWRITER_START__...")
+        // Parse ms value at the start of the line (e.g. "50__TS__...")
         int ms = OutputConstants.DefaultTypeSpeed; // default
         Console.WriteLine($"[DEBUG] Handling typewriter effect for line: {line}");
-        int msEnd = line.IndexOf("__TYPEWRITER_START__");
+        int msEnd = line.IndexOf(OutputConstants.TypewriterStartMarker);
         if (msEnd > 0)
         {
             string msStr = line.Substring(0, msEnd);
             if (!int.TryParse(msStr, out ms)) ms = OutputConstants.DefaultTypeSpeed;
         }
         Console.WriteLine($"[DEBUG] Typewriter effect with delay: {ms} ms");
-        int startIndex = line.IndexOf("__TYPEWRITER_START__") + "__TYPEWRITER_START__".Length;
-        int endIndex = line.IndexOf("__TYPEWRITER_END__");
+        int startIndex = line.IndexOf(OutputConstants.TypewriterStartMarker) + OutputConstants.TypewriterStartMarker.Length;
+        int endIndex = line.IndexOf(OutputConstants.TypewriterEndMarker);
         string message = line.Substring(startIndex, endIndex - startIndex);
+
+        // Process inline slow markers in the message BEFORE starting typewriter effect
+        var (processedMessage, characterSpeeds) = ProcessInlineSlowMarkersWithSpeeds(message, ms);
 
         isTypingDialogue = true;
         await InvokeAsync(StateHasChanged);
 
         // Split into lines and type each line separately
-        string[] lines = message.Split('\n');
+        string[] lines = processedMessage.Split('\n');
         var buffer = gameText.Split('\n').ToList(); // Keep previous lines
+        int globalCharIndex = 0; // Track character position across all lines
 
         foreach (var msgLine in lines)
         {
@@ -657,29 +662,37 @@
                 await InvokeAsync(StateHasChanged);
                 await AutoScrollToBottom();
                 char letter = msgLine[i];
-                bool isEnd = message.Count() == i + 1 || message[i + 1].Equals(' ') || (i + 2 == message.Length && message.Substring(i + 1).Equals("\n")); // Check if this is the end of the message or sentence
+                
+                // Calculate isEnd using the same logic as Console version
+                bool isEnd = i == msgLine.Length - 1 || 
+                            (i + 1 < msgLine.Length && msgLine[i + 1].Equals(' ')) || 
+                            (i + 1 < msgLine.Length && msgLine[i + 1].Equals('\n'));
+
+                // Get the speed for this character (if available)
+                int currentSpeed = ms;
+                if (characterSpeeds != null && characterSpeeds.Count > globalCharIndex)
+                {
+                    currentSpeed = characterSpeeds[globalCharIndex];
+                }
 
                 // Calculate delay with special handling for non-dialogue output
                 int delay;
-                if (ms == OutputConstants.DefaultTypeSpeed)
-                {
-                    // Dialogue output - use normal calculation
+                
+                // First, calculate the base delay using the current speed
+                int baseDelay;
 #if DEBUG
-                    delay = CharacterOutputDelayCalculator.CalculateDebugDelay(letter, ms, isEnd);
+                baseDelay = CharacterOutputDelayCalculator.CalculateDebugDelay(letter, currentSpeed, isEnd);
 #else
-                    delay = CharacterOutputDelayCalculator.CalculateDelay(letter, ms, isEnd);
+                baseDelay = CharacterOutputDelayCalculator.CalculateDelay(letter, currentSpeed, isEnd);
 #endif
-                }
-                else
+                
+                // Determine if this is dialogue output (when the original ms is the default type speed)
+                bool isDialogueOutput = (ms == OutputConstants.DefaultTypeSpeed);
+                
+                // Then apply non-dialogue multiplier if needed
+                if (!isDialogueOutput)
                 {
                     // Non-dialogue output - apply 1.2x multiplier only to normal characters
-                    int baseDelay;
-#if DEBUG
-                    baseDelay = CharacterOutputDelayCalculator.CalculateDebugDelay(letter, ms, isEnd);
-#else
-                    baseDelay = CharacterOutputDelayCalculator.CalculateDelay(letter, ms, isEnd);
-#endif
-                    
                     // Check if this is a punctuation character that should keep normal speed
                     bool isPunctuation = letter == '.' || letter == '—' || letter == ',' || letter == '"' || letter == ':' || letter == ']' || letter == ')';
                     
@@ -692,8 +705,14 @@
                         delay = (int)(baseDelay * OutputConstants.NonDialogueOutputSpeedMultiplier); // Apply 1.2x for normal characters
                     }
                 }
+                else
+                {
+                    // Dialogue output - use the base delay as calculated
+                    delay = baseDelay;
+                }
 
                 await Task.Delay(delay);
+                globalCharIndex++; // Increment global character index
             }
             buffer.Add(typedLine); // Add finished line to buffer
             gameText = string.Join('\n', buffer);
@@ -721,6 +740,89 @@
             await InvokeAsync(StateHasChanged);
         }
     }
+
+    private (string processedMessage, List<int> characterSpeeds) ProcessInlineSlowMarkersWithSpeeds(string message, int defaultMs)
+    {
+        var processedMessage = new StringBuilder();
+        var characterSpeeds = new List<int>();
+        int currentIndex = 0;
+
+        while (currentIndex < message.Length)
+        {
+            // 1) find the next “__IS__”
+            int inlineStartIndex = message.IndexOf(
+                OutputConstants.InlineTypewriterStartMarker,
+                currentIndex);
+            if (inlineStartIndex == -1)
+            {
+                // no more markers → dump the rest
+                var tail = message.Substring(currentIndex);
+                processedMessage.Append(tail);
+                characterSpeeds.AddRange(
+                    Enumerable.Repeat(defaultMs, tail.Length));
+                break;
+            }
+
+            // 2) scan backwards from inlineStartIndex to grab any digits
+            int speedStartIndex = inlineStartIndex;
+            while (speedStartIndex > currentIndex
+                   && char.IsDigit(message[speedStartIndex - 1]))
+                speedStartIndex--;
+
+            // 3) everything between currentIndex and speedStartIndex is “beforeText”
+            var beforeText = message.Substring(
+                currentIndex,
+                speedStartIndex - currentIndex);
+            processedMessage.Append(beforeText);
+            characterSpeeds.AddRange(
+                Enumerable.Repeat(defaultMs, beforeText.Length));
+
+            // 4) parse the speed override (if any)
+            int inlineSpeed = defaultMs;
+            if (speedStartIndex < inlineStartIndex)
+            {
+                var speedStr = message.Substring(
+                    speedStartIndex,
+                    inlineStartIndex - speedStartIndex);
+                if (int.TryParse(speedStr, out var parsed))
+                    inlineSpeed = parsed;
+            }
+
+            // 5) find the matching end‐marker
+            int inlineEndIndex = message.IndexOf(
+                OutputConstants.InlineTypewriterEndMarker,
+                inlineStartIndex);
+            if (inlineEndIndex == -1)
+            {
+                // unmatched → treat rest as normal text
+                var tail = message.Substring(inlineStartIndex);
+                processedMessage.Append(tail);
+                characterSpeeds.AddRange(
+                    Enumerable.Repeat(defaultMs, tail.Length));
+                break;
+            }
+
+            // 6) extract the text *inside* the markers
+            int inlineTextStart = inlineStartIndex
+                                  + OutputConstants
+                                     .InlineTypewriterStartMarker.Length;
+            var inlineText = message.Substring(
+                inlineTextStart,
+                inlineEndIndex - inlineTextStart);
+
+            processedMessage.Append(inlineText);
+            characterSpeeds.AddRange(
+                Enumerable.Repeat(inlineSpeed, inlineText.Length));
+
+            // 7) advance past the end‐marker
+            currentIndex = inlineEndIndex
+                           + OutputConstants
+                             .InlineTypewriterEndMarker.Length;
+        }
+
+        return (processedMessage.ToString(), characterSpeeds);
+    }
+
 
     private async Task<int> GetDialogueChoice(int choiceCount)
     {

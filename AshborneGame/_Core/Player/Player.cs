@@ -141,13 +141,17 @@ namespace AshborneGame._Core._Player
             CurrentLocation = newLocation;
             CurrentSublocation = null;
             
-
+            // Get description BEFORE incrementing visit count
             IOService.Output.WriteLine(newLocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
+            
+            // Increment visit count for normal movement AFTER description
             CurrentLocation.VisitCount++;
         }
 
         /// <summary>
         /// Same as MoveTo, but prints 'You are back at {location name}.'
+        /// Does NOT increment visit count (force move).
+        /// </summary>
         public void ForceMoveTo(Location newLocation)
         {
             if (CurrentSublocation == null)
@@ -158,16 +162,20 @@ namespace AshborneGame._Core._Player
             CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
             CurrentSublocation = null;
             
-
+            // Force move does NOT increment visit count
+            
             IOService.Output.WriteLine($"You are back at {CurrentLocation.Name.DisplayName}.\n\n", OutputConstants.DefaultTypeSpeed);
-            CurrentLocation.VisitCount++;
         }
 
         public void MoveTo(Sublocation newSublocation)
         {
             CurrentSublocation = newSublocation;
-            CurrentSublocation.VisitCount = 0;
+            
+            // Get description BEFORE incrementing visit count
             IOService.Output.WriteLine(newSublocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
+            
+            // Increment visit count for sublocation movement AFTER description
+            CurrentSublocation.VisitCount++;
         }
 
         public void MoveTo(Scene newScene)
@@ -189,6 +197,13 @@ namespace AshborneGame._Core._Player
             CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
             CurrentSublocation = null;
             GameContext.GameState.OnPlayerEnterLocation(newLocation);
+            
+            // Get description BEFORE setting visit count to 1
+            IOService.Output.WriteLine(newLocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
+            
+            // Setup move sets visit count to 1 (first visit) AFTER description
+            CurrentLocation.VisitCount = 1;
+            
             if (OperatingSystem.IsBrowser())
             {
                 // In Blazor, don't write the scene header to the console
@@ -197,7 +212,6 @@ namespace AshborneGame._Core._Player
             }
             
             IOService.Output.WriteLine(newScene.GetHeader());
-            CurrentLocation.VisitCount++;
         }
 
         /// <summary>

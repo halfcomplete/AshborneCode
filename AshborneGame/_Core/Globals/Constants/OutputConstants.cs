@@ -62,11 +62,20 @@ namespace AshborneGame._Core.Globals.Constants
         /// <summary>
         /// The marker that indicates the start of a message that should be displayed with typewriter effect.
         /// </summary>
-        public const string TypewriterStartMarker = "__TYPEWRITER_START__";
+        public const string TypewriterStartMarker = "__TS__";
         /// <summary>
         /// The marker that indicates the end of a message that should be displayed with typewriter effect.
         /// </summary>
-        public const string TypewriterEndMarker = "__TYPEWRITER_END__";
+        public const string TypewriterEndMarker = "__TE__";
+        /// <summary>
+        /// The marker that indicates the start of an inline slow section within typewriter text.
+        /// Format: [speed]__IS__[text]__IE__
+        /// </summary>
+        public const string InlineTypewriterStartMarker = "<~>";
+        /// <summary>
+        /// The marker that indicates the end of an inline slow section within typewriter text.
+        /// </summary>
+        public const string InlineTypewriterEndMarker = @"</~>";
         /// <summary>
         /// The marker that indicates a player input is required in Ink.
         /// </summary>

@@ -34,8 +34,8 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             Sublocation sublocation = player.CurrentSublocation!;
             NPC npc = (NPC)sublocation.FocusObject;
 
-            // Check if the NPC's name matches the target name (case-insensitive, partial match)
-            if (!npc.Name.ToLowerInvariant().Contains(targetName.ToLowerInvariant()))
+            // Check if the NPC's name or synonyms match the target name
+            if (!npc.MatchesName(targetName))
             {
                 IOService.Output.DisplayFailMessage($"There is no one named '{targetName}' here.");
                 return false;

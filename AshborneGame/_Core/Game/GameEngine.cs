@@ -80,9 +80,7 @@ namespace AshborneGame._Core.Game
             await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_Ossaneth_Domain_Intro");
 
             GameContext.Player.SetupMoveTo(_firstLocation, _firstScene);
-            // Display initial location description
-            ILocation location = GameContext.Player.CurrentLocation;
-            IOService.Output.WriteLine(location.GetDescription(GameContext.Player, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
+            // Description is now handled inside SetupMoveTo
         }
 
         private ((Location, Scene), (Location, Scene)) InitialiseStartingLocation(Player player)
@@ -168,7 +166,7 @@ namespace AshborneGame._Core.Game
                     ),
                 new FadingDescription(
                     "You enter the Hall of Mirrors. In front of you is a long, stretching hallway that seems to go on forever, the wall, floor, and ceilings covered in mirrors. As you walk by, some reflections lag behind and others move before you. Some never blink while others walk with their eyes closed. " +
-                    "You are surprised to see that the Mask that was forced on to you just before is no longer on your face—instead, it leaves blank, featureless skin. Your identity. Gone. You know you should scream, but you cannot. You are just thankful, but you do not know why.",
+                    "You are surprised to see that the Mask that was forced on to you just before is no longer on your face — instead, it leaves blank, featureless skin. Your identity. Gone. You know you should scream, but you cannot. You are just thankful, but you do not know why.",
                     "You enter the Hall of Mirrors again. Nothing seems to have changed, but you think that the reflections are diverging further and further away from your real self.",
                     "For the fourth time, you enter the Hall of Mirrors. The reflections are increasingly clearer in some mirrors, while gone in others. For the first time, there are cracked mirrors dotted along the silver-lined hallway."),
                 new SensoryDescription(),
@@ -240,7 +238,8 @@ namespace AshborneGame._Core.Game
                     "The vaulted ceiling is covered in hanging moss and leaves.",
                     "Whispers of magic and memory dance in the air. Is that coming from the runes?"));
 
-            NPC boundOne = NPCFactory.CreateTalkableNPC("Bound One", "It's a sad, chained man with messy, overgrown hair and bloodred eyes.", "Act1_Scene1_Prisoner_Dialogue");
+            NPC boundOne = NPCFactory.CreateTalkableNPC("Bound One", "It's a sad, chained man with messy, overgrown hair and bloodred eyes.", "Act1_Scene1_Prisoner_Dialogue", 
+                new List<string> { "the prisoner", "prisoner", "the chained prisoner", "chained prisoner" });
             templeOfTheBound.AddSublocation(new Sublocation(templeOfTheBound, boundOne, new LocationIdentifier("circle of candles", new List<string>() { "circle", "candles", "candle circle" }), new DescriptionComposer(
                 new LookDescription("You look closer at the circle. It's made up of 12 white wax candles placed precisely around the prisoner. Beneath the candles and the prisoner is a scrawled red 12-pointed star, with the centre circle formed by the intersecting lines slightly aflame. Shadows dance on the floor. You shiver. The fire is not warm.",
                 "You look at the circle again. The shadows seem to have grown larger and sharper. Or is the eerie holiness of the temple finally getting to your mind."),

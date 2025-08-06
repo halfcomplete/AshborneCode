@@ -5,6 +5,7 @@ using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours;
 using AshborneGame._Core.Game.CommandHandling.Commands;
 using AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands;
 using AshborneGame._Core.Game.Events;
+using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 
@@ -52,7 +53,7 @@ namespace AshborneGame._Core.Game.CommandHandling
                     args2.Insert(0, action);
                     if (string.Join(' ', args2).Equals(kvp.Key, StringComparison.OrdinalIgnoreCase))
                     {
-                        IOService.Output.WriteLine(kvp.Value.message.Invoke());
+                        IOService.Output.WriteLine(kvp.Value.message.Invoke(), OutputConstants.DefaultTypeSpeed);
                         kvp.Value.effect?.Invoke();
                         return true;
                     }
@@ -66,7 +67,7 @@ namespace AshborneGame._Core.Game.CommandHandling
                 args2.Insert(0, action);
                 if (string.Join(' ', args2).Equals(kvp.Key, StringComparison.OrdinalIgnoreCase))
                 {
-                    IOService.Output.WriteLine(kvp.Value.message.Invoke());
+                    IOService.Output.WriteLine(kvp.Value.message.Invoke(), OutputConstants.DefaultTypeSpeed);
                     kvp.Value.effect?.Invoke();
                     return true;
                 }

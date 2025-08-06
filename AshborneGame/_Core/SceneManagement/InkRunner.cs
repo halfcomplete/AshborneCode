@@ -160,6 +160,7 @@ namespace AshborneGame._Core.SceneManagement
                     {
                         IOService.Output.DisplayDebugMessage($"[DEBUG] {OutputConstants.DialogueEndMarker} marker encountered. Ending dialogue.", ConsoleMessageTypes.INFO);
                         IOService.Output.WriteLine(line);
+                        DialogueFinishedOutputting(); // Ensure dialogue end event is triggered
                         return;
                     }
                     if (line.TrimEnd().EndsWith(OutputConstants.TypewriterPauseMarker))

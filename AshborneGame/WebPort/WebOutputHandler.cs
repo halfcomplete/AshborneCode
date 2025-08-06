@@ -1,4 +1,5 @@
-﻿using AshborneGame._Core.Globals.Enums;
+﻿using AshborneGame._Core.Globals.Constants;
+using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Interfaces;
 
 namespace AshborneGame.WebPort
@@ -38,7 +39,7 @@ namespace AshborneGame.WebPort
         {
             // Only apply non-dialogue output speed multiplier if not dialogue
             int adjustedMs = ms == AshborneGame._Core.Globals.Constants.OutputConstants.DefaultTypeSpeed ? ms : (int)(ms * AshborneGame._Core.Globals.Constants.OutputConstants.NonDialogueOutputSpeedMultiplier);
-            await _writeLineCallback?.Invoke($"{adjustedMs}__TYPEWRITER_START__{message}__TYPEWRITER_END__");
+            await _writeLineCallback?.Invoke($"{adjustedMs}{OutputConstants.TypewriterStartMarker}{message}{OutputConstants.TypewriterEndMarker}");
         }
 
         // IOutputHandler.WriteLine(string) implementation (void)
@@ -60,7 +61,7 @@ namespace AshborneGame.WebPort
         {
             // Only apply non-dialogue output speed multiplier if not dialogue
             int adjustedMs = ms == AshborneGame._Core.Globals.Constants.OutputConstants.DefaultTypeSpeed ? ms : (int)(ms * AshborneGame._Core.Globals.Constants.OutputConstants.NonDialogueOutputSpeedMultiplier);
-            await _writeLineCallback?.Invoke($"{adjustedMs}__TYPEWRITER_START__{message}__TYPEWRITER_END__\n");
+            await _writeLineCallback?.Invoke($"{adjustedMs}{OutputConstants.TypewriterStartMarker}{message}{OutputConstants.TypewriterEndMarker}\n");
         }
 
         public void DisplayFailMessage(string message)
