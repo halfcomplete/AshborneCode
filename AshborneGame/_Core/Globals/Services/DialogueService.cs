@@ -13,6 +13,11 @@ namespace AshborneGame._Core.Globals.Services
     {
         private readonly InkRunner _inkRunner;
         private string? _currentDialogueKey = null;
+    private string? _lastDialogueKey = null;
+
+    // Expose the currently running dialogue key so UI layers (e.g., Blazor) can react to a specific dialogue finishing.
+    public string? CurrentDialogueKey => _currentDialogueKey;
+    public string? LastDialogueKey => _lastDialogueKey;
 
         public DialogueService(InkRunner inkRunner)
         {
@@ -28,17 +33,20 @@ namespace AshborneGame._Core.Globals.Services
         {
             string originalKey = inkFilePath;
             _currentDialogueKey = originalKey;
+            Console.WriteLine($"[DialogueService] StartDialogue invoked with key='{originalKey}' (before path resolution)");
             try
             {
                 IOService.Output.DisplayDebugMessage($"Starting dialogue: {inkFilePath}", ConsoleMessageTypes.INFO);
                 IOService.Output.DisplayDebugMessage($"Current directory: {Directory.GetCurrentDirectory()}", ConsoleMessageTypes.INFO);
                 DialogueStart?.Invoke();
                 inkFilePath = FilePathResolver.FromDialogue(inkFilePath);
+                Console.WriteLine($"[DialogueService] Resolved ink file path='{inkFilePath}' for key='{originalKey}'");
                 IOService.Output.DisplayDebugMessage($"Loading file: {inkFilePath}", ConsoleMessageTypes.INFO);
                 await _inkRunner.LoadFromFileAsync(inkFilePath);
                 IOService.Output.DisplayDebugMessage("Running Ink story...", ConsoleMessageTypes.INFO);
                 await _inkRunner.RunAsync();
                 IOService.Output.DisplayDebugMessage("Dialogue completed", ConsoleMessageTypes.INFO);
+                Console.WriteLine($"[DialogueService] Dialogue run completed for key='{originalKey}'");
             }
             catch (Exception ex)
             {
@@ -56,8 +64,13 @@ namespace AshborneGame._Core.Globals.Services
                 // Only invoke DialogueComplete if this is still the current dialogue
                 if (_currentDialogueKey == originalKey)
                 {
+                    // Set last key BEFORE firing event so listeners can detect it
+                    _lastDialogueKey = _currentDialogueKey;
+                    Console.WriteLine($"[DialogueService] Setting LastDialogueKey='{_lastDialogueKey}' and invoking DialogueComplete");
                     DialogueComplete?.Invoke();
+                    Console.WriteLine($"[DialogueService] DialogueComplete event invoked for key='{_lastDialogueKey}'");
                     _currentDialogueKey = null;
+                    Console.WriteLine("[DialogueService] _currentDialogueKey cleared (now null)");
                 }
             }
         }

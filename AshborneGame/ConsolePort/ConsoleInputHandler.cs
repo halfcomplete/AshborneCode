@@ -5,11 +5,13 @@ namespace AshborneGame.ConsolePort
 {
     public class ConsoleInputHandler : IInputHandler
     {
-        public string GetPlayerInput()
+        public string GetPlayerInput(string prompt = "What will you say?")
         {
             Console.WriteLine("");
+            Console.WriteLine(prompt);
             Console.Write("> ");
-            return Console.ReadLine() ?? string.Empty;
+            string input = Console.ReadLine() ?? string.Empty;
+            return ParseNameInput(input);
         }
 
         public int GetChoiceInput(int choiceCount)
@@ -28,9 +30,29 @@ namespace AshborneGame.ConsolePort
         }
 
         // Async versions for interface compatibility
-        public async Task<string> GetPlayerInputAsync()
+        public async Task<string> GetPlayerInputAsync(string prompt = "What will you say?")
         {
-            return await Task.FromResult(GetPlayerInput());
+            return await Task.FromResult(GetPlayerInput(prompt));
+        }
+        private string ParseNameInput(string input)
+        {
+            // Simple parser for name input, can be extended for other types
+            var patterns = new[] {
+                @"my name is\s+(.*)",
+                @"i am\s+(.*)",
+                @"i'm\s+(.*)",
+                @"call me\s+(.*)",
+                @"name's\s+(.*)",
+                @"it's\s+(.*)"
+            };
+            foreach (var pattern in patterns)
+            {
+                var match = System.Text.RegularExpressions.Regex.Match(input, pattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (match.Success) return match.Groups[1].Value.Trim();
+            }
+            // Fallback: take last word or all input
+            var words = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            return words.Length > 1 ? words.Last() : input.Trim();
         }
 
         public async Task<int> GetChoiceInputAsync(int choiceCount)

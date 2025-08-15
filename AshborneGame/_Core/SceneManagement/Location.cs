@@ -158,7 +158,7 @@ namespace AshborneGame._Core.SceneManagement
             }
             else
             {
-                sb.AppendLine("From here you can leave:");
+                sb.AppendLine("From here you can go:");
                 foreach (var exit in Exits)
                 {
                     if (DirectionConstants.CardinalDirections.Contains(exit.Key))

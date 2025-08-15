@@ -17,7 +17,7 @@
             {
                 int actNo = 1;
                 GameContext.GameState.TryGetCounter(GameStateKeyConstants.Counters.Player.CurrentActNo, out actNo);
-                string actLabel = "ACT " + IntToRomanConversionService.IntToRoman(actNo);
+                string actLabel = "PART " + IntToRomanConversionService.IntToRoman(actNo);
                 var scene = GameContext.Player.CurrentScene;
                 int sceneNo = 1;
                 GameContext.GameState.TryGetCounter(GameStateKeyConstants.Counters.Player.CurrentSceneNo, out sceneNo);
@@ -26,7 +26,7 @@
                 if (sceneNo != 0)
                 {
                     sceneLabel = IntToRomanConversionService.IntToRoman(sceneNo);
-                    final = $"{actLabel}: SCENE {sceneLabel} — {scene.DisplayName.ToUpper()}";
+                    final = $"{actLabel}: CHAPTER {sceneLabel} — {scene.DisplayName.ToUpper()}";
                 }
                 else
                 {
@@ -40,7 +40,36 @@
             }
         </div>
         <div class="game-screen">
-            <div class="game-output">@((MarkupString)gameText.Replace("\n", "<br />"))</div>
+            <div class="game-output">@((MarkupString)RenderGameText(gameText))</div>
+@code {
+    private string RenderGameText(string text)
+    {
+        // Replace <i>...</i> with <span class="game-italic">...</span>
+        var sb = new System.Text.StringBuilder();
+        int idx = 0;
+        while (idx < text.Length)
+        {
+            int start = text.IndexOf(OutputConstants.InlineItalicStartMarker, idx);
+            if (start == -1)
+            {
+                sb.Append(text.Substring(idx).Replace("\n", "<br />"));
+                break;
+            }
+            sb.Append(text.Substring(idx, start - idx).Replace("\n", "<br />"));
+            int end = text.IndexOf(OutputConstants.InlineItalicEndMarker, start);
+            if (end == -1)
+            {
+                sb.Append(text.Substring(start).Replace("\n", "<br />"));
+                break;
+            }
+            int contentStart = start + OutputConstants.InlineItalicStartMarker.Length;
+            string italicContent = text.Substring(contentStart, end - contentStart);
+            sb.Append($"<span class='game-italic'>{System.Net.WebUtility.HtmlEncode(italicContent)}</span>");
+            idx = end + OutputConstants.InlineItalicEndMarker.Length;
+        }
+        return sb.ToString();
+    }
+}
             <div class="input-gif-overlay-container">
                 @if (isAwaitingPlayerInput)
                 {
@@ -48,7 +77,7 @@
                         <input @bind="userInput"
                                @bind:event="oninput"
                                @onkeydown="HandleInput"
-                               placeholder="@(isDialogueInput ? "What will you say?" : "What will you do?")" autofocus />
+                               placeholder="@playerInputPrompt" autofocus />
                         @if (GameContext.Player.EquippedItems["face"]?.Name == "Ossaneth")
                         {
                             @if (isOssanethGifActive)
@@ -136,7 +165,7 @@
     }
 </div>
 
-@* div>
+@* <div>
     <pre>
         isInDialogue: @isInDialogue
         isAwaitingPlayerInput: @isAwaitingPlayerInput
@@ -404,7 +433,7 @@
 #endif
 
         var inputHandler = new WebInputHandler(
-            async () => await Task.FromResult(userInput),
+            async (prompt) => await GetPlayerInputFromUIAsync(prompt),
             async (choiceCount) => await GetDialogueChoice(choiceCount)
         );
 
@@ -413,7 +442,8 @@
         // Wire up callbacks for dialogue and player input
         if (GameContext.DialogueService != null)
         {
-            GameContext.DialogueService.SetPlayerInputCallback(GetPlayerInputFromUIAsync);
+            // Adapted to match Func<bool, Task<string>> expected by InkRunner/DialogueService
+            GameContext.DialogueService.SetPlayerInputCallback(async (useDefaultPrompt) => await GetPlayerInputFromUIAsync(playerInputPrompt));
             @* GameContext.DialogueService.DialogueComplete += async () =>
             {
                 // Only set isInDialogue to false if not typewriting
@@ -655,14 +685,30 @@
         foreach (var msgLine in lines)
         {
             string typedLine = "";
+            bool inItalic = false;
             for (int i = 0; i < msgLine.Length; i++)
             {
-                typedLine += msgLine[i];
+                // Check for start/end italic markers
+                if (msgLine.Substring(i).StartsWith(OutputConstants.InlineItalicStartMarker))
+                {
+                    inItalic = true;
+                    i += OutputConstants.InlineItalicStartMarker.Length - 1;
+                    continue;
+                }
+                if (msgLine.Substring(i).StartsWith(OutputConstants.InlineItalicEndMarker))
+                {
+                    inItalic = false;
+                    i += OutputConstants.InlineItalicEndMarker.Length - 1;
+                    continue;
+                }
+
+                char letter = msgLine[i];
+                string charToAdd = inItalic ? $"<span class='game-italic'>{System.Net.WebUtility.HtmlEncode(letter.ToString())}</span>" : System.Net.WebUtility.HtmlEncode(letter.ToString());
+                typedLine += charToAdd;
                 gameText = string.Join('\n', buffer) + (buffer.Count > 0 ? "\n" : "") + typedLine;
                 await InvokeAsync(StateHasChanged);
                 await AutoScrollToBottom();
-                char letter = msgLine[i];
-                
+
                 // Calculate isEnd using the same logic as Console version
                 bool isEnd = i == msgLine.Length - 1 || 
                             (i + 1 < msgLine.Length && msgLine[i + 1].Equals(' ')) || 
@@ -677,48 +723,36 @@
 
                 // Calculate delay with special handling for non-dialogue output
                 int delay;
-                
-                // First, calculate the base delay using the current speed
                 int baseDelay;
 #if DEBUG
-                baseDelay = CharacterOutputDelayCalculator.CalculateDebugDelay(letter, currentSpeed, isEnd);
+                baseDelay = await CharacterOutputDelayCalculator.CalculateDebugDelayAsync(letter, currentSpeed, isEnd);
 #else
-                baseDelay = CharacterOutputDelayCalculator.CalculateDelay(letter, currentSpeed, isEnd);
+                baseDelay = await CharacterOutputDelayCalculator.CalculateDelayAsync(letter, currentSpeed, isEnd);
 #endif
-                
-                // Determine if this is dialogue output (when the original ms is the default type speed)
                 bool isDialogueOutput = (ms == OutputConstants.DefaultTypeSpeed);
-                
-                // Then apply non-dialogue multiplier if needed
                 if (!isDialogueOutput)
                 {
-                    // Non-dialogue output - apply 1.2x multiplier only to normal characters
-                    // Check if this is a punctuation character that should keep normal speed
                     bool isPunctuation = letter == '.' || letter == '—' || letter == ',' || letter == '"' || letter == ':' || letter == ']' || letter == ')';
-                    
                     if (isPunctuation)
                     {
-                        delay = baseDelay; // Keep normal speed for punctuation
+                        delay = baseDelay;
                     }
                     else
                     {
-                        delay = (int)(baseDelay * OutputConstants.NonDialogueOutputSpeedMultiplier); // Apply 1.2x for normal characters
+                        delay = (int)(baseDelay * OutputConstants.NonDialogueOutputSpeedMultiplier);
                     }
                 }
                 else
                 {
-                    // Dialogue output - use the base delay as calculated
                     delay = baseDelay;
                 }
-
                 await Task.Delay(delay);
-                globalCharIndex++; // Increment global character index
+                globalCharIndex++;
             }
-            buffer.Add(typedLine); // Add finished line to buffer
+            buffer.Add(typedLine);
             gameText = string.Join('\n', buffer);
             await InvokeAsync(StateHasChanged);
             await AutoScrollToBottom();
-
 #if DEBUG
             await Task.Delay(Convert.ToInt32(Math.Round(ms * OutputConstants.NewLinePauseMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier)));
 #else
@@ -858,13 +892,17 @@
         choiceCompletionSource?.TrySetResult(choice);
     }
 
-    private async Task<string> GetPlayerInputFromUIAsync(bool isDialogue)
+    private string playerInputPrompt = "What will you say?";
+    private async Task<string> GetPlayerInputFromUIAsync(string prompt)
     {
         playerInputTcs = new TaskCompletionSource<string>();
         isAwaitingPlayerInput = true;
-        isDialogueInput = isDialogue;
+        isDialogueInput = true;
+        playerInputPrompt = string.IsNullOrWhiteSpace(prompt) ? "What will you say?" : prompt;
         await InvokeAsync(StateHasChanged);
-        return await playerInputTcs.Task;
+        var input = await playerInputTcs.Task;
+        playerInputPrompt = "What will you say?";
+        return input;
     }
 
     private async Task HandleInput(KeyboardEventArgs e)

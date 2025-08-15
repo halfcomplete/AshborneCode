@@ -38,7 +38,7 @@ namespace AshborneGame.WebPort
         public async void Write(string message, int ms)
         {
             // Only apply non-dialogue output speed multiplier if not dialogue
-            int adjustedMs = ms == AshborneGame._Core.Globals.Constants.OutputConstants.DefaultTypeSpeed ? ms : (int)(ms * AshborneGame._Core.Globals.Constants.OutputConstants.NonDialogueOutputSpeedMultiplier);
+            int adjustedMs = ms == OutputConstants.DefaultTypeSpeed ? ms : (int)(ms * OutputConstants.NonDialogueOutputSpeedMultiplier);
             await _writeLineCallback?.Invoke($"{adjustedMs}{OutputConstants.TypewriterStartMarker}{message}{OutputConstants.TypewriterEndMarker}");
         }
 
@@ -69,7 +69,7 @@ namespace AshborneGame.WebPort
             // Later, display a fail message on UI
             // E.g., using a toast notification or alert
             // For now, just log it
-            _writeLineCallback?.Invoke($"[FAIL] {message}\n");
+            _writeLineCallback?.Invoke($"{message}\n");
         }
 
         public void DisplayDebugMessage(string message, ConsoleMessageTypes type)

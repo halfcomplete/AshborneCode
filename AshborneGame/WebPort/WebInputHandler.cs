@@ -5,20 +5,21 @@ namespace AshborneGame.WebPort
 {
     public class WebInputHandler : IInputHandler
     {
-        private readonly Func<Task<string>> _getUserInputAsync;
+    private readonly Func<string, Task<string>> _getUserInputAsync;
         private readonly Func<int, Task<int>> _getChoiceInputAsync;
 
         public WebInputHandler(
-            Func<Task<string>> getUserInputAsync,
+            Func<string, Task<string>> getUserInputAsync,
             Func<int, Task<int>> getChoiceInputAsync)
         {
             _getUserInputAsync = getUserInputAsync;
             _getChoiceInputAsync = getChoiceInputAsync;
         }
 
-        public async Task<string> GetPlayerInputAsync()
+        public async Task<string> GetPlayerInputAsync(string prompt = "What will you say?")
         {
-            return await _getUserInputAsync();
+            var input = await _getUserInputAsync(prompt);
+            return ParseNameInput(input);
         }
 
         public async Task<int> GetChoiceInputAsync(int choiceCount)
@@ -27,9 +28,29 @@ namespace AshborneGame.WebPort
         }
 
         // Legacy sync methods for compatibility
-        public string GetPlayerInput()
+        public string GetPlayerInput(string prompt = "What will you say?")
         {
-            return GetPlayerInputAsync().GetAwaiter().GetResult();
+            return GetPlayerInputAsync(prompt).GetAwaiter().GetResult();
+        }
+        private string ParseNameInput(string input)
+        {
+            // Simple parser for name input, can be extended for other types
+            var patterns = new[] {
+                @"my name is\s+(.*)",
+                @"i am\s+(.*)",
+                @"i'm\s+(.*)",
+                @"call me\s+(.*)",
+                @"name's\s+(.*)",
+                @"it's\s+(.*)"
+            };
+            foreach (var pattern in patterns)
+            {
+                var match = System.Text.RegularExpressions.Regex.Match(input, pattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (match.Success) return match.Groups[1].Value.Trim();
+            }
+            // Fallback: take last word or all input
+            var words = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            return words.Length > 1 ? words.Last() : input.Trim();
         }
 
         public int GetChoiceInput(int choiceCount)

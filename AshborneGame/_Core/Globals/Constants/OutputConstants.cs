@@ -4,9 +4,40 @@ namespace AshborneGame._Core.Globals.Constants
     public static class OutputConstants
     {
         /// <summary>
+        /// The marker that indicates the start of an inline italic section within typewriter text.
+        /// </summary>
+        public const string InlineItalicStartMarker = "<i>";
+        /// <summary>
+        /// The marker that indicates the end of an inline italic section within typewriter text.
+        /// </summary>
+        public const string InlineItalicEndMarker = "</i>";
+        /// <summary>
         /// Default type speed for Release builds in milliseconds per character.
         /// </summary>
         public const int DefaultTypeSpeed = 22;
+
+        /// <summary>
+        /// Multiplier for typewriter speed (user adjustable, e.g. 1.0 = normal, 0.5 = half speed, 3.0 = triple speed).
+        /// </summary>
+        private static double _typeSpeedMultiplier = 1.0;
+        public static double TypeSpeedMultiplier
+        {
+            get => _typeSpeedMultiplier;
+            set => _typeSpeedMultiplier = Math.Clamp(value, 0.5, 3.0);
+        }
+
+        /// <summary>
+        /// Whether the game output/timers are currently paused (e.g. when settings modal is open).
+        /// </summary>
+        public static bool Paused { get; set; } = false;
+
+        /// <summary>
+        /// Helper to set type speed multiplier from UI slider.
+        /// </summary>
+        public static void SetTypeSpeedMultiplier(double multiplier)
+        {
+            TypeSpeedMultiplier = multiplier;
+        }
         /// <summary>
         /// Default type speed modifiers for Debug builds as a multiplier for DefaultTypeSpeed.
         /// </summary>
@@ -39,6 +70,18 @@ namespace AshborneGame._Core.Globals.Constants
         /// The multiplier for pauses after a colon.
         /// </summary>
         public const int ColonPauseMultiplier = 9;
+        /// <summary>
+        /// The multiplier for pauses after a semicolon.
+        /// </summary>
+        public const int SemicolonPauseMultiplier = 9;
+        /// <summary>
+        /// The multiplier for pauses after a question mark.
+        /// </summary>
+        public const int QuestionMarkPauseMultiplier = 11;
+        /// <summary>
+        /// The multiplier for pauses after an exclamation mark.
+        /// </summary>
+        public const int ExclamationMarkPauseMultiplier = 12;
         /// <summary>
         /// The multiplier for pauses after a new line.
         /// </summary>
@@ -88,7 +131,9 @@ namespace AshborneGame._Core.Globals.Constants
         /// <summary>
         /// Multiplier for non-dialogue output speed (e.g., 1.2x faster).
         /// </summary>
-        public const float NonDialogueOutputSpeedMultiplier = 2f;
+        public const float NonDialogueOutputSpeedMultiplier = 3.5f;
+
+        // ...existing code...
 
         public const string ShortenedCentre = "centre";
         public const string ShortenedRight = "right";

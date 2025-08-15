@@ -135,17 +135,36 @@ namespace AshborneGame._Core._Player
         {
             if (CurrentSublocation == null)
             {
-                // If the player is not in a sublocation
                 GameContext.GameState.OnPlayerEnterLocation(newLocation);
             }
             CurrentLocation = newLocation;
             CurrentSublocation = null;
-            
-            // Get description BEFORE incrementing visit count
-            IOService.Output.WriteLine(newLocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
-            
-            // Increment visit count for normal movement AFTER description
+
+            // Increment visit count BEFORE description
             CurrentLocation.VisitCount++;
+            Console.WriteLine($"Player moved to {CurrentLocation.Name.DisplayName}. Visit count: {CurrentLocation.VisitCount}");
+
+            // Fire event if Ossaneth Domain and visit count == 4
+            bool sceneMatch = newLocation.Scene != null && newLocation.Scene.DisplayName == "Ossaneth's Domain";
+            bool nameMatch = newLocation.Name.ReferenceName == "Eye Platform";
+            bool visitMatch = CurrentLocation.VisitCount == 2;
+            Console.WriteLine($"[MoveTo] Location={newLocation.Name.DisplayName} Scene={(newLocation.Scene?.DisplayName ?? "<null>")} VisitCount={CurrentLocation.VisitCount} sceneMatch={sceneMatch} nameMatch={nameMatch} visitMatch={visitMatch}", ConsoleMessageTypes.INFO);
+            if (sceneMatch && nameMatch && visitMatch)
+            {
+                var evt = new GameEvent("ossaneth.domain.visitcount.4", new Dictionary<string, object>
+                {
+                    { "location", newLocation },
+                    { "visitCount", CurrentLocation.VisitCount }
+                });
+                EventBus.Call(evt);
+                IOService.Output.DisplayDebugMessage("[MoveTo] Fired ossaneth.domain.visitcount.4 event", ConsoleMessageTypes.INFO);
+            }
+
+                // Suppress description on the special 4th Eye Platform visit (outro) so dialogue leads
+                if (!(sceneMatch && nameMatch && visitMatch))
+                {
+                    IOService.Output.WriteLine(newLocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
+                }
         }
 
         /// <summary>
@@ -171,11 +190,11 @@ namespace AshborneGame._Core._Player
         {
             CurrentSublocation = newSublocation;
             
-            // Get description BEFORE incrementing visit count
-            IOService.Output.WriteLine(newSublocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
-            
             // Increment visit count for sublocation movement AFTER description
             CurrentSublocation.VisitCount++;
+
+            // Get description BEFORE incrementing visit count
+            IOService.Output.WriteLine(newSublocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
         }
 
         public void MoveTo(Scene newScene)
@@ -190,7 +209,7 @@ namespace AshborneGame._Core._Player
             IOService.Output.WriteLine(newScene.GetHeader());
         }
 
-        public void SetupMoveTo(Location newLocation, Scene newScene)
+        public void SetupMoveTo(Location newLocation, Scene newScene, bool displayDescription = true)
         {
             Console.WriteLine($"Set up move to location: {newLocation.Name} in scene: {newScene.DisplayName}");
             CurrentScene = newScene;
@@ -198,11 +217,10 @@ namespace AshborneGame._Core._Player
             CurrentSublocation = null;
             GameContext.GameState.OnPlayerEnterLocation(newLocation);
             
-            // Get description BEFORE setting visit count to 1
-            IOService.Output.WriteLine(newLocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
-            
-            // Setup move sets visit count to 1 (first visit) AFTER description
+            // Setup move sets visit count to 1 (first visit)
             CurrentLocation.VisitCount = 1;
+
+            if (displayDescription) IOService.Output.WriteLine(CurrentLocation.GetDescription(GameContext.Player, GameContext.GameState));
             
             if (OperatingSystem.IsBrowser())
             {
@@ -229,26 +247,47 @@ namespace AshborneGame._Core._Player
 
             IOService.Output.DisplayDebugMessage("Move to... " + place, ConsoleMessageTypes.INFO);
 
+            // Directional movement
             if (DirectionConstants.CardinalDirections.Contains(place))
             {
-                // If the place is a direction, handle it as such
                 return TryMoveDirectionally(place);
             }
-            else if (CurrentLocation.Name.Matches(place))
+
+            // Sublocation movement
+            if (CurrentLocation.Sublocations.Any(s => s.Name.Matches(place)))
             {
-                IOService.Output.WriteLine("You can't move there because you are already there.");
+                var sublocation = CurrentLocation.Sublocations.First(s => s.Name.Matches(place));
+                MoveTo(sublocation);
                 return true;
             }
-            else if (CurrentSublocation != null && CurrentSublocation.Name.Matches(place))
+
+            // Location movement (within current scene)
+            if (CurrentScene.Locations.Any(l => l.Name.Matches(place)))
             {
-                IOService.Output.WriteLine("You can't move there because you are already there.");
+                var location = CurrentScene.Locations.First(l => l.Name.Matches(place));
+                if (location == CurrentLocation)
+                {
+                    IOService.Output.WriteLine(location.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
+                    return true;
+                }
+                MoveTo(location);
                 return true;
             }
-            else
+
+            // Already at location/sublocation
+            if (CurrentLocation.Name.Matches(place))
             {
-                // Try to move to a sublocation
-                return TryMoveToSublocation(place);
+                IOService.Output.WriteLine(CurrentLocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
+                return true;
             }
+            if (CurrentSublocation != null && CurrentSublocation.Name.Matches(place))
+            {
+                IOService.Output.WriteLine(CurrentSublocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
+                return true;
+            }
+
+            // If nothing matches, try custom sublocation movement
+            return TryMoveToSublocation(place);
         }
 
         private bool TryMoveDirectionally(string direction)
@@ -272,6 +311,9 @@ namespace AshborneGame._Core._Player
                     MoveTo(newLocation);
                     return true;
                 }
+                // Provide debug info on available exits to aid troubleshooting
+                var available = string.Join(", ", CurrentLocation.Exits.Keys);
+                IOService.Output.DisplayDebugMessage($"No exit '{direction}' from {CurrentLocation.Name.DisplayName}. Available: [{available}]", ConsoleMessageTypes.WARNING);
                 IOService.Output.DisplayFailMessage("You can't go that way.");
                 return false;
             }

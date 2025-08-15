@@ -85,10 +85,10 @@ namespace AshborneGame.ConsolePort
 
                 // Calculate delay with special handling for non-dialogue output
                 int delay;
-                
+
                 // First, calculate the base delay using the current speed
-                int baseDelay = CharacterOutputDelayCalculator.CalculateDelay(letter, currentSpeed, isEnd);
-                
+                int baseDelay = CharacterOutputDelayCalculator.CalculateDelayAsync(letter, currentSpeed, isEnd).GetAwaiter().GetResult();
+
                 // Determine if this is dialogue output (when the original ms is the default type speed)
                 bool isDialogueOutput = (ms == OutputConstants.DefaultTypeSpeed);
                 
@@ -105,7 +105,7 @@ namespace AshborneGame.ConsolePort
                     }
                     else
                     {
-                        delay = (int)(baseDelay * OutputConstants.NonDialogueOutputSpeedMultiplier); // Apply 1.2x for normal characters
+                        delay = (int)(baseDelay * OutputConstants.NonDialogueOutputSpeedMultiplier);
                     }
                 }
                 else

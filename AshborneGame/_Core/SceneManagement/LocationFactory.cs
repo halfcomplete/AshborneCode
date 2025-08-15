@@ -46,7 +46,21 @@ namespace AshborneGame._Core.SceneManagement
 
         public static Scene CreateScene(string sceneName, string sceneID, List<Location>? locations = null)
         {
-            return new Scene(sceneID, sceneName, locations);
+            // IMPORTANT: Previously we relied on Scene constructor with a locations list, but that did NOT
+            // assign each location's Scene reference (AddLocation does). This left location.Scene null and
+            // broke logic that checks newLocation.Scene (e.g. Eye Platform visit count trigger).
+            var scene = new Scene(sceneID, sceneName);
+            if (locations != null)
+            {
+                foreach (var loc in locations)
+                {
+                    if (loc != null)
+                    {
+                        scene.AddLocation(loc); // sets loc.Scene correctly
+                    }
+                }
+            }
+            return scene;
         }
     }
 }

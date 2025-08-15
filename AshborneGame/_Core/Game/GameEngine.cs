@@ -41,7 +41,7 @@ namespace AshborneGame._Core.Game
             gameState.InitialiseMasks(MaskInitialiser.InitialiseMasks());
 
             ((Location startingLocation, Scene startingLocationGroup), (_firstLocation, _firstScene)) = InitialiseStartingLocation(player);
-            player.SetupMoveTo(startingLocation, startingLocationGroup);
+            player.SetupMoveTo(startingLocation, startingLocationGroup, false);
             _dialogueService.DialogueStart += async () =>
             {
                 _dialogueRunning = true;
@@ -51,16 +51,19 @@ namespace AshborneGame._Core.Game
                 _dialogueRunning = false;
             };
             
-            // Subscribe to dreamspace outro event
-            EventBus.Subscribe("player.dreamspace.outro.triggered", OnDreamspaceOutroTriggered);
+            // Subscribe to Ossaneth Domain visit count event
+            EventBus.Subscribe("ossaneth.domain.visitcount.4", OnOssanethDomainVisitCountFour);
             
             InitialiseGameWorld(player);
         }
 
-        private void OnDreamspaceOutroTriggered(GameEvent evt)
+        private void OnOssanethDomainVisitCountFour(GameEvent evt)
         {
-            // Start the outro dialogue
-            _dialogueService.StartDialogue("Act1_Scene1_Ossaneth_Domain_Outro");
+            // Start the outro dialogue (fire-and-forget previously; now log explicitly)
+            IOService.Output.DisplayDebugMessage("Event 'ossaneth.domain.visitcount.4' received. Launching outro dialogue...", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.INFO);
+            Console.WriteLine("[GameEngine] ossaneth.domain.visitcount.4 received; starting outro dialogue");
+            // Intentionally not awaited because this is a sync event handler; dialogue service internally tracks running state.
+            var _ = _dialogueService.StartDialogue("Act1_Scene1_Ossaneth_Domain_Outro");
         }
 
         public void Start()
@@ -165,8 +168,8 @@ namespace AshborneGame._Core.Game
                     "You look around the hall again. The mirrors remain ever so still, ever so silent."
                     ),
                 new FadingDescription(
-                    "You enter the Hall of Mirrors. In front of you is a long, stretching hallway that seems to go on forever, the wall, floor, and ceilings covered in mirrors. As you walk by, some reflections lag behind and others move before you. Some never blink while others walk with their eyes closed. " +
-                    "You are surprised to see that the Mask that was forced on to you just before is no longer on your face — instead, it leaves blank, featureless skin. Your identity. Gone. You know you should scream, but you cannot. You are just thankful, but you do not know why.",
+                    "You enter the Hall of Mirrors. In front of you is a long, stretching hallway that seems to go on forever; the wall, floor, and ceilings are covered in mirrors. As you walk by, some reflections lag behind and others move before you. Some never blink while others walk with their eyes closed. " +
+                    "You are surprised to see that the Mask that was forced on to you just before is no longer on your face — instead, it leaves blank, featureless skin. Your identity. Gone.",
                     "You enter the Hall of Mirrors again. Nothing seems to have changed, but you think that the reflections are diverging further and further away from your real self.",
                     "For the fourth time, you enter the Hall of Mirrors. The reflections are increasingly clearer in some mirrors, while gone in others. For the first time, there are cracked mirrors dotted along the silver-lined hallway."),
                 new SensoryDescription(),
@@ -232,7 +235,7 @@ namespace AshborneGame._Core.Game
                     "Turning your head, you peel your eyes for anything that has changed. Nothing has."),
                 new FadingDescription(
                     "You walk inside the Temple of the Bound to a massive, dark area. Unknown inscriptions on the wall glow faintly. The air is damp.",
-                    "You return to the Temple of the Bound. One of the candles in the middle have gone out.",
+                    "You return to the Temple of the Bound. One of the candles in the middle has gone out.",
                     "You go back to the Temple of the Bound. The symbols on the wall are stronger, denser, more... powerful. You feel your hair bristle. You shouldn't be here."),
                 new SensoryDescription(
                     "The vaulted ceiling is covered in hanging moss and leaves.",
@@ -252,7 +255,12 @@ namespace AshborneGame._Core.Game
             LocationFactory.AddMutualExits(eyePlatform, chamberOfCycles, DirectionConstants.West);
             LocationFactory.AddMutualExits(eyePlatform, templeOfTheBound, DirectionConstants.North);
 
+            // Create Ossaneth's Domain scene and ensure ALL related locations are registered with it
             var ossanethDomain = LocationFactory.CreateScene("Ossaneth's Domain", "Ossaneth's Domain", new List<Location> { eyePlatform, hallOfMirrors });
+            // These two locations were previously not added to the scene, causing their Scene to remain null
+            // which broke single-word command parsing (e.g. 'help') after entering them due to null CurrentScene.
+            ossanethDomain.AddLocation(chamberOfCycles);
+            ossanethDomain.AddLocation(templeOfTheBound);
 
             var prologueLocation = LocationFactory.CreateLocation(new Location(), new LookDescription(), new FadingDescription(), new SensoryDescription());
             var prologue = new Scene("Prologue", "Prologue");

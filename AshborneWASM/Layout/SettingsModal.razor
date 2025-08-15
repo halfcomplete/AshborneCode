@@ -1,0 +1,44 @@
+@using AshborneGame._Core.Globals.Constants
+
+@if (IsOpen)
+{
+    <div class="settings-overlay" @onclick="Close">
+        <div class="settings-modal" @onclick:stopPropagation>
+            <button class="close-btn" @onclick="Close">✕</button>
+            <h2>Settings</h2>
+            <div class="slider-group">
+                <label for="typeSpeed">Type Speed: @($"{TypeSpeedMultiplier:0.0}x")</label>
+                <input type="range" id="typeSpeed" min="0.5" max="3" step="0.1"
+                       value="@TypeSpeedMultiplier"
+                       @oninput="OnSliderChanged" />
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+
+    double TypeSpeedMultiplier { get; set; } = OutputConstants.TypeSpeedMultiplier;
+
+    protected override void OnParametersSet()
+    {
+        TypeSpeedMultiplier = OutputConstants.TypeSpeedMultiplier;
+    }
+
+    void OnSliderChanged(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), out var val))
+        {
+            TypeSpeedMultiplier = val;
+            OutputConstants.SetTypeSpeedMultiplier(val);
+        }
+    }
+
+    async Task Close()
+    {
+        OutputConstants.Paused = false;
+        await IsOpenChanged.InvokeAsync(false);
+    }
+}
