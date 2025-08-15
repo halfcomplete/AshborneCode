@@ -3,6 +3,7 @@
 @using AshborneGame._Core.Globals.Constants
 @using AshborneGame._Core.Globals.Services
 @using System.Diagnostics;
+@using System.Text;
 @using AshborneGame.WebPort
 @using Microsoft.JSInterop
 @using System.Timers
@@ -16,7 +17,7 @@
             {
                 int actNo = 1;
                 GameContext.GameState.TryGetCounter(GameStateKeyConstants.Counters.Player.CurrentActNo, out actNo);
-                string actLabel = "ACT " + IntToRomanConversionService.IntToRoman(actNo);
+                string actLabel = "PART " + IntToRomanConversionService.IntToRoman(actNo);
                 var scene = GameContext.Player.CurrentScene;
                 int sceneNo = 1;
                 GameContext.GameState.TryGetCounter(GameStateKeyConstants.Counters.Player.CurrentSceneNo, out sceneNo);
@@ -25,7 +26,7 @@
                 if (sceneNo != 0)
                 {
                     sceneLabel = IntToRomanConversionService.IntToRoman(sceneNo);
-                    final = $"{actLabel}: SCENE {sceneLabel} — {scene.DisplayName.ToUpper()}";
+                    final = $"{actLabel}: CHAPTER {sceneLabel} — {scene.DisplayName.ToUpper()}";
                 }
                 else
                 {
@@ -39,7 +40,36 @@
             }
         </div>
         <div class="game-screen">
-            <div class="game-output">@((MarkupString)gameText.Replace("\n", "<br />"))</div>
+            <div class="game-output">@((MarkupString)RenderGameText(gameText))</div>
+@code {
+    private string RenderGameText(string text)
+    {
+        // Replace <i>...</i> with <span class="game-italic">...</span>
+        var sb = new System.Text.StringBuilder();
+        int idx = 0;
+        while (idx < text.Length)
+        {
+            int start = text.IndexOf(OutputConstants.InlineItalicStartMarker, idx);
+            if (start == -1)
+            {
+                sb.Append(text.Substring(idx).Replace("\n", "<br />"));
+                break;
+            }
+            sb.Append(text.Substring(idx, start - idx).Replace("\n", "<br />"));
+            int end = text.IndexOf(OutputConstants.InlineItalicEndMarker, start);
+            if (end == -1)
+            {
+                sb.Append(text.Substring(start).Replace("\n", "<br />"));
+                break;
+            }
+            int contentStart = start + OutputConstants.InlineItalicStartMarker.Length;
+            string italicContent = text.Substring(contentStart, end - contentStart);
+            sb.Append($"<span class='game-italic'>{System.Net.WebUtility.HtmlEncode(italicContent)}</span>");
+            idx = end + OutputConstants.InlineItalicEndMarker.Length;
+        }
+        return sb.ToString();
+    }
+}
             <div class="input-gif-overlay-container">
                 @if (isAwaitingPlayerInput)
                 {
@@ -47,14 +77,17 @@
                         <input @bind="userInput"
                                @bind:event="oninput"
                                @onkeydown="HandleInput"
-                               placeholder="@(isDialogueInput ? "What will you say?" : "What will you do?")" autofocus />
-                        @if (isOssanethGifActive)
+                               placeholder="@playerInputPrompt" autofocus />
+                        @if (GameContext.Player.EquippedItems["face"]?.Name == "Ossaneth")
                         {
-                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
-                        }
-                        else
-                        {
-                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                            @if (isOssanethGifActive)
+                            {
+                                <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                            }
+                            else
+                            {
+                                <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                            }
                         }
                     </div>
                     <div><em>Type your response and press Enter.</em></div>
@@ -80,21 +113,33 @@
                 }
                 else if (!isInDialogue)
                 {
-                    <div class="input-overlay-wrapper">
-                        <input @bind="userInput"
-                               @bind:event="oninput"
-                               @onkeydown="HandleInput"
-                               placeholder="What will you do?" />
-                        @if (isOssanethGifActive)
-                        {
-                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
-                        }
-                        else
-                        {
-                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
-                        }
-                    </div>
-                    <div><em>Type your action and press Enter.</em></div>
+                    @if (isTypingDialogue)
+                    {
+                        <div class="dialogue-waiting">
+                            <p>@waitingText</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="input-overlay-wrapper">
+                            <input @bind="userInput"
+                                   @bind:event="oninput"
+                                   @onkeydown="HandleInput"
+                                   placeholder="What will you do?" />
+                            @if (GameContext.Player.EquippedItems["face"]?.Name == "Ossaneth")
+                            {
+                                @if (isOssanethGifActive)
+                                {
+                                    <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                                }
+                                else
+                                {
+                                    <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                                }
+                            }
+                        </div>
+                        <div><em>Type your action and press Enter.</em></div>
+                    }
                 }
                 else
                 {
@@ -107,9 +152,15 @@
     </div>
     @if (!hasStarted || isFading)
     {
-        <div class="title-screen @(isFading ? "fade-out" : "")">
+        <div class="title-screen @(isFading ? "fade-out" : "") @(isIntroTransitioning ? "fade-overlap" : "")">
             <div class="title-logo">ASHBORNE</div>
             <button class="begin-button" @onclick="BeginGame">Begin</button>
+        </div>
+    }
+    @if (introPhase > 0 || isIntroTransitioning)
+    {
+        <div class="intro-screen @(introFading ? "fade-out" : "fade-in")">
+            <div class="intro-text @(introTextFading ? "fade-out" : "fade-in") @(isFinalPhase ? "final-phase" : "")">@introText</div>
         </div>
     }
 </div>
@@ -209,12 +260,22 @@
     private bool isFading = false;
     private const int FadeDurationMs = 1000;
 
+    // Intro sequence variables
+    private int introPhase = 0;
+    private string introText = "";
+    private bool introFading = false;
+    private const int IntroDelayMs = 2000;
+    private const int IntroFadeDurationMs = 800;
+    private const int Phase1DurationMs = 5000; // 5 seconds for phase 1
+    private const int Phase2DurationMs = 3000; // 3 seconds for phase 2
+    private const int Phase3DurationMs = 4000; // 4 seconds for phase 3
+    private const int FinalPhaseDurationMs = 5000; // 5 seconds for final phase enlargement
+
     // Output queue for all output (lines, pauses, typewriter)
     private Queue<string> outputQueue = new Queue<string>();
     private bool isProcessingQueue = false;
-    private bool pendingDialogueEnd = false; // <--- add this back
+    private bool pendingDialogueEnd = false;
 
-    // Static instance for external access (used by InkRunner flush)
     public static Home? Instance;
 
     private string listeningText = "Listening";
@@ -226,6 +287,13 @@
     private bool listeningActive = false;
     private bool prevListeningActive = false;
 
+    private string waitingText = "Waiting";
+    private System.Threading.Timer? waitingTimer;
+    private int waitingStep = 0;
+    private readonly string[] waitingStates = new[] { "Waiting", "Waiting.", "Waiting..", "Waiting..." };
+    private bool waitingActive = false;
+    private bool prevWaitingActive = false;
+
     private bool silentTimerActive = false;
     private int silentTimerSecondsLeft = 0;
     private DateTime silentTimerEndTime;
@@ -234,9 +302,13 @@
     private bool isOssanethGifActive = false;
     private System.Threading.Timer? ossanethSigilTimer;
     private readonly Random ossanethRandom = new Random();
-    private const int OssanethGifDurationMs = 633; // Adjust to match GIF length
+    private const int OssanethGifDurationMs = 633;
     private const int OssanethMinDelayMs = 3000;
     private const int OssanethMaxDelayMs = 8000;
+
+    private bool isIntroTransitioning = false;
+    private bool introTextFading = false;
+    private bool isFinalPhase = false;
 
     private void StartListeningAnimation()
     {
@@ -268,6 +340,38 @@
         listeningTimer?.Dispose();
         listeningTimer = null;
         listeningText = listeningStates[0];
+    }
+
+    private void StartWaitingAnimation()
+    {
+        waitingStep = 0;
+        waitingText = waitingStates[0];
+        waitingTimer?.Dispose();
+        waitingTimer = new System.Threading.Timer(_ =>
+        {
+            waitingStep = (waitingStep + 1) % waitingStates.Length;
+            waitingText = waitingStates[waitingStep];
+            InvokeAsync(StateHasChanged);
+            if (waitingStep == 0)
+            {
+                waitingTimer?.Change(ListeningPause, ListeningInterval);
+            }
+            else if (waitingStep == waitingStates.Length - 1)
+            {
+                waitingTimer?.Change(ListeningPause, (ListeningInterval + ListeningPause) / 2);
+            }
+            else
+            {
+                waitingTimer?.Change(ListeningInterval, ListeningInterval);
+            }
+        }, null, ListeningInterval, ListeningInterval);
+    }
+
+    private void StopWaitingAnimation()
+    {
+        waitingTimer?.Dispose();
+        waitingTimer = null;
+        waitingText = waitingStates[0];
     }
 
     private void StartSilentTimerUI(int ms)
@@ -329,7 +433,7 @@
 #endif
 
         var inputHandler = new WebInputHandler(
-            async () => await Task.FromResult(userInput),
+            async (prompt) => await GetPlayerInputFromUIAsync(prompt),
             async (choiceCount) => await GetDialogueChoice(choiceCount)
         );
 
@@ -338,7 +442,8 @@
         // Wire up callbacks for dialogue and player input
         if (GameContext.DialogueService != null)
         {
-            GameContext.DialogueService.SetPlayerInputCallback(GetPlayerInputFromUIAsync);
+            // Adapted to match Func<bool, Task<string>> expected by InkRunner/DialogueService
+            GameContext.DialogueService.SetPlayerInputCallback(async (useDefaultPrompt) => await GetPlayerInputFromUIAsync(playerInputPrompt));
             @* GameContext.DialogueService.DialogueComplete += async () =>
             {
                 // Only set isInDialogue to false if not typewriting
@@ -392,6 +497,17 @@
             else
                 StopListeningAnimation();
             prevListeningActive = listeningActive;
+        }
+
+        // Start/stop waiting animation when typewriting outside of dialogue
+        waitingActive = !isInDialogue && isTypingDialogue;
+        if (waitingActive != prevWaitingActive)
+        {
+            if (waitingActive)
+                StartWaitingAnimation();
+            else
+                StopWaitingAnimation();
+            prevWaitingActive = waitingActive;
         }
     }
 
@@ -556,10 +672,10 @@
 
     private async Task HandleTypewriterEffect(string line)
     {
-        // Parse ms value at the start of the line (e.g. "50__TYPEWRITER_START__...")
+        // Parse ms value at the start of the line (e.g. "50__TS__...")
         int ms = OutputConstants.DefaultTypeSpeed; // default
         Console.WriteLine($"[DEBUG] Handling typewriter effect for line: {line}");
-        int msEnd = line.IndexOf(OutputConstants.DialoguePauseMarker);
+        int msEnd = line.IndexOf(OutputConstants.TypewriterStartMarker);
         if (msEnd > 0)
         {
             string msStr = line.Substring(0, msEnd);
@@ -567,11 +683,12 @@
         }
         Console.WriteLine($"[DEBUG] Typewriter effect with delay: {ms} ms");
         int startIndex = line.IndexOf(OutputConstants.TypewriterStartMarker) + OutputConstants.TypewriterStartMarker.Length;
-        Console.WriteLine("[DEBUG] Start index for typewriter effect: " + startIndex);
         int endIndex = line.IndexOf(OutputConstants.TypewriterEndMarker);
-		    Console.WriteLine("[DEBUG] End index for typewriter effect: " + endIndex);
         string message = line.Substring(startIndex, endIndex - startIndex);
 		    Console.WriteLine($"[DEBUG] Typewriter message: {message}");
+
+        // Process inline slow markers in the message BEFORE starting typewriter effect
+        var (processedMessage, characterSpeeds) = ProcessInlineSlowMarkersWithSpeeds(message, ms);
 
         isTypingDialogue = true;
         Console.WriteLine($"[DEBUG] isTypingDialogue set to true for message: {message}");
@@ -579,34 +696,82 @@
         Console.WriteLine($"[DEBUG] InvokeAsync called after setting isTypingDialogue");
 
         // Split into lines and type each line separately
-        string[] lines = message.Split('\n');
+        string[] lines = processedMessage.Split('\n');
         var buffer = gameText.Split('\n').ToList(); // Keep previous lines
+        int globalCharIndex = 0; // Track character position across all lines
 
         foreach (var msgLine in lines)
         {
 			      Console.WriteLine($"[DEBUG] Typing line: {msgLine}");
             string typedLine = "";
+            bool inItalic = false;
             for (int i = 0; i < msgLine.Length; i++)
             {
-				        Console.WriteLine($"[DEBUG] Typing character: {msgLine[i]} at index {i}");
-                typedLine += msgLine[i];
+                // Check for start/end italic markers
+                if (msgLine.Substring(i).StartsWith(OutputConstants.InlineItalicStartMarker))
+                {
+                    inItalic = true;
+                    i += OutputConstants.InlineItalicStartMarker.Length - 1;
+                    continue;
+                }
+                if (msgLine.Substring(i).StartsWith(OutputConstants.InlineItalicEndMarker))
+                {
+                    inItalic = false;
+                    i += OutputConstants.InlineItalicEndMarker.Length - 1;
+                    continue;
+                }
+
+                char letter = msgLine[i];
+                string charToAdd = inItalic ? $"<span class='game-italic'>{System.Net.WebUtility.HtmlEncode(letter.ToString())}</span>" : System.Net.WebUtility.HtmlEncode(letter.ToString());
+                typedLine += charToAdd;
                 gameText = string.Join('\n', buffer) + (buffer.Count > 0 ? "\n" : "") + typedLine;
                 await InvokeAsync(StateHasChanged);
                 await AutoScrollToBottom();
-                char letter = msgLine[i];
-                bool isEnd = message.Count() == i + 1 || message[i + 1].Equals(' ') || (i + 2 == message.Length && message.Substring(i + 1).Equals("\n")); // Check if this is the end of the message or sentence
 
+                // Calculate isEnd using the same logic as Console version
+                bool isEnd = i == msgLine.Length - 1 || 
+                            (i + 1 < msgLine.Length && msgLine[i + 1].Equals(' ')) || 
+                            (i + 1 < msgLine.Length && msgLine[i + 1].Equals('\n'));
+
+                // Get the speed for this character (if available)
+                int currentSpeed = ms;
+                if (characterSpeeds != null && characterSpeeds.Count > globalCharIndex)
+                {
+                    currentSpeed = characterSpeeds[globalCharIndex];
+                }
+
+                // Calculate delay with special handling for non-dialogue output
+                int delay;
+                int baseDelay;
 #if DEBUG
-                await Task.Delay(CharacterOutputDelayCalculator.CalculateDebugDelay(letter, ms, isEnd));
+                baseDelay = await CharacterOutputDelayCalculator.CalculateDebugDelayAsync(letter, currentSpeed, isEnd);
 #else
-                await Task.Delay(CharacterOutputDelayCalculator.CalculateDelay(letter, ms, isEnd));
+                baseDelay = await CharacterOutputDelayCalculator.CalculateDelayAsync(letter, currentSpeed, isEnd);
 #endif
+                bool isDialogueOutput = (ms == OutputConstants.DefaultTypeSpeed);
+                if (!isDialogueOutput)
+                {
+                    bool isPunctuation = letter == '.' || letter == '—' || letter == ',' || letter == '"' || letter == ':' || letter == ']' || letter == ')';
+                    if (isPunctuation)
+                    {
+                        delay = baseDelay;
+                    }
+                    else
+                    {
+                        delay = (int)(baseDelay * OutputConstants.NonDialogueOutputSpeedMultiplier);
+                    }
+                }
+                else
+                {
+                    delay = baseDelay;
+                }
+                await Task.Delay(delay);
+                globalCharIndex++;
             }
-            buffer.Add(typedLine); // Add finished line to buffer
+            buffer.Add(typedLine);
             gameText = string.Join('\n', buffer);
             await InvokeAsync(StateHasChanged);
             await AutoScrollToBottom();
-
 #if DEBUG
             await Task.Delay(Convert.ToInt32(Math.Round(ms * OutputConstants.NewLinePauseMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier)));
 #else
@@ -629,6 +794,89 @@
             await InvokeAsync(StateHasChanged);
         }
     }
+
+    private (string processedMessage, List<int> characterSpeeds) ProcessInlineSlowMarkersWithSpeeds(string message, int defaultMs)
+    {
+        var processedMessage = new StringBuilder();
+        var characterSpeeds = new List<int>();
+        int currentIndex = 0;
+
+        while (currentIndex < message.Length)
+        {
+            // 1) find the next “__IS__”
+            int inlineStartIndex = message.IndexOf(
+                OutputConstants.InlineTypewriterStartMarker,
+                currentIndex);
+            if (inlineStartIndex == -1)
+            {
+                // no more markers → dump the rest
+                var tail = message.Substring(currentIndex);
+                processedMessage.Append(tail);
+                characterSpeeds.AddRange(
+                    Enumerable.Repeat(defaultMs, tail.Length));
+                break;
+            }
+
+            // 2) scan backwards from inlineStartIndex to grab any digits
+            int speedStartIndex = inlineStartIndex;
+            while (speedStartIndex > currentIndex
+                   && char.IsDigit(message[speedStartIndex - 1]))
+                speedStartIndex--;
+
+            // 3) everything between currentIndex and speedStartIndex is “beforeText”
+            var beforeText = message.Substring(
+                currentIndex,
+                speedStartIndex - currentIndex);
+            processedMessage.Append(beforeText);
+            characterSpeeds.AddRange(
+                Enumerable.Repeat(defaultMs, beforeText.Length));
+
+            // 4) parse the speed override (if any)
+            int inlineSpeed = defaultMs;
+            if (speedStartIndex < inlineStartIndex)
+            {
+                var speedStr = message.Substring(
+                    speedStartIndex,
+                    inlineStartIndex - speedStartIndex);
+                if (int.TryParse(speedStr, out var parsed))
+                    inlineSpeed = parsed;
+            }
+
+            // 5) find the matching end‐marker
+            int inlineEndIndex = message.IndexOf(
+                OutputConstants.InlineTypewriterEndMarker,
+                inlineStartIndex);
+            if (inlineEndIndex == -1)
+            {
+                // unmatched → treat rest as normal text
+                var tail = message.Substring(inlineStartIndex);
+                processedMessage.Append(tail);
+                characterSpeeds.AddRange(
+                    Enumerable.Repeat(defaultMs, tail.Length));
+                break;
+            }
+
+            // 6) extract the text *inside* the markers
+            int inlineTextStart = inlineStartIndex
+                                  + OutputConstants
+                                     .InlineTypewriterStartMarker.Length;
+            var inlineText = message.Substring(
+                inlineTextStart,
+                inlineEndIndex - inlineTextStart);
+
+            processedMessage.Append(inlineText);
+            characterSpeeds.AddRange(
+                Enumerable.Repeat(inlineSpeed, inlineText.Length));
+
+            // 7) advance past the end‐marker
+            currentIndex = inlineEndIndex
+                           + OutputConstants
+                             .InlineTypewriterEndMarker.Length;
+        }
+
+        return (processedMessage.ToString(), characterSpeeds);
+    }
+
 
     private async Task<int> GetDialogueChoice(int choiceCount)
     {
@@ -664,13 +912,17 @@
         choiceCompletionSource?.TrySetResult(choice);
     }
 
-    private async Task<string> GetPlayerInputFromUIAsync(bool isDialogue)
+    private string playerInputPrompt = "What will you say?";
+    private async Task<string> GetPlayerInputFromUIAsync(string prompt)
     {
         playerInputTcs = new TaskCompletionSource<string>();
         isAwaitingPlayerInput = true;
-        isDialogueInput = isDialogue;
+        isDialogueInput = true;
+        playerInputPrompt = string.IsNullOrWhiteSpace(prompt) ? "What will you say?" : prompt;
         await InvokeAsync(StateHasChanged);
-        return await playerInputTcs.Task;
+        var input = await playerInputTcs.Task;
+        playerInputPrompt = "What will you say?";
+        return input;
     }
 
     private async Task HandleInput(KeyboardEventArgs e)
@@ -693,7 +945,7 @@
                 EnqueueOutput($"[DEBUG] Executing command: '{command}'");
                 EnqueueOutput($"[DEBUG] Player location: {GameContext.Player.CurrentLocation.Name}");
                 EnqueueOutput($"[DEBUG] Player sublocation: {(GameContext.Player.CurrentSublocation?.Name.ReferenceName ?? "None")}");
-                EnqueueOutput($"[DEBUG] Sublocation object: {(GameContext.Player.CurrentSublocation?.GameObject?.GetType().Name ?? "None")}");
+                EnqueueOutput($"[DEBUG] Sublocation object: {(GameContext.Player.CurrentSublocation?.FocusObject?.GetType().Name ?? "None")}");
                 #endif
                 engine.ReceiveCommand(command);
                 #if DEBUG
@@ -733,12 +985,64 @@
 
     private async void BeginGame()
     {
+        isIntroTransitioning = true;
         isFading = true;
         StateHasChanged();
-        engine.StartGameLoopAsync(); // Start the game loop immediately
-        await Task.Delay(FadeDurationMs);
+        await Task.Delay(FadeDurationMs); // Let title screen fully fade out
         hasStarted = true;
         isFading = false;
+        StateHasChanged();
+        await Task.Delay(2000); // 2 second pause with just background
+        isIntroTransitioning = false;
+        StateHasChanged();
+        introPhase = 1;
+        introText = "All the world's a stage, and all the men and women merely players.";
+        introFading = false;
+        introTextFading = true; // Start with text faded out
+        StateHasChanged();
+        await Task.Delay(50); // Brief delay to ensure fade-in animation triggers
+        introTextFading = false; // Trigger fade-in
+        StateHasChanged();
+        await StartIntroSequence();
+        engine.StartGameLoopAsync();
+        StateHasChanged();
+    }
+
+    private async Task StartIntroSequence()
+    {
+        // Phase 1 already set by BeginGame
+        await Task.Delay(Phase1DurationMs);
+        // Phase 2
+        introTextFading = true;
+        StateHasChanged();
+        await Task.Delay(IntroFadeDurationMs);
+        introText = "But who wrote the script?";
+        introTextFading = false;
+        StateHasChanged();
+        await Task.Delay(Phase2DurationMs);
+        // Phase 3
+        introTextFading = true;
+        StateHasChanged();
+        await Task.Delay(IntroFadeDurationMs);
+        introText = "And who dares rewrite it?";
+        introTextFading = false;
+        StateHasChanged();
+        await Task.Delay(Phase3DurationMs);
+        // Final Phase: ASHBORNE
+        introTextFading = true;
+        StateHasChanged();
+        await Task.Delay(IntroFadeDurationMs);
+        introText = "ASHBORNE";
+        introTextFading = false;
+        isFinalPhase = true;
+        StateHasChanged();
+        await Task.Delay(FinalPhaseDurationMs);
+        // Fade out intro and start game
+        introFading = true;
+        StateHasChanged();
+        await Task.Delay(IntroFadeDurationMs);
+        introPhase = 0;
+        isFinalPhase = false;
         StateHasChanged();
     }
 
@@ -746,6 +1050,12 @@
 
     private void StartOssanethSigilTimer()
     {
+        if (GameContext.Player.EquippedItems["face"]?.Name != "Ossaneth")
+        {
+            isOssanethGifActive = false;
+            ossanethSigilTimer?.Dispose();
+            return;
+        }
         int delay = ossanethRandom.Next(OssanethMinDelayMs, OssanethMaxDelayMs);
         ossanethSigilTimer?.Dispose();
         ossanethSigilTimer = new System.Threading.Timer(_ =>
@@ -769,15 +1079,23 @@
     public override async Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);
-        // Defensive: restart timer if component is re-rendered
-        if (ossanethSigilTimer == null)
+        // Defensive: restart timer if component is re-rendered and mask is equipped
+        if (ossanethSigilTimer == null && GameContext.Player.EquippedItems["face"]?.Name == "Ossaneth")
         {
             StartOssanethSigilTimer();
+        }
+        else if (GameContext.Player.EquippedItems["face"]?.Name != "Ossaneth")
+        {
+            isOssanethGifActive = false;
+            ossanethSigilTimer?.Dispose();
+            ossanethSigilTimer = null;
         }
     }
 
     public void Dispose()
     {
         ossanethSigilTimer?.Dispose();
+        listeningTimer?.Dispose();
+        waitingTimer?.Dispose();
     }
 }

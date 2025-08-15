@@ -6,6 +6,7 @@ using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.SceneManagement;
 using Ink.Runtime;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 
 namespace AshborneGame._Core.Game
 {
@@ -295,10 +296,30 @@ namespace AshborneGame._Core.Game
             _locationEnteredTime = DateTime.UtcNow;
             _realTimeInCurrentLocation = TimeSpan.Zero;
 
-            if (!_locationDurations.ContainsKey(location))
-                _locationDurations[location] = TimeSpan.Zero;
+            if (!_locationDurations.ContainsKey(_currentLocation))
+                _locationDurations[_currentLocation] = TimeSpan.Zero;
 
-            if (!GameContext.Player.CurrentScene.Locations.Contains(GameContext.Player.CurrentLocation))
+            if (GameContext.Player == null)
+            {
+                throw new InvalidOperationException("GameContext.Player is null. Cannot set current location.");
+            }
+
+            if (location == null)
+            {
+                throw new ArgumentNullException(nameof(location), "Location cannot be null.");
+            }
+
+            if (GameContext.Player.CurrentScene == null)
+            {
+                throw new InvalidOperationException("GameContext.Player.CurrentScene is null. Cannot set current location.");
+            }
+
+            if (GameContext.Player.CurrentScene.Locations == null)
+            {
+                throw new InvalidOperationException("GameContext.Player.CurrentScene.Locations is null. Cannot set current location.");
+            }
+
+            if (!GameContext.Player.CurrentScene.Locations.Contains(_currentLocation))
             {
                 // We've moved to a new scene
                 // Increment the scene number
@@ -308,6 +329,55 @@ namespace AshborneGame._Core.Game
                 }
                 // Change the player's scene
                 GameContext.Player.MoveTo(GameContext.Player.CurrentLocation.Scene);
+            }
+
+            // Check if this is a Dreamspace location and track it
+            CheckDreamspaceLocationProgress(location);
+        }
+
+        private void CheckDreamspaceLocationProgress(Location location)
+        {
+            // Only track locations in Ossaneth's Domain (Dreamspace)
+            if (location.Scene?.DisplayName != "Ossaneth's Domain")
+                return;
+
+            // Skip Eye Platform as specified
+            if (location.Name.ReferenceName == "Eye Platform")
+                return;
+
+            // Set flag for this specific location being visited
+            string locationFlagKey = $"Flags.Player.Actions.In.OssanethDreamspace_Visited{location.Name.ReferenceName.Replace(" ", "")}";
+            SetFlag(locationFlagKey, true);
+
+            // Count visited Dreamspace locations (excluding Eye Platform)
+            int visitedCount = 0;
+            var dreamspaceLocations = new[] { "Hall of Mirrors", "Chamber of Cycles", "Temple of the Bound", "Throne Room" };
+            
+            foreach (var locName in dreamspaceLocations)
+            {
+                string flagKey = $"Flags.Player.Actions.In.OssanethDreamspace_Visited{locName.Replace(" ", "")}";
+                if (TryGetFlag(flagKey, out bool visited) && visited)
+                {
+                    visitedCount++;
+                }
+            }
+
+            // Check if we've reached the threshold (2 locations excluding Eye Platform)
+            if (visitedCount >= 2)
+            {
+                // Check if we've already triggered the outro to avoid duplicates
+                if (!TryGetFlag("Flags.Player.Actions.In.OssanethDreamspace_OutroTriggered", out bool outroTriggered) || !outroTriggered)
+                {
+                    SetFlag("Flags.Player.Actions.In.OssanethDreamspace_OutroTriggered", true);
+                    
+                    // Publish event for the outro dialogue
+                    var outroEvent = new GameEvent("player.dreamspace.outro.triggered", new Dictionary<string, object>
+                    {
+                        { "visited_count", visitedCount },
+                        { "location_name", location.Name.ReferenceName }
+                    });
+                    EventBus.Call(outroEvent);
+                }
             }
         }
 

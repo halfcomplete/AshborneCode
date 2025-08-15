@@ -11,7 +11,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 {
     public class OpenObjectCommand : ICommand
     {
-        public string Name => "open";
+        public List<string> Names => ["open"];
         public string Description => "Opens an object.";
 
         public bool TryExecute(List<string> args, Player player)
@@ -25,7 +25,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             string objectName = string.Join(" ", args).Trim();
             Sublocation? sublocation = player.CurrentSublocation;
             IEnumerable<IInteractable>? allIInteractableBehaviours = null;
-            allIInteractableBehaviours = sublocation?.GameObject.GetAllBehaviours<IInteractable>();
+            allIInteractableBehaviours = sublocation?.FocusObject.GetAllBehaviours<IInteractable>();
 
             if (allIInteractableBehaviours == null)
             {

@@ -5,50 +5,52 @@ namespace AshborneGame._Core.Globals.Services
     public static class CharacterOutputDelayCalculator
     {
         private static Random random = new Random();
-        public static int CalculateDelay(char letter, int ms, bool isEnd)
+    public static async Task<int> CalculateDelayAsync(char letter, int ms, bool isEnd)
         {
             int randomVariation = random.Next(OutputConstants.RandomPauseMin, OutputConstants.RandomPauseMax + 1);
             int delay = 0;
 
-            if (letter.Equals('.') && isEnd) // If we reach a full stop and it's the last in the message / sentence.
-            {
+            if (letter.Equals('.') && isEnd)
                 delay = (ms + randomVariation) * OutputConstants.FullStopPauseMultiplier;
-            }
-            else if (letter.Equals('—') && isEnd) // If we reach an em dash and it's the end of the message / sentence
-            {
+            else if (letter.Equals('\u2014') && isEnd)
                 delay = (ms + randomVariation) * OutputConstants.EmDashPauseMultiplier;
-            }
-            else if (letter.Equals(',') && isEnd) // If we reach a comma and it's the end of the message / sentence
-            {
+            else if (letter.Equals(',') && isEnd)
                 delay = (ms + randomVariation) * OutputConstants.CommaPauseMultiplier;
-            }
-            else if (letter.Equals('"') && isEnd) // If we reach a quotation mark or colon and it's the end of the message / sentence
-            {
+            else if (letter.Equals('"') && isEnd)
                 delay = (ms + randomVariation) * OutputConstants.QuotationPauseMultiplier;
-            }
-            else if (letter.Equals(':') && isEnd) // If we reach a colon and it's the end of the clause / sentence / line
-            {
+            else if (letter.Equals(':') && isEnd)
                 delay = (ms + randomVariation) * OutputConstants.QuotationPauseMultiplier;
-            }
-            else if (letter.Equals(']') && isEnd) // If we reach a closing square bracket and it's the end of the message / sentence
-            {
+            else if (letter.Equals(']') && isEnd)
                 delay = (ms + randomVariation) * OutputConstants.ClosingSquareBracketPauseMultiplier;
-            }
-            else if (letter.Equals(')') && isEnd) // If we reach a closing parenthesis and it's the end of the message / sentence
-            {
+            else if (letter.Equals(')') && isEnd)
                 delay = (ms + randomVariation) * OutputConstants.ClosingParenthesisPauseMultiplier;
-            }
+            else if (letter.Equals(':') && isEnd)
+                delay = (ms + randomVariation) * OutputConstants.ColonPauseMultiplier;
+            else if (letter.Equals(';') && isEnd)
+                delay = (ms + randomVariation) * OutputConstants.SemicolonPauseMultiplier;
+            else if (letter.Equals('?') && isEnd)
+                delay = (ms + randomVariation) * OutputConstants.QuestionMarkPauseMultiplier;
+            else if (letter.Equals('!') && isEnd)
+                delay = (ms + randomVariation) * OutputConstants.ExclamationMarkPauseMultiplier;
+            else if (letter.Equals('\n') && isEnd)
+                delay = (ms + randomVariation) * OutputConstants.NewLinePauseMultiplier;
             else
+                delay = (ms + randomVariation);
+
+            // Pause typing if requested (only for typewriter output)
+            while (OutputConstants.Paused)
             {
-                delay = (ms + randomVariation); // Default type speed
+                await Task.Delay(50);
             }
 
-            return Math.Max(delay, 0); // Ensure non-negative delay
+            // Apply type speed multiplier
+            delay = (int)(delay / OutputConstants.TypeSpeedMultiplier);
+            return Math.Max(delay, 0);
         }
 
-        public static int CalculateDebugDelay(char letter, int ms, bool isEnd)
+        public static async Task<int> CalculateDebugDelayAsync(char letter, int ms, bool isEnd)
         {
-            int delay = CalculateDelay(letter, ms, isEnd);
+            int delay = await CalculateDelayAsync(letter, ms, isEnd);
             return Math.Max(Convert.ToInt32(Math.Round(delay * OutputConstants.DefaultDebugTypeSpeedModifier)), 0); // Ensure non-negative delay
         }
     }

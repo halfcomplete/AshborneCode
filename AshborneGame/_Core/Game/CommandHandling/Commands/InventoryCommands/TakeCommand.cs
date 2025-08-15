@@ -9,7 +9,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 {
     internal class TakeCommand : BaseInventoryCommand, ICommand
     {
-        public override string Name => "take";
+        public override List<string> Names => ["take"];
         public override string Description => "Takes an item from an object or NPC.";
 
         public override bool TryExecute(List<string> args, Player player)

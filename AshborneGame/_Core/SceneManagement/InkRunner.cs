@@ -19,8 +19,8 @@ namespace AshborneGame._Core.SceneManagement
     /// </summary>
     public class InkRunner
     {
-        private Story _story;
-        public Story Story => _story;
+        private Story? _story;
+        public Story? Story => _story;
         private Player _player;
         private readonly GameStateManager _gameState;
         private readonly AppEnvironment _appEnvironment;
@@ -45,6 +45,7 @@ namespace AshborneGame._Core.SceneManagement
             _gameState = gameState;
             _player = player;
             _appEnvironment = appEnvironment;
+            _story = null;
         }
 
         /// <summary>
@@ -143,7 +144,7 @@ namespace AshborneGame._Core.SceneManagement
         public async Task RunAsync()
         {
             IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: RunAsync entered at {DateTime.Now}, canContinue={_story?.canContinue}, currentChoices={_story?.currentChoices?.Count}", ConsoleMessageTypes.INFO);
-            if (_story == null)
+            if (_story is null)
                 throw new InvalidOperationException("No Ink story loaded.");
 
             List<string> _globalSceneTags = _story.globalTags ?? new();
@@ -166,40 +167,36 @@ namespace AshborneGame._Core.SceneManagement
                         IOService.Output.WriteLine(line);
                         continue;
                     }
-                    // Handle new line marker
-                    if (line.Equals(OutputConstants.NewLineMarker))
-                    {
-                        IOService.Output.DisplayDebugMessage($"[DEBUG] {OutputConstants.NewLineMarker} marker encountered. Moving to new line.", ConsoleMessageTypes.INFO);
-                        IOService.Output.WriteLine("", OutputConstants.DefaultTypeSpeed * OutputConstants.NewLinePauseMultiplier);
-                        continue; // Do not add new line marker to output buffer
-                    }
-                    // Handle async player input in WASM
-                    if (line.StartsWith(OutputConstants.GetPlayerInputMarker))
-                    if (line.StartsWith(OutputConstants.GetPlayerInputMarker))
+                    // Handle async player input in WASM with optional prompt
+                    if (line.StartsWith(OutputConstants.PlayerInputMarker))
                     {
                         IOService.Output.DisplayDebugMessage($"InkRunner: Awaiting player input at {DateTime.Now}", ConsoleMessageTypes.INFO);
+                        string prompt = "What will you say?";
+                        // Support __GET_PLAYER_INPUT__:Prompt text
+                        if (line.Length > OutputConstants.PlayerInputMarker.Length && line[OutputConstants.PlayerInputMarker.Length] == ':')
+                        {
+                            prompt = line.Substring(OutputConstants.PlayerInputMarker.Length + 1).Trim();
+                            if (string.IsNullOrWhiteSpace(prompt))
+                                prompt = "What will you say?";
+                        }
+                        string playerInput;
                         if (OperatingSystem.IsBrowser())
                         {
-                            if (_getPlayerInputFromUIAsync == null)
+                            playerInput = await IOService.Input.GetPlayerInputAsync(prompt);
+                            while (string.IsNullOrWhiteSpace(playerInput))
                             {
-                                throw new InvalidOperationException("No player input callback set for Ink story.");
+                                playerInput = await IOService.Input.GetPlayerInputAsync(prompt);
                             }
-                            string playerInput = await _getPlayerInputFromUIAsync(true); // true = dialogue input
-                            while (playerInput == string.Empty)
-                            {
-                                playerInput = await _getPlayerInputFromUIAsync(true);
-                            }
-                            GameContext.GameState.SetLabel("player.input", playerInput);
                         }
                         else
                         {
-                            string playerInput = IOService.Input.GetPlayerInput();
+                            playerInput = IOService.Input.GetPlayerInput(prompt);
                             while (string.IsNullOrWhiteSpace(playerInput))
                             {
-                                playerInput = IOService.Input.GetPlayerInput();
+                                playerInput = IOService.Input.GetPlayerInput(prompt);
                             }
-                            GameContext.GameState.SetLabel("player.input", playerInput);
                         }
+                        GameContext.GameState.SetLabel("player.input", playerInput);
                         IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Player input received at {DateTime.Now}", ConsoleMessageTypes.INFO);
                         continue; // Continue the Ink story after input
                     }
@@ -300,40 +297,44 @@ namespace AshborneGame._Core.SceneManagement
             }, token);
         }
 
-        public async Task StopSilentTimer()
+        public Task StopSilentTimer()
         {
             _silentPathCts?.Cancel();
+            return Task.CompletedTask;
         }
 
         private void InitialiseBindings()
         {
             // --- Flags ---
-            _story.BindExternalFunction("setFlag", (string key, bool value) => _gameState.SetFlag(key, value));
-
-            _story.BindExternalFunction("getFlag", (string key) =>
+            if (_story != null)
             {
-                if (_gameState.TryGetFlag(key, out var value))
+                _story.BindExternalFunction("setFlag", (string key, bool value) => _gameState.SetFlag(key, value));
+
+                _story.BindExternalFunction("getFlag", (string key) =>
                 {
-                    return value;
-                }
-                throw new Exception($"Flag '{key}' does not exist.");
-            });
+                    if (_gameState.TryGetFlag(key, out var value))
+                    {
+                        return value;
+                    }
+                    throw new Exception($"Flag '{key}' does not exist.");
+                });
 
-            _story.BindExternalFunction("hasFlag", (string key) => _gameState.HasFlag(key));
+                _story.BindExternalFunction("hasFlag", (string key) => _gameState.HasFlag(key));
 
-            _story.BindExternalFunction("toggleFlag", (string key) =>
-            {
-                var result = _gameState.TryToggleFlag(key);
-                if (result == null)
-                    throw new Exception($"Toggle failed. Flag '{key}' does not exist.");
-            });
+                _story.BindExternalFunction("toggleFlag", (string key) =>
+                {
+                    var result = _gameState.TryToggleFlag(key);
+                    if (result == null)
+                        throw new Exception($"Toggle failed. Flag '{key}' does not exist.");
+                });
 
-            _story.BindExternalFunction("removeFlag", (string key) =>
-            {
-                if (!_gameState.HasFlag(key))
-                    throw new Exception($"Cannot remove non-existent flag '{key}'.");
-                _gameState.RemoveFlag(key);
-            });
+                _story.BindExternalFunction("removeFlag", (string key) =>
+                {
+                    if (!_gameState.HasFlag(key))
+                        throw new Exception($"Cannot remove non-existent flag '{key}'.");
+                    _gameState.RemoveFlag(key);
+                });
+            }
 
             // --- Counters ---
             _story.BindExternalFunction("setCounter", (string key, int value) => _gameState.SetCounter(key, value));
@@ -421,8 +422,11 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public void JumpTo(string path)
         {
-            _story.ChoosePathString(path);
-            Run();
+            if (_story != null)
+            {
+                _story.ChoosePathString(path);
+                Run();
+            }
         }
 
         /// <summary>
@@ -431,7 +435,7 @@ namespace AshborneGame._Core.SceneManagement
         public async Task TryJumpToSilentPathAsync()
         {
             IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: TryJumpToSilentPathAsync called, path={_currentSilentPath.Item1}, story canContinue={_story?.canContinue}", ConsoleMessageTypes.INFO);
-            if (_story == null || (!_story.canContinue && (_story.currentChoices == null || _story.currentChoices.Count == 0)))
+            if (_story is null || (!_story.canContinue && (_story.currentChoices == null || _story.currentChoices.Count == 0)))
             {
                 IOService.Output.DisplayDebugMessage("[DEBUG] InkRunner: TryJumpToSilentPathAsync aborted, story is finished.", ConsoleMessageTypes.INFO);
                 return;
@@ -448,11 +452,12 @@ namespace AshborneGame._Core.SceneManagement
         private static async Task ReliableDelay(int totalMs, CancellationToken token)
         {
             int elapsed = 0;
-            int step = 200; // 200 ms steps
+            int step = 200;
             while (elapsed < totalMs)
             {
                 int wait = Math.Min(step, totalMs - elapsed);
-                await Task.Delay(wait, token);
+                int adjustedWait = (int)(wait / OutputConstants.TypeSpeedMultiplier);
+                await Task.Delay(adjustedWait, token);
                 if (token.IsCancellationRequested) return;
                 elapsed += wait;
             }
@@ -463,7 +468,9 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public bool HasInkVariable(string key)
         {
-            return _story.variablesState.Contains(key);
+            if (_story != null)
+                return _story.variablesState.Contains(key);
+            return false;
         }
 
         /// <summary>
@@ -471,7 +478,9 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public object GetInkVariable(string key)
         {
-            return _story.variablesState[key];
+            if (_story != null)
+                return _story.variablesState[key];
+            throw new InvalidOperationException("No Ink story loaded.");
         }
 
         public void DialogueFinishedOutputting()

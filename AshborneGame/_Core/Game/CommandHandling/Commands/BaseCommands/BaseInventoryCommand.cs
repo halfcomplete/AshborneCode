@@ -38,7 +38,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.BaseCommands
 			}
 		}
 
-		public abstract string Name { get; }
+		public abstract List<string> Names { get; }
 		public abstract string Description { get; }
 		public abstract bool TryExecute(List<string> args, Player player);
 	}

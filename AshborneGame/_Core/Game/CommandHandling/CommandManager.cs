@@ -5,6 +5,7 @@ using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours;
 using AshborneGame._Core.Game.CommandHandling.Commands;
 using AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands;
 using AshborneGame._Core.Game.Events;
+using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 
@@ -12,8 +13,8 @@ namespace AshborneGame._Core.Game.CommandHandling
 {
     public static class CommandManager
     {
-        public static IReadOnlyDictionary<string, ICommand> Commands => _commands;
-        private static Dictionary<string, ICommand> _commands = new();
+        public static IReadOnlyDictionary<List<string>, ICommand> Commands => _commands;
+        private static Dictionary<List<string>, ICommand> _commands = new();
 
         static CommandManager()
         {
@@ -36,7 +37,9 @@ namespace AshborneGame._Core.Game.CommandHandling
 
         public static void RegisterCommand(ICommand command)
         {
-            _commands[command.Name.ToLower()] = command;
+            var keywords = command.Names.ConvertAll(name => name.ToLowerInvariant());
+
+            _commands[keywords] = command;
         }
 
         public static bool TryExecute(string action, List<string> args, Player player)
@@ -50,7 +53,7 @@ namespace AshborneGame._Core.Game.CommandHandling
                     args2.Insert(0, action);
                     if (string.Join(' ', args2).Equals(kvp.Key, StringComparison.OrdinalIgnoreCase))
                     {
-                        IOService.Output.WriteLine(kvp.Value.message.Invoke());
+                        IOService.Output.WriteLine(kvp.Value.message.Invoke(), OutputConstants.DefaultTypeSpeed);
                         kvp.Value.effect?.Invoke();
                         return true;
                     }
@@ -64,7 +67,7 @@ namespace AshborneGame._Core.Game.CommandHandling
                 args2.Insert(0, action);
                 if (string.Join(' ', args2).Equals(kvp.Key, StringComparison.OrdinalIgnoreCase))
                 {
-                    IOService.Output.WriteLine(kvp.Value.message.Invoke());
+                    IOService.Output.WriteLine(kvp.Value.message.Invoke(), OutputConstants.DefaultTypeSpeed);
                     kvp.Value.effect?.Invoke();
                     return true;
                 }
@@ -76,7 +79,8 @@ namespace AshborneGame._Core.Game.CommandHandling
                 return true;
             }
 
-            if (_commands.TryGetValue(action.ToLower(), out var command) && command.TryExecute(args, player))
+            ICommand command = _commands.FirstOrDefault(c => c.Key.Contains(action.ToLower())).Value;
+            if (command != null && command.TryExecute(args, player))
             {
                 return true;
             }
@@ -86,6 +90,53 @@ namespace AshborneGame._Core.Game.CommandHandling
 
         public static string ExtractAction(List<string> input, out List<string> args)
         {
+            // Modular: allow single-word direction ("south") and single-word NPC/location ("NPCNAME")
+            if (input.Count == 1)
+            {
+                var word = input[0].ToLowerInvariant();
+                // Check if direction
+                if (DirectionConstants.CardinalDirections.Contains(word))
+                {
+                    args = new List<string> { word };
+                    return "go";
+                }
+                // Check if matches a sublocation, location, or NPC in current context
+                var player = GameContext.Player;
+                // Safety guards if scene/location not initialised yet
+                if (player.CurrentLocation == null || player.CurrentScene == null)
+                {
+                    args = new List<string>();
+                    return word; // fall back to raw word so it can still error gracefully
+                }
+                // Sublocation
+                if (player.CurrentLocation.Sublocations.Any(s => s.Name.Matches(word)))
+                {
+                    args = new List<string> { word };
+                    return "go to";
+                }
+                // Location
+                if (player.CurrentScene?.Locations != null && player.CurrentScene.Locations.Any(l => l.Name.Matches(word)))
+                {
+                    args = new List<string> { word };
+                    return "go to";
+                }
+                // NPC in sublocation
+                if (player.CurrentSublocation?.FocusObject is AshborneGame._Core.Data.BOCS.NPCSystem.NPC npc && npc.MatchesName(word))
+                {
+                    args = new List<string> { word };
+                    return "talk to";
+                }
+                // NPC in location
+                foreach (var subloc in player.CurrentLocation.Sublocations)
+                {
+                    if (subloc.FocusObject is AshborneGame._Core.Data.BOCS.NPCSystem.NPC npc2 && npc2.MatchesName(word))
+                    {
+                        args = new List<string> { word };
+                        return "talk to";
+                    }
+                }
+            }
+            // Existing logic for multi-word commands
             if (input.Count >= 2 && (input[0] == "go" || input[0] == "talk") && input[1] == "to")
             {
                 var copy = new List<string>(input);

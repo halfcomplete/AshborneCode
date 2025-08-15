@@ -1,5 +1,7 @@
 ﻿using AshborneGame._Core._Player;
+using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.SceneManagement;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Text;
 
@@ -12,6 +14,26 @@ namespace AshborneGame._Core.Game.DescriptionHandling
         public SensoryDescription Sensory { get; private set; }
         public AmbientDescription? Ambient { get; private set; }
         public ConditionalDescription? Conditional { get; private set; }
+
+        private readonly Dictionary<string, string> positionalPhrases = new()
+        {
+            { OutputConstants.ShortenedCentre, "In the centre" },
+            { OutputConstants.ShortenedRight, "On the right" },
+            { OutputConstants.ShortenedLeft, "On the left" },
+            { OutputConstants.ShortenedAtTop, "At the top" },
+            { OutputConstants.ShortenedAtBottom, "At the bottom" },
+            { OutputConstants.ShortenedAtFront, "At the front" },
+            { OutputConstants.ShortenedAtBack, "At the back" },
+            { OutputConstants.ShortenedAtMiddle, "At the middle" },
+            { OutputConstants.ShortenedOnTop, "On the top" },
+            { OutputConstants.ShortenedOnBottom, "On the bottom" },
+            { OutputConstants.ShortenedInFront, "In the front" },
+            { OutputConstants.ShortenedInBack, "In the back" },
+            { OutputConstants.ShortenedInMiddle, "In the middle" },
+            { OutputConstants.ShortenedBehind, "Behind" },
+            { OutputConstants.ShortenedAbove, "Above" },
+            { OutputConstants.ShortenedBelow, "Below" }
+        };
 
         public DescriptionComposer(
             LookDescription lookDescription,
@@ -37,16 +59,30 @@ namespace AshborneGame._Core.Game.DescriptionHandling
         public string GetDescription(Player player, GameStateManager gameState)
         {
             StringBuilder description = new StringBuilder();
+            
+            // Determine which visit count to use based on whether player is in a sublocation or location
+            int visitCount;
+            if (player.CurrentSublocation != null)
+            {
+                // Player is in a sublocation, use sublocation visit count
+                visitCount = player.CurrentSublocation.VisitCount;
+            }
+            else
+            {
+                // Player is in a location, use location visit count
+                visitCount = player.CurrentLocation.VisitCount;
+            }
+            
             // Add fading descriptions based on visit count
-            if (player.CurrentLocation.VisitCount == 0)
+            if (visitCount == 1)
             {
                 description.Append(Fading.FirstTime);
             }
-            else if (player.CurrentLocation.VisitCount == 1)
+            else if (visitCount == 2)
             {
                 description.Append(Fading.SecondTime);
             }
-            else if (player.CurrentLocation.VisitCount == 4)
+            else if (visitCount == 4)
             {
                 description.Append(Fading.FourthTime);
             }
@@ -56,7 +92,9 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             }
             else
             {
-                description.Append($"You go back to {player.CurrentLocation.Name.DisplayName}. It hasn't changed since you last came.");
+                // Use appropriate name based on whether player is in sublocation or location
+                string displayName = player.CurrentSublocation?.Name.DisplayName ?? player.CurrentLocation.Name.DisplayName;
+                description.Append($"You go back to {displayName}. It hasn't changed since you last came.");
             }
 
             // Add ambient snippets if available
@@ -71,7 +109,59 @@ namespace AshborneGame._Core.Game.DescriptionHandling
                 description.Append(" " + Conditional.GetDescription());
             }
 
+            // Add sublocation snippets if available and not currently in a sublocation
+            if (player.CurrentSublocation == null && player.CurrentLocation.Sublocations.Count > 0 && visitCount == 1)
+            {
+                var names = player.CurrentLocation.Sublocations
+                    .Select(s => s.ShortRefDesc);
+
+                var joined = NaturalJoin(names);
+
+                var random = new Random();
+                int chance = random.Next(0, 5);
+                if (chance == 0)
+                {
+                    description.Append(" You can also see ");
+                }
+                else if (chance == 1)
+                {
+                    description.Append(" You also notice ");
+                }
+                else if (chance == 2)
+                {
+                    description.Append(" Near you, you also see ");
+                }
+                else if (chance == 3)
+                {
+                    description.Append(" There is also ");
+                }
+                else
+                {
+                    description.Append(" Here there is also ");
+                }
+                    
+                description.Append(joined);
+                description.Append(".");
+            }
+
+            description.Append("\n");
+
             return description.ToString();
+        }
+
+        private string NaturalJoin(IEnumerable<string> items)
+        {
+            var list = items.ToList();
+            if (list.Count == 0)
+                return string.Empty;
+            if (list.Count == 1)
+                return list[0];
+            if (list.Count == 2)
+                return $"{list[0]} and {list[1]}";
+
+            // 3+ items: "A, B, C, and D"
+            var allButLast = string.Join(", ", list.Take(list.Count - 1));
+            return $"{allButLast}, and {list.Last()}";
         }
 
         public string GetLookDescription(Player player, GameStateManager gameState)
@@ -98,6 +188,8 @@ namespace AshborneGame._Core.Game.DescriptionHandling
 
             // Increment the look count
             Look.LookCount++;
+
+            description.Append("\n");
 
             return description.ToString();
         }

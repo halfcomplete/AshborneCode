@@ -49,7 +49,7 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public Dictionary<string, (Func<string> message, Action effect)> CustomCommands { get; } = new();
 
-        public int VisitCount { get; private set; } = 0;
+        public int VisitCount { get; set; } = 0;
 
         /// <summary>
         /// Adds custom commands to this location.
@@ -78,6 +78,19 @@ namespace AshborneGame._Core.SceneManagement
         {
             if (!Sublocations.Contains(sublocation))
                 Sublocations.Add(sublocation);
+        }
+
+        /// <summary>
+        /// Removes a sublocation from this location. If the player is in that sublocation, they are moved back to the parent location.
+        /// </summary>
+        public void RemoveSublocation(Sublocation sublocation)
+        {
+            if (Sublocations.Contains(sublocation))
+                Sublocations.Remove(sublocation);
+            if (GameContext.Player.CurrentSublocation == sublocation)
+            {
+                GameContext.Player.ForceMoveTo(this);
+            }
         }
 
         /// <summary>
@@ -120,6 +133,7 @@ namespace AshborneGame._Core.SceneManagement
 
             return description.ToString();
         }
+
         public string GetLookDescription(Player player, GameStateManager state) => DescriptionComposer.GetLookDescription(player, state);
 
         public void SetDescriptionComposer(DescriptionComposer composer)
@@ -144,7 +158,7 @@ namespace AshborneGame._Core.SceneManagement
             }
             else
             {
-                sb.AppendLine("\nFrom here you can leave:");
+                sb.AppendLine("From here you can go:");
                 foreach (var exit in Exits)
                 {
                     if (DirectionConstants.CardinalDirections.Contains(exit.Key))
@@ -155,21 +169,16 @@ namespace AshborneGame._Core.SceneManagement
 
                 if (Sublocations.Count > 0)
                 {
-                    sb.AppendLine(" You can also go to:");
+                    sb.AppendLine("\n You can also go to:");
                 }
             }
 
             foreach (var sublocation in Sublocations)
             {
-                sb.AppendLine($"- {sublocation.Name}");
+                sb.AppendLine($"- {sublocation.Name.DisplayName}");
             }
 
             return sb.ToString();
-        }
-
-        public void IncrementVisitCount()
-        {
-            VisitCount++;
         }
     }
 }

@@ -6,7 +6,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 {
     public class HelpCommand : ICommand
     {
-        public string Name => "help";
+        public List<string> Names => ["help"];
         public string Description => "Provides information about possible commands.";
 
         public bool TryExecute(List<string> args, Player player)
@@ -21,7 +21,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             for (int i = 0; i < CommandManager.Commands.Count; i++)
             {
                 var command = CommandManager.Commands[CommandManager.Commands.Keys.ToList()[i]];
-                IOService.Output.WriteLine($"{i + 1}. '{command.Name}' - {command.Description}");
+                IOService.Output.WriteLine($"{i + 1}. '{command.Names[0]}' - {command.Description}");
             }
 
             return true;

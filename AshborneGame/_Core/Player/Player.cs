@@ -12,6 +12,7 @@ using AshborneGame._Core.SceneManagement;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Constants;
+using System.Net.Mail;
 
 namespace AshborneGame._Core._Player
 {
@@ -126,23 +127,74 @@ namespace AshborneGame._Core._Player
         }
 
         /// <summary>
-        /// Moves the player to a sublocation.
+        /// Moves the player to a location. Sets sublocation to null.
         /// </summary>
         /// <param name="newLocation">The sublocation to move to.</param>
         /// <exception cref="ArgumentNullException">Thrown when newLocation is null.</exception>
         public void MoveTo(Location newLocation)
         {
+            if (CurrentSublocation == null)
+            {
+                GameContext.GameState.OnPlayerEnterLocation(newLocation);
+            }
             CurrentLocation = newLocation;
             CurrentSublocation = null;
-            GameContext.GameState.OnPlayerEnterLocation(newLocation);
-            IOService.Output.WriteLine(newLocation.GetDescription(this, GameContext.GameState));
+
+            // Increment visit count BEFORE description
+            CurrentLocation.VisitCount++;
+            Console.WriteLine($"Player moved to {CurrentLocation.Name.DisplayName}. Visit count: {CurrentLocation.VisitCount}");
+
+            // Fire event if Ossaneth Domain and visit count == 4
+            bool sceneMatch = newLocation.Scene != null && newLocation.Scene.DisplayName == "Ossaneth's Domain";
+            bool nameMatch = newLocation.Name.ReferenceName == "Eye Platform";
+            bool visitMatch = CurrentLocation.VisitCount == 2;
+            Console.WriteLine($"[MoveTo] Location={newLocation.Name.DisplayName} Scene={(newLocation.Scene?.DisplayName ?? "<null>")} VisitCount={CurrentLocation.VisitCount} sceneMatch={sceneMatch} nameMatch={nameMatch} visitMatch={visitMatch}", ConsoleMessageTypes.INFO);
+            if (sceneMatch && nameMatch && visitMatch)
+            {
+                var evt = new GameEvent("ossaneth.domain.visitcount.4", new Dictionary<string, object>
+                {
+                    { "location", newLocation },
+                    { "visitCount", CurrentLocation.VisitCount }
+                });
+                EventBus.Call(evt);
+                IOService.Output.DisplayDebugMessage("[MoveTo] Fired ossaneth.domain.visitcount.4 event", ConsoleMessageTypes.INFO);
+            }
+
+                // Suppress description on the special 4th Eye Platform visit (outro) so dialogue leads
+                if (!(sceneMatch && nameMatch && visitMatch))
+                {
+                    IOService.Output.WriteLine(newLocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
+                }
+        }
+
+        /// <summary>
+        /// Same as MoveTo, but prints 'You are back at {location name}.'
+        /// Does NOT increment visit count (force move).
+        /// </summary>
+        public void ForceMoveTo(Location newLocation)
+        {
+            if (CurrentSublocation == null)
+            {
+                // If the player is not in a sublocation
+                GameContext.GameState.OnPlayerEnterLocation(newLocation);
+            }
+            CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
+            CurrentSublocation = null;
+            
+            // Force move does NOT increment visit count
+            
+            IOService.Output.WriteLine($"You are back at {CurrentLocation.Name.DisplayName}.\n\n", OutputConstants.DefaultTypeSpeed);
         }
 
         public void MoveTo(Sublocation newSublocation)
         {
             CurrentSublocation = newSublocation;
-            GameContext.GameState.OnPlayerEnterLocation(newSublocation.ParentLocation);
-            IOService.Output.WriteLine(newSublocation.GetDescription(this, GameContext.GameState));
+            
+            // Increment visit count for sublocation movement AFTER description
+            CurrentSublocation.VisitCount++;
+
+            // Get description BEFORE incrementing visit count
+            IOService.Output.WriteLine(newSublocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
         }
 
         public void MoveTo(Scene newScene)
@@ -157,19 +209,26 @@ namespace AshborneGame._Core._Player
             IOService.Output.WriteLine(newScene.GetHeader());
         }
 
-        public void SetupMoveTo(Location newLocation, Scene newScene)
+        public void SetupMoveTo(Location newLocation, Scene newScene, bool displayDescription = true)
         {
             Console.WriteLine($"Set up move to location: {newLocation.Name} in scene: {newScene.DisplayName}");
             CurrentScene = newScene;
             CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
             CurrentSublocation = null;
             GameContext.GameState.OnPlayerEnterLocation(newLocation);
+            
+            // Setup move sets visit count to 1 (first visit)
+            CurrentLocation.VisitCount = 1;
+
+            if (displayDescription) IOService.Output.WriteLine(CurrentLocation.GetDescription(GameContext.Player, GameContext.GameState));
+            
             if (OperatingSystem.IsBrowser())
             {
                 // In Blazor, don't write the scene header to the console
                 // Instead, the scene header is displayed in the UI
                 return;
             }
+            
             IOService.Output.WriteLine(newScene.GetHeader());
         }
 
@@ -188,26 +247,47 @@ namespace AshborneGame._Core._Player
 
             IOService.Output.DisplayDebugMessage("Move to... " + place, ConsoleMessageTypes.INFO);
 
+            // Directional movement
             if (DirectionConstants.CardinalDirections.Contains(place))
             {
-                // If the place is a direction, handle it as such
                 return TryMoveDirectionally(place);
             }
-            else if (CurrentLocation.Name.Matches(place))
+
+            // Sublocation movement
+            if (CurrentLocation.Sublocations.Any(s => s.Name.Matches(place)))
             {
-                IOService.Output.WriteLine("You can't move there because you are already there.");
+                var sublocation = CurrentLocation.Sublocations.First(s => s.Name.Matches(place));
+                MoveTo(sublocation);
                 return true;
             }
-            else if (CurrentSublocation != null && CurrentSublocation.Name.Matches(place))
+
+            // Location movement (within current scene)
+            if (CurrentScene.Locations.Any(l => l.Name.Matches(place)))
             {
-                IOService.Output.WriteLine("You can't move there because you are already there.");
+                var location = CurrentScene.Locations.First(l => l.Name.Matches(place));
+                if (location == CurrentLocation)
+                {
+                    IOService.Output.WriteLine(location.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
+                    return true;
+                }
+                MoveTo(location);
                 return true;
             }
-            else
+
+            // Already at location/sublocation
+            if (CurrentLocation.Name.Matches(place))
             {
-                // Try to move to a sublocation
-                return TryMoveToSublocation(place);
+                IOService.Output.WriteLine(CurrentLocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
+                return true;
             }
+            if (CurrentSublocation != null && CurrentSublocation.Name.Matches(place))
+            {
+                IOService.Output.WriteLine(CurrentSublocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
+                return true;
+            }
+
+            // If nothing matches, try custom sublocation movement
+            return TryMoveToSublocation(place);
         }
 
         private bool TryMoveDirectionally(string direction)
@@ -231,6 +311,9 @@ namespace AshborneGame._Core._Player
                     MoveTo(newLocation);
                     return true;
                 }
+                // Provide debug info on available exits to aid troubleshooting
+                var available = string.Join(", ", CurrentLocation.Exits.Keys);
+                IOService.Output.DisplayDebugMessage($"No exit '{direction}' from {CurrentLocation.Name.DisplayName}. Available: [{available}]", ConsoleMessageTypes.WARNING);
                 IOService.Output.DisplayFailMessage("You can't go that way.");
                 return false;
             }
@@ -247,6 +330,7 @@ namespace AshborneGame._Core._Player
                 MoveTo(sublocation);
                 return true;
             }
+
             return false;
         }
 

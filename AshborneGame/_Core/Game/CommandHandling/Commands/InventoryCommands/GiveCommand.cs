@@ -9,7 +9,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 {
     internal class GiveCommand : BaseInventoryCommand, ICommand
     {
-        public override string Name => "give";
+        public override List<string> Names => ["give"];
         public override string Description => "Takes something from the player and gives it to someone / something else.";
 
         public override bool TryExecute(List<string> args, Player player)

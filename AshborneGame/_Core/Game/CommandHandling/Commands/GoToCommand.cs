@@ -8,7 +8,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 {
     internal class GoToCommand : ICommand
     {
-        public string Name => "go to";
+        public List<string> Names => ["go to"];
         public string Description => "Allows the player to travel to a location by name.";
 
         public bool TryExecute(List<string> args, Player player)

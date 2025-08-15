@@ -9,7 +9,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 {
     public class TalkToNPCCommand : ICommand
     {
-        public string Name => "talk to";
+        public List<string> Names => ["talk to"];
         public string Description => "Begins a conversation with an NPC.";
 
         public bool TryExecute(List<string> args, Player player)
@@ -25,22 +25,23 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                 IOService.Output.DisplayFailMessage("You are not in a place where you can talk.");
                 return false;
             }
-            if (player.CurrentSublocation.GameObject is not NPC)
+            if (player.CurrentSublocation.FocusObject is not NPC)
             {
                 IOService.Output.DisplayFailMessage($"There is no one to talk to.");
                 return false;
             }
 
             Sublocation sublocation = player.CurrentSublocation!;
-            NPC npc = (NPC)sublocation.GameObject;
+            NPC npc = (NPC)sublocation.FocusObject;
 
-            // Check if the NPC's name matches the target name (case-insensitive, partial match)
-            if (!npc.Name.ToLowerInvariant().Contains(targetName.ToLowerInvariant()))
+            // Check if the NPC's name or synonyms match the target name
+            if (!npc.MatchesName(targetName))
             {
                 IOService.Output.DisplayFailMessage($"There is no one named '{targetName}' here.");
                 return false;
             }
 
+            // May cause an issue where this method returns true before the dialogue begins
             npc.Talk(player);
             return true;
         }

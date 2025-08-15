@@ -20,7 +20,11 @@ namespace AshborneGame._Core.SceneManagement
         /// <summary>
         /// The object that is at this sublocation.
         /// </summary>
-        public BOCSGameObject GameObject { get; }
+        public BOCSGameObject FocusObject { get; }
+
+        public string ShortenedPositionalPhrase { get; init; }
+
+        public string ShortRefDesc { get; init; }
 
         public DescriptionComposer DescriptionComposer { get; private set; }
 
@@ -33,6 +37,8 @@ namespace AshborneGame._Core.SceneManagement
         /// Dictionary of custom commands for this sublocation.
         /// </summary>
         public Dictionary<string, (Func<string> message, Action effect)> CustomCommands { get; } = new();
+
+        public int VisitCount { get; set; } = 0;
 
         /// <summary>
         /// Adds custom commands to this sublocation.
@@ -72,14 +78,18 @@ namespace AshborneGame._Core.SceneManagement
         /// <param name="name">LocationDescriptor for naming and parsing.</param>
         /// <param name="desc">Narrative profile for descriptions.</param>
         /// <param name="id">Unique identifier.</param>
-        public Sublocation(Location parent, GameObject focusObject, LocationIdentifier name, DescriptionComposer desc, string id)
+        /// <param name="shortenedPositionalPhrase">From OutputConstants, where the sublocation is relative to the parent location.</param>
+        /// <param name="shortRefDesc">Used when listing the sublocations in the parent location.</param>
+        public Sublocation(Location parent, BOCSGameObject focusObject, LocationIdentifier name, DescriptionComposer desc, string id, string shortenedPositionalPhrase, string shortRefDesc)
         {
             ParentLocation = parent;
-            GameObject = focusObject;
+            FocusObject = focusObject;
             Name = name;
             DescriptionComposer = desc;
             ID = id;
             Exits = new Dictionary<string, Location> { { "back", parent } };
+            ShortenedPositionalPhrase = shortenedPositionalPhrase;
+            ShortRefDesc = shortRefDesc;
         }
 
         /// <summary>

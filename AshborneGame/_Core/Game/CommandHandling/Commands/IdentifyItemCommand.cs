@@ -9,7 +9,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 {
     internal class IdentifyItemCommand : ICommand
     {
-        public string Name => "IdentifyItemCommand";
+        public List<string> Names => ["identify"];
         public string Description => "Identifies an in-game item for further details.";
 
         public bool TryExecute(List<string> args, Player player)

@@ -9,7 +9,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 {
     public class AttackTargetCommand : ICommand
     {
-        public string Name => "attack";
+        public List<string> Names => ["attack"];
         public string Description => "Attacks a target.";
 
         public bool TryExecute(List<string> args, _Player.Player player)
@@ -26,7 +26,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                 IOService.Output.DisplayFailMessage("There's nothing to attack here. You might want to get closer.");
                 return true;
             }
-            NPC? targetNPC = sublocation.GameObject as NPC;
+            NPC? targetNPC = sublocation.FocusObject as NPC;
             if (targetNPC == null)
             {
                 IOService.Output.DisplayFailMessage($"You cannot attack that.");

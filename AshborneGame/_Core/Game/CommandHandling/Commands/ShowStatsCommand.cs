@@ -6,7 +6,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 {
     public class ShowStatsCommand : ICommand
     {
-        public string Name => "stats";
+        public List<string> Names => ["stats"];
         public string Description => "Shows your current stats.";
 
         public bool TryExecute(List<string> args, Player player)

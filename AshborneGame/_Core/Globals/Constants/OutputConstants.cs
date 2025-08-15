@@ -4,10 +4,40 @@ namespace AshborneGame._Core.Globals.Constants
     public static class OutputConstants
     {
         /// <summary>
+        /// The marker that indicates the start of an inline italic section within typewriter text.
+        /// </summary>
+        public const string InlineItalicStartMarker = "<i>";
+        /// <summary>
+        /// The marker that indicates the end of an inline italic section within typewriter text.
+        /// </summary>
+        public const string InlineItalicEndMarker = "</i>";
+        /// <summary>
         /// Default type speed for Release builds in milliseconds per character.
         /// </summary>
-        public const int DefaultTypeSpeed = 29;
-      
+        public const int DefaultTypeSpeed = 22;
+
+        /// <summary>
+        /// Multiplier for typewriter speed (user adjustable, e.g. 1.0 = normal, 0.5 = half speed, 3.0 = triple speed).
+        /// </summary>
+        private static double _typeSpeedMultiplier = 1.0;
+        public static double TypeSpeedMultiplier
+        {
+            get => _typeSpeedMultiplier;
+            set => _typeSpeedMultiplier = Math.Clamp(value, 0.5, 3.0);
+        }
+
+        /// <summary>
+        /// Whether the game output/timers are currently paused (e.g. when settings modal is open).
+        /// </summary>
+        public static bool Paused { get; set; } = false;
+
+        /// <summary>
+        /// Helper to set type speed multiplier from UI slider.
+        /// </summary>
+        public static void SetTypeSpeedMultiplier(double multiplier)
+        {
+            TypeSpeedMultiplier = multiplier;
+        }
         /// <summary>
         /// Default type speed modifiers for Debug builds as a multiplier for DefaultTypeSpeed.
         /// </summary>
@@ -48,6 +78,18 @@ namespace AshborneGame._Core.Globals.Constants
         public const int ColonPauseMultiplier = 9;
 
         /// <summary>
+        /// The multiplier for pauses after a semicolon.
+        /// </summary>
+        public const int SemicolonPauseMultiplier = 9;
+        /// <summary>
+        /// The multiplier for pauses after a question mark.
+        /// </summary>
+        public const int QuestionMarkPauseMultiplier = 11;
+        /// <summary>
+        /// The multiplier for pauses after an exclamation mark.
+        /// </summary>
+        public const int ExclamationMarkPauseMultiplier = 12;
+        /// <summary>
         /// The multiplier for pauses after a new line.
         /// </summary>
         public const int NewLinePauseMultiplier = 7;
@@ -75,13 +117,20 @@ namespace AshborneGame._Core.Globals.Constants
         /// <summary>
         /// The marker that indicates the start of a message that should be displayed with typewriter effect.
         /// </summary>
-        public const string TypewriterStartMarker = "__TYPEWRITER_START__";
-
+        public const string TypewriterStartMarker = "__TS__";
         /// <summary>
         /// The marker that indicates the end of a message that should be displayed with typewriter effect.
         /// </summary>
-        public const string TypewriterEndMarker = "__TYPEWRITER_END__";
-
+        public const string TypewriterEndMarker = "__TE__";
+        /// <summary>
+        /// The marker that indicates the start of an inline slow section within typewriter text.
+        /// Format: [speed]__IS__[text]__IE__
+        /// </summary>
+        public const string InlineTypewriterStartMarker = "<~>";
+        /// <summary>
+        /// The marker that indicates the end of an inline slow section within typewriter text.
+        /// </summary>
+        public const string InlineTypewriterEndMarker = @"</~>";
         /// <summary>
         /// The marker that indicates typed player input should be requested at this point in the ink file.
         /// </summary>
@@ -98,8 +147,27 @@ namespace AshborneGame._Core.Globals.Constants
         public const string DialogueEndMarker = "__END__";
 
         /// <summary>
-        /// The beginning of the tag that indicates a custom typewriter effect speed for the next line.
+        /// Multiplier for non-dialogue output speed (e.g., 1.2x faster).
         /// </summary>
-        public const string DialogueSpeedTag = "slow:";
+        public const float NonDialogueOutputSpeedMultiplier = 3.5f;
+
+        // ...existing code...
+
+        public const string ShortenedCentre = "centre";
+        public const string ShortenedRight = "right";
+        public const string ShortenedLeft = "left";
+        public const string ShortenedAtTop = "at top";
+        public const string ShortenedAtBottom = "at bottom";
+        public const string ShortenedAtFront = "at front";
+        public const string ShortenedAtBack = "at back";
+        public const string ShortenedAtMiddle = "at middle";
+        public const string ShortenedOnTop = "on top";
+        public const string ShortenedOnBottom = "on bottom";
+        public const string ShortenedInFront = "in front";
+        public const string ShortenedInBack = "in back";
+        public const string ShortenedInMiddle = "in middle";
+        public const string ShortenedBehind = "behind";
+        public const string ShortenedAbove = "above";
+        public const string ShortenedBelow = "below";
     }
 }
