@@ -11,6 +11,8 @@ using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.SceneManagement;
+using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace AshborneGame._Core.Game
 {
@@ -26,7 +28,6 @@ namespace AshborneGame._Core.Game
 
         private Location _firstLocation;
         private Scene _firstScene;
-
         public GameEngine(IInputHandler input, IOutputHandler output, AppEnvironment appEnvironment)
         {
             IOService.Initialise(input, output);
@@ -296,21 +297,20 @@ namespace AshborneGame._Core.Game
             IOService.Output.WriteLine(player.CurrentLocation.GetDescription(player, gameState));
 
             gameState.StartTickLoop();
-
             _isRunning = true;
             while (_isRunning)
             {
                 if (_dialogueRunning) continue;
 
-                string input = IOService.Input.GetPlayerInput().Trim().ToLowerInvariant();
+                string inputStr = IOService.Input.GetPlayerInput().Trim().ToLowerInvariant();
 
-                if (string.IsNullOrWhiteSpace(input))
+                if (string.IsNullOrWhiteSpace(inputStr))
                 {
                     IOService.Output.DisplayFailMessage("You must enter a command.");
                     continue;
                 }
 
-                var splitInput = input.Split(' ').ToList();
+                var splitInput = inputStr.Split(' ').ToList();
                 var action = CommandManager.ExtractAction(splitInput, out List<string> args);
 
                 bool isValidCommand = CommandManager.TryExecute(action, args, player);
@@ -319,10 +319,11 @@ namespace AshborneGame._Core.Game
                 {
                     IOService.Output.DisplayFailMessage("Invalid command. Please try again or type 'help' for assistance.");
 
-                    input = IOService.Input.GetPlayerInput().Trim();
-                    if (string.IsNullOrWhiteSpace(input)) continue;
 
-                    splitInput = input.Split(' ').ToList();
+                    inputStr = IOService.Input.GetPlayerInput().Trim();
+                    if (string.IsNullOrWhiteSpace(inputStr)) continue;
+
+                    splitInput = inputStr.Split(' ').ToList();
                     action = CommandManager.ExtractAction(splitInput, out var args2);
 
                     isValidCommand = CommandManager.TryExecute(action, args2, player);

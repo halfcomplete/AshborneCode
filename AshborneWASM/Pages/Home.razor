@@ -566,10 +566,10 @@
             Console.WriteLine($"[DEBUG] ProcessOutputQueue: {line}");
 #endif
             // Handle special pause marker: ms__PAUSE__
-            if (line.TrimEnd().EndsWith(OutputConstants.TypewriterPauseMarker))
+            if (line.TrimEnd().EndsWith(OutputConstants.DialoguePauseMarker))
             {
                 dialogueChoices.Clear();
-                var msStr = line.Substring(0, line.IndexOf(OutputConstants.TypewriterPauseMarker));
+                var msStr = line.Substring(0, line.IndexOf(OutputConstants.DialoguePauseMarker));
                 if (int.TryParse(msStr, out int ms))
                 {
                     await InvokeAsync(StateHasChanged);
@@ -588,6 +588,18 @@
                 }
                 continue; // Do not add pause marker to output buffer
             }
+
+            // Handle new line marker
+            if (line.Equals(OutputConstants.NewLineMarker))
+            {
+                Console.WriteLine($"[DEBUG] Detected new line marker in line: {line}");
+                gameText += "\n";
+                await InvokeAsync(StateHasChanged);
+                await AutoScrollToBottom();
+                await Task.Delay(OutputConstants.DefaultTypeSpeed * OutputConstants.NewLinePauseMultiplier);
+                continue; // Do not add new line marker to output buffer
+            }
+
             // Handle typewriter effect
             if (line.Contains(OutputConstants.TypewriterStartMarker) && line.Contains(OutputConstants.TypewriterEndMarker))
             {
@@ -595,9 +607,11 @@
                 await HandleTypewriterEffect(line);
                 continue;
             }
+
             // Dialogue choice line
             if (line.Trim().StartsWith("[") && line.Contains("]") && line.Trim().Length > 2)
             {
+                Console.WriteLine($"[DEBUG] Detected dialogue choice in line: {line}");
                 int bracketEnd = line.IndexOf("]");
                 if (bracketEnd > 0 && int.TryParse(line.Substring(1, bracketEnd - 1), out int choiceNumber))
                 {
@@ -628,6 +642,7 @@
                     }
                 }
             }
+
             // Normal line
             if (!string.IsNullOrWhiteSpace(line))
             {
@@ -670,12 +685,15 @@
         int startIndex = line.IndexOf(OutputConstants.TypewriterStartMarker) + OutputConstants.TypewriterStartMarker.Length;
         int endIndex = line.IndexOf(OutputConstants.TypewriterEndMarker);
         string message = line.Substring(startIndex, endIndex - startIndex);
+		    Console.WriteLine($"[DEBUG] Typewriter message: {message}");
 
         // Process inline slow markers in the message BEFORE starting typewriter effect
         var (processedMessage, characterSpeeds) = ProcessInlineSlowMarkersWithSpeeds(message, ms);
 
         isTypingDialogue = true;
+        Console.WriteLine($"[DEBUG] isTypingDialogue set to true for message: {message}");
         await InvokeAsync(StateHasChanged);
+        Console.WriteLine($"[DEBUG] InvokeAsync called after setting isTypingDialogue");
 
         // Split into lines and type each line separately
         string[] lines = processedMessage.Split('\n');
@@ -684,6 +702,7 @@
 
         foreach (var msgLine in lines)
         {
+			      Console.WriteLine($"[DEBUG] Typing line: {msgLine}");
             string typedLine = "";
             bool inItalic = false;
             for (int i = 0; i < msgLine.Length; i++)
@@ -759,6 +778,7 @@
             await Task.Delay(ms * OutputConstants.NewLinePauseMultiplier);
 #endif
         }
+		Console.WriteLine($"[DEBUG] Finished typing dialogue: {message}");
         isTypingDialogue = false;
         await InvokeAsync(StateHasChanged);
 
