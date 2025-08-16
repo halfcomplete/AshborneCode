@@ -74,7 +74,7 @@ namespace AshborneGame._Core._Player
             CurrentLocation = LocationFactory.CreateLocation(
                 new Location(descriptor, descriptor.DisplayName),
                 new LookDescription(),
-                new FadingDescription("You enter a new place.", "You are here again.", "You have been here many times."),
+                new VisitDescription("You enter a new place.", "You are here again.", "You have been here many times."),
                 new SensoryDescription("A generic location.", "You hear ambient sounds.")
             );
             CurrentScene = new Scene("test location group", "Test Location Group");
@@ -103,7 +103,7 @@ namespace AshborneGame._Core._Player
             CurrentLocation = LocationFactory.CreateLocation(
                 new Location(descriptor, descriptor.DisplayName),
                 new LookDescription(),
-                new FadingDescription("You enter a placeholder place.", "You are at the placeholder place again.", "You have been here many times."),
+                new VisitDescription("You enter a placeholder place.", "You are at the placeholder place again.", "You have been here many times."),
                 new SensoryDescription("A placeholder location.", "You hear placeholder sounds.")
             );
             CurrentScene = new Scene("Placeholder", "Placeholder");

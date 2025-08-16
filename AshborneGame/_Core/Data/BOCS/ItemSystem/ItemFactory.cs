@@ -21,6 +21,11 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             return item;
         }
 
+        public static Item CreateFillerItem()
+        {
+            return new Item("", "", "", 1, ItemTypes.Equipment, ItemQualities.None);
+        }
+
         public static Item CreateEnemyWeapon(string name, string description, ItemQualities quality, int maxDurability)
         {
             Item item = new Item(name, description, "", 1, ItemTypes.Weapon, quality);

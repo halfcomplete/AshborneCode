@@ -96,7 +96,7 @@ namespace AshborneGame._Core.Game
                 new LookDescription(
                     "You glance around uneasily. The eye you stand on is unblinking and unmoving. Black clouds cover the sky, and the occasional lightning flashes are bright white against an otherwise dull and dark background.",
                     "You look around once more. Nothing changes — but are the shards sharper now?"),
-                new FadingDescription(
+                new VisitDescription(
                     "You feel sick and disoriented. It takes you a few moments to stabilise. Glancing around, you notice that you're standing on an eye-shaped platform overlooking a vast, swirling abyss. The air is thick with an otherworldly energy as mirrors and shards of glass spin wildly around you.",
                     "You are back on the platform. The eye beneath seems stronger now, the pupil having enlarged, as though it wants to see more. The abyss feels darker, heavier.",
                     "For the fourth time, you stand overlooking the mess of glass and mirrors. You almost grow tired of it. The vortex is at its strongest now. The void is at its darkest, deepest, and the mirrors reflect your ragged face. It is unrecognisable now.",
@@ -160,6 +160,35 @@ namespace AshborneGame._Core.Game
                 .Once()
             );
 
+            // Add Abyssal Rift sublocation to Eye Platform
+            Sublocation platformEdge = new Sublocation(
+                eyePlatform,
+                ItemFactory.CreateFillerItem(),
+                new LocationIdentifier("platform edge", new List<string> { "edge", "side" }),
+                new DescriptionComposer(
+                    new LookDescription(
+                        "Peering over the edge, the void stretches endlessly. Fragments warp and twist as if reality itself is bending.",
+                        "You peer over the edge once more. The darkness seems thicker than before. You feel your mind resisting the pull."),
+                    new VisitDescription(
+                        "You walk to the edge, careful and cautious. There, the platform ends abruptly: no smooth curves or edges, just solid ground suddenly giving way to black.",
+                        "You stride back to the edge. The void seems darker and deeper now...",
+                        "You are once more at the edge."),
+                    new SensoryDescription(
+                        "The air smells sharper here, like it's... metallic.",
+                        "A low hum vibrates through your chest, syncing with your heartbeat."),
+                    new AmbientDescription(new Dictionary<TimeSpan, string> { { TimeSpan.FromSeconds(8), "A shadow flickers at the edge of your vision, gone when you turn." } })
+                ),
+                "platform edge",
+                OutputConstants.ShortenedLeft,
+                "the edge of the platform, overlooking the abyss"
+            );
+
+            platformEdge.AddCustomCommand(new List<string> { "look down", "peer over edge", "look down", "look over" },
+                () => "You stare into the rift. Vertigo strikes, but the depths reveal nothing.",
+                () => { });
+
+            eyePlatform.AddSublocation(platformEdge);
+
             Location hallOfMirrors = LocationFactory.CreateLocation(
                 new Location(
                     new LocationIdentifier("Hall of Mirrors"),
@@ -168,7 +197,7 @@ namespace AshborneGame._Core.Game
                     "You look around the hall. Everywhere, your reflection stares right back at you, each mirror containing an infinite universe of you's.",
                     "You look around the hall again. The mirrors remain ever so still, ever so silent."
                     ),
-                new FadingDescription(
+                new VisitDescription(
                     "You enter the Hall of Mirrors. In front of you is a long, stretching hallway that seems to go on forever; the wall, floor, and ceilings are covered in mirrors. As you walk by, some reflections lag behind and others move before you. Some never blink while others walk with their eyes closed. " +
                     "You are surprised to see that the Mask that was forced on to you just before is no longer on your face — instead, it leaves blank, featureless skin. Your identity. Gone.",
                     "You enter the Hall of Mirrors again. Nothing seems to have changed, but you think that the reflections are diverging further and further away from your real self.",
@@ -187,7 +216,7 @@ namespace AshborneGame._Core.Game
                 new DescriptionComposer(
                     new LookDescription("You look at the shard. It is a small piece of a broken mirror, but it seems to reflect deeper than a normal mirror. You can see your reflection, but it feels... empty.",
                         "You look at the shard again. It still feels empty, but you can't shake the feeling that it is important."),
-                    new FadingDescription("You walk up to the shard of mirror. It is small and broken, but it seems to reflect deeper than a normal mirror can. Perhaps storing it for later will be beneficial.\n",
+                    new VisitDescription("You walk up to the shard of mirror. It is small and broken, but it seems to reflect deeper than a normal mirror can. Perhaps storing it for later will be beneficial.\n",
                         "You walk up to the shard again. It still feels empty, but you can't shake the feeling that it is important.",
                         "You go to the shard again. It still feels empty, but you can't shake the feeling that it is important."),
                     new SensoryDescription("The shard is cold to the touch.", "It is eerily quiet here.")),
@@ -216,7 +245,7 @@ namespace AshborneGame._Core.Game
                 new LookDescription(
                     "You look around the chamber, inspecting the clocks further. The clocks are broken — a tick forward is immediately followed by a jump back. Time isn't moving forward. Not anymore.",
                     "You look around the chamber again. Still, the clocks are broken. Time is frozen. Tick. Tock. Tick. Tock."),
-                new FadingDescription(
+                new VisitDescription(
                     "You enter the Chamber of Cycles. It is a circular room covered top to bottom with clocks of every century, each ticking to a separate rhythm. In the centre lies a single, looming hourglass. It's almost finished. The clocks talk to you. Tick. Tock. Tick. Tock.",
                     "You are back in the Chamber of Cycles. The clocks seem to be ticking faster now, with just a little sand left in the massive hourglass. ",
                     "For the fourth time, you enter the Chamber of Cycles. Some clocks are shattered now. The hourglass is cracking. Is time... breaking?"),
@@ -234,7 +263,7 @@ namespace AshborneGame._Core.Game
                     "You look around the temple. The strange, alien symbols covering the walls are each etched deep into rough bricks the size of a person. You cannot read them, but as your eyes jump from one symbol to another, they glow ever so slightly against the dark. The characters are beautiful, each line a river of the unknown.",
                     "You look around the temple again. The prisoner shuffles slightly.",
                     "Turning your head, you peel your eyes for anything that has changed. Nothing has."),
-                new FadingDescription(
+                new VisitDescription(
                     "You walk inside the Temple of the Bound to a massive, dark area. Unknown inscriptions on the wall glow faintly. The air is damp.",
                     "You return to the Temple of the Bound. One of the candles in the middle has gone out.",
                     "You go back to the Temple of the Bound. The symbols on the wall are stronger, denser, more... powerful. You feel your hair bristle. You shouldn't be here."),
@@ -247,7 +276,7 @@ namespace AshborneGame._Core.Game
             templeOfTheBound.AddSublocation(new Sublocation(templeOfTheBound, boundOne, new LocationIdentifier("circle of candles", new List<string>() { "circle", "candles", "candle circle" }), new DescriptionComposer(
                 new LookDescription("You look closer at the circle. It's made up of 12 white wax candles placed precisely around the prisoner. Beneath the candles and the prisoner is a scrawled red 12-pointed star, with the centre circle formed by the intersecting lines slightly aflame. Shadows dance on the floor. You shiver. The fire is not warm.",
                 "You look at the circle again. The shadows seem to have grown larger and sharper. Or is the eerie holiness of the temple finally getting to your mind."),
-                new FadingDescription("You walk up to the circle of candles. The prisoner is a sorry sight—crippled, ragged, and chained to the ground, they are surrounded by the circle of candles, as though a ritual will take place soon. Or has it already finished? You wouldn't be surprised if that were the case—but maybe you should talk to them.",
+                new VisitDescription("You walk up to the circle of candles. The prisoner is a sorry sight—crippled, ragged, and chained to the ground, they are surrounded by the circle of candles, as though a ritual will take place soon. Or has it already finished? You wouldn't be surprised if that were the case—but maybe you should talk to them.",
                 "You walk up to the circle again. The candles dim ever so slightly as your movement shakes the otherwise still air.",
                 "You go to the circle again. The candles and shadows tire of your presence. And perhaps the prisoner does too."),
                 new SensoryDescription("The flames are red and wild — almost as wild as the prisoner.",
@@ -263,7 +292,7 @@ namespace AshborneGame._Core.Game
             ossanethDomain.AddLocation(chamberOfCycles);
             ossanethDomain.AddLocation(templeOfTheBound);
 
-            var prologueLocation = LocationFactory.CreateLocation(new Location(), new LookDescription(), new FadingDescription(), new SensoryDescription());
+            var prologueLocation = LocationFactory.CreateLocation(new Location(), new LookDescription(), new VisitDescription(), new SensoryDescription());
             var prologue = new Scene("Prologue", "Prologue");
 
             prologue.AddLocation(prologueLocation);

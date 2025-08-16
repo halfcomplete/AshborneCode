@@ -168,14 +168,14 @@ namespace AshborneGame._Core.SceneManagement
                         continue;
                     }
                     // Handle async player input in WASM with optional prompt
-                    if (line.StartsWith(OutputConstants.PlayerInputMarker))
+                    if (line.StartsWith(OutputConstants.GetPlayerInputMarker))
                     {
                         IOService.Output.DisplayDebugMessage($"InkRunner: Awaiting player input at {DateTime.Now}", ConsoleMessageTypes.INFO);
                         string prompt = "What will you say?";
                         // Support __GET_PLAYER_INPUT__:Prompt text
-                        if (line.Length > OutputConstants.PlayerInputMarker.Length && line[OutputConstants.PlayerInputMarker.Length] == ':')
+                        if (line.Length > OutputConstants.GetPlayerInputMarker.Length && line[OutputConstants.GetPlayerInputMarker.Length] == ':')
                         {
-                            prompt = line.Substring(OutputConstants.PlayerInputMarker.Length + 1).Trim();
+                            prompt = line.Substring(OutputConstants.GetPlayerInputMarker.Length + 1).Trim();
                             if (string.IsNullOrWhiteSpace(prompt))
                                 prompt = "What will you say?";
                         }

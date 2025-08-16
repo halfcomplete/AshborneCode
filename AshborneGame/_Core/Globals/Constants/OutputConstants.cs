@@ -110,6 +110,11 @@ namespace AshborneGame._Core.Globals.Constants
         public const string DialoguePauseMarker = "__PAUSE__";
 
         /// <summary>
+        /// The tag that indicates the dialogue speed for the next line.
+        /// </summary>
+        public const string DialogueSpeedTag = "#slow:";
+
+        /// <summary>
         /// Default pause duration in milliseconds when a pause duration is not specified in a __PAUSE__ marker.
         /// </summary>
         public const int DefaultPauseDuration = 1000;
@@ -150,8 +155,6 @@ namespace AshborneGame._Core.Globals.Constants
         /// Multiplier for non-dialogue output speed (e.g., 1.2x faster).
         /// </summary>
         public const float NonDialogueOutputSpeedMultiplier = 3.5f;
-
-        // ...existing code...
 
         public const string ShortenedCentre = "centre";
         public const string ShortenedRight = "right";

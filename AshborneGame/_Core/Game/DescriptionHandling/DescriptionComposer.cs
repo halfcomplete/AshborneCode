@@ -10,7 +10,7 @@ namespace AshborneGame._Core.Game.DescriptionHandling
     public class DescriptionComposer
     {
         public LookDescription Look { get; private set; }
-        public FadingDescription Fading { get; private set; }
+        public VisitDescription Fading { get; private set; }
         public SensoryDescription Sensory { get; private set; }
         public AmbientDescription? Ambient { get; private set; }
         public ConditionalDescription? Conditional { get; private set; }
@@ -37,7 +37,7 @@ namespace AshborneGame._Core.Game.DescriptionHandling
 
         public DescriptionComposer(
             LookDescription lookDescription,
-            FadingDescription fading,
+            VisitDescription fading,
             SensoryDescription sensory,
             AmbientDescription? ambient = null,
             ConditionalDescription? conditional = null)
@@ -52,7 +52,7 @@ namespace AshborneGame._Core.Game.DescriptionHandling
         public DescriptionComposer()
         {
             Look = new LookDescription();
-            Fading = new FadingDescription();
+            Fading = new VisitDescription();
             Sensory = new SensoryDescription();
         }
 

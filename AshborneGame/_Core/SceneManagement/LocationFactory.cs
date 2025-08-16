@@ -5,7 +5,7 @@ namespace AshborneGame._Core.SceneManagement
 {
     public static class LocationFactory
     {
-        public static Location CreateLocation(Location location, LookDescription lookDescription, FadingDescription fading, SensoryDescription sensory, AmbientDescription? ambient = null, ConditionalDescription? conditional = null)
+        public static Location CreateLocation(Location location, LookDescription lookDescription, VisitDescription fading, SensoryDescription sensory, AmbientDescription? ambient = null, ConditionalDescription? conditional = null)
         {
             var descriptionComposer = new DescriptionComposer(
                 lookDescription,

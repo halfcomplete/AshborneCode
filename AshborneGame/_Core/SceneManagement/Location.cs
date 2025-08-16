@@ -117,7 +117,7 @@ namespace AshborneGame._Core.SceneManagement
             Name = new LocationIdentifier("Default Location");
             DescriptionComposer = new DescriptionComposer(
                 new LookDescription(),
-                new FadingDescription("You enter a new place.", "You are here again.", "You have been here many times."),
+                new VisitDescription("You enter a new place.", "You are here again.", "You have been here many times."),
                 new SensoryDescription("A generic location.", "You hear ambient sounds."));
             ID = "default_location";
         }

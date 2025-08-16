@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AshborneGame._Core.Game.DescriptionHandling
 {
-    public class FadingDescription
+    public class VisitDescription
     {
         /// <summary>
         /// Description for the first time this is described.
@@ -28,7 +28,7 @@ namespace AshborneGame._Core.Game.DescriptionHandling
         /// </summary>
         public string? UnchangedTime { get; private set; }
 
-        public FadingDescription(
+        public VisitDescription(
             string firstTime,
             string secondTime,
             string fourthTime,
@@ -40,7 +40,7 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             UnchangedTime = unchangedTime;
         }
 
-        public FadingDescription()
+        public VisitDescription()
         {
             FirstTime = "You enter a new place.";
             SecondTime = "You are here again.";
