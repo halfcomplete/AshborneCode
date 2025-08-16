@@ -477,7 +477,7 @@
         {
             // Adapted to match Func<bool, Task<string>> expected by InkRunner/DialogueService
             GameContext.DialogueService.SetPlayerInputCallback(async (useDefaultPrompt) => await GetPlayerInputFromUIAsync(playerInputPrompt));
-            @* GameContext.DialogueService.DialogueComplete += async () =>
+            GameContext.DialogueService.DialogueComplete += async () =>
             {
                 // Only set isInDialogue to false if not typewriting
                 if (!isTypingDialogue)
@@ -488,7 +488,7 @@
                     await InvokeAsync(StateHasChanged);
                 }
                 // Otherwise, let the typewriter effect finish, then set isInDialogue = false at the end of HandleTypewriterEffect
-            }; *@
+            };
             GameContext.DialogueService.DialogueStart += async () =>
             {
                 isInDialogue = true;
