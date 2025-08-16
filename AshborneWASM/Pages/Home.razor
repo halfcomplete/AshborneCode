@@ -151,18 +151,27 @@
         </div>
     </div>
     @if (!hasStarted || isFading)
-    {
-        <div class="title-screen @(isFading ? "fade-out" : "") @(isIntroTransitioning ? "fade-overlap" : "")">
-            <div class="title-logo">ASHBORNE</div>
-            <button class="begin-button" @onclick="BeginGame">Begin</button>
-        </div>
-    }
-    @if (introPhase > 0 || isIntroTransitioning)
-    {
-        <div class="intro-screen @(introFading ? "fade-out" : "fade-in")">
-            <div class="intro-text @(introTextFading ? "fade-out" : "fade-in") @(isFinalPhase ? "final-phase" : "")">@introText</div>
-        </div>
-    }
+        {
+            <div class="title-screen @(isFading ? "fade-out" : "") @(isIntroTransitioning ? "fade-overlap" : "")">
+                <div class="title-logo">ASHBORNE</div>
+                <button class="begin-button" @onclick="BeginGame">Begin</button>
+            </div>
+        }
+        @if (introPhase > 0 || isIntroTransitioning)
+        {
+            <div class="intro-screen @(introFading ? "fade-out" : "fade-in")">
+                <div class="intro-text @(introTextFading ? "fade-out" : "fade-in") @(isFinalPhase ? "final-phase" : "")">@introText</div>
+            </div>
+        }
+        @if (isOutroActive)
+        {
+            <div class="outro-screen @(isOutroFadingIn ? "fade-in" : "")">
+                <div class="outro-wrapper">
+                    <div class="outro-main-text @(isOutroFadingIn ? "fade-in" : "fade-out")">ASHBORNE DEMO COMPLETE</div>
+                    <div class="outro-sub-text @(isOutroFadingIn ? "fade-in" : "fade-out")">Thank you for playing!</div>
+                </div>
+            </div>
+        }
 </div>
 
 @* <div>
@@ -175,6 +184,29 @@
 </div> *@
 
 @code {
+    private bool isOutroActive = false;
+    private bool isOutroFadingIn = false;
+    // Only show outro overlay after all output and typewriter effect is finished
+    private async Task TryTriggerOutroSequenceAsync()
+    {
+        if (GameContext.DialogueService?.LastDialogueKey == "Act1_Scene1_Ossaneth_Domain_Outro")
+        {
+            // Wait for all output and typewriter effect to finish
+            if (Instance != null)
+                await Instance.FlushOutputQueueAsync();
+            while (isTypingDialogue || isProcessingQueue)
+            {
+                await Task.Delay(10);
+            }
+            Console.WriteLine("[Home] Outro sequence triggered: showing overlay (with fade)");
+            isOutroActive = true;
+            await InvokeAsync(StateHasChanged);
+            // Fade in animation
+            await Task.Delay(50); // Ensure DOM update
+            isOutroFadingIn = true;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
     [Inject] private HttpClient? Http { get; set; }
     [Inject] private NavigationManager? Navigation { get; set; }
     [Inject] private AppEnvironment? AppEnv { get; set; }
@@ -412,6 +444,7 @@
         }
     }
 
+
     protected override void OnInitialized()
     {
         Instance = this;
@@ -457,12 +490,18 @@
                 // Otherwise, let the typewriter effect finish, then set isInDialogue = false at the end of HandleTypewriterEffect
             }; *@
             GameContext.DialogueService.DialogueStart += async () =>
-                                    {
-                                        isInDialogue = true;
-                                        isAwaitingPlayerInput = false;
-                                        userInput = "";
-                                        await InvokeAsync(StateHasChanged);
-                                    };
+            {
+                isInDialogue = true;
+                isAwaitingPlayerInput = false;
+                userInput = "";
+                await InvokeAsync(StateHasChanged);
+            };
+            GameContext.DialogueService.DialogueComplete += async () =>
+            {
+                Console.WriteLine("[Home] DialogueComplete fired (subscription present)");
+                Console.WriteLine($"[Home] LastDialogueKey='{GameContext.DialogueService.LastDialogueKey}' CurrentDialogueKey='{GameContext.DialogueService.CurrentDialogueKey}'");
+                await TryTriggerOutroSequenceAsync();
+            };
         }
 
         if (GameContext.InkRunner != null)

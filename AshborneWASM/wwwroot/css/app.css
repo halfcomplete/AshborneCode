@@ -559,7 +559,7 @@ input {
     animation: enlargeText 5s ease-in-out forwards;
 }
 /* Outro overlay */
-.outro-screen { position:fixed; top:0; left:0; width:100vw; height:100vh; background:linear-gradient(135deg,#0c0c0c 0%,#000 55%,#141414 100%); display:flex; align-items:center; justify-content:center; z-index:30; opacity:1; transition:opacity .9s ease-in-out; }
+.outro-screen { position:fixed; top:0; left:0; width:100vw; height:100vh; background:linear-gradient(135deg,#0c0c0c 0%,#000 55%,#141414 100%); display:flex; align-items:center; justify-content:center; z-index:2200; opacity:1; transition:opacity .9s ease-in-out; }
 .outro-screen.fade-out { opacity:0; pointer-events:none; }
 .outro-wrapper { text-align:center; max-width:80%; }
 .outro-main-text { font-family:'IMFellEnglishSC', serif; font-size:4rem; letter-spacing:.14em; color:#f8eecb; text-shadow:0 4px 32px #000a,0 2px 8px #bfae8e44; margin-bottom:1.4rem; user-select:none; opacity:1; transition:opacity .9s ease-in-out; }
@@ -568,7 +568,20 @@ input {
 .outro-main-text.fade-in, .outro-sub-text.fade-in { opacity:1; }
 
 /* Outro overlay */
-.outro-screen { position:fixed; top:0; left:0; width:100vw; height:100vh; background:linear-gradient(135deg,#0c0c0c 0%,#000 55%,#141414 100%); display:flex; align-items:center; justify-content:center; z-index:30; opacity:1; transition:opacity .9s ease-in-out; }
+.outro-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg,#0c0c0c 0%,#000 55%,#141414 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2200;
+    opacity: 1;
+    transition: opacity .9s ease-in-out;
+}
 .outro-screen.fade-out { opacity:0; pointer-events:none; }
 .outro-wrapper { text-align:center; max-width:80%; }
 .outro-main-text { font-family:'IMFellEnglishSC', serif; font-size:4rem; letter-spacing:.14em; color:#f8eecb; text-shadow:0 4px 32px #000a,0 2px 8px #bfae8e44; margin-bottom:1.4rem; user-select:none; opacity:1; transition:opacity .9s ease-in-out; }
@@ -584,7 +597,7 @@ input {
     background: linear-gradient(135deg, #0c0c0c 0%, #000 50%, #121212 100%);
     display: flex; align-items: center; justify-content: center;
     z-index: 20; /* Above intro */
-    opacity: 1; transition: opacity 0.8s ease-in-out;
+    opacity: 1; transition: opacity 1.5s ease-in-out;
 }
 .outro-screen.fade-out { opacity:0; pointer-events:none; }
 .outro-screen.fade-in { opacity:1; }
