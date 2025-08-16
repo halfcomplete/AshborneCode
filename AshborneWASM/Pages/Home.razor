@@ -174,14 +174,14 @@
         }
 </div>
 
-<div>
+@* <div>
     <pre>
         isInDialogue: @isInDialogue
         isAwaitingPlayerInput: @isAwaitingPlayerInput
         dialogueChoices.Count: @dialogueChoices.Count
         isTypingDialogue: @isTypingDialogue
     </pre>
-</div>
+</div> *@
 
 @code {
     private bool isOutroActive = false;
@@ -475,19 +475,12 @@
         // Wire up callbacks for dialogue and player input
         if (GameContext.DialogueService != null)
         {
-            // Adapted to match Func<bool, Task<string>> expected by InkRunner/DialogueService
             GameContext.DialogueService.SetPlayerInputCallback(async (useDefaultPrompt) => await GetPlayerInputFromUIAsync(playerInputPrompt));
             GameContext.DialogueService.DialogueComplete += async () =>
             {
-                // Only set isInDialogue to false if not typewriting
-                if (!isTypingDialogue)
-                {
-                    isInDialogue = false;
-                    isAwaitingPlayerInput = false;
-                    userInput = "";
-                    await InvokeAsync(StateHasChanged);
-                }
-                // Otherwise, let the typewriter effect finish, then set isInDialogue = false at the end of HandleTypewriterEffect
+                Console.WriteLine("[Home] DialogueComplete fired (subscription present)");
+                Console.WriteLine($"[Home] LastDialogueKey='{GameContext.DialogueService.LastDialogueKey}' CurrentDialogueKey='{GameContext.DialogueService.CurrentDialogueKey}'");
+                await TryTriggerOutroSequenceAsync();
             };
             GameContext.DialogueService.DialogueStart += async () =>
             {
@@ -495,12 +488,6 @@
                 isAwaitingPlayerInput = false;
                 userInput = "";
                 await InvokeAsync(StateHasChanged);
-            };
-            GameContext.DialogueService.DialogueComplete += async () =>
-            {
-                Console.WriteLine("[Home] DialogueComplete fired (subscription present)");
-                Console.WriteLine($"[Home] LastDialogueKey='{GameContext.DialogueService.LastDialogueKey}' CurrentDialogueKey='{GameContext.DialogueService.CurrentDialogueKey}'");
-                await TryTriggerOutroSequenceAsync();
             };
         }
 
@@ -592,7 +579,6 @@
             if (line == "__END__")
             {
                 pendingDialogueEnd = true;
-                continue;
             }
             if (line.Contains("__NL__"))
             {
@@ -696,21 +682,30 @@
         }
         isProcessingQueue = false;
 
-        // After all output is processed and typewriter is done
-        if (pendingDialogueEnd && !isTypingDialogue)
+        while (pendingDialogueEnd)
         {
-            Console.WriteLine($"[DEBUG] ProcessOutputQueue: Flushed output, ending dialogue at {DateTime.Now}");
-            isInDialogue = false;
-            isAwaitingPlayerInput = false;
-            userInput = "";
-            pendingDialogueEnd = false;
-            GameContext.InkRunner?.DialogueFinishedOutputting();
-            await InvokeAsync(StateHasChanged);
-        }
+            // Wait until we are not pending the dialogue end anymore
+            await Task.Delay(10);
+		}
+
+        Console.WriteLine($"[DEBUG] ProcessOutputQueue: Flushed output, ending dialogue at {DateTime.Now}");
+        isInDialogue = false;
+        isAwaitingPlayerInput = false;
+        userInput = "";
+        pendingDialogueEnd = false;
+        GameContext.InkRunner?.DialogueFinishedOutputting();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task HandleTypewriterEffect(string line)
     {
+        if (pendingDialogueEnd && line == "__END__")
+        {
+            // If we are already pending dialogue end, just return
+            Console.WriteLine("[DEBUG] HandleTypewriterEffect: Already pending dialogue end, skipping typewriter effect.");
+			pendingDialogueEnd = false; // Reset pending state
+            return;
+		}
         // Parse ms value at the start of the line (e.g. "50__TS__...")
         int ms = OutputConstants.DefaultTypeSpeed; // default
         Console.WriteLine($"[DEBUG] Handling typewriter effect for line: {line}");
@@ -741,7 +736,7 @@
 
         foreach (var msgLine in lines)
         {
-			      Console.WriteLine($"[DEBUG] Typing line: {msgLine}");
+			Console.WriteLine($"[DEBUG] Typing line: {msgLine}");
             string typedLine = "";
             bool inItalic = false;
             for (int i = 0; i < msgLine.Length; i++)
