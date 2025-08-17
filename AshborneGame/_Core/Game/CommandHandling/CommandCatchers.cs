@@ -9,6 +9,6 @@ namespace AshborneGame._Core.Game.CommandHandling
     internal static class CommandCatchers
     {
         public static readonly List<string> ShoutVerbs = ["shout", "cry", "call", "scream", "yell"];
-        public static readonly List<string> HelpVerbs = ["pray", "plead", "beg"];
+        public static readonly List<string> HelpVerbs = ["pray", "plead", "beg", "help me"];
     }
 }

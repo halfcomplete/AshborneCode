@@ -225,8 +225,12 @@ namespace AshborneGame._Core.Game
                 "a shard of a mirror, lying on the floor");
 
             hallOfMirrors.AddCustomCommand(new List<string> { "pick up shard", "pick shard", "take shard", "take shard of mirror", "pick up mirror shard", "take mirror shard", "pick up shard of mirror" },
-                () => $"You cannot do that from here. Try moving closer to the shard.",
+                () => $"You cannot do that from here. Try going closer to the shard.",
                 () => { });
+
+            hallOfMirrors.AddCustomCommand(new List<string> { "go closer", "go closer to shard", "walk closer", "walk closer to shard" },
+                () => "",
+                () => { GameContext.Player.MoveTo(mirrorShardSublocation); });
 
             mirrorShardSublocation.AddCustomCommand(new List<string> { "take it", "pick it up", "pick up shard", "pick shard", "take shard", "take shard of mirror", "pick up mirror shard", "take mirror shard", "pick up shard of mirror" },
                 () => $"\nYou pick up the {mirrorShard.Name}. It is sharp and cold against your hand. Maybe it could be useful later.",
@@ -271,8 +275,15 @@ namespace AshborneGame._Core.Game
                     "The vaulted ceiling is covered in hanging moss and leaves.",
                     "Whispers of magic and memory dance in the air. Is that coming from the runes?"));
 
+            templeOfTheBound.AddCustomCommand(new List<string> { "look at symbols", "read symbols", "look at runes", "read runes", "inspect symbols", "inspect runes", "look at inscriptions", "inspect inscriptions", "read inscriptions" },
+                () => "You take a closer look at the inscriptions. You cannot understand them, but the strange purple glow... it speaks to you. If that is even possible.",
+                () => 
+                { 
+                });
+
             NPC boundOne = NPCFactory.CreateTalkableNPC("Bound One", "It's a sad, chained man with messy, overgrown hair and bloodred eyes.", "Act1_Scene1_Prisoner_Dialogue", 
                 new List<string> { "the prisoner", "prisoner", "the chained prisoner", "chained prisoner" });
+            
             templeOfTheBound.AddSublocation(new Sublocation(templeOfTheBound, boundOne, new LocationIdentifier("circle of candles", new List<string>() { "circle", "candles", "candle circle" }), new DescriptionComposer(
                 new LookDescription("You look closer at the circle. It's made up of 12 white wax candles placed precisely around the prisoner. Beneath the candles and the prisoner is a scrawled red 12-pointed star, with the centre circle formed by the intersecting lines slightly aflame. Shadows dance on the floor. You shiver. The fire is not warm.",
                 "You look at the circle again. The shadows seem to have grown larger and sharper. Or is the eerie holiness of the temple finally getting to your mind."),
@@ -281,6 +292,7 @@ namespace AshborneGame._Core.Game
                 "You go to the circle again. The candles and shadows tire of your presence. And perhaps the prisoner does too."),
                 new SensoryDescription("The flames are red and wild — almost as wild as the prisoner.",
                 "It is quiet save for the soft crackling of the candles.")), "circle of candles", OutputConstants.ShortenedCentre, "a circle of dimly lit candles surrounding a chained prisoner"));
+
             LocationFactory.AddMutualExits(eyePlatform, hallOfMirrors, DirectionConstants.South);
             LocationFactory.AddMutualExits(eyePlatform, chamberOfCycles, DirectionConstants.West);
             LocationFactory.AddMutualExits(eyePlatform, templeOfTheBound, DirectionConstants.North);

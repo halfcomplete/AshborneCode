@@ -190,10 +190,10 @@ namespace AshborneGame._Core._Player
         {
             CurrentSublocation = newSublocation;
             
-            // Increment visit count for sublocation movement AFTER description
+            // Increment visit count for sublocation movement BEFORE description
             CurrentSublocation.VisitCount++;
 
-            // Get description BEFORE incrementing visit count
+            // Get description AFTER incrementing visit count
             IOService.Output.WriteLine(newSublocation.GetDescription(this, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
         }
 
