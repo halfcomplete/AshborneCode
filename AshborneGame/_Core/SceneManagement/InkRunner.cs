@@ -451,16 +451,21 @@ namespace AshborneGame._Core.SceneManagement
         // Reliable delay for WASM: loops in short intervals to avoid browser timer issues
         private static async Task ReliableDelay(int totalMs, CancellationToken token)
         {
+            Console.WriteLine($"[DEBUG] InkRunner: ReliableDelay called with {totalMs} ms at {DateTime.UtcNow}.");
             int elapsed = 0;
             int step = 200;
             while (elapsed < totalMs)
             {
                 int wait = Math.Min(step, totalMs - elapsed);
-                int adjustedWait = (int)(wait / OutputConstants.TypeSpeedMultiplier);
-                await Task.Delay(adjustedWait, token);
-                if (token.IsCancellationRequested) return;
+                await Task.Delay(wait, token);
+                if (token.IsCancellationRequested)
+                {
+                    Console.WriteLine($"[DEBUG] InkRunner: ReliableDelay cancelled at {DateTime.UtcNow} after {elapsed} ms.");
+                    return;
+                }
                 elapsed += wait;
             }
+            Console.WriteLine($"[DEBUG] InkRunner: ReliableDelay finished at {DateTime.UtcNow}.");
         }
 
         /// <summary>

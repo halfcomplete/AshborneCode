@@ -38,7 +38,7 @@ namespace AshborneGame.ConsolePort
                 int delay;
                 
                 // First, calculate the base delay using the current speed
-                int baseDelay = CharacterOutputDelayCalculator.CalculateDebugDelay(letter, currentSpeed, isEnd);
+                int baseDelay = CharacterOutputDelayCalculator.CalculateDebugDelayAsync(letter, currentSpeed, isEnd).GetAwaiter().GetResult();
                 
                 // Determine if this is dialogue output (when the original ms is the default type speed)
                 bool isDialogueOutput = (ms == OutputConstants.DefaultTypeSpeed);

@@ -578,6 +578,7 @@
             var line = outputQueue.Dequeue();
             if (line == "__END__")
             {
+				Console.WriteLine($"[DEBUG] ProcessOutputQueue: Detected __END__ marker at {DateTime.Now}");
                 pendingDialogueEnd = true;
             }
             if (line.Contains("__NL__"))
@@ -644,7 +645,7 @@
                         GameContext.InkRunner.Story.currentChoices != null && choiceNumber > 0 && 
                         choiceNumber == GameContext.InkRunner.Story.currentChoices.Count)
                     {
-						// We are currently processing the last choice, so start the silent timer
+                        // We are currently processing the last choice, so start the silent timer
                         await GameContext.InkRunner.StartSilentTimer();
                         // Start UI timer if silent path is set and > 0
                         if (!string.IsNullOrWhiteSpace(GameContext.InkRunner.CurrentSilentPath) && GameContext.InkRunner.SilentPathWait > 0)
@@ -682,18 +683,24 @@
         }
         isProcessingQueue = false;
 
-        while (pendingDialogueEnd)
-        {
-            // Wait until we are not pending the dialogue end anymore
-            await Task.Delay(10);
-		}
+        // while (pendingDialogueEnd || GameContext.InkRunner?.Story?.currentChoices?.Count > 0)
+        // {
+        //     // Wait until we are not pending the dialogue end anymore, or until we have chosen
+        //     await Task.Delay(10);
+        // }
 
-        Console.WriteLine($"[DEBUG] ProcessOutputQueue: Flushed output, ending dialogue at {DateTime.Now}");
-        isInDialogue = false;
-        isAwaitingPlayerInput = false;
-        userInput = "";
-        pendingDialogueEnd = false;
-        GameContext.InkRunner?.DialogueFinishedOutputting();
+        // await Task.Delay(50);
+        // if (!isProcessingQueue)
+        // {
+        //     Console.WriteLine($"[DEBUG] ProcessOutputQueue: Flushed output, ending dialogue at {DateTime.Now}");
+        //     isInDialogue = false;
+        //     isAwaitingPlayerInput = false;
+        //     userInput = "";
+        //     pendingDialogueEnd = false;
+        //     GameContext.InkRunner?.DialogueFinishedOutputting();
+        // }
+
+        
         await InvokeAsync(StateHasChanged);
     }
 
@@ -820,9 +827,6 @@
         if (pendingDialogueEnd && !isProcessingQueue)
         {
             Console.WriteLine($"[DEBUG] HandleTypewriterEffect: Flushed output, ending dialogue at {DateTime.Now}");
-            isInDialogue = false;
-            isAwaitingPlayerInput = false;
-            userInput = "";
             pendingDialogueEnd = false;
             GameContext.InkRunner?.DialogueFinishedOutputting();
             await InvokeAsync(StateHasChanged);
