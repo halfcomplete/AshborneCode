@@ -15,7 +15,6 @@ namespace AshborneGame._Core.Globals.Services
         private string? _currentDialogueKey = null;
     private string? _lastDialogueKey = null;
 
-    // Expose the currently running dialogue key so UI layers (e.g., Blazor) can react to a specific dialogue finishing.
     public string? CurrentDialogueKey => _currentDialogueKey;
     public string? LastDialogueKey => _lastDialogueKey;
 

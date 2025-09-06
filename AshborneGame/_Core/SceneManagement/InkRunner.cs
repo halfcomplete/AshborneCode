@@ -175,7 +175,9 @@ namespace AshborneGame._Core.SceneManagement
                         // Support __GET_PLAYER_INPUT__:Prompt text
                         if (line.Length > OutputConstants.GetPlayerInputMarker.Length && line[OutputConstants.GetPlayerInputMarker.Length] == ':')
                         {
+                            Console.WriteLine("\"__GET_PLAYER_INPUT:Prompt text\" found!");
                             prompt = line.Substring(OutputConstants.GetPlayerInputMarker.Length + 1).Trim();
+                            Console.WriteLine(prompt);
                             if (string.IsNullOrWhiteSpace(prompt))
                                 prompt = "What will you say?";
                         }

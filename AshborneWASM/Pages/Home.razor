@@ -71,25 +71,25 @@
     }
 }
             <div class="input-gif-overlay-container">
+                <div class="input-overlay-wrapper">
+                    @if (GameContext.Player?.EquippedItems["face"]?.Name == "Ossaneth")
+                    {
+                        @if (isOssanethGifActive)
+                        {
+                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                        }
+                        else
+                        {
+                            <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+                        }
+                    }
+                </div>
                 @if (isAwaitingPlayerInput)
                 {
-                    <div class="input-overlay-wrapper">
-                        <input @bind="userInput"
-                               @bind:event="oninput"
-                               @onkeydown="HandleInput"
-                               placeholder="@playerInputPrompt" autofocus />
-                        @if (GameContext.Player.EquippedItems["face"]?.Name == "Ossaneth")
-                        {
-                            @if (isOssanethGifActive)
-                            {
-                                <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
-                            }
-                            else
-                            {
-                                <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
-                            }
-                        }
-                    </div>
+                    <input @bind="userInput"
+                           @bind:event="oninput"
+                           @onkeydown="HandleInput"
+                           placeholder="@playerInputPrompt" autofocus />
                     <div><em>Type your response and press Enter.</em></div>
                 }
                 else if (isInDialogue && dialogueChoices.Count > 0 && !isTypingDialogue)
@@ -126,17 +126,6 @@
                                    @bind:event="oninput"
                                    @onkeydown="HandleInput"
                                    placeholder="What will you do?" />
-                            @if (GameContext.Player.EquippedItems["face"]?.Name == "Ossaneth")
-                            {
-                                @if (isOssanethGifActive)
-                                {
-                                    <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
-                                }
-                                else
-                                {
-                                    <img src="/visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
-                                }
-                            }
                         </div>
                         <div><em>Type your action and press Enter.</em></div>
                     }
