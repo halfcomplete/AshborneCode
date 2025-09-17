@@ -47,7 +47,7 @@ namespace AshborneGame._Core.Game
             {
                 _dialogueRunning = true;
             };
-            _dialogueService.DialogueComplete += async () =>
+            _dialogueService.OnDialogueComplete += async () =>
             {
                 _dialogueRunning = false;
             };

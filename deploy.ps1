@@ -120,9 +120,15 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "`n[SUCCESS] Deployment complete! Visit: https://halfcomplete.github.io/Ashborne/"
 
-# === Step 7: Revert <base href> in index.html to local (/) ===
-(Get-Content $indexHtmlPath) -replace '<base href="/Ashborne/" />', '<base href="/" />' | Set-Content $indexHtmlPath
-Write-Host "[INFO] Reverted <base href> in index.html to / for local development."
+
+# === Step 7: Revert <base href> in SOURCE index.html to local (/) ===
+$sourceIndexHtmlPath = Join-Path $blazorProjectPath "wwwroot\index.html"
+if (Test-Path $sourceIndexHtmlPath) {
+    (Get-Content $sourceIndexHtmlPath) -replace '<base href="/Ashborne/" />', '<base href="/" />' | Set-Content $sourceIndexHtmlPath
+    Write-Host "[INFO] Reverted <base href> in SOURCE index.html to / for local development."
+} else {
+    Write-Warning "[WARNING] Source index.html not found at $sourceIndexHtmlPath."
+}
 
 # Return to AshborneCode root
 Set-Location (Split-Path $blazorProjectPath -Parent)

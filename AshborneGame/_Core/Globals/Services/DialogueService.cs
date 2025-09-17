@@ -25,12 +25,14 @@ namespace AshborneGame._Core.Globals.Services
 
         public bool IsRunning => _inkRunner.IsRunning;
 
-        public event Action? DialogueComplete;
         public event Action? DialogueStart;
+        public event Action? OnDialogueComplete;
+
+        private string originalKey = string.Empty;
 
         public async Task StartDialogue(string inkFilePath)
         {
-            string originalKey = inkFilePath;
+            originalKey = inkFilePath;
             _currentDialogueKey = originalKey;
             Console.WriteLine($"[DialogueService] StartDialogue invoked with key='{originalKey}' (before path resolution)");
             try
@@ -58,19 +60,21 @@ namespace AshborneGame._Core.Globals.Services
                 IOService.Output.DisplayDebugMessage($"Stack trace: {ex.StackTrace}", ConsoleMessageTypes.ERROR);
                 throw;
             }
-            finally
+                
+        }
+
+        public void DialogueComplete()
+        {
+            // Only invoke DialogueComplete if this is still the current dialogue
+            if (_currentDialogueKey == originalKey)
             {
-                // Only invoke DialogueComplete if this is still the current dialogue
-                if (_currentDialogueKey == originalKey)
-                {
-                    // Set last key BEFORE firing event so listeners can detect it
-                    _lastDialogueKey = _currentDialogueKey;
-                    Console.WriteLine($"[DialogueService] Setting LastDialogueKey='{_lastDialogueKey}' and invoking DialogueComplete");
-                    DialogueComplete?.Invoke();
-                    Console.WriteLine($"[DialogueService] DialogueComplete event invoked for key='{_lastDialogueKey}'");
-                    _currentDialogueKey = null;
-                    Console.WriteLine("[DialogueService] _currentDialogueKey cleared (now null)");
-                }
+                // Set last key BEFORE firing event so listeners can detect it
+                _lastDialogueKey = _currentDialogueKey;
+                Console.WriteLine($"[DialogueService] Setting LastDialogueKey='{_lastDialogueKey}' and invoking DialogueComplete");
+                OnDialogueComplete?.Invoke();
+                Console.WriteLine($"[DialogueService] DialogueComplete event invoked for key='{_lastDialogueKey}'");
+                _currentDialogueKey = null;
+                Console.WriteLine("[DialogueService] _currentDialogueKey cleared (now null)");
             }
         }
 

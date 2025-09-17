@@ -163,14 +163,14 @@
         }
 </div>
 
-@* <div>
+<div>
     <pre>
         isInDialogue: @isInDialogue
         isAwaitingPlayerInput: @isAwaitingPlayerInput
         dialogueChoices.Count: @dialogueChoices.Count
         isTypingDialogue: @isTypingDialogue
     </pre>
-</div> *@
+</div>
 
 @code {
     private bool isOutroActive = false;
@@ -465,7 +465,7 @@
         if (GameContext.DialogueService != null)
         {
             GameContext.DialogueService.SetPlayerInputCallback(async (useDefaultPrompt) => await GetPlayerInputFromUIAsync(playerInputPrompt));
-            GameContext.DialogueService.DialogueComplete += async () =>
+            GameContext.DialogueService.OnDialogueComplete += async () =>
             {
                 Console.WriteLine("[Home] DialogueComplete fired (subscription present)");
                 Console.WriteLine($"[Home] LastDialogueKey='{GameContext.DialogueService.LastDialogueKey}' CurrentDialogueKey='{GameContext.DialogueService.CurrentDialogueKey}'");
@@ -565,9 +565,9 @@
         while (outputQueue.Count > 0)
         {
             var line = outputQueue.Dequeue();
-            if (line == "__END__")
+            if (line.Contains("__END__"))
             {
-				Console.WriteLine($"[DEBUG] ProcessOutputQueue: Detected __END__ marker at {DateTime.Now}");
+                Console.WriteLine($"[DEBUG] ProcessOutputQueue: Detected __END__ marker at {DateTime.Now}");
                 pendingDialogueEnd = true;
             }
             if (line.Contains("__NL__"))
@@ -689,7 +689,7 @@
         //     GameContext.InkRunner?.DialogueFinishedOutputting();
         // }
 
-        
+
         await InvokeAsync(StateHasChanged);
     }
 
@@ -699,9 +699,9 @@
         {
             // If we are already pending dialogue end, just return
             Console.WriteLine("[DEBUG] HandleTypewriterEffect: Already pending dialogue end, skipping typewriter effect.");
-			pendingDialogueEnd = false; // Reset pending state
+            pendingDialogueEnd = false; // Reset pending state
             return;
-		}
+        }
         // Parse ms value at the start of the line (e.g. "50__TS__...")
         int ms = OutputConstants.DefaultTypeSpeed; // default
         Console.WriteLine($"[DEBUG] Handling typewriter effect for line: {line}");
@@ -715,7 +715,7 @@
         int startIndex = line.IndexOf(OutputConstants.TypewriterStartMarker) + OutputConstants.TypewriterStartMarker.Length;
         int endIndex = line.IndexOf(OutputConstants.TypewriterEndMarker);
         string message = line.Substring(startIndex, endIndex - startIndex);
-		    Console.WriteLine($"[DEBUG] Typewriter message: {message}");
+        Console.WriteLine($"[DEBUG] Typewriter message: {message}");
 
         // Process inline slow markers in the message BEFORE starting typewriter effect
         var (processedMessage, characterSpeeds) = ProcessInlineSlowMarkersWithSpeeds(message, ms);
@@ -732,7 +732,7 @@
 
         foreach (var msgLine in lines)
         {
-			Console.WriteLine($"[DEBUG] Typing line: {msgLine}");
+            Console.WriteLine($"[DEBUG] Typing line: {msgLine}");
             string typedLine = "";
             bool inItalic = false;
             for (int i = 0; i < msgLine.Length; i++)
@@ -808,7 +808,7 @@
             await Task.Delay(ms * OutputConstants.NewLinePauseMultiplier);
 #endif
         }
-		Console.WriteLine($"[DEBUG] Finished typing dialogue: {message}");
+        Console.WriteLine($"[DEBUG] Finished typing dialogue: {message}");
         isTypingDialogue = false;
         await InvokeAsync(StateHasChanged);
 
@@ -817,6 +817,7 @@
         {
             Console.WriteLine($"[DEBUG] HandleTypewriterEffect: Flushed output, ending dialogue at {DateTime.Now}");
             pendingDialogueEnd = false;
+            GameContext.DialogueService?.DialogueComplete();
             GameContext.InkRunner?.DialogueFinishedOutputting();
             await InvokeAsync(StateHasChanged);
         }

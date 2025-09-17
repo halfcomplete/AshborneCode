@@ -22,23 +22,14 @@
     <meta http-equiv="Expires" content="0" />
     <title>Ashborne</title>
         <!--
-            IMPORTANT: Set the <base href> for your environment.
+            IMPORTANT: Set the <base href> for the environment.
             For LOCAL development, use:
                 <base href="/" />
             For GITHUB PAGES (https://halfcomplete.github.io/Ashborne/), use:
-                <base href="/Ashborne/" />
-            You MUST set this BEFORE building/publishing, as browsers resolve all static assets at parse time.
-            See below for automation instructions.
+                <base href="/" />
+            This MUST be set BEFORE building/publishing, as browsers resolve all static assets at parse time.
         -->
-        <base href="/Ashborne/" />
-        <!--
-        AUTOMATION TIP: To automate this for publish, you can use a pre-publish script or MSBuild target.
-        Example PowerShell (run before publish):
-            # For GitHub Pages
-            (Get-Content index.html) -replace '<base href="/" />', '<base href="/Ashborne/" />' | Set-Content index.html
-            # For local development, reverse the replacement.
-        Or use MSBuild with a custom target to swap the base href during publish.
-        -->
+    <base href="/" />
     <script>
         // Debug and force cache refresh for GitHub Pages deployment
         console.log('Current location:', window.location.href);

@@ -698,7 +698,7 @@ input {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -30%);
     width: 280px;
     height: 160px;
     opacity: 0.07;
