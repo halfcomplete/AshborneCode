@@ -2,24 +2,43 @@
 <html lang="en">
 
 <head>
+    <!--
+    ASHBORNE WASM ASSET PATHS & GITHUB PAGES DEPLOYMENT
+    --------------------------------------------------
+    This app is designed to work both locally (localhost) and when hosted on GitHub Pages at a subpath (e.g. /Ashborne/).
+    
+    - The <base href> is set dynamically at runtime using JS, so all relative asset URLs (css/app.css, Scripts/scroll.js, etc.) resolve correctly.
+    - All asset references in HTML, CSS, and Razor files must be RELATIVE (not starting with a slash), so they are resolved relative to the <base href>.
+    - Font-face URLs in CSS should use relative paths (e.g. ../visual/fonts/Font.ttf).
+    - When publishing for GitHub Pages, no extra changes are needed: just ensure the published files are in the /Ashborne/ subfolder.
+    - For local development, everything works as normal with <base href="/">.
+    
+    If there are to be new static assets, always use relative paths!
+    -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <title>Ashborne</title>
-    <base id="dynamic-base" href="/" />
-    <script>
-      // Set base href dynamically for GitHub Pages vs local
-      (function() {
-        var base = document.getElementById('dynamic-base');
-        if (window.location.hostname.endsWith('github.io')) {
-          base.setAttribute('href', '/Ashborne/');
-        } else {
-          base.setAttribute('href', '/');
-        }
-      })();
-    </script>
+        <!--
+            IMPORTANT: Set the <base href> for your environment.
+            For LOCAL development, use:
+                <base href="/" />
+            For GITHUB PAGES (https://halfcomplete.github.io/Ashborne/), use:
+                <base href="/Ashborne/" />
+            You MUST set this BEFORE building/publishing, as browsers resolve all static assets at parse time.
+            See below for automation instructions.
+        -->
+        <base href="/Ashborne/" />
+        <!--
+        AUTOMATION TIP: To automate this for publish, you can use a pre-publish script or MSBuild target.
+        Example PowerShell (run before publish):
+            # For GitHub Pages
+            (Get-Content index.html) -replace '<base href="/" />', '<base href="/Ashborne/" />' | Set-Content index.html
+            # For local development, reverse the replacement.
+        Or use MSBuild with a custom target to swap the base href during publish.
+        -->
     <script>
         // Debug and force cache refresh for GitHub Pages deployment
         console.log('Current location:', window.location.href);

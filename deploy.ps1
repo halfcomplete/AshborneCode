@@ -15,10 +15,14 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-# === Step 2: Clean up index.html ===
+# === Step 2: Clean up index.html and set <base href> for GitHub Pages ===
 $indexHtmlPath = Join-Path $publishOutputPath "wwwroot\index.html"
+# Remove integrity attributes
 (Get-Content $indexHtmlPath) -replace ' integrity="[^"]+"', '' | Set-Content $indexHtmlPath
 Write-Host "[INFO] Removed integrity attributes from index.html"
+# Set <base href> to /Ashborne/ for GitHub Pages
+(Get-Content $indexHtmlPath) -replace '<base href="/" />', '<base href="/Ashborne/" />' | Set-Content $indexHtmlPath
+Write-Host "[INFO] Set <base href> to /Ashborne/ for GitHub Pages"
 
 # === Remove Native AOT artifacts ===
 #$nativeArtifacts = @(
@@ -115,6 +119,10 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "`n[SUCCESS] Deployment complete! Visit: https://halfcomplete.github.io/Ashborne/"
+
+# === Step 7: Revert <base href> in index.html to local (/) ===
+(Get-Content $indexHtmlPath) -replace '<base href="/Ashborne/" />', '<base href="/" />' | Set-Content $indexHtmlPath
+Write-Host "[INFO] Reverted <base href> in index.html to / for local development."
 
 # Return to AshborneCode root
 Set-Location (Split-Path $blazorProjectPath -Parent)

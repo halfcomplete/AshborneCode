@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'AnonymousPro-Italic';
-    src: url('/visual/fonts/AnonymousPro-Italic.ttf') format('truetype');
+    src: url('../visual/fonts/AnonymousPro-Italic.ttf') format('truetype');
     font-style: italic;
     font-weight: normal;
 }
@@ -102,14 +102,14 @@ input[type="range"] {
 }
 @font-face {
     font-family: 'IMFellEnglishSC';
-    src: url('/visual/fonts/IMFellEnglishSC-Regular.ttf') format('truetype');
+    src: url('../visual/fonts/IMFellEnglishSC-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'AnonymousPro-Regular';
-    src: url('/visual/fonts/AnonymousPro-Regular.ttf') format('truetype');
+    src: url('../visual/fonts/AnonymousPro-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
