@@ -156,14 +156,6 @@ namespace AshborneGame._Core.SceneManagement
                     
                     string line = _story.Continue().Trim();
                     IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Line='{line}'", ConsoleMessageTypes.INFO);
-
-                    if (line.Equals(OutputConstants.DialogueEndMarker))
-                    {
-                        IOService.Output.DisplayDebugMessage($"[DEBUG] {OutputConstants.DialogueEndMarker} marker encountered. Ending dialogue.", ConsoleMessageTypes.INFO);
-                        GameContext.DialogueService.DialogueComplete();
-                        DialogueFinishedOutputting();
-                        return;
-                    }
                     if (line.TrimEnd().EndsWith(OutputConstants.DialoguePauseMarker))
                     {
                         IOService.Output.WriteLine(line);
@@ -265,8 +257,7 @@ namespace AshborneGame._Core.SceneManagement
                 }
                 else
                 {
-                    IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: No choices available, waiting for more content.", ConsoleMessageTypes.INFO);
-                    await Task.Delay(10);
+                    break; // No more content or choices, exit the loop
                 }
             }            
         }

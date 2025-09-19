@@ -568,7 +568,13 @@
             if (line.Contains("__END__"))
             {
                 Console.WriteLine($"[DEBUG] ProcessOutputQueue: Detected __END__ marker at {DateTime.Now}");
-                pendingDialogueEnd = true;
+                Console.WriteLine($"[DEBUG] ProcessOutputQueue: Flushed output, ending dialogue at {DateTime.Now}");
+                isInDialogue = false;
+                isAwaitingPlayerInput = false;
+                userInput = "";
+                pendingDialogueEnd = false;
+                GameContext.InkRunner?.DialogueFinishedOutputting();
+                break;
             }
             if (line.Contains("__NL__"))
             {
@@ -671,23 +677,7 @@
             await AutoScrollToBottom();
         }
         isProcessingQueue = false;
-
-        // while (pendingDialogueEnd || GameContext.InkRunner?.Story?.currentChoices?.Count > 0)
-        // {
-        //     // Wait until we are not pending the dialogue end anymore, or until we have chosen
-        //     await Task.Delay(10);
-        // }
-
-        // await Task.Delay(50);
-        // if (!isProcessingQueue)
-        // {
-        //     Console.WriteLine($"[DEBUG] ProcessOutputQueue: Flushed output, ending dialogue at {DateTime.Now}");
-        //     isInDialogue = false;
-        //     isAwaitingPlayerInput = false;
-        //     userInput = "";
-        //     pendingDialogueEnd = false;
-        //     GameContext.InkRunner?.DialogueFinishedOutputting();
-        // }
+            
 
 
         await InvokeAsync(StateHasChanged);
@@ -1032,7 +1022,7 @@
         introTextFading = false; // Trigger fade-in
         StateHasChanged();
         await StartIntroSequence();
-        engine.StartGameLoopAsync();
+        await engine.StartGameLoopAsync();
         StateHasChanged();
     }
 
