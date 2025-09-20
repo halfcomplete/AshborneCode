@@ -25,10 +25,18 @@ namespace AshborneGame._Core.SceneManagement
         private readonly GameStateManager _gameState;
         private readonly AppEnvironment _appEnvironment;
 
-        private (string, int) _currentSilentPath = ("", 0);
-        private CancellationTokenSource? _silentPathCts = null;
 
-        private bool _hasPrintedDialogueEnd = false;
+    private (string, int) _currentSilentPath = ("", 0);
+    private CancellationTokenSource? _silentPathCts = null;
+    private bool _hasPrintedDialogueEnd = false;
+
+    // --- Silent path jump mechanism ---
+    private string? _pendingSilentJumpPath = null;
+    private TaskCompletionSource<bool>? _silentJumpTcs = null;
+
+    // Events for UI to start/stop silent timer
+    public event Action<int>? OnSilentTimerStart;
+    public event Action? OnSilentTimerStop;
 
         public string CurrentSilentPath
         {
@@ -40,7 +48,7 @@ namespace AshborneGame._Core.SceneManagement
             get => _currentSilentPath.Item2;
         }
 
-        public bool IsRunning => _story != null && _story.canContinue;
+    public bool IsRunning => _story is not null && _story.canContinue;
 
         public InkRunner(GameStateManager gameState, Player player, AppEnvironment appEnvironment)
         {
@@ -241,7 +249,7 @@ namespace AshborneGame._Core.SceneManagement
                     }
                     _canContinue = _story.canContinue;
                 }
-                
+
                 // Check if we hit some choices
                 if (_story.currentChoices.Count > 0)
                 {
@@ -254,14 +262,36 @@ namespace AshborneGame._Core.SceneManagement
                     // --- Start silent path timer only when player is prompted for input and this isn't browser ---
                     if (!string.IsNullOrWhiteSpace(_currentSilentPath.Item1) && _currentSilentPath.Item2 > 0 && !OperatingSystem.IsBrowser())
                     {
-                        await StartSilentTimer();
+                        // Fire event for UI to start silent timer
+                        OnSilentTimerStart?.Invoke(_currentSilentPath.Item2);
+                        await StopSilentTimer();
+                        _silentJumpTcs = new TaskCompletionSource<bool>();
                     }
 
-                    int choice = await IOService.Input.GetChoiceInputAsync(_story.currentChoices.Count);
+                    // Wait for either player input or silent jump
+                    var choiceTask = IOService.Input.GetChoiceInputAsync(_story.currentChoices.Count);
+                    Task completedTask;
+                    if (_silentJumpTcs != null)
+                        completedTask = await Task.WhenAny(choiceTask, _silentJumpTcs.Task);
+                    else
+                        completedTask = await Task.WhenAny(choiceTask);
+
                     // --- Cancel silent path timer and clear silent path as soon as a choice is made ---
+                    OnSilentTimerStop?.Invoke();
                     await StopSilentTimer();
                     _currentSilentPath = ("", 0);
 
+                    if (_silentJumpTcs != null && _silentJumpTcs.Task.IsCompleted && _pendingSilentJumpPath != null)
+                    {
+                        // Silent jump was triggered
+                        IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Silent path jump triggered to '{_pendingSilentJumpPath}'", ConsoleMessageTypes.INFO);
+                        _story.ChoosePathString(_pendingSilentJumpPath);
+                        _pendingSilentJumpPath = null;
+                        _silentJumpTcs = null;
+                        continue; // Continue main loop with new path
+                    }
+
+                    int choice = choiceTask.IsCompleted ? choiceTask.Result : -1;
                     IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Choice {choice} selected at {DateTime.Now}", ConsoleMessageTypes.INFO);
                     // Defensive: Only process the choice if the story is still running and the choice is valid
                     if (_story.currentChoices.Count > 0 && choice > 0 && choice <= _story.currentChoices.Count)
@@ -280,57 +310,22 @@ namespace AshborneGame._Core.SceneManagement
                     Console.WriteLine("Returning from RunAsync().");
                     return; // Exit if dialogue has finished outputting
                 }
-            }            
+            }
         }
 
-        public async Task StartSilentTimer()
-        {
-            if (string.IsNullOrWhiteSpace(_currentSilentPath.Item1) || _currentSilentPath.Item2 <= 0)
-            {
-                Console.WriteLine("No silent path or invalid wait time set, not starting timer.");
-                return;
-            }
-                
-            Console.WriteLine("timer ms: ", _currentSilentPath.Item2);
-            await StopSilentTimer();
-            _silentPathCts = new CancellationTokenSource();
-            var token = _silentPathCts.Token;
-            string silentPath = _currentSilentPath.Item1;
-            int silentMs = _currentSilentPath.Item2;
-            if (silentMs < 100)
-            {
-                silentMs = 7000; // Minimum 7 seconds
-            }
-            var timerId = Guid.NewGuid();
-            Console.WriteLine($"[{timerId}] Starting silent path timer to path {silentPath} for {silentMs} ms at {DateTime.Now:HH:mm:ss.fff}");
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await ReliableDelay(silentMs, token);
-                    if (!token.IsCancellationRequested)
-                    {
-                        Console.WriteLine($"[{timerId}] Silent path timer completed at {DateTime.Now:HH:mm:ss.fff}");
-                        await TryJumpToSilentPathAsync();
-                    }
-                }
-                catch (TaskCanceledException)
-                {
-                    Console.WriteLine($"[{timerId}] Silent path timer caught TaskCanceledException at {DateTime.Now:HH:mm:ss.fff}");
-                }
-            }, token);
-        }
+        // No longer used: silent timer is now managed by UI via events
 
         public Task StopSilentTimer()
         {
             _silentPathCts?.Cancel();
+            OnSilentTimerStop?.Invoke();
             return Task.CompletedTask;
         }
 
         private void InitialiseBindings()
         {
             // --- Flags ---
-            if (_story != null)
+            if (_story is not null)
             {
                 _story.BindExternalFunction("setFlag", (string key, bool value) => _gameState.SetFlag(key, value));
 
@@ -361,7 +356,7 @@ namespace AshborneGame._Core.SceneManagement
             }
 
             // --- Counters ---
-            _story.BindExternalFunction("setCounter", (string key, int value) => _gameState.SetCounter(key, value));
+            _story!.BindExternalFunction("setCounter", (string key, int value) => _gameState.SetCounter(key, value));
 
             _story.BindExternalFunction("getCounter", (string key) =>
             {
@@ -446,7 +441,7 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public void JumpTo(string path)
         {
-            if (_story != null)
+            if (_story is not null)
             {
                 _story.ChoosePathString(path);
                 Run();
@@ -454,22 +449,21 @@ namespace AshborneGame._Core.SceneManagement
         }
 
         /// <summary>
-        /// Try to jump to the specified silent path.
+        /// Signal to RunAsync that a silent path jump should occur.
         /// </summary>
-        public async Task TryJumpToSilentPathAsync()
+        public Task TryJumpToSilentPathAsync()
         {
-            IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: TryJumpToSilentPathAsync called, path={_currentSilentPath.Item1}, story canContinue={_story?.canContinue}", ConsoleMessageTypes.INFO);
+            IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: TryJumpToSilentPathAsync SIGNALLED, path={_currentSilentPath.Item1}, story canContinue={_story?.canContinue}", ConsoleMessageTypes.INFO);
             if (_story is null || (!_story.canContinue && (_story.currentChoices == null || _story.currentChoices.Count == 0)))
             {
                 IOService.Output.DisplayDebugMessage("[DEBUG] InkRunner: TryJumpToSilentPathAsync aborted, story is finished.", ConsoleMessageTypes.INFO);
-                return;
+                return Task.CompletedTask;
             }
             if (string.IsNullOrWhiteSpace(_currentSilentPath.Item1))
-                return;
-            _story.ChoosePathString(_currentSilentPath.Item1);
-            await RunAsync();
-            // Clear silent path after jumping
-            _currentSilentPath = ("", 0);
+                return Task.CompletedTask;
+            _pendingSilentJumpPath = _currentSilentPath.Item1;
+            _silentJumpTcs?.TrySetResult(true);
+            return Task.CompletedTask;
         }
 
         // Reliable delay for WASM: loops in short intervals to avoid browser timer issues
@@ -497,7 +491,7 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public bool HasInkVariable(string key)
         {
-            if (_story != null)
+            if (_story is not null)
                 return _story.variablesState.Contains(key);
             return false;
         }
@@ -507,7 +501,7 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public object GetInkVariable(string key)
         {
-            if (_story != null)
+            if (_story is not null)
                 return _story.variablesState[key];
             throw new InvalidOperationException("No Ink story loaded.");
         }

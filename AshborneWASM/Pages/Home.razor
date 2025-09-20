@@ -615,11 +615,11 @@
                 {
                     await InvokeAsync(StateHasChanged);
                     await Task.Yield();
-                    #if DEBUG
+#if DEBUG
                     await Task.Delay(Convert.ToInt32(Math.Round(ms * OutputConstants.DefaultDebugTypeSpeedModifier)));
-                    #else
+#else
                     await Task.Delay(ms);
-                    #endif
+#endif
                 }
                 else
                 {
@@ -660,26 +660,14 @@
                         GameContext.InkRunner.Story.currentChoices != null && choiceNumber > 0 && 
                         choiceNumber == GameContext.InkRunner.Story.currentChoices.Count)
                     {
-                        // We are currently processing the last choice, so start the silent timer
-                        await GameContext.InkRunner.StartSilentTimer();
-                        // Start UI timer if silent path is set and > 0
-                        if (!string.IsNullOrWhiteSpace(GameContext.InkRunner.CurrentSilentPath) && GameContext.InkRunner.SilentPathWait > 0)
+                        string choiceText = line.Substring(bracketEnd + 1).Trim();
+                        if (!string.IsNullOrWhiteSpace(choiceText))
                         {
-                            StartSilentTimerUI(GameContext.InkRunner.SilentPathWait);
+                            dialogueChoices.Add(choiceText);
+                            await InvokeAsync(StateHasChanged);
+                            await AutoScrollToBottom();
+                            continue;
                         }
-                        else
-                        {
-                            StopSilentTimerUI();
-                        }
-                    }
-
-                    string choiceText = line.Substring(bracketEnd + 1).Trim();
-                    if (!string.IsNullOrWhiteSpace(choiceText))
-                    {
-                        dialogueChoices.Add(choiceText);
-                        await InvokeAsync(StateHasChanged);
-                        await AutoScrollToBottom();
-                        continue;
                     }
                 }
             }
@@ -697,141 +685,6 @@
             await AutoScrollToBottom();
         }
         isProcessingQueue = false;
-
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task HandleTypewriterEffect(string line)
-    {
-        Console.WriteLine($"[DEBUG] Handling typewriter effect for line: {line}");
-        if (line.Contains(OutputConstants.DialogueEndMarker))
-        {
-            Console.WriteLine($"[DEBUG] HandleTypewriterEffect: Flushed output, ending dialogue at {DateTime.Now}");
-            pendingDialogueEnd = false;
-            GameContext.DialogueService?.DialogueComplete();
-            GameContext.InkRunner?.DialogueFinishedOutputting();
-            await InvokeAsync(StateHasChanged);
-        }
-        // Parse ms value at the start of the line (e.g. "50__TS__...")
-        int ms = OutputConstants.DefaultTypeSpeed; // default
-        
-        int msEnd = line.IndexOf(OutputConstants.TypewriterStartMarker);
-        if (msEnd > 0)
-        {
-            string msStr = line.Substring(0, msEnd);
-            if (!int.TryParse(msStr, out ms)) ms = OutputConstants.DefaultTypeSpeed;
-        }
-        Console.WriteLine($"[DEBUG] Typewriter effect with delay: {ms} ms");
-        int startIndex = line.IndexOf(OutputConstants.TypewriterStartMarker) + OutputConstants.TypewriterStartMarker.Length;
-        int endIndex = line.IndexOf(OutputConstants.TypewriterEndMarker);
-        string message = line.Substring(startIndex, endIndex - startIndex);
-        Console.WriteLine($"[DEBUG] Typewriter message: {message}");
-
-        // Process inline slow markers in the message BEFORE starting typewriter effect
-        var (processedMessage, characterSpeeds) = ProcessInlineSlowMarkersWithSpeeds(message, ms);
-
-        isTypingDialogue = true;
-        Console.WriteLine($"[DEBUG] isTypingDialogue set to true for message: {message}");
-        await InvokeAsync(StateHasChanged);
-        Console.WriteLine($"[DEBUG] InvokeAsync called after setting isTypingDialogue");
-
-        // Split into lines and type each line separately
-        string[] lines = processedMessage.Split('\n');
-        var buffer = gameText.Split('\n').ToList(); // Keep previous lines
-        int globalCharIndex = 0; // Track character position across all lines
-
-        foreach (var msgLine in lines)
-        {
-            Console.WriteLine($"[DEBUG] Typing line: {msgLine}");
-            string typedLine = "";
-            bool inItalic = false;
-            for (int i = 0; i < msgLine.Length; i++)
-            {
-                // Console.WriteLine($"[DEBUG] Typing char {i}/{msgLine.Length} in line: {msgLine}");
-                // Check for start/end italic markers
-                if (msgLine.Substring(i).StartsWith(OutputConstants.InlineItalicStartMarker))
-                {
-                    inItalic = true;
-                    i += OutputConstants.InlineItalicStartMarker.Length - 1;
-                    continue;
-                }
-                if (msgLine.Substring(i).StartsWith(OutputConstants.InlineItalicEndMarker))
-                {
-                    inItalic = false;
-                    i += OutputConstants.InlineItalicEndMarker.Length - 1;
-                    continue;
-                }
-                // Console.WriteLine($"[DEBUG] No start/end italic markers detected for this char.");
-
-                char letter = msgLine[i];
-                string charToAdd = inItalic ? $"<span class='game-italic'>{System.Net.WebUtility.HtmlEncode(letter.ToString())}</span>" : System.Net.WebUtility.HtmlEncode(letter.ToString());
-                typedLine += charToAdd;
-                gameText = string.Join('\n', buffer) + (buffer.Count > 0 ? "\n" : "") + typedLine;
-                // Console.WriteLine($"[DEBUG] Invoking StateHasChanged.");
-                await InvokeAsync(StateHasChanged);
-                // Console.WriteLine($"[DEBUG] Invoking AutoScrollToBottom().");
-                // await AutoScrollToBottom();
-                // Console.WriteLine($"[DEBUG] Calculating isEnd.");
-
-                // Calculate isEnd using the same logic as Console version
-                bool isEnd = i == msgLine.Length - 1 || 
-                            (i + 1 < msgLine.Length && msgLine[i + 1].Equals(' ')) || 
-                            (i + 1 < msgLine.Length && msgLine[i + 1].Equals('\n'));
-                // Console.WriteLine($"[DEBUG] Getting speed.");
-                // Get the speed for this character (if available)
-                int currentSpeed = ms;
-                if (characterSpeeds != null && characterSpeeds.Count > globalCharIndex)
-                {
-                    currentSpeed = characterSpeeds[globalCharIndex];
-                }
-
-                // Console.WriteLine($"[DEBUG] Speed={currentSpeed}.");
-
-                // Calculate delay with special handling for non-dialogue output
-                int delay;
-                int baseDelay;
-                // Console.WriteLine($"[DEBUG] Calculating delay.");
-#if DEBUG
-                baseDelay = await CharacterOutputDelayCalculator.CalculateDebugDelayAsync(letter, currentSpeed, isEnd);
-#else
-                baseDelay = await CharacterOutputDelayCalculator.CalculateDelayAsync(letter, currentSpeed, isEnd);
-#endif
-				// Console.WriteLine($"[DEBUG] Base delay calculated: {baseDelay} ms");
-                if (!isInDialogue)
-                {
-                    // Console.WriteLine($"[DEBUG] Not in dialogue, applying non-dialogue speed multiplier.");
-                    bool isPunctuation = letter == '.' || letter == '—' || letter == ',' || letter == '"' || letter == ':' || letter == ']' || letter == ')';
-                    if (isPunctuation)
-                    {
-                        delay = baseDelay;
-                    }
-                    else
-                    {
-                        delay = (int)(baseDelay * OutputConstants.NonDialogueOutputSpeedMultiplier);
-                    }
-                }
-                else
-                {
-					// Console.WriteLine($"[DEBUG] In dialogue, using base delay.");
-                    delay = baseDelay;
-                }
-                // Console.WriteLine($"[DEBUG] Waiting for delay: {delay} ms");
-                await Task.Delay(delay);
-                globalCharIndex++;
-                // Console.WriteLine($"[DEBUG] Finished typing character.");
-            }
-            buffer.Add(typedLine);
-            gameText = string.Join('\n', buffer);
-            await InvokeAsync(StateHasChanged);
-            await AutoScrollToBottom();
-#if DEBUG
-            await Task.Delay(Convert.ToInt32(Math.Round(ms * OutputConstants.NewLinePauseMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier)));
-#else
-            await Task.Delay(ms * OutputConstants.NewLinePauseMultiplier);
-#endif
-        }
-        Console.WriteLine($"[DEBUG] Finished typing dialogue: {message}");
-        isTypingDialogue = false;
         await InvokeAsync(StateHasChanged);
     }
 
