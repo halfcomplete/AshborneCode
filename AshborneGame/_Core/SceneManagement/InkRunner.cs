@@ -161,10 +161,13 @@ namespace AshborneGame._Core.SceneManagement
                     if (line == OutputConstants.DialogueEndMarker)
                     {
                         _canContinue = true;
+                        Console.WriteLine($"RunAsync encountered __END__ marker. Waiting for _hasPrintedDialogueEnd.");
+                        IOService.Output.WriteLine(line);
                         while (!_hasPrintedDialogueEnd)
                         {
                             await Task.Delay(100); // Wait for dialogue to finish outputting
                         }
+                        Console.WriteLine("_hasPrintedDialogueEnd set to true. Dialogue end confirmed.");
                         break;
                     }
                     IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Line='{line}'", ConsoleMessageTypes.INFO);
@@ -271,9 +274,11 @@ namespace AshborneGame._Core.SceneManagement
                         return;
                     }
                 }
-                else if (_hasPrintedDialogueEnd)
+
+                if (_hasPrintedDialogueEnd)
                 {
-                    break; // Exit if dialogue has finished outputting
+                    Console.WriteLine("Returning from RunAsync().");
+                    return; // Exit if dialogue has finished outputting
                 }
             }            
         }

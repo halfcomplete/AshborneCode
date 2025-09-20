@@ -586,16 +586,26 @@
         while (outputQueue.Count > 0)
         {
             var line = outputQueue.Dequeue();
+#if DEBUG
+            Console.WriteLine($"[DEBUG] ProcessOutputQueue: {line}");
+#endif
+            if (line.Contains(OutputConstants.DialogueEndMarker))
+            {
+                Console.WriteLine($"[DEBUG] ProcessOutputQueue: Flushed output, ending dialogue at {DateTime.Now}");
+                pendingDialogueEnd = false;
+                GameContext.DialogueService?.DialogueComplete();
+                GameContext.InkRunner?.DialogueFinishedOutputting();
+                await InvokeAsync(StateHasChanged);
+            }
             if (line.Contains("__NL__"))
             {
+                Console.WriteLine("__NL__ marker encountered.");
                 dialogueChoices.Clear();
                 // Handle new line marker
                 gameText += "\n";
                 continue; // Do not add another new line after this
             }
-#if DEBUG
-            Console.WriteLine($"[DEBUG] ProcessOutputQueue: {line}");
-#endif
+
             // Handle special pause marker: ms__PAUSE__
             if (line.TrimEnd().EndsWith(OutputConstants.DialoguePauseMarker))
             {
@@ -693,7 +703,8 @@
 
     private async Task HandleTypewriterEffect(string line)
     {
-        if (line == "__END__")
+        Console.WriteLine($"[DEBUG] Handling typewriter effect for line: {line}");
+        if (line.Contains(OutputConstants.DialogueEndMarker))
         {
             Console.WriteLine($"[DEBUG] HandleTypewriterEffect: Flushed output, ending dialogue at {DateTime.Now}");
             pendingDialogueEnd = false;
@@ -703,7 +714,7 @@
         }
         // Parse ms value at the start of the line (e.g. "50__TS__...")
         int ms = OutputConstants.DefaultTypeSpeed; // default
-        Console.WriteLine($"[DEBUG] Handling typewriter effect for line: {line}");
+        
         int msEnd = line.IndexOf(OutputConstants.TypewriterStartMarker);
         if (msEnd > 0)
         {
@@ -736,7 +747,7 @@
             bool inItalic = false;
             for (int i = 0; i < msgLine.Length; i++)
             {
-                Console.WriteLine($"[DEBUG] Typing char {i}/{msgLine.Length} in line: {msgLine}");
+                // Console.WriteLine($"[DEBUG] Typing char {i}/{msgLine.Length} in line: {msgLine}");
                 // Check for start/end italic markers
                 if (msgLine.Substring(i).StartsWith(OutputConstants.InlineItalicStartMarker))
                 {
@@ -750,23 +761,23 @@
                     i += OutputConstants.InlineItalicEndMarker.Length - 1;
                     continue;
                 }
-                Console.WriteLine($"[DEBUG] No start/end italic markers detected for this char.");
+                // Console.WriteLine($"[DEBUG] No start/end italic markers detected for this char.");
 
                 char letter = msgLine[i];
                 string charToAdd = inItalic ? $"<span class='game-italic'>{System.Net.WebUtility.HtmlEncode(letter.ToString())}</span>" : System.Net.WebUtility.HtmlEncode(letter.ToString());
                 typedLine += charToAdd;
                 gameText = string.Join('\n', buffer) + (buffer.Count > 0 ? "\n" : "") + typedLine;
-                Console.WriteLine($"[DEBUG] Invoking StateHasChanged.");
+                // Console.WriteLine($"[DEBUG] Invoking StateHasChanged.");
                 await InvokeAsync(StateHasChanged);
-                Console.WriteLine($"[DEBUG] Invoking AutoScrollToBottom().");
+                // Console.WriteLine($"[DEBUG] Invoking AutoScrollToBottom().");
                 // await AutoScrollToBottom();
-                Console.WriteLine($"[DEBUG] Calculating isEnd.");
+                // Console.WriteLine($"[DEBUG] Calculating isEnd.");
 
                 // Calculate isEnd using the same logic as Console version
                 bool isEnd = i == msgLine.Length - 1 || 
                             (i + 1 < msgLine.Length && msgLine[i + 1].Equals(' ')) || 
                             (i + 1 < msgLine.Length && msgLine[i + 1].Equals('\n'));
-                Console.WriteLine($"[DEBUG] Getting speed.");
+                // Console.WriteLine($"[DEBUG] Getting speed.");
                 // Get the speed for this character (if available)
                 int currentSpeed = ms;
                 if (characterSpeeds != null && characterSpeeds.Count > globalCharIndex)
@@ -774,21 +785,21 @@
                     currentSpeed = characterSpeeds[globalCharIndex];
                 }
 
-                Console.WriteLine($"[DEBUG] Speed={currentSpeed}.");
+                // Console.WriteLine($"[DEBUG] Speed={currentSpeed}.");
 
                 // Calculate delay with special handling for non-dialogue output
                 int delay;
                 int baseDelay;
-                Console.WriteLine($"[DEBUG] Calculating delay.");
+                // Console.WriteLine($"[DEBUG] Calculating delay.");
 #if DEBUG
                 baseDelay = await CharacterOutputDelayCalculator.CalculateDebugDelayAsync(letter, currentSpeed, isEnd);
 #else
                 baseDelay = await CharacterOutputDelayCalculator.CalculateDelayAsync(letter, currentSpeed, isEnd);
 #endif
-				Console.WriteLine($"[DEBUG] Base delay calculated: {baseDelay} ms");
+				// Console.WriteLine($"[DEBUG] Base delay calculated: {baseDelay} ms");
                 if (!isInDialogue)
                 {
-                    Console.WriteLine($"[DEBUG] Not in dialogue, applying non-dialogue speed multiplier.");
+                    // Console.WriteLine($"[DEBUG] Not in dialogue, applying non-dialogue speed multiplier.");
                     bool isPunctuation = letter == '.' || letter == '—' || letter == ',' || letter == '"' || letter == ':' || letter == ']' || letter == ')';
                     if (isPunctuation)
                     {
@@ -801,13 +812,13 @@
                 }
                 else
                 {
-					Console.WriteLine($"[DEBUG] In dialogue, using base delay.");
+					// Console.WriteLine($"[DEBUG] In dialogue, using base delay.");
                     delay = baseDelay;
                 }
-                Console.WriteLine($"[DEBUG] Waiting for delay: {delay} ms");
+                // Console.WriteLine($"[DEBUG] Waiting for delay: {delay} ms");
                 await Task.Delay(delay);
                 globalCharIndex++;
-                Console.WriteLine($"[DEBUG] Finished typing character.");
+                // Console.WriteLine($"[DEBUG] Finished typing character.");
             }
             buffer.Add(typedLine);
             gameText = string.Join('\n', buffer);

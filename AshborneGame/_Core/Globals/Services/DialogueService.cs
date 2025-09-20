@@ -41,14 +41,12 @@ namespace AshborneGame._Core.Globals.Services
                 IOService.Output.DisplayDebugMessage($"Current directory: {Directory.GetCurrentDirectory()}", ConsoleMessageTypes.INFO);
                 DialogueStart?.Invoke();
                 inkFilePath = FilePathResolver.FromDialogue(inkFilePath);
-                Console.WriteLine($"[DialogueService] Resolved ink file path='{inkFilePath}' for key='{originalKey}'");
+                IOService.Output.DisplayDebugMessage($"[DialogueService] Resolved ink file path='{inkFilePath}' for key='{originalKey}'");
                 IOService.Output.DisplayDebugMessage($"Loading file: {inkFilePath}", ConsoleMessageTypes.INFO);
                 await _inkRunner.LoadFromFileAsync(inkFilePath);
                 IOService.Output.DisplayDebugMessage("Running Ink story...", ConsoleMessageTypes.INFO);
                 await _inkRunner.RunAsync();
-                // Synchronize with output queue if available (Blazor)
-                await WaitForOutputQueueIfAvailable();
-                IOService.Output.DisplayDebugMessage("Dialogue completed", ConsoleMessageTypes.INFO);
+                IOService.Output.DisplayDebugMessage("RunAsync() completed.", ConsoleMessageTypes.INFO);
                 Console.WriteLine($"[DialogueService] Dialogue run completed for key='{originalKey}'");
             }
             catch (Exception ex)
@@ -61,42 +59,6 @@ namespace AshborneGame._Core.Globals.Services
                 }
                 IOService.Output.DisplayDebugMessage($"Stack trace: {ex.StackTrace}", ConsoleMessageTypes.ERROR);
                 throw;
-            }
-        }
-
-        /// <summary>
-        /// Waits for the Blazor output queue to finish processing if running in WASM and Home.Instance is available.
-        /// </summary>
-        private async Task WaitForOutputQueueIfAvailable()
-        {
-            if (!OperatingSystem.IsBrowser())
-            {
-                return;
-            }
-            Console.WriteLine("[DialogueService] WaitForOutputQueueIfAvailable called");
-            // Try to get Home.Instance and call WaitForDialogueOutputCompletionAsync
-            var homeType = Type.GetType("AshborneGame.WebPort.Home, AshborneWASM");
-            var instanceProp = homeType?.GetProperty("Instance");
-            var instance = instanceProp?.GetValue(null);
-            if (instance != null)
-            {
-                Console.WriteLine("[DialogueService] Got Home.Instance");
-                var waitMethod = homeType.GetMethod("WaitForDialogueOutputCompletionAsync");
-                if (waitMethod != null)
-                {
-                    Console.WriteLine("[DialogueService] Invoking WaitForDialogueOutputCompletionAsync");
-                    var task = (Task)waitMethod.Invoke(instance, null);
-                    await task;
-                    Console.WriteLine("[DialogueService] WaitForDialogueOutputCompletionAsync completed");
-                }
-                else
-                {
-                    Console.WriteLine("[DialogueService] WaitForDialogueOutputCompletionAsync method not found");
-                }
-            }
-            else
-            {
-                Console.WriteLine("[DialogueService] Home.Instance not found");
             }
         }
 

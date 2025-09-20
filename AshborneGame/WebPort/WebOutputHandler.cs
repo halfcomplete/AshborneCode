@@ -75,7 +75,8 @@ namespace AshborneGame.WebPort
         public void DisplayDebugMessage(string message, ConsoleMessageTypes type)
         {
 #if DEBUG
-            _debugCallback?.Invoke(type, message);
+            //_debugCallback?.Invoke(type, message);
+            Console.WriteLine($"[{type}]: {message}");
 #endif
         }
 
