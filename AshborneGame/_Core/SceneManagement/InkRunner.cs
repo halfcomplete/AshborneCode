@@ -28,6 +28,8 @@ namespace AshborneGame._Core.SceneManagement
         private (string, int) _currentSilentPath = ("", 0);
         private CancellationTokenSource? _silentPathCts = null;
 
+        private bool _hasPrintedDialogueEnd = false;
+
         public string CurrentSilentPath
         {
             get => _currentSilentPath.Item1;
@@ -151,14 +153,25 @@ namespace AshborneGame._Core.SceneManagement
 
             while (true)
             {
-                while (_story.canContinue)
+                bool _canContinue = _story.canContinue;
+                // Continue outputting story lines until we hit a choice or the story ends
+                while (_canContinue)
                 {
-                    
                     string line = _story.Continue().Trim();
+                    if (line == OutputConstants.DialogueEndMarker)
+                    {
+                        _canContinue = true;
+                        while (!_hasPrintedDialogueEnd)
+                        {
+                            await Task.Delay(100); // Wait for dialogue to finish outputting
+                        }
+                        break;
+                    }
                     IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Line='{line}'", ConsoleMessageTypes.INFO);
                     if (line.TrimEnd().EndsWith(OutputConstants.DialoguePauseMarker))
                     {
                         IOService.Output.WriteLine(line);
+                        _canContinue = _story.canContinue;
                         continue;
                     }
                     // Handle async player input in WASM with optional prompt
@@ -194,6 +207,7 @@ namespace AshborneGame._Core.SceneManagement
                         }
                         GameContext.GameState.SetLabel("player.input", playerInput);
                         IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Player input received at {DateTime.Now}", ConsoleMessageTypes.INFO);
+                        _canContinue = _story.canContinue;
                         continue; // Continue the Ink story after input
                     }
 
@@ -222,8 +236,10 @@ namespace AshborneGame._Core.SceneManagement
                             IOService.Output.WriteLine(line, OutputConstants.DefaultTypeSpeed);
                         }
                     }
+                    _canContinue = _story.canContinue;
                 }
-
+                
+                // Check if we hit some choices
                 if (_story.currentChoices.Count > 0)
                 {
                     IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Presenting choices at {DateTime.Now}", ConsoleMessageTypes.INFO);
@@ -255,21 +271,31 @@ namespace AshborneGame._Core.SceneManagement
                         return;
                     }
                 }
-                else
+                else if (_hasPrintedDialogueEnd)
                 {
-                    break; // No more content or choices, exit the loop
+                    break; // Exit if dialogue has finished outputting
                 }
             }            
         }
 
         public async Task StartSilentTimer()
         {
+            if (string.IsNullOrWhiteSpace(_currentSilentPath.Item1) || _currentSilentPath.Item2 <= 0)
+            {
+                Console.WriteLine("No silent path or invalid wait time set, not starting timer.");
+                return;
+            }
+                
             Console.WriteLine("timer ms: ", _currentSilentPath.Item2);
             await StopSilentTimer();
             _silentPathCts = new CancellationTokenSource();
             var token = _silentPathCts.Token;
             string silentPath = _currentSilentPath.Item1;
             int silentMs = _currentSilentPath.Item2;
+            if (silentMs < 100)
+            {
+                silentMs = 7000; // Minimum 7 seconds
+            }
             var timerId = Guid.NewGuid();
             Console.WriteLine($"[{timerId}] Starting silent path timer to path {silentPath} for {silentMs} ms at {DateTime.Now:HH:mm:ss.fff}");
             _ = Task.Run(async () =>
@@ -281,8 +307,6 @@ namespace AshborneGame._Core.SceneManagement
                     {
                         Console.WriteLine($"[{timerId}] Silent path timer completed at {DateTime.Now:HH:mm:ss.fff}");
                         await TryJumpToSilentPathAsync();
-                        // Clear silent path after jumping
-                        _currentSilentPath = ("", 0);
                     }
                 }
                 catch (TaskCanceledException)
@@ -485,7 +509,9 @@ namespace AshborneGame._Core.SceneManagement
 
         public void DialogueFinishedOutputting()
         {
+            Console.WriteLine("[InkRunner] DialogueFinishedOutputting called");
             OnDialogueEnd?.Invoke();
+            _hasPrintedDialogueEnd = true;
         }
     }
 }

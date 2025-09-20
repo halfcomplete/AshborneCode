@@ -46,6 +46,8 @@ namespace AshborneGame._Core.Globals.Services
                 await _inkRunner.LoadFromFileAsync(inkFilePath);
                 IOService.Output.DisplayDebugMessage("Running Ink story...", ConsoleMessageTypes.INFO);
                 await _inkRunner.RunAsync();
+                // Synchronize with output queue if available (Blazor)
+                await WaitForOutputQueueIfAvailable();
                 IOService.Output.DisplayDebugMessage("Dialogue completed", ConsoleMessageTypes.INFO);
                 Console.WriteLine($"[DialogueService] Dialogue run completed for key='{originalKey}'");
             }
@@ -60,7 +62,42 @@ namespace AshborneGame._Core.Globals.Services
                 IOService.Output.DisplayDebugMessage($"Stack trace: {ex.StackTrace}", ConsoleMessageTypes.ERROR);
                 throw;
             }
-                
+        }
+
+        /// <summary>
+        /// Waits for the Blazor output queue to finish processing if running in WASM and Home.Instance is available.
+        /// </summary>
+        private async Task WaitForOutputQueueIfAvailable()
+        {
+            if (!OperatingSystem.IsBrowser())
+            {
+                return;
+            }
+            Console.WriteLine("[DialogueService] WaitForOutputQueueIfAvailable called");
+            // Try to get Home.Instance and call WaitForDialogueOutputCompletionAsync
+            var homeType = Type.GetType("AshborneGame.WebPort.Home, AshborneWASM");
+            var instanceProp = homeType?.GetProperty("Instance");
+            var instance = instanceProp?.GetValue(null);
+            if (instance != null)
+            {
+                Console.WriteLine("[DialogueService] Got Home.Instance");
+                var waitMethod = homeType.GetMethod("WaitForDialogueOutputCompletionAsync");
+                if (waitMethod != null)
+                {
+                    Console.WriteLine("[DialogueService] Invoking WaitForDialogueOutputCompletionAsync");
+                    var task = (Task)waitMethod.Invoke(instance, null);
+                    await task;
+                    Console.WriteLine("[DialogueService] WaitForDialogueOutputCompletionAsync completed");
+                }
+                else
+                {
+                    Console.WriteLine("[DialogueService] WaitForDialogueOutputCompletionAsync method not found");
+                }
+            }
+            else
+            {
+                Console.WriteLine("[DialogueService] Home.Instance not found");
+            }
         }
 
         public void DialogueComplete()

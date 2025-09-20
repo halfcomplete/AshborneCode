@@ -559,23 +559,33 @@
         }
     }
 
+    private TaskCompletionSource<bool>? dialogueOutputCompletionSource;
+
+    /// <summary>
+    /// Awaitable for when the output queue processes __END__ and dialogue is truly complete.
+    /// </summary>
+    public Task WaitForDialogueOutputCompletionAsync()
+    {
+        Console.WriteLine("[Home] WaitForDialogueOutputCompletionAsync called");
+        if (dialogueOutputCompletionSource == null)
+        {
+            Console.WriteLine("[Home] No dialogueOutputCompletionSource, returning completed task");
+            return Task.CompletedTask;
+        }
+        return dialogueOutputCompletionSource.Task;
+    }
+
     private async Task ProcessOutputQueue()
     {
         isProcessingQueue = true;
+        if (dialogueOutputCompletionSource == null || dialogueOutputCompletionSource.Task.IsCompleted)
+        {
+            dialogueOutputCompletionSource = new TaskCompletionSource<bool>();
+            Console.WriteLine("[Home] Created new dialogueOutputCompletionSource");
+        }
         while (outputQueue.Count > 0)
         {
             var line = outputQueue.Dequeue();
-            if (line.Contains("__END__"))
-            {
-                Console.WriteLine($"[DEBUG] ProcessOutputQueue: Detected __END__ marker at {DateTime.Now}");
-                Console.WriteLine($"[DEBUG] ProcessOutputQueue: Flushed output, ending dialogue at {DateTime.Now}");
-                isInDialogue = false;
-                isAwaitingPlayerInput = false;
-                userInput = "";
-                pendingDialogueEnd = false;
-                GameContext.InkRunner?.DialogueFinishedOutputting();
-                break;
-            }
             if (line.Contains("__NL__"))
             {
                 dialogueChoices.Clear();
@@ -677,20 +687,19 @@
             await AutoScrollToBottom();
         }
         isProcessingQueue = false;
-            
-
 
         await InvokeAsync(StateHasChanged);
     }
 
     private async Task HandleTypewriterEffect(string line)
     {
-        if (pendingDialogueEnd && line == "__END__")
+        if (line == "__END__")
         {
-            // If we are already pending dialogue end, just return
-            Console.WriteLine("[DEBUG] HandleTypewriterEffect: Already pending dialogue end, skipping typewriter effect.");
-            pendingDialogueEnd = false; // Reset pending state
-            return;
+            Console.WriteLine($"[DEBUG] HandleTypewriterEffect: Flushed output, ending dialogue at {DateTime.Now}");
+            pendingDialogueEnd = false;
+            GameContext.DialogueService?.DialogueComplete();
+            GameContext.InkRunner?.DialogueFinishedOutputting();
+            await InvokeAsync(StateHasChanged);
         }
         // Parse ms value at the start of the line (e.g. "50__TS__...")
         int ms = OutputConstants.DefaultTypeSpeed; // default
@@ -727,6 +736,7 @@
             bool inItalic = false;
             for (int i = 0; i < msgLine.Length; i++)
             {
+                Console.WriteLine($"[DEBUG] Typing char {i}/{msgLine.Length} in line: {msgLine}");
                 // Check for start/end italic markers
                 if (msgLine.Substring(i).StartsWith(OutputConstants.InlineItalicStartMarker))
                 {
@@ -740,19 +750,23 @@
                     i += OutputConstants.InlineItalicEndMarker.Length - 1;
                     continue;
                 }
+                Console.WriteLine($"[DEBUG] No start/end italic markers detected for this char.");
 
                 char letter = msgLine[i];
                 string charToAdd = inItalic ? $"<span class='game-italic'>{System.Net.WebUtility.HtmlEncode(letter.ToString())}</span>" : System.Net.WebUtility.HtmlEncode(letter.ToString());
                 typedLine += charToAdd;
                 gameText = string.Join('\n', buffer) + (buffer.Count > 0 ? "\n" : "") + typedLine;
+                Console.WriteLine($"[DEBUG] Invoking StateHasChanged.");
                 await InvokeAsync(StateHasChanged);
-                await AutoScrollToBottom();
+                Console.WriteLine($"[DEBUG] Invoking AutoScrollToBottom().");
+                // await AutoScrollToBottom();
+                Console.WriteLine($"[DEBUG] Calculating isEnd.");
 
                 // Calculate isEnd using the same logic as Console version
                 bool isEnd = i == msgLine.Length - 1 || 
                             (i + 1 < msgLine.Length && msgLine[i + 1].Equals(' ')) || 
                             (i + 1 < msgLine.Length && msgLine[i + 1].Equals('\n'));
-
+                Console.WriteLine($"[DEBUG] Getting speed.");
                 // Get the speed for this character (if available)
                 int currentSpeed = ms;
                 if (characterSpeeds != null && characterSpeeds.Count > globalCharIndex)
@@ -760,17 +774,21 @@
                     currentSpeed = characterSpeeds[globalCharIndex];
                 }
 
+                Console.WriteLine($"[DEBUG] Speed={currentSpeed}.");
+
                 // Calculate delay with special handling for non-dialogue output
                 int delay;
                 int baseDelay;
+                Console.WriteLine($"[DEBUG] Calculating delay.");
 #if DEBUG
                 baseDelay = await CharacterOutputDelayCalculator.CalculateDebugDelayAsync(letter, currentSpeed, isEnd);
 #else
                 baseDelay = await CharacterOutputDelayCalculator.CalculateDelayAsync(letter, currentSpeed, isEnd);
 #endif
-                bool isDialogueOutput = (ms == OutputConstants.DefaultTypeSpeed);
-                if (!isDialogueOutput)
+				Console.WriteLine($"[DEBUG] Base delay calculated: {baseDelay} ms");
+                if (!isInDialogue)
                 {
+                    Console.WriteLine($"[DEBUG] Not in dialogue, applying non-dialogue speed multiplier.");
                     bool isPunctuation = letter == '.' || letter == '—' || letter == ',' || letter == '"' || letter == ':' || letter == ']' || letter == ')';
                     if (isPunctuation)
                     {
@@ -783,10 +801,13 @@
                 }
                 else
                 {
+					Console.WriteLine($"[DEBUG] In dialogue, using base delay.");
                     delay = baseDelay;
                 }
+                Console.WriteLine($"[DEBUG] Waiting for delay: {delay} ms");
                 await Task.Delay(delay);
                 globalCharIndex++;
+                Console.WriteLine($"[DEBUG] Finished typing character.");
             }
             buffer.Add(typedLine);
             gameText = string.Join('\n', buffer);
@@ -801,16 +822,6 @@
         Console.WriteLine($"[DEBUG] Finished typing dialogue: {message}");
         isTypingDialogue = false;
         await InvokeAsync(StateHasChanged);
-
-        // After typewriter effect, if pendingDialogueEnd is set and output queue is empty, end dialogue
-        if (pendingDialogueEnd && !isProcessingQueue)
-        {
-            Console.WriteLine($"[DEBUG] HandleTypewriterEffect: Flushed output, ending dialogue at {DateTime.Now}");
-            pendingDialogueEnd = false;
-            GameContext.DialogueService?.DialogueComplete();
-            GameContext.InkRunner?.DialogueFinishedOutputting();
-            await InvokeAsync(StateHasChanged);
-        }
     }
 
     private (string processedMessage, List<int> characterSpeeds) ProcessInlineSlowMarkersWithSpeeds(string message, int defaultMs)

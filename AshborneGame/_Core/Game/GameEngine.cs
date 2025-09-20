@@ -83,8 +83,6 @@ namespace AshborneGame._Core.Game
 
             Console.WriteLine("[GameEngine] Initial intro dialogue completed. Starting Ossaneth's Domain intro dialogue");
 
-            await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_Ossaneth_Domain_Intro");
-
             GameContext.Player.SetupMoveTo(_firstLocation, _firstScene);
             // Description is now handled inside SetupMoveTo
         }
