@@ -7,7 +7,7 @@ namespace AshborneGame._Core.Globals.Interfaces
         int GetChoiceInput(int choiceCount);
         
         // Async versions for web compatibility
-    Task<string> GetPlayerInputAsync(string prompt = "What will you say?");
+        Task<string> GetPlayerInputAsync(string prompt = "What will you say?");
         Task<int> GetChoiceInputAsync(int choiceCount);
     }
 }
