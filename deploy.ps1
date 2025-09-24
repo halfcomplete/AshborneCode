@@ -1,13 +1,12 @@
-# === deploy.ps1 ===
-# Eric's automatic Blazor to GitHub Pages deploy script
+# Automatic Blazor to GitHub Pages deploy script
 
-# === Paths ===
+# Set paths
 $blazorProjectPath = "D:\C# Projects\AshborneCode\AshborneWASM"
 $publishOutputPath = "D:\C# Projects\AshborneCode\publish"
 $deployRepoPath    = "D:\C# Projects\Ashborne"
 
-# === Step 1: Publish Blazor project WITHOUT service worker ===
-Write-Host "`n[INFO] Publishing Blazor app (no service worker)..."
+# Publish Blazor project
+Write-Host "`n[INFO] Publishing Blazor app..."
 dotnet publish $blazorProjectPath -c Release -o $publishOutputPath /p:RunAOTCompilation=false /p:PublishTrimmed=false
 
 if ($LASTEXITCODE -ne 0) {
@@ -15,60 +14,16 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-# === Step 2: Clean up index.html and set <base href> for GitHub Pages ===
+# Clean up index.html and set <base href> for GitHub Pages
 $indexHtmlPath = Join-Path $publishOutputPath "wwwroot\index.html"
-# Remove integrity attributes
+# Remove integrity attributes as no external assets are used
 (Get-Content $indexHtmlPath) -replace ' integrity="[^"]+"', '' | Set-Content $indexHtmlPath
 Write-Host "[INFO] Removed integrity attributes from index.html"
 # Set <base href> to /Ashborne/ for GitHub Pages
 (Get-Content $indexHtmlPath) -replace '<base href="/" />', '<base href="/Ashborne/" />' | Set-Content $indexHtmlPath
 Write-Host "[INFO] Set <base href> to /Ashborne/ for GitHub Pages"
 
-# === Remove Native AOT artifacts ===
-#$nativeArtifacts = @(
-#    "_framework/dotnet.native.wasm",
-#    "_framework/dotnet.native.js"
-#)
-
-#foreach ($artifact in $nativeArtifacts) {
-#    $nativePath = Join-Path $publishOutputPath "wwwroot\$artifact"
-#    if (Test-Path $nativePath) {
-#        Remove-Item $nativePath -Force
-#        Write-Host "[INFO] Removed Native AOT artifact: $artifact"
-#    }
-#}
-
-# === Remove pre-compressed AOT files ===
-#$compressedNativeFiles = @(
-#    "_framework/dotnet.native.br",
-#    "_framework/dotnet.native.js.br",
-#    "_framework/dotnet.native.js.gz",
-#    "_framework/dotnet.native.gz",
-#    "_framework/dotnet.native.wasm.br",
-#    "_framework/dotnet.native.wasm.gz"
-#)
-
-#foreach ($file in $compressedNativeFiles) {
-#    $path = Join-Path $publishOutputPath "wwwroot\$file"
-#    if (Test-Path $path) {
-#        Remove-Item $path -Force
-#        Write-Host "[INFO] Removed compressed native file: $file"
-#    }
-#}
-
-
-# # === Step 3: Clear SHA256 hashes from blazor.boot.json ===
-# $bootJsonPath = Join-Path $publishOutputPath "wwwroot\_framework\blazor.boot.json"
-# Write-Host "[DEBUG] blazor.boot.json path: $bootJsonPath"
-
-# if (Test-Path $bootJsonPath) {
-#    (Get-Content $bootJsonPath -Raw) -replace '\"sha256-[^\"]+\"', '""' | Set-Content $bootJsonPath -Encoding UTF8
-#    Write-Host "[INFO] Cleared all SHA256 hashes in blazor.boot.json"
-# } else {
-#    Write-Warning "[WARNING] blazor.boot.json not found at expected path."
-# }
-
-# === Step 4: Remove service worker files ===
+# Remove service worker files
 $serviceWorkerFiles = @(
     "service-worker.js",
     "service-worker.published.js",
@@ -83,7 +38,7 @@ foreach ($file in $serviceWorkerFiles) {
     }
 }
 
-# === Step 5: Copy published files to GitHub Pages repo ===
+# Copy published files to GitHub Pages repo
 $source = Join-Path $publishOutputPath "wwwroot"
 $destination = $deployRepoPath
 
@@ -95,6 +50,12 @@ if (!(Test-Path $source)) {
     exit 1
 }
 
+if ($destination != "D:\C# Projects\Ashborne") {
+    Write-Error "[ERROR] 'destination' set to $destination, instead of 'D:\C# Projects\Ashborne'. Exiting for safety"
+    exit 1
+}
+
+
 # Delete all files except .git
 Get-ChildItem -Path $destination -Recurse -Force |
     Where-Object { $_.FullName -notlike "$destination\.git*" } |
@@ -103,7 +64,7 @@ Get-ChildItem -Path $destination -Recurse -Force |
 # Copy new files in
 Copy-Item -Path "$source\*" -Destination $destination -Recurse -Force
 
-# === Step 6: Git commit and push ===
+# Git commit and push
 Write-Host "`n[INFO] Committing and pushing to GitHub Pages..."
 
 Set-Location $deployRepoPath
@@ -121,7 +82,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "`n[SUCCESS] Deployment complete! Visit: https://halfcomplete.github.io/Ashborne/"
 
 
-# === Step 7: Revert <base href> in SOURCE index.html to local (/) ===
+# Revert <base href> in SOURCE index.html to local (/)
 $sourceIndexHtmlPath = Join-Path $blazorProjectPath "wwwroot\index.html"
 if (Test-Path $sourceIndexHtmlPath) {
     (Get-Content $sourceIndexHtmlPath) -replace '<base href="/Ashborne/" />', '<base href="/" />' | Set-Content $sourceIndexHtmlPath
