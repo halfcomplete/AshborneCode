@@ -156,6 +156,8 @@ namespace AshborneGame._Core.Globals.Constants
         /// </summary>
         public const float NonDialogueOutputSpeedMultiplier = 3.5f;
 
+        public static readonly int DefaultNonDialogueOutputSpeed = (int)Math.Round(DefaultTypeSpeed / NonDialogueOutputSpeedMultiplier);
+
         public const string ShortenedCentre = "centre";
         public const string ShortenedRight = "right";
         public const string ShortenedLeft = "left";

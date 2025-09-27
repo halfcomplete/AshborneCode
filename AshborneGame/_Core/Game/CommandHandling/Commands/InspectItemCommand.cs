@@ -28,7 +28,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                     IOService.Output.DisplayFailMessage($"That can't be inspected.");
                     return false;
                 }
-                IOService.Output.WriteLine($"Inspecting {item.Name}: {item.Description}");
+                IOService.Output.WriteNonDialogueLine($"Inspecting {item.Name}: {item.Description}");
                 inspectableBehaviour.Inspect();
                 return true;
             }

@@ -39,19 +39,19 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours
         {
             foreach (var trigger in _triggers)
             {
-                EventBus.Subscribe(trigger.EventName, async (e) =>
+                EventBus.Subscribe(trigger.EventName, (Action<GameEvent>)(async (e) =>
                 {
                     var _triggers2 = new List<MaskInterjectionTrigger>(_triggers);
                     if (ShouldTrigger(trigger, e, out bool shouldDelete))
                     {
                         if (trigger.Message != null)
-                            IOService.Output.WriteLine($"{ParentObject.Name}: {trigger.Message}");
+                            IOService.Output.WriteNonDialogueLine($"{ParentObject.Name}: {trigger.Message}");
                         if (trigger.Effect != null)
                             await trigger.Effect();
                         if (shouldDelete) _triggers2.Remove(trigger);
                     }
                     _triggers = new List<MaskInterjectionTrigger>(_triggers2);
-                });
+                }));
             }
         }
 

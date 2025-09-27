@@ -29,7 +29,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
 
             player.EquipItem(item, bodyPart);
             IOService.Output.DisplayDebugMessage($"Equipped {item.Name} in the {bodyPart} slot.", ConsoleMessageTypes.INFO);
-            IOService.Output.WriteLine($"You equip {item.Name} on your {bodyPart}.");
+            IOService.Output.WriteNonDialogueLine($"You equip {item.Name} on your {bodyPart}.");
             IOService.Output.DisplayDebugMessage($"Item Behaviour Values: {item.Behaviours.Values.SelectMany(x => x).OfType<IActOnEquip>().Count()}", ConsoleMessageTypes.INFO);
             
             foreach (var behaviour in item.Behaviours)

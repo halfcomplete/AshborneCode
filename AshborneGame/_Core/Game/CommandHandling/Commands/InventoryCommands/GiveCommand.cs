@@ -94,7 +94,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
             }
 
             originInventory.TransferItem(originInventory, destinationInventory, item, quantity);
-            IOService.Output.WriteLine($"Successfully gave {quantity} x {item.Name}.");
+            IOService.Output.WriteNonDialogueLine($"Successfully gave {quantity} x {item.Name}.");
 
             ShowInventorySummary(player, player.Inventory, "Your inventory now contains:");
             ShowInventorySummary(player, destinationInventory, "The opened container / NPC now has:");
@@ -125,7 +125,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
             }
 
             origin.TransferAllItems(origin, destination);
-            IOService.Output.WriteLine("You gave all your items.");
+            IOService.Output.WriteNonDialogueLine("You gave all your items.");
 
             ShowInventorySummary(player, origin, "Your inventory is now empty.");
             ShowInventorySummary(player, destination, "The opened container / NPC now has:");

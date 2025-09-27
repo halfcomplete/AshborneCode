@@ -164,12 +164,12 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             var (isEmpty, contents) = GetInventoryContents(player);
             if (isEmpty)
             {
-                IOService.Output.WriteLine("Your inventory is empty.");
+                IOService.Output.WriteNonDialogueLine("Your inventory is empty.");
             }
             else
             {
-                IOService.Output.WriteLine("Your inventory contains:");
-                IOService.Output.WriteLine(contents);
+                IOService.Output.WriteNonDialogueLine("Your inventory contains:");
+                IOService.Output.WriteNonDialogueLine(contents);
             }
         }
 
@@ -178,14 +178,14 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         /// </summary>
         public void TransferItem(Inventory originInventory, Inventory destinationInventory, Item item, int count)
         {
-            IOService.Output.WriteLine($"Transferring {count} x {item.Name} from {originInventory.GetType().Name} to {destinationInventory.GetType().Name}.");
+            IOService.Output.DisplayDebugMessage($"Transferring {count} x {item.Name} from {originInventory.GetType().Name} to {destinationInventory.GetType().Name}.");
             originInventory.RemoveItem(item, count);
             destinationInventory.AddItem(item, count);
         }
 
         public void TransferAllItems(Inventory originInventory, Inventory destinationInventory)
         {
-            IOService.Output.WriteLine($"Transferring all items from {originInventory.GetType().Name} to {destinationInventory.GetType().Name}.");
+            IOService.Output.DisplayDebugMessage($"Transferring all items from {originInventory.GetType().Name} to {destinationInventory.GetType().Name}.");
             
             var uneditedInventory = new Inventory();
             uneditedInventory._slots.AddRange(originInventory.Slots.Select(slot => new InventorySlot(slot.Item, slot.Quantity)));

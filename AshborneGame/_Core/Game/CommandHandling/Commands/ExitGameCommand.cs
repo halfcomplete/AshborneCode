@@ -17,7 +17,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                 return false;
             }
 
-            IOService.Output.WriteLine("Thank you for playing Ashborne!");
+            IOService.Output.WriteNonDialogueLine("Thank you for playing Ashborne!");
             Thread.Sleep(1000);
             Environment.Exit(0);
 

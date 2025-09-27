@@ -16,7 +16,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules
                 throw new ArgumentException("Damage amount cannot be negative.", nameof(amount));
             }
             Durability -= amount;
-            IOService.Output.WriteLine($"Item damaged by {amount}. Current durability: {Durability}/{MaxDurability}.");
+            IOService.Output.WriteNonDialogueLine($"Item damaged by {amount}. Current durability: {Durability}/{MaxDurability}.");
             if (Durability <= 0)
             {
                 Durability = 0;

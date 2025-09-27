@@ -13,15 +13,15 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         {
             if (args.Count > 1)
             {
-                IOService.Output.WriteLine("Did you mean just 'help'?");
+                IOService.Output.WriteNonDialogueLine("Did you mean just 'help'?");
                 return false;
             }
 
-            IOService.Output.WriteLine("Available commands:");
+            IOService.Output.WriteNonDialogueLine("Available commands:");
             for (int i = 0; i < CommandManager.Commands.Count; i++)
             {
                 var command = CommandManager.Commands[CommandManager.Commands.Keys.ToList()[i]];
-                IOService.Output.WriteLine($"{i + 1}. '{command.Names[0]}' - {command.Description}");
+                IOService.Output.WriteNonDialogueLine($"{i + 1}. '{command.Names[0]}' - {command.Description}");
             }
 
             return true;

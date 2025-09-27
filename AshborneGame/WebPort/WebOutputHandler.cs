@@ -6,83 +6,64 @@ namespace AshborneGame.WebPort
 {
     public class WebOutputHandler : IOutputHandler
     {
-        private readonly Func<string, Task> _writeLineCallback;
-        private readonly Func<Task> _clearCallback;
+        private readonly Func<string, Task> _writeDialogueLineCallback;
+        private readonly Func<string, Task> _writeNonDialogueLineCallback;
         private readonly Func<ConsoleMessageTypes, string, Task> _debugCallback;
 
         public WebOutputHandler(
-            Func<string, Task> writeLineCallback,
-            Func<Task> clearCallback,
+            Func<string, Task> writeDialogueLineCallback,
+            Func<string, Task> writeNonDialogueLineCallback,
             Func<ConsoleMessageTypes, string, Task>? debugCallback = null)
         {
-            _writeLineCallback = writeLineCallback;
-            _clearCallback = clearCallback;
+            _writeDialogueLineCallback = writeDialogueLineCallback;
+            _writeNonDialogueLineCallback = writeNonDialogueLineCallback;
             _debugCallback = debugCallback ?? ((type, msg) => Task.CompletedTask);
         }
 
-        // IOutputHandler.Write(string) implementation (void)
         public void Write(string message)
         {
-            WriteAsync(message).GetAwaiter().GetResult();
+            // For now, just treat it as dialogue, and write it as a separate line.
+            _writeDialogueLineCallback(message).GetAwaiter().GetResult();
         }
 
-        // Task-based Write for internal async use
-        public Task WriteAsync(string text)
+        public void Write(string message, int ms)
         {
-#if DEBUG && BLAZOR
-            Console.WriteLine($"[DEBUG] WebOutputHandler.Write: {text}");
-#endif
-            return _writeLineCallback(text);
+            // For now, just treat it as dialogue, and write it as a separate line.
+            _writeDialogueLineCallback(message).GetAwaiter().GetResult();
         }
 
-        public async void Write(string message, int ms)
+        public void WriteNonDialogueLine(string message)
         {
-            // Only apply non-dialogue output speed multiplier if not dialogue
-            int adjustedMs = ms == OutputConstants.DefaultTypeSpeed ? ms : (int)(ms * OutputConstants.NonDialogueOutputSpeedMultiplier);
-            await _writeLineCallback?.Invoke($"{adjustedMs}{OutputConstants.TypewriterStartMarker}{message}{OutputConstants.TypewriterEndMarker}");
+            _writeNonDialogueLineCallback(message).GetAwaiter().GetResult();
         }
 
-        // IOutputHandler.WriteLine(string) implementation (void)
-        public void WriteLine(string message)
+        public void WriteNonDialogueLine(string message, int ms)
         {
-            WriteLineAsync(message).GetAwaiter().GetResult();
+            // Ignoring delay for web output
+            _writeNonDialogueLineCallback(message).GetAwaiter().GetResult();
         }
 
-        // Task-based WriteLine for internal async use
-        public Task WriteLineAsync(string line)
+        public void WriteDialogueLine(string message)
         {
-#if DEBUG && BLAZOR
-            Console.WriteLine($"[DEBUG] WebOutputHandler.WriteLine: {line}");
-#endif
-            return _writeLineCallback(line);
+            _writeDialogueLineCallback(message).GetAwaiter().GetResult();
         }
 
-        public async void WriteLine(string message, int ms)
+        public void WriteDialogueLine(string message, int ms)
         {
-            // Only apply non-dialogue output speed multiplier if not dialogue
-            int adjustedMs = ms == AshborneGame._Core.Globals.Constants.OutputConstants.DefaultTypeSpeed ? ms : (int)(ms * AshborneGame._Core.Globals.Constants.OutputConstants.NonDialogueOutputSpeedMultiplier);
-            await _writeLineCallback?.Invoke($"{adjustedMs}{OutputConstants.TypewriterStartMarker}{message}{OutputConstants.TypewriterEndMarker}\n");
+            // Typewriter output
+            _writeDialogueLineCallback($"{OutputConstants.DefaultTypeSpeed * OutputConstants.TypeSpeedMultiplier}{OutputConstants.TypewriterStartMarker}{message}{OutputConstants.TypewriterEndMarker}").GetAwaiter().GetResult();
         }
 
         public void DisplayFailMessage(string message)
         {
-            // Later, display a fail message on UI
-            // E.g., using a toast notification or alert
-            // For now, just log it
-            _writeLineCallback?.Invoke($"{message}\n");
+            _debugCallback(ConsoleMessageTypes.ERROR, message).GetAwaiter().GetResult();
         }
 
-        public void DisplayDebugMessage(string message, ConsoleMessageTypes type)
+        public void DisplayDebugMessage(string message, ConsoleMessageTypes type = ConsoleMessageTypes.INFO)
         {
 #if DEBUG
-            //_debugCallback?.Invoke(type, message);
-            Console.WriteLine($"[{type}]: {message}");
+            _debugCallback(type, message).GetAwaiter().GetResult();
 #endif
-        }
-
-        public void Clear()
-        {
-            _clearCallback?.Invoke();
         }
     }
 }

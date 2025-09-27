@@ -19,7 +19,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
         {
             // Logic to apply damage to the player
             player.ChangeHealth(-DamageAmount);
-            IOService.Output.WriteLine($"You take {DamageAmount} damage. You now have {player.Stats.GetStat(PlayerStatType.Health)} HP.");
+            IOService.Output.WriteNonDialogueLine($"You take {DamageAmount} damage. You now have {player.Stats.GetStat(PlayerStatType.Health)} HP.");
         }
 
         public override OnUseDamagePlayerBehaviour DeepClone()

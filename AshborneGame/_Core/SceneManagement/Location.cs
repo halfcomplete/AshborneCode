@@ -3,6 +3,7 @@ using System.Text;
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ObjectSystem;
 using AshborneGame._Core.Game;
+using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Interfaces;
@@ -51,12 +52,13 @@ namespace AshborneGame._Core.SceneManagement
 
         public int VisitCount { get; set; } = 0;
 
+
         /// <summary>
         /// Adds custom commands to this location.
         /// </summary>
-        public void AddCustomCommand(List<string> commands, Func<string> messageFunc, Action effect)
+        public void AddCustomCommand(CustomCommandPhrasing phrasings, Func<string> messageFunc, Action effect)
         {
-            foreach (var command in commands)
+            foreach (var command in phrasings.Phrases)
             {
                 CustomCommands[command] = (messageFunc, effect);
             }

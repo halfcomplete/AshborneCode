@@ -34,7 +34,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviou
             }
             else // If we're in a regular location, output and return
             {
-                IOService.Output.WriteLine("There's nothing to unlock here.");
+                IOService.Output.WriteNonDialogueLine("There's nothing to unlock here.");
                 return;
             }
 
@@ -47,7 +47,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviou
                     return;
                 }
             }
-            IOService.Output.WriteLine("There's nothing to unlock here.");
+            IOService.Output.WriteNonDialogueLine("There's nothing to unlock here.");
         }
 
         public override OnUseUnlockObjectBehaviour DeepClone()

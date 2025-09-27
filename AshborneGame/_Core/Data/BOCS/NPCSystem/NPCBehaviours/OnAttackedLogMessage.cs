@@ -14,7 +14,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
 
         public void OnAttacked()
         {
-            IOService.Output.WriteLine(Message);
+            IOService.Output.WriteNonDialogueLine(Message);
         }
     }
 }

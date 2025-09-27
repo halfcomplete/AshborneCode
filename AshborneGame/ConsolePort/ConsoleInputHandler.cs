@@ -16,7 +16,7 @@ namespace AshborneGame.ConsolePort
 
         public int GetChoiceInput(int choiceCount)
         {
-            IOService.Output.Write("What do you choose? ");
+            IOService.Output.WriteNonDialogueLine("What do you choose? ");
             while (true)
             {
                 string input = Console.ReadLine() ?? "";

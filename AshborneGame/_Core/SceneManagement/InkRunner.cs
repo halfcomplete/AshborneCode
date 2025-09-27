@@ -172,7 +172,7 @@ namespace AshborneGame._Core.SceneManagement
                     {
                         _canContinue = true;
                         Console.WriteLine($"RunAsync encountered __END__ marker. Waiting for _hasPrintedDialogueEnd.");
-                        IOService.Output.WriteLine(line);
+                        IOService.Output.WriteDialogueLine(line);
                         while (!_hasPrintedDialogueEnd)
                         {
                             await Task.Delay(100); // Wait for dialogue to finish outputting
@@ -183,7 +183,7 @@ namespace AshborneGame._Core.SceneManagement
                     IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Line='{line}'", ConsoleMessageTypes.INFO);
                     if (line.TrimEnd().EndsWith(OutputConstants.DialoguePauseMarker))
                     {
-                        IOService.Output.WriteLine(line);
+                        IOService.Output.WriteDialogueLine(line);
                         _canContinue = _story.canContinue;
                         continue;
                     }
@@ -193,7 +193,7 @@ namespace AshborneGame._Core.SceneManagement
                         string prompt = "What will you say?";
                         if (line.Length > OutputConstants.GetPlayerInputMarker.Length && line[OutputConstants.GetPlayerInputMarker.Length] == ':')
                         {
-                            Console.WriteLine("\"__GET_PLAYER_INPUT:Prompt text\" found!");
+                            IOService.Output.DisplayDebugMessage("\"__GET_PLAYER_INPUT:Prompt text\" found!");
                             prompt = line.Substring(OutputConstants.GetPlayerInputMarker.Length + 1).Trim();
                             Console.WriteLine(prompt);
                             if (string.IsNullOrWhiteSpace(prompt))
@@ -233,18 +233,18 @@ namespace AshborneGame._Core.SceneManagement
                             if (int.TryParse(targetTag.AsSpan(5), out int ms))
                             {
                                 IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Custom speed tag found: {targetTag}. Using {ms} ms for typewriter effect.", ConsoleMessageTypes.INFO);
-                                IOService.Output.WriteLine(line, ms);
+                                IOService.Output.WriteDialogueLine(line, ms);
                             }
                             else
                             {
                                 IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Invalid speed tag format: {targetTag}. Using default speed of {OutputConstants.DefaultTypeSpeed} ms.", ConsoleMessageTypes.INFO);
-                                IOService.Output.WriteLine(line, OutputConstants.DefaultTypeSpeed);
+                                IOService.Output.WriteDialogueLine(line, OutputConstants.DefaultTypeSpeed);
                             }
                         }
                         else
                         {
                             IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: No speed tag found. Using default speed of {OutputConstants.DefaultTypeSpeed} ms.", ConsoleMessageTypes.INFO);
-                            IOService.Output.WriteLine(line, OutputConstants.DefaultTypeSpeed);
+                            IOService.Output.WriteDialogueLine(line, OutputConstants.DefaultTypeSpeed);
                         }
                     }
                     _canContinue = _story.canContinue;
@@ -255,7 +255,7 @@ namespace AshborneGame._Core.SceneManagement
                     IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Enqueued choices at {DateTime.Now}", ConsoleMessageTypes.INFO);
                     for (int i = 0; i < _story.currentChoices.Count; i++)
                     {
-                        IOService.Output.WriteLine($"[{i + 1}] {_story.currentChoices[i].text}");
+                        IOService.Output.WriteDialogueLine($"[{i + 1}] {_story.currentChoices[i].text}");
                     }
 
                     // Await external cancellation from Home.razor
@@ -270,7 +270,7 @@ namespace AshborneGame._Core.SceneManagement
 
                 if (_hasPrintedDialogueEnd)
                 {
-                    Console.WriteLine("Returning from RunAsync().");
+                    IOService.Output.DisplayDebugMessage("Returning from RunAsync().");
                     return; // Exit if dialogue has finished outputting
                 }
             }

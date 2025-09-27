@@ -17,8 +17,8 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                 return false;
             }
 
-            IOService.Output.WriteLine("Your current stats:");
-            IOService.Output.WriteLine(player.Stats.GetFormattedStats());
+            IOService.Output.WriteNonDialogueLine("Your current stats:");
+            IOService.Output.WriteNonDialogueLine(player.Stats.GetFormattedStats());
 
             return true;
         }

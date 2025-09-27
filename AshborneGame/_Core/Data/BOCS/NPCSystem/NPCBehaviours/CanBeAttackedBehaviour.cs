@@ -42,7 +42,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
 
         private void Die()
         {
-            IOService.Output.WriteLine("The enemy has been defeated!");
+            IOService.Output.WriteNonDialogueLine("The enemy has been defeated!");
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Game;
+using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.SceneManagement;
 
@@ -68,7 +69,7 @@ namespace AshborneGame._Core.Globals.Interfaces
         /// <summary>
         /// Adds custom commands to this location.
         /// </summary>
-        void AddCustomCommand(List<string> commands, Func<string> messageFunc, Action effect);
+        void AddCustomCommand(CustomCommandPhrasing phrasings, Func<string> messageFunc, Action effect);
 
         /// <summary>
         /// Removes a custom command by its string key.
@@ -79,5 +80,7 @@ namespace AshborneGame._Core.Globals.Interfaces
         {
             VisitCount++;
         }
+
+        public string GetExits();
     }
 }

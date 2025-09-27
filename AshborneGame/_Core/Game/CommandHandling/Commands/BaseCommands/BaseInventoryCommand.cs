@@ -29,12 +29,12 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.BaseCommands
 
 		protected void ShowInventorySummary(Player player, Inventory inventory, string header)
 		{
-			IOService.Output.WriteLine(header);
+			IOService.Output.WriteNonDialogueLine(header);
 			var (isEmpty, contents) = inventory.GetInventoryContents(player);
-			IOService.Output.WriteLine(isEmpty ? "Nothing." : header);
+			IOService.Output.WriteNonDialogueLine(isEmpty ? "Nothing." : header);
 			if (!isEmpty)
 			{
-				IOService.Output.WriteLine(contents);
+				IOService.Output.WriteNonDialogueLine(contents);
 			}
 		}
 

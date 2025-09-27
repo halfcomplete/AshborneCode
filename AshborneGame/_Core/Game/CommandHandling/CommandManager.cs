@@ -33,6 +33,7 @@ namespace AshborneGame._Core.Game.CommandHandling
             RegisterCommand(new GoCommand());
             RegisterCommand(new GoToCommand());
             RegisterCommand(new HelpCommand());
+            RegisterCommand(new InspectItemCommand());
         }
 
         public static void RegisterCommand(ICommand command)
@@ -53,7 +54,7 @@ namespace AshborneGame._Core.Game.CommandHandling
                     args2.Insert(0, action);
                     if (string.Join(' ', args2).Equals(kvp.Key, StringComparison.OrdinalIgnoreCase))
                     {
-                        IOService.Output.WriteLine(kvp.Value.message.Invoke(), OutputConstants.DefaultTypeSpeed);
+                        IOService.Output.WriteNonDialogueLine(kvp.Value.message.Invoke());
                         kvp.Value.effect?.Invoke();
                         return true;
                     }
@@ -67,7 +68,7 @@ namespace AshborneGame._Core.Game.CommandHandling
                 args2.Insert(0, action);
                 if (string.Join(' ', args2).Equals(kvp.Key, StringComparison.OrdinalIgnoreCase))
                 {
-                    IOService.Output.WriteLine(kvp.Value.message.Invoke(), OutputConstants.DefaultTypeSpeed);
+                    IOService.Output.WriteNonDialogueLine(kvp.Value.message.Invoke());
                     kvp.Value.effect?.Invoke();
                     return true;
                 }
@@ -75,7 +76,7 @@ namespace AshborneGame._Core.Game.CommandHandling
 
             if (CheckIfCaughtByCommandBuckets(player, action, out string message))
             {
-                IOService.Output.WriteLine(message, ms: 50);
+                IOService.Output.WriteNonDialogueLine(message);
                 return true;
             }
 

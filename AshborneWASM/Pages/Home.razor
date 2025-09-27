@@ -439,15 +439,15 @@
             throw new InvalidOperationException("AppEnvironment is not injected.");
         }
 #if DEBUG
-    var outputHandler = new WebOutputHandler(
-    async line => EnqueueOutput(line),
-    async () => { gameText = ""; await InvokeAsync(StateHasChanged); },
-    async (type, msg) => EnqueueOutput($"[DEBUG - {type}]: {msg}")
-    );
+        var outputHandler = new WebOutputHandler(
+        async line => EnqueueOutput(line),
+        async line => EnqueueOutput($"{OutputConstants.DefaultTypeSpeed * OutputConstants.NonDialogueOutputSpeedMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}"),
+        async (type, msg) => EnqueueOutput($"[{type}]: {msg}")
+        );
 #else
         var outputHandler = new WebOutputHandler(
             async line => EnqueueOutput(line),
-            async () => { gameText = ""; await InvokeAsync(StateHasChanged); }
+            async line => EnqueueOutput($"{OutputConstants.DefaultNonDialogueOutputSpeed / OutputConstants.TypeSpeedMultiplier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}")
         );
 #endif
 
@@ -1015,7 +1015,7 @@
             }
             try
             {
-                IOService.Output.WriteLine($"> {userInput}");
+                IOService.Output.WriteNonDialogueLine($"> {userInput}");
                 string command = userInput.Trim();
                 #if DEBUG
                 IOService.Output.DisplayDebugMessage($"[DEBUG] Executing command: '{command}'");

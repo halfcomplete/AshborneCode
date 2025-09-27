@@ -20,7 +20,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.CombatBehaviour
         {
             // Implementation for dealing damage to the target
             // For now just print a message
-            IOService.Output.WriteLine($"Dealing {BaseDamage} damage to the target.");
+            IOService.Output.WriteNonDialogueLine($"You deal {BaseDamage} damage to the target!");
         }
 
         public override OnPlayerUseDealDamageBehaviour DeepClone()

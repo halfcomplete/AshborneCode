@@ -20,7 +20,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.CombatBehaviour
         {
             // Implementation for applying the status effect to the target
             // For now just print a message
-            IOService.Output.WriteLine($"Applying status effect '{StatusEffectType}' to {target ?? "the target"}.");
+            IOService.Output.WriteNonDialogueLine($"Applying '{StatusEffectType}' to {target ?? "the target"}.");
 
             // Apply status effect logic here
         }

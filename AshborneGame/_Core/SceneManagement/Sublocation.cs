@@ -2,8 +2,11 @@
 using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.ObjectSystem;
 using AshborneGame._Core.Game;
+using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Game.DescriptionHandling;
+using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Interfaces;
+using System.Text;
 
 namespace AshborneGame._Core.SceneManagement
 {
@@ -43,9 +46,9 @@ namespace AshborneGame._Core.SceneManagement
         /// <summary>
         /// Adds custom commands to this sublocation.
         /// </summary>
-        public void AddCustomCommand(List<string> commands, Func<string> messageFunc, Action effect)
+        public void AddCustomCommand(CustomCommandPhrasing phrasings, Func<string> messageFunc, Action effect)
         {
-            foreach (var command in commands)
+            foreach (var command in phrasings.Phrases)
             {
                 CustomCommands[command] = (messageFunc, effect);
             }
@@ -95,6 +98,35 @@ namespace AshborneGame._Core.SceneManagement
         /// <summary>
         /// Returns the appropriate description for the player and state.
         /// </summary>
-        public string GetDescription(Player player, GameStateManager state) => DescriptionComposer.GetDescription(player, state);
+        public string GetDescription(Player player, GameStateManager state)
+        {
+            StringBuilder description = new StringBuilder();
+            description.AppendLine(DescriptionComposer.GetDescription(player, state));
+            description.AppendLine(GetExits());
+
+            return description.ToString();
+        }
+
+        public string GetExits()
+        {
+            var sb = new StringBuilder();
+            if (Exits.Count == 0)
+            {
+                sb.AppendLine("\nThere are no exits from here.");
+            }
+            else
+            {
+                sb.AppendLine("From here you can go:");
+                foreach (var exit in Exits)
+                {
+                    if (DirectionConstants.CardinalDirections.Contains(exit.Key))
+                    {
+                        sb.AppendLine($"- {exit.Key} to {exit.Value.Name.DisplayName}");
+                    }
+                }
+            }
+
+            return sb.ToString();
+        }
     }
 }

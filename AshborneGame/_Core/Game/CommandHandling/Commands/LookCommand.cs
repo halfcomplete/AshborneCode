@@ -13,7 +13,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 
         public bool TryExecute(List<string> args, Player player)
         {
-            IOService.Output.WriteLine(player.CurrentSublocation?.GetDescription(player, GameContext.GameState) ?? player.CurrentLocation.GetLookDescription(player, GameContext.GameState), OutputConstants.DefaultTypeSpeed);
+            IOService.Output.WriteNonDialogueLine(player.CurrentSublocation?.GetDescription(player, GameContext.GameState) ?? player.CurrentLocation.GetLookDescription(player, GameContext.GameState));
             return true;
         }
     }

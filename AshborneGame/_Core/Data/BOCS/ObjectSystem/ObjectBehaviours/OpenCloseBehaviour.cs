@@ -32,7 +32,7 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
                     Close(player);
                     break;
                 default:
-                    IOService.Output.WriteLine("Invalid interaction type for OpenCloseBehaviour.");
+                    IOService.Output.WriteNonDialogueLine("Invalid interaction type for OpenCloseBehaviour.");
                     break;
             }
         }
@@ -43,19 +43,19 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 
             if (behaviours.FirstOrDefault(s => s.GetType() == typeof(LockUnlockBehaviour)) is LockUnlockBehaviour lockBehaviour && lockBehaviour.IsLocked)
             {
-                IOService.Output.WriteLine($"The {ParentObject.Name} is locked. You need to unlock it first.");
+                IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is locked. You need to unlock it first.");
                 return;
             }
 
             if (IsOpen)
             {
-                IOService.Output.WriteLine($"The {ParentObject.Name} is already open.");
+                IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is already open.");
                 return;
             }
 
             IsOpen = true;
             IOService.Output.DisplayDebugMessage($"Behaviours available for {ParentObject.Name}: {string.Join(", ", behaviours.Select(b => b.GetType().Name))}", ConsoleMessageTypes.INFO);
-            IOService.Output.WriteLine($"You open the {ParentObject.Name}.");
+            IOService.Output.WriteNonDialogueLine($"You open the {ParentObject.Name}.");
             
             if (ParentObject.GetAllBehaviours<IHasInventory>().FirstOrDefault(s => s.GetType() == typeof(ContainerBehaviour)) is ContainerBehaviour containerBehaviour)
             {
@@ -63,12 +63,12 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
                 (bool isEmpty, string contents) = containerBehaviour.Inventory.GetInventoryContents(player: null);
                 if (!isEmpty)
                 {
-                    IOService.Output.WriteLine($"Inside the {ParentObject.Name} you see:");
-                    IOService.Output.WriteLine(contents);
+                    IOService.Output.WriteNonDialogueLine($"Inside the {ParentObject.Name} you see:");
+                    IOService.Output.WriteNonDialogueLine(contents);
                 }
                 else
                 {
-                    IOService.Output.WriteLine($"The {ParentObject.Name} is empty.");
+                    IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is empty.");
                 }
             }
 
@@ -83,13 +83,13 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
         {
             if (!IsOpen)
             {
-                IOService.Output.WriteLine($"The {ParentObject.Name} is already closed.");
+                IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is already closed.");
                 return;
             }
             
             IsOpen = false;
             player.OpenedInventory = null;
-            IOService.Output.WriteLine($"You close the {ParentObject.Name}.");
+            IOService.Output.WriteNonDialogueLine($"You close the {ParentObject.Name}.");
         }
     }
 }

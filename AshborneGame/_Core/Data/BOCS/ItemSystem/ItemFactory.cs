@@ -73,13 +73,12 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             return AddBaseBehaviours(item);
         }
 
-        public static Item CreateMagicScroll(string name, string description, string useDescription, int stackLimit = 1)
+        public static Item CreateMagicScroll(string name, string description, string useDescription, string inspectDesc, int stackLimit = 1)
         {
             var item = new Item(name, description, useDescription, stackLimit, ItemTypes.Consumable, ItemQualities.Mythic);
             item.AddBehaviour(typeof(IUsable), new UsableBehaviour(item));
             item.AddBehaviour(typeof(IActOnUse), new OnUseChangePlayerStatBehaviour(30, PlayerStatType.Strength));
-            item.AddBehaviour(typeof(IIdentifiable), new IdentifiableBehaviour(item, "This scroll contains powerful magic."));
-            item.AddBehaviour(typeof(IInspectable), new InspectableBehaviour(item, item.Description, item.Quality, "This item has a hidden lore.", true));
+            item.AddBehaviour(typeof(IInspectable), new InspectableBehaviour(item, item.Description, item.Quality, inspectDesc, true));
             return item;
         }
 

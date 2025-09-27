@@ -28,7 +28,7 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
                     Unlock();
                     break;
                 default:
-                    IOService.Output.WriteLine("Invalid interaction type for LockUnlockBehaviour.");
+                    IOService.Output.WriteNonDialogueLine("Invalid interaction type for LockUnlockBehaviour.");
                     break;
             }
         }
@@ -37,23 +37,23 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
         {
             if (IsLocked)
             {
-                IOService.Output.WriteLine($"The {ParentObject.Name} is already locked.");
+                IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is already locked.");
                 return;
             }
 
             IsLocked = true;
-            IOService.Output.WriteLine($"You lock the {ParentObject.Name}.");
+            IOService.Output.WriteNonDialogueLine($"You lock the {ParentObject.Name}.");
         }
 
         private void Unlock()
         {
             if (!IsLocked)
             {
-                IOService.Output.WriteLine($"The {ParentObject.Name} is already unlocked.");
+                IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is already unlocked.");
                 return;
             }
             IsLocked = false;
-            IOService.Output.WriteLine($"You unlock the {ParentObject.Name}.");
+            IOService.Output.WriteNonDialogueLine($"You unlock the {ParentObject.Name}.");
         }
     }
 }

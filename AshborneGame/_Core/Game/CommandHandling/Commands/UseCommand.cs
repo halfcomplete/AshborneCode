@@ -41,7 +41,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             IUsable usableItem = (IUsable)item.Behaviours[typeof(IUsable)][0];
             usableItem.Use(player);
 
-            IOService.Output.WriteLine($"You used {item.Name}.");
+            IOService.Output.WriteNonDialogueLine($"You used {item.Name}.");
 
             return true;
         }

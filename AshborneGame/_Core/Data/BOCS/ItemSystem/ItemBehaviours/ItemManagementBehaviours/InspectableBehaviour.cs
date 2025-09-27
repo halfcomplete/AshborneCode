@@ -34,34 +34,19 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.ItemManagementB
 
         public void Inspect()
         {
-            if (_requiresIdentification && ParentObject.TryGetBehaviour<IIdentifiable>(out var identifiableBehaviour))
-            {
-                if (!identifiableBehaviour.IsIdentified)
-                {
-                    IOService.Output.WriteLine("You need to identify this item before you can inspect it.");
-                    return;
-                }
-                if (_hiddenLore == null)
-                {
-                    return;
-                }
-                IOService.Output.WriteLine(_hiddenLore);
-                return;
-            }
-
             if (IsInspected)
             {
-                IOService.Output.WriteLine("You have already inspected this item.");
+                IOService.Output.WriteNonDialogueLine("You have already inspected this item.");
                 return;
             }
 
-            IOService.Output.WriteLine(_baseDescription);
+            IOService.Output.WriteNonDialogueLine(_baseDescription);
 
             // TODO: Implement logic to reveal hidden lore based on player actions or conditions, such as having a specific skill, item or quest completion.
 
             if (_rarity >= ItemQualities.Rare)
             {
-                IOService.Output.WriteLine("This item seems extremely valuable.");
+                IOService.Output.WriteNonDialogueLine("This item seems extremely valuable.");
             }
 
             IsInspected = true;

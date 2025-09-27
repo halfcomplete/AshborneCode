@@ -21,13 +21,13 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
         public void OnEquip(Player player)
         {
             player.Stats.AddBonus(StatType, ChangeAmount);
-            IOService.Output.WriteLine($"Your {StatType} has been increased by {ChangeAmount} while this item is equipped.");
+            IOService.Output.WriteNonDialogueLine($"Your {StatType} has been increased by {ChangeAmount} while this item is equipped.");
         }
 
         public void OnUnequip(Player player)
         {
             player.Stats.RemoveBonus(StatType, ChangeAmount);
-            IOService.Output.WriteLine($"Your {StatType} has been decreased by {ChangeAmount} after unequipping this item.");
+            IOService.Output.WriteNonDialogueLine($"Your {StatType} has been decreased by {ChangeAmount} after unequipping this item.");
         }
 
         public override OnEquipChangePlayerStatBehaviour DeepClone()

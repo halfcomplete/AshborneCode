@@ -20,12 +20,12 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
             (bool isInventoryEmpty, string inventoryContents) = player.Inventory.GetInventoryContents(player);
             if (isInventoryEmpty)
             {
-                IOService.Output.WriteLine("Your inventory is empty.");
+                IOService.Output.WriteNonDialogueLine("Your inventory is empty.");
             }
             else
             {
-                IOService.Output.WriteLine("Your inventory contains:");
-                IOService.Output.WriteLine(inventoryContents);
+                IOService.Output.WriteNonDialogueLine("Your inventory contains:");
+                IOService.Output.WriteNonDialogueLine(inventoryContents);
             }
             return true;
         }

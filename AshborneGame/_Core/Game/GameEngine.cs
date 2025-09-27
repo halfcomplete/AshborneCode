@@ -142,7 +142,7 @@ namespace AshborneGame._Core.Game
                     }
                     return false;
                 })
-                .Show("The swirl almost reminds you of the Bound One — chaotic, unnerving and unpredictable. You shiver. Maybe it's best not to think about him.")
+                .Show("However, now the swirl almost reminds you of the Bound One — chaotic, unnerving and unpredictable. You shiver. Maybe it's best not to think about him.")
                 .Once()
                 .When((player, gameState) =>
                 {
@@ -156,8 +156,6 @@ namespace AshborneGame._Core.Game
                     }
                     return false;
                 })
-                .Show("However, now the swirl almost reminds you of the Bound One — chaotic, unnerving and unpredictable. You shiver. Maybe it's best not to think about him.")
-                .Once()
             );
 
             // Add Abyssal Rift sublocation to Eye Platform
@@ -183,7 +181,7 @@ namespace AshborneGame._Core.Game
                 "the edge of the platform, overlooking the abyss"
             );
 
-            platformEdge.AddCustomCommand(new List<string> { "look down", "peer over edge", "look down", "look over" },
+            platformEdge.AddCustomCommand(new CustomCommandPhrasing(["look over", "look down", "peer over", "peer down"], ["edge", "the edge"]),
                 () => "You stare into the rift. Vertigo strikes, but the depths reveal nothing.",
                 () => { });
 
@@ -209,8 +207,8 @@ namespace AshborneGame._Core.Game
             Item mirrorShard = ItemFactory.CreateMagicScroll(
                 "mirror shard",
                 "A small shard of a mirror from Ossaneth's Domain that seems to reflect deeper than a normal mirror.",
-                "You hold the shard up to your face. You feel a strange emptiness inside you.",
-                32);
+                "You try to use the shard, but nothing happens.",
+                "You hold the shard up to your face. You feel a strange emptiness inside you.");
 
             Sublocation mirrorShardSublocation = new Sublocation(hallOfMirrors, mirrorShard, new LocationIdentifier("mirror shard", new List<string> { "shard", "mirror shard", "shard of glass", "shard of mirror", "shard of a mirror" }),
                 new DescriptionComposer(
@@ -224,15 +222,20 @@ namespace AshborneGame._Core.Game
                 OutputConstants.ShortenedAtMiddle,
                 "a shard of a mirror, lying on the floor");
 
-            hallOfMirrors.AddCustomCommand(new List<string> { "pick up shard", "pick shard", "take shard", "take shard of mirror", "pick up mirror shard", "take mirror shard", "pick up shard of mirror" },
+            hallOfMirrors.AddCustomCommand(
+                new CustomCommandPhrasing(
+                ["pick up", "grab", "take", "get"], 
+                ["the shard", "shard", "the mirror shard", 
+                    "the shard of mirror", "the piece of mirror", 
+                    "the mirror piece"]),
                 () => $"You cannot do that from here. Try going closer to the shard.",
                 () => { });
 
-            hallOfMirrors.AddCustomCommand(new List<string> { "go closer", "go closer to shard", "walk closer", "walk closer to shard" },
+            hallOfMirrors.AddCustomCommand(new CustomCommandPhrasing(["go", "go up", "walk", "walk up", "go closer", "walk closer"], ["to the shard", "to shard", "to the mirror shard", "to the shard of mirror"]),
                 () => "",
                 () => { GameContext.Player.MoveTo(mirrorShardSublocation); });
 
-            mirrorShardSublocation.AddCustomCommand(new List<string> { "take it", "pick it up", "pick up shard", "pick shard", "take shard", "take shard of mirror", "pick up mirror shard", "take mirror shard", "pick up shard of mirror" },
+            mirrorShardSublocation.AddCustomCommand(new CustomCommandPhrasing(["pick up", "grab", "take", "get"], ["the shard", "shard", "the mirror shard", "the shard of mirror"]),
                 () => $"\nYou pick up the {mirrorShard.Name}. It is sharp and cold against your hand. Maybe it could be useful later.",
                 () =>
                 {
@@ -275,7 +278,7 @@ namespace AshborneGame._Core.Game
                     "The vaulted ceiling is covered in hanging moss and leaves.",
                     "Whispers of magic and memory dance in the air. Is that coming from the runes?"));
 
-            templeOfTheBound.AddCustomCommand(new List<string> { "look at symbols", "read symbols", "look at runes", "read runes", "inspect symbols", "inspect runes", "look at inscriptions", "inspect inscriptions", "read inscriptions" },
+            templeOfTheBound.AddCustomCommand(new CustomCommandPhrasing(["look at", "inspect", "examine", "take a closer look at"], ["the symbols", "the inscriptions", "the wall"]),
                 () => "You take a closer look at the inscriptions. You cannot understand them, but the strange purple glow... it speaks to you. If that is even possible.",
                 () => 
                 { 
@@ -335,7 +338,7 @@ namespace AshborneGame._Core.Game
 
             await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_Ossaneth_Domain_Intro");
 
-            IOService.Output.WriteLine(player.CurrentLocation.GetDescription(player, gameState));
+            IOService.Output.WriteNonDialogueLine(player.CurrentLocation.GetDescription(player, gameState));
 
             gameState.StartTickLoop();
             _isRunning = true;

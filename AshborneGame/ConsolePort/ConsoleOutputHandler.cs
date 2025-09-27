@@ -120,13 +120,24 @@ namespace AshborneGame.ConsolePort
 #endif
         }
 
-        public void WriteLine(string message)
+        public void WriteDialogueLine(string message)
         {
-            // Write a line with default delay
-            WriteLine(message, 30);
+            WriteDialogueLine(message, OutputConstants.DefaultTypeSpeed);
         }
 
-        public void WriteLine(string message, int ms)
+        public void WriteDialogueLine(string message, int ms)
+        {
+            WriteNonDialogueLine(message, ms);
+        }
+
+        // TODO: Refactor maybe?
+        public void WriteNonDialogueLine(string message)
+        {
+            // Write a line with default delay
+            WriteNonDialogueLine(message, OutputConstants.DefaultNonDialogueOutputSpeed);
+        }
+
+        public void WriteNonDialogueLine(string message, int ms)
         {
             // Handle special pause marker: ms__PAUSE__
             if (message.EndsWith(OutputConstants.DialoguePauseMarker))
