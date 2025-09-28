@@ -4,6 +4,7 @@ using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehaviours;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Game.Events;
+using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
 using System;
@@ -40,7 +41,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
 
         private static Item CreateOssaneth(out string name)
         {
-            name = "Ossaneth";
+            name = MaskNameConstants.Ossaneth;
             var ossaneth = CreateMask(name, "The Unblinking Eye", out var interjectionBehaviour);
 
             // Add various triggers and messages for Ossaneth

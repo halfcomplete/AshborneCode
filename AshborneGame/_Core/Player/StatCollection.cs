@@ -13,6 +13,7 @@ namespace AshborneGame._Core._Player
             // Initialise all stats with default values
             foreach (PlayerStatType statType in Enum.GetValues(typeof(PlayerStatType)))
             {
+                if (statType == PlayerStatType.NA) continue; // Skip NA type
                 int initialValue;
 
                 switch (statType)
@@ -65,15 +66,17 @@ namespace AshborneGame._Core._Player
         /// </summary>
         /// <param name="statName"></param>
         /// <returns>(int baseValue, int bonusValue, int totalValue)</returns>
-        public (int, int, int) GetStat(string statName)
+        public bool GetStat(string statName, out (int, int, int) stat)
         {
-            return GetStat(GetStatTypeByName(statName));
+            stat = (0, 0, 0);
+            if (TryGetStatTypeByName(statName, out var statType)) stat = GetStat(statType);
+            else return false;
+            return true;
         }
 
-        public PlayerStatType GetStatTypeByName(string statName)
+        public bool TryGetStatTypeByName(string statName, out PlayerStatType statType)
         {
-            PlayerStatType statType;
-
+            statType = PlayerStatType.NA;
             switch (statName.ToLowerInvariant())
             {
                 case "health":
@@ -107,48 +110,53 @@ namespace AshborneGame._Core._Player
                     statType = PlayerStatType.Resolve;
                     break;
                 default:
-                    throw new ArgumentException($"Player Stat Type '{statName}' does not exist.");
+                    break;
             }
-
-            return statType;
+            if (statType == PlayerStatType.NA)
+                return false;
+            return true;
         }
 
         public void SetBase(string statName, int value)
         {
-            _stats[GetStatTypeByName(statName)].SetBase(value);
+            if (TryGetStatTypeByName(statName, out var statType)) _stats[statType].SetBase(value);
         }
         public void ChangeBase(string statName, int amount)
         {
-            _stats[GetStatTypeByName(statName)].SetBase(_stats[GetStatTypeByName(statName)].BaseValue + amount);
+            if (TryGetStatTypeByName(statName, out var statType)) _stats[statType].SetBase(_stats[statType].BaseValue + amount);
         }
 
         public void AddBonus(string statName, int bonus)
         {
-            _stats[GetStatTypeByName(statName)].AddBonus(bonus);
+            if (TryGetStatTypeByName(statName, out var statType)) _stats[statType].AddBonus(bonus);
         }
 
         public void RemoveBonus(string statName, int bonus)
         {
-            _stats[GetStatTypeByName(statName)].RemoveBonus(bonus);
+            if (TryGetStatTypeByName(statName, out var statType)) _stats[statType].RemoveBonus(bonus);
         }
 
         public void SetBase(PlayerStatType type, int value)
         {
+            if (type == PlayerStatType.NA) return;
             _stats[type].SetBase(value);
         }
 
         public void ChangeBase(PlayerStatType type, int amount)
         {
+            if (type == PlayerStatType.NA) return;
             _stats[type].SetBase(_stats[type].BaseValue + amount);
         }
 
         public void AddBonus(PlayerStatType type, int bonus)
         {
+            if (type == PlayerStatType.NA) return;
             _stats[type].AddBonus(bonus);
         }
 
         public void RemoveBonus(PlayerStatType type, int bonus)
         {
+            if (type == PlayerStatType.NA) return;
             _stats[type].RemoveBonus(bonus);
         }
 

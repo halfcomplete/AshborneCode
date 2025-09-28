@@ -52,6 +52,9 @@ namespace AshborneGame._Core.SceneManagement
 
         public bool IsRunning => _story != null && _story.canContinue;
 
+        public Action StartOssanethTimer;
+        public Action StopOssanethTimer;
+
         public InkRunner(GameStateManager gameState, Player player, AppEnvironment appEnvironment)
         {
             _gameState = gameState;
@@ -288,111 +291,277 @@ namespace AshborneGame._Core.SceneManagement
 
         private void InitialiseBindings()
         {
+            if (_story == null) return;
             // --- Flags ---
-            if (_story != null)
+            _story!.BindExternalFunction("setFlag", (string key, bool value) => ExternalSetFlag(key, value));
+
+            _story!.BindExternalFunction("getFlag", (string key) =>
             {
-                _story!.BindExternalFunction("setFlag", (string key, bool value) => _gameState.SetFlag(key, value));
+                string callId = Guid.NewGuid().ToString();
+                // Queue the marker for Home.razor to process
+                IOService.Output.WriteDialogueLine($"__EXTERNAL__playerForceMask:{callId}:{key}");
+                // Return a placeholder for Ink (will be replaced later)
+                return $"__PENDING__{callId}";
+            });
 
-                _story!.BindExternalFunction("getFlag", (string key) =>
-                {
-                    if (_gameState.TryGetFlag(key, out var value))
-                    {
-                        return value;
-                    }
-                    throw new Exception($"Flag '{key}' does not exist.");
-                });
+            _story!.BindExternalFunction("hasFlag", (string key) =>
+            {
+                string callId = Guid.NewGuid().ToString();
+                // Queue the marker for Home.razor to process
+                IOService.Output.WriteDialogueLine($"__EXTERNAL__hasFlag:{callId}:{key}");
+                // Return a placeholder for Ink (will be replaced later)
+                return $"__PENDING__{callId}";
+            });
 
-                _story!.BindExternalFunction("hasFlag", (string key) => _gameState.HasFlag(key));
+            _story!.BindExternalFunction("toggleFlag", (string key) => ExternalToggleFlag(key));
 
-                _story!.BindExternalFunction("toggleFlag", (string key) =>
-                {
-                    var result = _gameState.TryToggleFlag(key);
-                    if (result == null)
-                        throw new Exception($"Toggle failed. Flag '{key}' does not exist.");
-                });
-
-                _story!.BindExternalFunction("removeFlag", (string key) =>
-                {
-                    if (!_gameState.HasFlag(key))
-                        throw new Exception($"Cannot remove non-existent flag '{key}'.");
-                    _gameState.RemoveFlag(key);
-                });
-            }
+            _story!.BindExternalFunction("removeFlag", (string key) => ExternalRemoveFlag(key));
 
             // --- Counters ---
-            _story!.BindExternalFunction("setCounter", (string key, int value) => _gameState.SetCounter(key, value));
+            _story!.BindExternalFunction("setCounter", (string key, int value) => ExternalSetCounter(key, value));
 
             _story!.BindExternalFunction("getCounter", (string key) =>
             {
-                return _gameState.TryGetCounter(key, out var result) ? result : throw new Exception($"Counter '{key}' does not exist.");
+                string callId = Guid.NewGuid().ToString();
+                // Queue the marker for Home.razor to process
+                IOService.Output.WriteDialogueLine($"__EXTERNAL__getCounter:{callId}:{key}");
+                // Return a placeholder for Ink (will be replaced later)
+                return $"__PENDING__{callId}";
             });
 
-            _story!.BindExternalFunction("hasCounter", (string key) => _gameState.HasCounter(key));
-
-            _story!.BindExternalFunction("incCounter", (string key, int amount) =>
+            _story!.BindExternalFunction("hasCounter", (string key) =>
             {
-                if (!_gameState.TryIncrementCounter(key, amount))
-                    throw new Exception($"Failed to increment. Counter '{key}' does not exist.");
+                string callId = Guid.NewGuid().ToString();
+                // Queue the marker for Home.razor to process
+                IOService.Output.WriteDialogueLine($"__EXTERNAL__hasCounter:{callId}:{key}");
+                // Return a placeholder for Ink (will be replaced later)
+                return $"__PENDING__{callId}";
             });
 
-            _story!.BindExternalFunction("decCounter", (string key, int amount) =>
-            {
-                if (!_gameState.TryDecrementCounter(key, amount))
-                    throw new Exception($"Failed to decrement. Counter '{key}' does not exist.");
-            });
+            _story!.BindExternalFunction("incCounter", (string key, int amount) => ExternalIncCounter(key, amount));
+
+            _story!.BindExternalFunction("decCounter", (string key, int amount) => ExternalDecCounter(key, amount));
 
             _story!.BindExternalFunction("removeCounter", (string key) =>
             {
-                if (!_gameState.HasCounter(key))
-                    throw new Exception($"Cannot remove non-existent counter '{key}'.");
-                _gameState.RemoveCounter(key);
+                string callId = Guid.NewGuid().ToString();
+                // Queue the marker for Home.razor to process
+                IOService.Output.WriteDialogueLine($"__EXTERNAL__removeCounter:{callId}:{key}");
+                // Return a placeholder for Ink (will be replaced later)
+                return $"__PENDING__{callId}";
             });
 
             // --- Labels ---
-            _story!.BindExternalFunction("setLabel", (string key, string value) => _gameState.SetLabel(key, value));
-
-            _story!.BindExternalFunction("getLabel", (string key) =>
+            _story.BindExternalFunction("playerForceMask", (string maskName) =>
             {
-                var result = _gameState.TryGetLabel(key);
-                return result ?? throw new Exception($"Label 'key' does not exist.");
+                string callId = Guid.NewGuid().ToString();
+                // Queue the marker for Home.razor to process
+                IOService.Output.WriteDialogueLine($"__EXTERNAL__playerForceMask:{callId}:{maskName}");
+                // Return a placeholder for Ink (will be replaced later)
+                return $"__PENDING__{callId}";
             });
 
-            _story!.BindExternalFunction("hasLabel", (string key) => _gameState.HasLabel(key));
-
-            // --- Variables (Set only) ---
-            _story!.BindExternalFunction("setVar", (string key, string value) => _gameState.SetVariable(key, value));
-
-            // --- Other ---
-            _story!.BindExternalFunction("playerHas", (string itemName) =>
+            _story!.BindExternalFunction("playerGiveMask", (string maskName) =>
             {
-                Item? item = _player.Inventory.GetItem(itemName);
-                return item != null;
+                string callId = Guid.NewGuid().ToString();
+                // Queue the marker for Home.razor to process
+                IOService.Output.WriteDialogueLine($"__EXTERNAL__playerGiveMask:{callId}:{maskName}");
+                // Return a placeholder for Ink (will be replaced later)
+                return $"__PENDING__{callId}";
             });
 
-            _story!.BindExternalFunction("playerGiveMask", (string maskName) => _gameState.GivePlayerMask(maskName));
+            _story!.BindExternalFunction("playerTryTakeMask", (string maskName) =>
+            {
+                string callId = Guid.NewGuid().ToString();
+                // Queue the marker for Home.razor to process
+                IOService.Output.WriteDialogueLine($"__EXTERNAL__playerTryTakeMask:{callId}:{maskName}");
+                // Return a placeholder for Ink (will be replaced later)
+                return $"__PENDING__{callId}";
+            });
 
-            _story!.BindExternalFunction("playerTryTakeMask", (string maskName) => _gameState.TryTakePlayerMask(maskName));
-
-            _story!.BindExternalFunction("playerWearingMask", (string maskName) => _gameState.PlayerWearingMask(maskName));
-
-            _story!.BindExternalFunction("playerForceMask", (string maskName) => _gameState.ForcePlayerMask(maskName));
+            _story!.BindExternalFunction("playerWearingMask", (string maskName) =>
+            {
+                string callId = Guid.NewGuid().ToString();
+                // Queue the marker for Home.razor to process
+                IOService.Output.WriteDialogueLine($"__EXTERNAL__playerWearingMask:{callId}:{maskName}");
+                // Return a placeholder for Ink (will be replaced later)
+                return $"__PENDING__{callId}";
+            });
 
             _story!.BindExternalFunction("changePlayerStat", (string statName, int amount) =>
             {
-                PlayerStatType statType = GameContext.Player.Stats.GetStatTypeByName(statName);
-                GameContext.Player.Stats.ChangeBase(statType, amount);
+                string callId = Guid.NewGuid().ToString();
+                // Queue the marker for Home.razor to process
+                IOService.Output.WriteDialogueLine($"__EXTERNAL__changePlayerStat:{callId}:{statName}:{amount}");
+                // Return a placeholder for Ink (will be replaced later)
+                return $"__PENDING__{callId}";
             });
 
             _story!.BindExternalFunction("getPlayerStat", (string statName) =>
             {
-                (_, _, int totalValue) = GameContext.Player.Stats.GetStat(statName);
-                return totalValue;
+                string callId = Guid.NewGuid().ToString();
+                // Queue the marker for Home.razor to process
+                IOService.Output.WriteDialogueLine($"__EXTERNAL__getPlayerStat:{callId}:{statName}");
+                // Return a placeholder for Ink (will be replaced later)
+                return $"__PENDING__{callId}";
             });
 
-            _story!.BindExternalFunction("setSilentPath", (string silentPath, int silentMs) =>
+            _story!.BindExternalFunction("setSilentPath", (string silentPath, int silentMs) => ExternalSetSilentPath(silentPath, silentMs));
+
+            
+        }
+
+        public void ResolveExternalFunction(string functionName, string callId, params string[] args)
+        {
+            if (_story == null) return;
+
+            object? result = functionName switch
             {
-                _currentSilentPath = (silentPath, silentMs);
-            });
+                // Flags
+                "setFlag" => ExternalSetFlag(args[0], bool.Parse(args[1])),
+                "getFlag" => ExternalGetFlag(args[0]),
+                "hasFlag" => ExternalHasFlag(args[0]),
+                "toggleFlag" => ExternalToggleFlag(args[0]),
+                "removeFlag" => ExternalRemoveFlag(args[0]),
+
+                // Counters
+                "setCounter" => ExternalSetCounter(args[0], int.Parse(args[1])),
+                "getCounter" => ExternalGetCounter(args[0]),
+                "hasCounter" => ExternalHasCounter(args[0]),
+                "incCounter" => ExternalIncCounter(args[0], int.Parse(args[1])),
+                "decCounter" => ExternalDecCounter(args[0], int.Parse(args[1])),
+                "removeCounter" => ExternalRemoveCounter(args[0]),
+
+                // Labels
+                "setLabel" => ExternalSetLabel(args[0], args[1]),
+                "getLabel" => ExternalGetLabel(args[0]),
+                "hasLabel" => ExternalHasLabel(args[0]),
+                "removeLabel" => ExternalRemoveLabel(args[0]),
+
+                // Variables
+                "setVar" => ExternalSetVar(args[0], args[1]),
+                "getVar" => ExternalGetVar(args[0]),
+
+                // Inventory
+                "playerHas" => ExternalPlayerHas(args[0]),
+
+                // Masks
+                "playerGiveMask" => ExternalPlayerGiveMask(args[0]),
+                "playerTryTakeMask" => ExternalPlayerTryTakeMask(args[0]),
+                "playerWearingMask" => ExternalPlayerWearingMask(args[0]),
+                "playerForceMask" => ExternalPlayerForceMask(args[0]),
+
+                // Stats
+                "changePlayerStat" => ExternalChangePlayerStat(args[0], int.Parse(args[1])),
+                "getPlayerStat" => ExternalGetPlayerStat(args[0]),
+
+                // Silent Path
+                "setSilentPath" => ExternalSetSilentPath(args[0], int.Parse(args[1])),
+
+                _ => null
+            };
+
+            if (_story != null && result != null)
+            {
+                _story.variablesState[$"{functionName}_result_{callId}"] = result ?? "";
+            }
+        }
+
+        public object ExternalSetFlag(string key, bool value) { _gameState.SetFlag(key, value); return null; }
+        public object ExternalGetFlag(string key) => _gameState.TryGetFlag(key, out var value) ? value : -1; // Flag does not exist
+        public object ExternalHasFlag(string key) => _gameState.HasFlag(key);
+        public object ExternalToggleFlag(string key)
+        {
+            var result = _gameState.TryToggleFlag(key);
+            if (result == null)
+                return -1; // Flag does not exist
+            return result;
+        }
+        public object ExternalRemoveFlag(string key)
+        {
+            if (!_gameState.HasFlag(key))
+                return false;
+            _gameState.RemoveFlag(key);
+            return true;
+        }
+
+        public object ExternalSetCounter(string key, int value) { _gameState.SetCounter(key, value); return null; }
+        public object ExternalGetCounter(string key) => _gameState.TryGetCounter(key, out var result) ? result : throw new Exception($"Counter '{key}' does not exist.");
+        public object ExternalHasCounter(string key) => _gameState.HasCounter(key);
+        public object ExternalIncCounter(string key, int amount)
+        {
+            if (!_gameState.TryIncrementCounter(key, amount))
+                return false;
+            return true;
+        }
+        public object ExternalDecCounter(string key, int amount)
+        {
+            if (!_gameState.TryDecrementCounter(key, amount))
+                return false;
+            return true;
+        }
+        public object ExternalRemoveCounter(string key)
+        {
+            return _gameState.RemoveCounter(key);
+        }
+
+        public object ExternalSetLabel(string key, string value)
+        {
+            _gameState.SetLabel(key, value);
+            return value;
+        }
+
+        public object ExternalGetLabel(string key)
+        {
+            var label = _gameState.TryGetLabel(key);
+            if (label == null)
+                return false;
+            return label;
+        }
+        public object ExternalHasLabel(string key) => _gameState.HasLabel(key);
+        public object ExternalRemoveLabel(string key)
+        {
+            if (!_gameState.HasLabel(key))
+                throw new Exception($"Cannot remove non-existent label '{key}'.");
+            _gameState.RemoveLabel(key);
+            return null;
+        }
+
+        public object ExternalSetVar(string key, string value) { _gameState.SetVariable(key, value); return null; }
+        public object ExternalGetVar(string key) => _gameState.TryGetVariable(key) ?? throw new Exception($"Variable '{key}' does not exist.");
+
+        public object ExternalPlayerHas(string itemName)
+        {
+            Item? item = _player.Inventory.GetItem(itemName);
+            return item != null;
+        }
+        public object ExternalPlayerGiveMask(string maskName) { _gameState.GivePlayerMask(maskName); return null; }
+        public object ExternalPlayerTryTakeMask(string maskName) => _gameState.TryTakePlayerMask(maskName);
+        public object ExternalPlayerWearingMask(string maskName) => _gameState.PlayerWearingMask(maskName);
+        public object ExternalPlayerForceMask(string maskName)
+        {
+            _gameState.ForcePlayerMask(maskName);
+            return null;
+        }
+
+        public object ExternalChangePlayerStat(string statName, int amount)
+        {
+            if (!GameContext.Player.Stats.TryGetStatTypeByName(statName, out var statType))
+                return false;
+            PlayerStatType stat = (PlayerStatType)statType;
+            GameContext.Player.Stats.ChangeBase(stat, amount);
+            return true;
+        }
+        public object ExternalGetPlayerStat(string statName)
+        {
+            if (GameContext.Player.Stats.GetStat(statName, out var stat))
+                return stat.Item3;
+            return -1;
+        }
+        public object ExternalSetSilentPath(string silentPath, int silentMs)
+        {
+            _currentSilentPath = (silentPath, silentMs);
+            return null;
         }
 
         private Func<bool, Task<string>>? _getPlayerInputFromUIAsync;
@@ -410,44 +579,6 @@ namespace AshborneGame._Core.SceneManagement
                 _story.ChoosePathString(path);
                 Run();
             }
-        }
-
-        /// <summary>
-        /// Try to jump to the specified silent path.
-        /// </summary>
-        public async Task TryJumpToSilentPathAsync()
-        {
-            IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: TryJumpToSilentPathAsync called, path={_currentSilentPath.Item1}, story canContinue={_story?.canContinue}", ConsoleMessageTypes.INFO);
-            if (_story is null || (!_story.canContinue && (_story.currentChoices == null || _story.currentChoices.Count == 0)))
-            {
-                IOService.Output.DisplayDebugMessage("[DEBUG] InkRunner: TryJumpToSilentPathAsync aborted, story is finished.", ConsoleMessageTypes.INFO);
-                return;
-            }
-            if (string.IsNullOrWhiteSpace(_currentSilentPath.Item1))
-                return;
-            _story.ChoosePathString(_currentSilentPath.Item1);
-            // Clear silent path after jumping
-            _currentSilentPath = ("", 0);
-        }
-
-        // Reliable delay for WASM: loops in short intervals to avoid browser timer issues
-        private static async Task ReliableDelay(int totalMs, CancellationToken token)
-        {
-            Console.WriteLine($"[DEBUG] InkRunner: ReliableDelay called with {totalMs} ms at {DateTime.UtcNow}.");
-            int elapsed = 0;
-            int step = 200;
-            while (elapsed < totalMs)
-            {
-                int wait = Math.Min(step, totalMs - elapsed);
-                await Task.Delay(wait, token);
-                if (token.IsCancellationRequested)
-                {
-                    Console.WriteLine($"[DEBUG] InkRunner: ReliableDelay cancelled at {DateTime.UtcNow} after {elapsed} ms.");
-                    return;
-                }
-                elapsed += wait;
-            }
-            Console.WriteLine($"[DEBUG] InkRunner: ReliableDelay finished at {DateTime.UtcNow}.");
         }
 
         /// <summary>

@@ -12,6 +12,7 @@ namespace AshborneGame._Core.Globals.Enums
         Violence,
         Fear,
         Hope,
-        Resolve
+        Resolve,
+        NA
     }
 }

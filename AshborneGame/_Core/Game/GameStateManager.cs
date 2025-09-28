@@ -115,7 +115,7 @@ namespace AshborneGame._Core.Game
 
         // ----------- FLAGS (True/False binary states) -----------
 
-        public bool SetFlag(string key, bool value) => Flags[key] = value;
+        public void SetFlag(string key, bool value) => Flags[key] = value;
 
         /// <summary>
         /// Gets the value of the provided flag name.
@@ -200,7 +200,7 @@ namespace AshborneGame._Core.Game
 
         public bool HasCounter(string key) => Counters.ContainsKey(key);
 
-        public void RemoveCounter(string key) => Counters.Remove(key);
+        public bool RemoveCounter(string key) => Counters.Remove(key);
 
         // ----------- LABELS (String storage) ----------
 
@@ -214,6 +214,8 @@ namespace AshborneGame._Core.Game
         }
 
         public bool HasLabel(string key) => Labels.Keys.Contains(key);
+
+        public bool RemoveLabel(string key) => Labels.Remove(key);
 
         // ----------- VARIABLES (Generic object storage) -----------
 
@@ -267,6 +269,15 @@ namespace AshborneGame._Core.Game
         {
             _player.EquippedItems["face"] = null;
             _player.EquippedItems["face"] = Masks[maskName];
+            _player.Inventory.AddItem(Masks[maskName]);
+
+            if (!OperatingSystem.IsBrowser())
+            {
+                return;
+            }
+
+            if (maskName == MaskNameConstants.Ossaneth) GameContext.InkRunner.StartOssanethTimer.Invoke();
+            else GameContext.InkRunner.StopOssanethTimer.Invoke();
         }
 
         public bool PlayerHasMask(string maskName) => _player.Inventory.Slots.Any(s => s.Item.Name == maskName);

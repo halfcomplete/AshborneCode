@@ -72,7 +72,7 @@
 }
             <div class="input-gif-overlay-container">
                 <div class="input-overlay-wrapper">
-                    @if (GameContext.Player?.EquippedItems["face"]?.Name == "Ossaneth")
+                    @if (GameContext.Player?.EquippedItems["face"]?.Name == MaskNameConstants.Ossaneth)
                     {
                         @if (isOssanethGifActive)
                         {
@@ -163,14 +163,14 @@
         }
 </div>
 
-<div>
+@* <div>
     <pre>
         isInDialogue: @isInDialogue
         isAwaitingPlayerInput: @isAwaitingPlayerInput
         dialogueChoices.Count: @dialogueChoices.Count
         isTypingDialogue: @isTypingDialogue
     </pre>
-</div>
+</div> *@
 
 @code {
     private bool isOutroActive = false;
@@ -486,10 +486,11 @@
                 userInput = "";
                 InvokeAsync(StateHasChanged);
             };
+            GameContext.InkRunner.StartOssanethTimer += StartOssanethSigilTimer;
+			GameContext.InkRunner.StopOssanethTimer += () => ossanethSigilTimer?.Dispose();
         }
 
         // Do NOT start the game loop here; it will be started after fade.
-        StartOssanethSigilTimer();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -583,6 +584,22 @@
                 GameContext.InkRunner?.DialogueFinishedOutputting();
                 await InvokeAsync(StateHasChanged);
                 continue;
+            }
+            // Handle deferred external function marker
+            if (line.StartsWith("__EXTERNAL__"))
+            {
+                // Format: __EXTERNAL__funcName:callId:arg1:arg2:...
+                var parts = line.Substring("__EXTERNAL__".Length).Split(':');
+                if (parts.Length >= 3)
+                {
+                    var funcName = parts[0];
+                    var callId = parts[1];
+                    var args = parts.Skip(2).ToArray();
+                    // Call InkRunner to resolve and update Ink variable
+                    GameContext.InkRunner?.ResolveExternalFunction(funcName, callId, args);
+                    // Do not display marker line
+                    continue;
+                }
             }
             if (line.Contains("__NL__"))
             {
@@ -798,8 +815,6 @@
                     i += OutputConstants.InlineItalicEndMarker.Length - 1;
                     continue;
                 }
-                // Console.WriteLine($"[DEBUG] No start/end italic markers detected for this char.");
-
                 char letter = msgLine[i];
                 string charToAdd = inItalic ? $"<span class='game-italic'>{System.Net.WebUtility.HtmlEncode(letter.ToString())}</span>" : System.Net.WebUtility.HtmlEncode(letter.ToString());
                 typedLine += charToAdd;
@@ -1126,7 +1141,7 @@
 
     private void StartOssanethSigilTimer()
     {
-        if (GameContext.Player.EquippedItems["face"]?.Name != "Ossaneth")
+        if (GameContext.Player.EquippedItems["face"]?.Name != MaskNameConstants.Ossaneth)
         {
             isOssanethGifActive = false;
             ossanethSigilTimer?.Dispose();
@@ -1156,11 +1171,11 @@
     {
         await base.SetParametersAsync(parameters);
         // Defensive: restart timer if component is re-rendered and mask is equipped
-        if (ossanethSigilTimer == null && GameContext.Player.EquippedItems["face"]?.Name == "Ossaneth")
+        if (ossanethSigilTimer == null && GameContext.Player.EquippedItems["face"]?.Name == MaskNameConstants.Ossaneth)
         {
             StartOssanethSigilTimer();
         }
-        else if (GameContext.Player.EquippedItems["face"]?.Name != "Ossaneth")
+        else if (GameContext.Player.EquippedItems["face"]?.Name != MaskNameConstants.Ossaneth)
         {
             isOssanethGifActive = false;
             ossanethSigilTimer?.Dispose();
