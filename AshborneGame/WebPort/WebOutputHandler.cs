@@ -20,49 +20,45 @@ namespace AshborneGame.WebPort
             _debugCallback = debugCallback ?? ((type, msg) => Task.CompletedTask);
         }
 
-        public void Write(string message)
+        public async Task Write(string message)
         {
-            // For now, just treat it as dialogue, and write it as a separate line.
-            _writeDialogueLineCallback(message).GetAwaiter().GetResult();
+            await _writeDialogueLineCallback(message);
         }
 
-        public void Write(string message, int ms)
+        public async Task Write(string message, int ms)
         {
-            // For now, just treat it as dialogue, and write it as a separate line.
-            _writeDialogueLineCallback(message).GetAwaiter().GetResult();
+            await _writeDialogueLineCallback(message);
         }
 
-        public void WriteNonDialogueLine(string message)
+        public async Task WriteNonDialogueLine(string message)
         {
-            _writeNonDialogueLineCallback(message).GetAwaiter().GetResult();
+            await _writeNonDialogueLineCallback(message);
         }
 
-        public void WriteNonDialogueLine(string message, int ms)
+        public async Task WriteNonDialogueLine(string message, int ms)
         {
-            // Ignoring delay for web output
-            _writeNonDialogueLineCallback(message).GetAwaiter().GetResult();
+            await _writeNonDialogueLineCallback(message);
         }
 
-        public void WriteDialogueLine(string message)
+        public async Task WriteDialogueLine(string message)
         {
-            _writeDialogueLineCallback(message).GetAwaiter().GetResult();
+            await _writeDialogueLineCallback(message);
         }
 
-        public void WriteDialogueLine(string message, int ms)
+        public async Task WriteDialogueLine(string message, int ms)
         {
-            // Typewriter output
-            _writeDialogueLineCallback($"{OutputConstants.DefaultTypeSpeed * OutputConstants.TypeSpeedMultiplier}{OutputConstants.TypewriterStartMarker}{message}{OutputConstants.TypewriterEndMarker}").GetAwaiter().GetResult();
+            await _writeDialogueLineCallback($"{OutputConstants.DefaultTypeSpeed * OutputConstants.TypeSpeedMultiplier}{OutputConstants.TypewriterStartMarker}{message}{OutputConstants.TypewriterEndMarker}");
         }
 
-        public void DisplayFailMessage(string message)
+        public async Task DisplayFailMessage(string message)
         {
-            _debugCallback(ConsoleMessageTypes.ERROR, message).GetAwaiter().GetResult();
+            await _debugCallback(ConsoleMessageTypes.ERROR, message);
         }
 
-        public void DisplayDebugMessage(string message, ConsoleMessageTypes type = ConsoleMessageTypes.INFO)
+        public async Task DisplayDebugMessage(string message, ConsoleMessageTypes type = ConsoleMessageTypes.INFO)
         {
 #if DEBUG
-            _debugCallback(type, message).GetAwaiter().GetResult();
+            await _debugCallback(type, message);
 #endif
         }
     }

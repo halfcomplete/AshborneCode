@@ -5,18 +5,18 @@ namespace AshborneGame.ConsolePort
 {
     public class ConsoleInputHandler : IInputHandler
     {
-        public string GetPlayerInput(string prompt = "What will you say?")
+        public Task<string> GetPlayerInput(string prompt = "What will you say?")
         {
             Console.WriteLine("");
             Console.WriteLine(prompt);
             Console.Write("> ");
             string input = Console.ReadLine() ?? string.Empty;
-            return ParseNameInput(input);
+            return Task.FromResult(ParseNameInput(input));
         }
 
-        public int GetChoiceInput(int choiceCount)
+        public async Task<int> GetChoiceInput(int choiceCount)
         {
-            IOService.Output.WriteNonDialogueLine("What do you choose? ");
+            await IOService.Output.WriteNonDialogueLine("What do you choose? ");
             while (true)
             {
                 string input = Console.ReadLine() ?? "";
@@ -25,14 +25,14 @@ namespace AshborneGame.ConsolePort
                     return choice;
                 }
 
-                IOService.Output.DisplayFailMessage("Invalid choice. Enter a number between 1 and " + choiceCount);
+                await IOService.Output.DisplayFailMessage("Invalid choice. Enter a number between 1 and " + choiceCount);
             }
         }
 
         // Async versions for interface compatibility
         public async Task<string> GetPlayerInputAsync(string prompt = "What will you say?")
         {
-            return await Task.FromResult(GetPlayerInput(prompt));
+            return await GetPlayerInput(prompt);
         }
         private string ParseNameInput(string input)
         {
@@ -57,7 +57,7 @@ namespace AshborneGame.ConsolePort
 
         public async Task<int> GetChoiceInputAsync(int choiceCount)
         {
-            return await Task.FromResult(GetChoiceInput(choiceCount));
+            return await GetChoiceInput(choiceCount);
         }
     }
 }

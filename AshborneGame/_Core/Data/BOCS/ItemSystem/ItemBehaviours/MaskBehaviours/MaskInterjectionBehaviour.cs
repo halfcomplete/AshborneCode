@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours
 {
-    public class MaskInterjectionBehaviour : IAwareOfParentObject
+    public class MaskInterjectionBehaviour : ItemBehaviourBase<MaskInterjectionBehaviour>, IAwareOfParentObject
     {
         public BOCSGameObject ParentObject { get; set; }
 
@@ -45,7 +45,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours
                     if (ShouldTrigger(trigger, e, out bool shouldDelete))
                     {
                         if (trigger.Message != null)
-                            IOService.Output.WriteNonDialogueLine($"{ParentObject.Name}: {trigger.Message}");
+                            await IOService.Output.WriteNonDialogueLine($"{ParentObject.Name}: {trigger.Message}");
                         if (trigger.Effect != null)
                             await trigger.Effect();
                         if (shouldDelete) _triggers2.Remove(trigger);
@@ -67,6 +67,14 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours
             bool passesState = trigger.StateCondition?.Invoke(_stateManager) ?? true;
 
             return passesEvent && passesState;
+        }
+
+        public override MaskInterjectionBehaviour DeepClone()
+        {
+            return new MaskInterjectionBehaviour(ParentObject, _stateManager)
+            {
+                _triggers = new List<MaskInterjectionTrigger>(_triggers)
+            };
         }
     }
 }

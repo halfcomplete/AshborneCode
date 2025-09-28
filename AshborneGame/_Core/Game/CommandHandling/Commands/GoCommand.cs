@@ -10,17 +10,17 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         public List<string> Names => ["go"];
         public string Description => "Takes the player to a new location based on direction.";
 
-        public bool TryExecute(List<string> args, Player player)
+        public async Task<bool> TryExecute(List<string> args, Player player)
         {
             if (args.Count == 0)
             {
-                IOService.Output.DisplayFailMessage("Go where? Specify a direction or location.");
+                await IOService.Output.DisplayFailMessage("Go where? Specify a direction or location.");
                 return false;
             }
 
-            IOService.Output.DisplayDebugMessage($"Parsed Input for 'go': {string.Join(" ", args)}", ConsoleMessageTypes.INFO); // Debugging output
+            await IOService.Output.DisplayDebugMessage($"Parsed Input for 'go': {string.Join(" ", args)}", ConsoleMessageTypes.INFO); // Debugging output
 
-            return player.TryMoveTo(args);
+            return player.TryMoveTo(args).Result;
         }
     }
 }

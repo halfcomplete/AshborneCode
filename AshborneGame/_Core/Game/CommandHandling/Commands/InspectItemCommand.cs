@@ -11,11 +11,11 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         public List<string> Names => ["inspect"];
         public string Description => "Inspect an an in-game item for details.";
 
-        public bool TryExecute(List<string> args, Player player)
+        public async Task<bool> TryExecute(List<string> args, Player player)
         {
             if (args.Count == 0)
             {
-                IOService.Output.DisplayFailMessage("Inspect what? Specify an item.");
+                await IOService.Output.DisplayFailMessage("Inspect what? Specify an item.");
                 return false;
             }
 
@@ -23,18 +23,18 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             Item? item = player.Inventory.GetItem(itemName);
             if (item != null)
             {
-                if (!item.TryGetBehaviour<IInspectable>(out var inspectableBehaviour))
+                if (!item.TryGetBehaviour<IInspectable>(out var inspectableBehaviour).Result)
                 {
-                    IOService.Output.DisplayFailMessage($"That can't be inspected.");
+                    await IOService.Output.DisplayFailMessage($"That can't be inspected.");
                     return false;
                 }
-                IOService.Output.WriteNonDialogueLine($"Inspecting {item.Name}: {item.Description}");
+                await IOService.Output.WriteNonDialogueLine($"Inspecting {item.Name}: {item.Description}");
                 inspectableBehaviour.Inspect();
                 return true;
             }
             else
             {
-                IOService.Output.DisplayFailMessage($"You don't have a {itemName} to inspect.");
+                await IOService.Output.DisplayFailMessage($"You don't have a {itemName} to inspect.");
                 return false;
             }
         }

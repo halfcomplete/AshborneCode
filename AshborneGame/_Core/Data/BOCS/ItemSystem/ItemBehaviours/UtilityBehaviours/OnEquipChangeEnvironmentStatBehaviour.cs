@@ -11,14 +11,14 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviou
         {
             Message = message;
         }
-        public void OnEquip(Player player)
+        public async void OnEquip(Player player)
         {
-            IOService.Output.WriteNonDialogueLine(Message);
+            await IOService.Output.WriteNonDialogueLine(Message);
         }
 
-        public void OnUnequip(Player player)
+        public async void OnUnequip(Player player)
         {
-            IOService.Output.WriteNonDialogueLine(Message);
+            await IOService.Output.WriteNonDialogueLine(Message);
         }
 
         public override OnEquipChangeEnvironmentStatBehaviour DeepClone()

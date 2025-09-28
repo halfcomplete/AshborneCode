@@ -16,11 +16,11 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.CombatBehaviour
             ConsumeOnUse = consumeOnUse;
         }
 
-        public void Use(Player player, string? target = null)
+        public async void Use(Player player, string? target = null)
         {
             // Attack player
             player.ChangeHealth(-BaseDamage);
-            IOService.Output.WriteNonDialogueLine($"You take {BaseDamage} damage from the enemy's attack. You now have {player.Stats.GetStat(Globals.Enums.PlayerStatType.Health)} HP left.");
+            await IOService.Output.WriteNonDialogueLine($"You take {BaseDamage} damage from the enemy's attack. You now have {player.Stats.GetStat(Globals.Enums.PlayerStatType.Health)} HP left.");
         }
 
         public override OnEnemyUseDealDamageBehaviour DeepClone()

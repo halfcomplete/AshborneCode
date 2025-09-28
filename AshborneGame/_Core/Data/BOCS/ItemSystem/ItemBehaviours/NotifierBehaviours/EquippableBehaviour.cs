@@ -20,7 +20,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
             EquipInfo = (isEquippable, bodyParts);
         }
 
-        public void Equip(Player player, Item item, string bodyPart)
+        public async void Equip(Player player, Item item, string bodyPart)
         {
             if (string.IsNullOrWhiteSpace(bodyPart) || !player.EquippedItems.ContainsKey(bodyPart.ToLower()) || !EquipInfo.BodyParts.Contains(bodyPart))
             {
@@ -28,13 +28,13 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
             }
 
             player.EquipItem(item, bodyPart);
-            IOService.Output.DisplayDebugMessage($"Equipped {item.Name} in the {bodyPart} slot.", ConsoleMessageTypes.INFO);
-            IOService.Output.WriteNonDialogueLine($"You equip {item.Name} on your {bodyPart}.");
-            IOService.Output.DisplayDebugMessage($"Item Behaviour Values: {item.Behaviours.Values.SelectMany(x => x).OfType<IActOnEquip>().Count()}", ConsoleMessageTypes.INFO);
+            await IOService.Output.DisplayDebugMessage($"Equipped {item.Name} in the {bodyPart} slot.", ConsoleMessageTypes.INFO);
+            await IOService.Output.WriteNonDialogueLine($"You equip {item.Name} on your {bodyPart}.");
+            await IOService.Output.DisplayDebugMessage($"Item Behaviour Values: {item.Behaviours.Values.SelectMany(x => x).OfType<IActOnEquip>().Count()}", ConsoleMessageTypes.INFO);
             
             foreach (var behaviour in item.Behaviours)
             {
-                IOService.Output.DisplayDebugMessage($"Behaviour Type: {behaviour.Key.Name}, Count: {behaviour.Value.Count}", ConsoleMessageTypes.INFO);
+                await IOService.Output.DisplayDebugMessage($"Behaviour Type: {behaviour.Key.Name}, Count: {behaviour.Value.Count}", ConsoleMessageTypes.INFO);
             }
 
             foreach (var behaviour in item.Behaviours.Values.SelectMany(x => x).OfType<IActOnEquip>())

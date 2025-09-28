@@ -42,7 +42,7 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem
             gameObject.AddBehaviour(typeof(IExit), new ExitToNewLocationBehaviour(location));
             (gameObject, var describableBehaviour) = AddDescribableBehaviour(gameObject);
             describableBehaviour.AddCondition(_ => (
-                gameObject.TryGetBehaviour<IInteractable>(out var behaviour) && behaviour is OpenCloseBehaviour openCloseBehaviour && openCloseBehaviour.IsOpen
+                gameObject.TryGetBehaviour<IInteractable>(out var behaviour).Result && behaviour is OpenCloseBehaviour openCloseBehaviour && openCloseBehaviour.IsOpen
                 ),
             "It's slightly ajar.");
 

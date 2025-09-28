@@ -17,7 +17,7 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
             IsLocked = initialState;
         }
 
-        public void Interact(ObjectInteractionTypes _interaction, Player player)
+        public async void Interact(ObjectInteractionTypes _interaction, Player player)
         {
             switch (_interaction)
             {
@@ -28,32 +28,32 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
                     Unlock();
                     break;
                 default:
-                    IOService.Output.WriteNonDialogueLine("Invalid interaction type for LockUnlockBehaviour.");
+                    await IOService.Output.WriteNonDialogueLine("Invalid interaction type for LockUnlockBehaviour.");
                     break;
             }
         }
 
-        private void Lock()
+        private async void Lock()
         {
             if (IsLocked)
             {
-                IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is already locked.");
+                await IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is already locked.");
                 return;
             }
 
             IsLocked = true;
-            IOService.Output.WriteNonDialogueLine($"You lock the {ParentObject.Name}.");
+            await IOService.Output.WriteNonDialogueLine($"You lock the {ParentObject.Name}.");
         }
 
-        private void Unlock()
+        private async void Unlock()
         {
             if (!IsLocked)
             {
-                IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is already unlocked.");
+                await IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is already unlocked.");
                 return;
             }
             IsLocked = false;
-            IOService.Output.WriteNonDialogueLine($"You unlock the {ParentObject.Name}.");
+            await IOService.Output.WriteNonDialogueLine($"You unlock the {ParentObject.Name}.");
         }
     }
 }

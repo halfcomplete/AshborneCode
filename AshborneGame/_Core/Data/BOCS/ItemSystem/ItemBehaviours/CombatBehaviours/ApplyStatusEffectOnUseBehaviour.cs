@@ -16,11 +16,11 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.CombatBehaviour
             ConsumeOnUse = consumeOnUse;
         }
 
-        public void Use(Player player, string? target = null)
+        public async void Use(Player player, string? target = null)
         {
             // Implementation for applying the status effect to the target
             // For now just print a message
-            IOService.Output.WriteNonDialogueLine($"Applying '{StatusEffectType}' to {target ?? "the target"}.");
+            await IOService.Output.WriteNonDialogueLine($"Applying '{StatusEffectType}' to {target ?? "the target"}.");
 
             // Apply status effect logic here
         }

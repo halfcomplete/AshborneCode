@@ -87,7 +87,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         /// <summary>
         /// Removes a quantity of an item from the inventory.
         /// </summary>
-        public void RemoveItem(Item item, int count = 1)
+        public async void RemoveItem(Item item, int count = 1)
         {
             if (item == null)
                 throw new ArgumentNullException(nameof(item));
@@ -117,7 +117,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             if (removed < count)
             {
                 // If we didn't find enough items to remove but still removed as many as possible
-                IOService.Output.DisplayDebugMessage($"Not enough items to remove {count} of them!");
+                await IOService.Output.DisplayDebugMessage($"Not enough items to remove {count} of them!");
             }
         }
 
@@ -145,7 +145,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
                 var equipped = string.Empty;
                 if (player != null)
                 {
-                    if (slot.Item.TryGetBehaviour<IEquippable>(out var equippableBehaviour) && equippableBehaviour.EquipInfo.IsEquippable)
+                    if (slot.Item.TryGetBehaviour<IEquippable>(out var equippableBehaviour).Result && equippableBehaviour.EquipInfo.IsEquippable)
                     {
                         // If the item is equippable, check if it's equipped
                         var isEquipped = player.EquippedItems.TryGetValue(slot.Item.Name.ToLower(), out var equippedItem) && equippedItem != null;
@@ -159,33 +159,33 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             return (false, sb.ToString());
         }
 
-        public void PrintInventoryContents(Player player)
+        public async void PrintInventoryContents(Player player)
         {
             var (isEmpty, contents) = GetInventoryContents(player);
             if (isEmpty)
             {
-                IOService.Output.WriteNonDialogueLine("Your inventory is empty.");
+                await IOService.Output.WriteNonDialogueLine("Your inventory is empty.");
             }
             else
             {
-                IOService.Output.WriteNonDialogueLine("Your inventory contains:");
-                IOService.Output.WriteNonDialogueLine(contents);
+                await IOService.Output.WriteNonDialogueLine("Your inventory contains:");
+                await IOService.Output.WriteNonDialogueLine(contents);
             }
         }
 
         /// <summary>
         /// Transfers items between two inventories.
         /// </summary>
-        public void TransferItem(Inventory originInventory, Inventory destinationInventory, Item item, int count)
+        public async void TransferItem(Inventory originInventory, Inventory destinationInventory, Item item, int count)
         {
-            IOService.Output.DisplayDebugMessage($"Transferring {count} x {item.Name} from {originInventory.GetType().Name} to {destinationInventory.GetType().Name}.");
+            await IOService.Output.DisplayDebugMessage($"Transferring {count} x {item.Name} from {originInventory.GetType().Name} to {destinationInventory.GetType().Name}.");
             originInventory.RemoveItem(item, count);
             destinationInventory.AddItem(item, count);
         }
 
-        public void TransferAllItems(Inventory originInventory, Inventory destinationInventory)
+        public async void TransferAllItems(Inventory originInventory, Inventory destinationInventory)
         {
-            IOService.Output.DisplayDebugMessage($"Transferring all items from {originInventory.GetType().Name} to {destinationInventory.GetType().Name}.");
+            await IOService.Output.DisplayDebugMessage($"Transferring all items from {originInventory.GetType().Name} to {destinationInventory.GetType().Name}.");
             
             var uneditedInventory = new Inventory();
             uneditedInventory._slots.AddRange(originInventory.Slots.Select(slot => new InventorySlot(slot.Item, slot.Quantity)));

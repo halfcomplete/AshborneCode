@@ -17,13 +17,13 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
             ParentObject = parentObject;
         }
 
-        public void Attacked(float damage)
+        public async void Attacked(float damage)
         {
             Health -= damage;
 
             if (ParentObject.GetAllBehaviours<IActOnAttacked>().Any())
             {
-                IOService.Output.DisplayDebugMessage($"The enemy {ParentObject.Name} has been attacked and took {damage} damage.", ConsoleMessageTypes.INFO);
+                await IOService.Output.DisplayDebugMessage($"The enemy {ParentObject.Name} has been attacked and took {damage} damage.", ConsoleMessageTypes.INFO);
                 foreach (var behaviour in ParentObject.GetAllBehaviours<IActOnAttacked>())
                 {
                     behaviour.OnAttacked();
@@ -31,7 +31,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
             }
             else
             {
-                IOService.Output.DisplayDebugMessage($"The enemy {ParentObject.Name} has been attacked and took {damage} damage, but has no behaviours to act on this event.", ConsoleMessageTypes.WARNING);
+                await IOService.Output.DisplayDebugMessage($"The enemy {ParentObject.Name} has been attacked and took {damage} damage, but has no behaviours to act on this event.", ConsoleMessageTypes.WARNING);
             }
 
             if (Health < 1)
@@ -40,9 +40,9 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
             }
         }
 
-        private void Die()
+        private async void Die()
         {
-            IOService.Output.WriteNonDialogueLine("The enemy has been defeated!");
+            await IOService.Output.WriteNonDialogueLine("The enemy has been defeated!");
         }
     }
 }

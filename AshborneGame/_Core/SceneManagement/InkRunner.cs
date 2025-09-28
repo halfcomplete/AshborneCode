@@ -83,24 +83,24 @@ namespace AshborneGame._Core.SceneManagement
                     else
                         fullUrl += "?ts=" + ts;
 
-                    IOService.Output.DisplayDebugMessage($"[WASM] Trying to fetch: {fullUrl}", ConsoleMessageTypes.INFO);
-                    
+                    await IOService.Output.DisplayDebugMessage($"[WASM] Trying to fetch: {fullUrl}", ConsoleMessageTypes.INFO);
+
                     // Ensure it's a relative URL (no leading slash)
                     fullUrl = fullUrl.TrimStart('/');
-                    
-                    IOService.Output.DisplayDebugMessage($"[WASM] Final URL to fetch: {fullUrl}", ConsoleMessageTypes.INFO);
-                    
+
+                    await IOService.Output.DisplayDebugMessage($"[WASM] Final URL to fetch: {fullUrl}", ConsoleMessageTypes.INFO);
+
                     // Use HttpClient with proper URL construction
                     using var httpClient = new HttpClient();
                     httpClient.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
                     httpClient.DefaultRequestHeaders.Add("Pragma", "no-cache");
-                    
+
                     // For GitHub Pages, construct the full URL manually
                     if (_appEnvironment.IsGithubPages)
                     {
                         // GitHub Pages - use full URL
                         string fullUrlWithBase = _appEnvironment.BaseApiUrl + fullUrl;
-                        IOService.Output.DisplayDebugMessage($"[WASM] Using full URL for GitHub Pages: {fullUrlWithBase}", ConsoleMessageTypes.INFO);
+                        await IOService.Output.DisplayDebugMessage($"[WASM] Using full URL for GitHub Pages: {fullUrlWithBase}", ConsoleMessageTypes.INFO);
                         json = await httpClient.GetStringAsync(fullUrlWithBase);
                     }
                     else
@@ -108,7 +108,7 @@ namespace AshborneGame._Core.SceneManagement
                         // Local development - construct absolute URL from current page
                         string currentUrl = _appEnvironment.BaseApiUrl;
                         string absoluteUrl = currentUrl.TrimEnd('/') + "/" + fullUrl;
-                        IOService.Output.DisplayDebugMessage($"[WASM] Using absolute URL for localhost: {absoluteUrl}", ConsoleMessageTypes.INFO);
+                        await IOService.Output.DisplayDebugMessage($"[WASM] Using absolute URL for localhost: {absoluteUrl}", ConsoleMessageTypes.INFO);
                         json = await httpClient.GetStringAsync(absoluteUrl);
                     }
                 }
@@ -118,14 +118,14 @@ namespace AshborneGame._Core.SceneManagement
                     if (!File.Exists(inkJsonPath))
                         throw new FileNotFoundException($"Ink file not found at path: {inkJsonPath}");
 
-                    IOService.Output.DisplayDebugMessage($"[LOCAL] Reading from: {inkJsonPath}", ConsoleMessageTypes.INFO);
+                    await IOService.Output.DisplayDebugMessage($"[LOCAL] Reading from: {inkJsonPath}", ConsoleMessageTypes.INFO);
                     json = File.ReadAllText(inkJsonPath);
                 }
             }
             catch (Exception ex)
             {
                 var stackTrace = Environment.StackTrace;
-                IOService.Output.DisplayDebugMessage(
+                await IOService.Output.DisplayDebugMessage(
                     $"[DIALOGUE LOAD ERROR] {ex.Message}\nCall Stack:\n{stackTrace}",
                     ConsoleMessageTypes.ERROR
                 );
@@ -158,7 +158,7 @@ namespace AshborneGame._Core.SceneManagement
         /// </summary>
         public async Task RunAsync()
         {
-            IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: RunAsync entered at {DateTime.Now}, canContinue={_story?.canContinue}, currentChoices={_story?.currentChoices?.Count}", ConsoleMessageTypes.INFO);
+            await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: RunAsync entered at {DateTime.Now}, canContinue={_story?.canContinue}, currentChoices={_story?.currentChoices?.Count}", ConsoleMessageTypes.INFO);
             if (_story is null)
                 throw new InvalidOperationException("No Ink story loaded.");
 
@@ -167,7 +167,6 @@ namespace AshborneGame._Core.SceneManagement
             while (true)
             {
                 bool _canContinue = _story.canContinue;
-                // Continue outputting story lines until we hit a choice or the story ends
                 while (_canContinue)
                 {
                     string line = _story.Continue().Trim();
@@ -175,28 +174,28 @@ namespace AshborneGame._Core.SceneManagement
                     {
                         _canContinue = true;
                         Console.WriteLine($"RunAsync encountered __END__ marker. Waiting for _hasPrintedDialogueEnd.");
-                        IOService.Output.WriteDialogueLine(line);
+                        await IOService.Output.WriteDialogueLine(line);
                         while (!_hasPrintedDialogueEnd)
                         {
-                            await Task.Delay(100); // Wait for dialogue to finish outputting
+                            await Task.Delay(100);
                         }
                         Console.WriteLine("_hasPrintedDialogueEnd set to true. Dialogue end confirmed.");
                         break;
                     }
-                    IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Line='{line}'", ConsoleMessageTypes.INFO);
+                    await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Line='{line}'", ConsoleMessageTypes.INFO);
                     if (line.TrimEnd().EndsWith(OutputConstants.DialoguePauseMarker))
                     {
-                        IOService.Output.WriteDialogueLine(line);
+                        await IOService.Output.WriteDialogueLine(line);
                         _canContinue = _story.canContinue;
                         continue;
                     }
                     if (line.StartsWith(OutputConstants.GetPlayerInputMarker))
                     {
-                        IOService.Output.DisplayDebugMessage($"InkRunner: Awaiting player input at {DateTime.Now}", ConsoleMessageTypes.INFO);
+                        await IOService.Output.DisplayDebugMessage($"InkRunner: Awaiting player input at {DateTime.Now}", ConsoleMessageTypes.INFO);
                         string prompt = "What will you say?";
                         if (line.Length > OutputConstants.GetPlayerInputMarker.Length && line[OutputConstants.GetPlayerInputMarker.Length] == ':')
                         {
-                            IOService.Output.DisplayDebugMessage("\"__GET_PLAYER_INPUT:Prompt text\" found!");
+                            await IOService.Output.DisplayDebugMessage("\"__GET_PLAYER_INPUT:Prompt text\" found!");
                             prompt = line.Substring(OutputConstants.GetPlayerInputMarker.Length + 1).Trim();
                             Console.WriteLine(prompt);
                             if (string.IsNullOrWhiteSpace(prompt))
@@ -213,21 +212,21 @@ namespace AshborneGame._Core.SceneManagement
                         }
                         else
                         {
-                            playerInput = IOService.Input.GetPlayerInput(prompt);
+                            playerInput = await IOService.Input.GetPlayerInput(prompt);
                             while (string.IsNullOrWhiteSpace(playerInput))
                             {
-                                playerInput = IOService.Input.GetPlayerInput(prompt);
+                                playerInput = await IOService.Input.GetPlayerInput(prompt);
                             }
                         }
                         GameContext.GameState.SetLabel("player.input", playerInput);
-                        IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Player input received at {DateTime.Now}", ConsoleMessageTypes.INFO);
+                        await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Player input received at {DateTime.Now}", ConsoleMessageTypes.INFO);
                         _canContinue = _story.canContinue;
                         continue;
                     }
 
                     List<string> rawTags = _story.currentTags ?? new();
                     List<string> lineTags = rawTags.Except(_globalSceneTags).ToList();
-                    IOService.Output.DisplayDebugMessage(string.Join(' ', lineTags) ?? string.Empty, ConsoleMessageTypes.INFO);
+                    await IOService.Output.DisplayDebugMessage(string.Join(' ', lineTags) ?? string.Empty, ConsoleMessageTypes.INFO);
                     if (!string.IsNullOrWhiteSpace(line))
                     {
                         string? targetTag = lineTags.FirstOrDefault(t => t.StartsWith(OutputConstants.DialogueSpeedTag));
@@ -235,19 +234,19 @@ namespace AshborneGame._Core.SceneManagement
                         {
                             if (int.TryParse(targetTag.AsSpan(5), out int ms))
                             {
-                                IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Custom speed tag found: {targetTag}. Using {ms} ms for typewriter effect.", ConsoleMessageTypes.INFO);
-                                IOService.Output.WriteDialogueLine(line, ms);
+                                await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Custom speed tag found: {targetTag}. Using {ms} ms for typewriter effect.", ConsoleMessageTypes.INFO);
+                                await IOService.Output.WriteDialogueLine(line, ms);
                             }
                             else
                             {
-                                IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Invalid speed tag format: {targetTag}. Using default speed of {OutputConstants.DefaultTypeSpeed} ms.", ConsoleMessageTypes.INFO);
-                                IOService.Output.WriteDialogueLine(line, OutputConstants.DefaultTypeSpeed);
+                                await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Invalid speed tag format: {targetTag}. Using default speed of {OutputConstants.DefaultTypeSpeed} ms.", ConsoleMessageTypes.INFO);
+                                await IOService.Output.WriteDialogueLine(line, OutputConstants.DefaultTypeSpeed);
                             }
                         }
                         else
                         {
-                            IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: No speed tag found. Using default speed of {OutputConstants.DefaultTypeSpeed} ms.", ConsoleMessageTypes.INFO);
-                            IOService.Output.WriteDialogueLine(line, OutputConstants.DefaultTypeSpeed);
+                            await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: No speed tag found. Using default speed of {OutputConstants.DefaultTypeSpeed} ms.", ConsoleMessageTypes.INFO);
+                            await IOService.Output.WriteDialogueLine(line, OutputConstants.DefaultTypeSpeed);
                         }
                     }
                     _canContinue = _story.canContinue;
@@ -255,26 +254,25 @@ namespace AshborneGame._Core.SceneManagement
 
                 if (_story.currentChoices.Count > 0)
                 {
-                    IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Enqueued choices at {DateTime.Now}", ConsoleMessageTypes.INFO);
+                    await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Enqueued choices at {DateTime.Now}", ConsoleMessageTypes.INFO);
                     for (int i = 0; i < _story.currentChoices.Count; i++)
                     {
-                        IOService.Output.WriteDialogueLine($"[{i + 1}] {_story.currentChoices[i].text}");
+                        await IOService.Output.WriteDialogueLine($"[{i + 1}] {_story.currentChoices[i].text}");
                     }
 
-                    // Await external cancellation from Home.razor
                     _externalChoiceAwaitCts = new CancellationTokenSource();
                     try
                     {
-                        IOService.Output.DisplayDebugMessage("External Choice Await begin.");
+                        await IOService.Output.DisplayDebugMessage("External Choice Await begin.");
                         await Task.Delay(-1, _externalChoiceAwaitCts.Token);
                     }
-                    catch (TaskCanceledException) { IOService.Output.DisplayDebugMessage("External Choice Await cancelled."); }
+                    catch (TaskCanceledException) { await IOService.Output.DisplayDebugMessage("External Choice Await cancelled."); }
                 }
 
                 if (_hasPrintedDialogueEnd)
                 {
-                    IOService.Output.DisplayDebugMessage("Returning from RunAsync().");
-                    return; // Exit if dialogue has finished outputting
+                    await IOService.Output.DisplayDebugMessage("Returning from RunAsync().");
+                    return;
                 }
             }
         }
@@ -292,179 +290,47 @@ namespace AshborneGame._Core.SceneManagement
         private void InitialiseBindings()
         {
             if (_story == null) return;
+
             // --- Flags ---
-            _story!.BindExternalFunction("setFlag", (string key, bool value) => ExternalSetFlag(key, value));
-
-            _story!.BindExternalFunction("getFlag", (string key) =>
-            {
-                string callId = Guid.NewGuid().ToString();
-                // Queue the marker for Home.razor to process
-                IOService.Output.WriteDialogueLine($"__EXTERNAL__playerForceMask:{callId}:{key}");
-                // Return a placeholder for Ink (will be replaced later)
-                return $"__PENDING__{callId}";
-            });
-
-            _story!.BindExternalFunction("hasFlag", (string key) =>
-            {
-                string callId = Guid.NewGuid().ToString();
-                // Queue the marker for Home.razor to process
-                IOService.Output.WriteDialogueLine($"__EXTERNAL__hasFlag:{callId}:{key}");
-                // Return a placeholder for Ink (will be replaced later)
-                return $"__PENDING__{callId}";
-            });
-
-            _story!.BindExternalFunction("toggleFlag", (string key) => ExternalToggleFlag(key));
-
-            _story!.BindExternalFunction("removeFlag", (string key) => ExternalRemoveFlag(key));
+            _story.BindExternalFunction("setFlag", (string key, bool value) => ExternalSetFlag(key, value));
+            _story.BindExternalFunction("getFlag", (string key) => ExternalGetFlag(key));
+            _story.BindExternalFunction("hasFlag", (string key) => ExternalHasFlag(key));
+            _story.BindExternalFunction("toggleFlag", (string key) => ExternalToggleFlag(key));
+            _story.BindExternalFunction("removeFlag", (string key) => ExternalRemoveFlag(key));
 
             // --- Counters ---
-            _story!.BindExternalFunction("setCounter", (string key, int value) => ExternalSetCounter(key, value));
-
-            _story!.BindExternalFunction("getCounter", (string key) =>
-            {
-                string callId = Guid.NewGuid().ToString();
-                // Queue the marker for Home.razor to process
-                IOService.Output.WriteDialogueLine($"__EXTERNAL__getCounter:{callId}:{key}");
-                // Return a placeholder for Ink (will be replaced later)
-                return $"__PENDING__{callId}";
-            });
-
-            _story!.BindExternalFunction("hasCounter", (string key) =>
-            {
-                string callId = Guid.NewGuid().ToString();
-                // Queue the marker for Home.razor to process
-                IOService.Output.WriteDialogueLine($"__EXTERNAL__hasCounter:{callId}:{key}");
-                // Return a placeholder for Ink (will be replaced later)
-                return $"__PENDING__{callId}";
-            });
-
-            _story!.BindExternalFunction("incCounter", (string key, int amount) => ExternalIncCounter(key, amount));
-
-            _story!.BindExternalFunction("decCounter", (string key, int amount) => ExternalDecCounter(key, amount));
-
-            _story!.BindExternalFunction("removeCounter", (string key) =>
-            {
-                string callId = Guid.NewGuid().ToString();
-                // Queue the marker for Home.razor to process
-                IOService.Output.WriteDialogueLine($"__EXTERNAL__removeCounter:{callId}:{key}");
-                // Return a placeholder for Ink (will be replaced later)
-                return $"__PENDING__{callId}";
-            });
+            _story.BindExternalFunction("setCounter", (string key, int value) => ExternalSetCounter(key, value));
+            _story.BindExternalFunction("getCounter", (string key) => ExternalGetCounter(key));
+            _story.BindExternalFunction("hasCounter", (string key) => ExternalHasCounter(key));
+            _story.BindExternalFunction("incCounter", (string key, int amount) => ExternalIncCounter(key, amount));
+            _story.BindExternalFunction("decCounter", (string key, int amount) => ExternalDecCounter(key, amount));
+            _story.BindExternalFunction("removeCounter", (string key) => ExternalRemoveCounter(key));
 
             // --- Labels ---
-            _story.BindExternalFunction("playerForceMask", (string maskName) =>
-            {
-                string callId = Guid.NewGuid().ToString();
-                // Queue the marker for Home.razor to process
-                IOService.Output.WriteDialogueLine($"__EXTERNAL__playerForceMask:{callId}:{maskName}");
-                // Return a placeholder for Ink (will be replaced later)
-                return $"__PENDING__{callId}";
-            });
+            _story.BindExternalFunction("setLabel", (string key, string value) => ExternalSetLabel(key, value));
+            _story.BindExternalFunction("getLabel", (string key) => ExternalGetLabel(key));
+            _story.BindExternalFunction("hasLabel", (string key) => ExternalHasLabel(key));
+            _story.BindExternalFunction("removeLabel", (string key) => ExternalRemoveLabel(key));
 
-            _story!.BindExternalFunction("playerGiveMask", (string maskName) =>
-            {
-                string callId = Guid.NewGuid().ToString();
-                // Queue the marker for Home.razor to process
-                IOService.Output.WriteDialogueLine($"__EXTERNAL__playerGiveMask:{callId}:{maskName}");
-                // Return a placeholder for Ink (will be replaced later)
-                return $"__PENDING__{callId}";
-            });
+            // --- Variables (not previously bound) ---
+            _story.BindExternalFunction("setVar", (string key, string value) => ExternalSetVar(key, value));
+            _story.BindExternalFunction("getVar", (string key) => ExternalGetVar(key));
 
-            _story!.BindExternalFunction("playerTryTakeMask", (string maskName) =>
-            {
-                string callId = Guid.NewGuid().ToString();
-                // Queue the marker for Home.razor to process
-                IOService.Output.WriteDialogueLine($"__EXTERNAL__playerTryTakeMask:{callId}:{maskName}");
-                // Return a placeholder for Ink (will be replaced later)
-                return $"__PENDING__{callId}";
-            });
+            // --- Inventory (not previously bound) ---
+            _story.BindExternalFunction("playerHas", (string itemName) => ExternalPlayerHas(itemName));
 
-            _story!.BindExternalFunction("playerWearingMask", (string maskName) =>
-            {
-                string callId = Guid.NewGuid().ToString();
-                // Queue the marker for Home.razor to process
-                IOService.Output.WriteDialogueLine($"__EXTERNAL__playerWearingMask:{callId}:{maskName}");
-                // Return a placeholder for Ink (will be replaced later)
-                return $"__PENDING__{callId}";
-            });
+            // --- Masks ---
+            _story.BindExternalFunction("playerForceMask", (string maskName) => ExternalPlayerForceMask(maskName));
+            _story.BindExternalFunction("playerGiveMask", (string maskName) => ExternalPlayerGiveMask(maskName));
+            _story.BindExternalFunction("playerTryTakeMask", (string maskName) => ExternalPlayerTryTakeMask(maskName));
+            _story.BindExternalFunction("playerWearingMask", (string maskName) => ExternalPlayerWearingMask(maskName));
 
-            _story!.BindExternalFunction("changePlayerStat", (string statName, int amount) =>
-            {
-                string callId = Guid.NewGuid().ToString();
-                // Queue the marker for Home.razor to process
-                IOService.Output.WriteDialogueLine($"__EXTERNAL__changePlayerStat:{callId}:{statName}:{amount}");
-                // Return a placeholder for Ink (will be replaced later)
-                return $"__PENDING__{callId}";
-            });
+            // --- Stats ---
+            _story.BindExternalFunction("changePlayerStat", (string statName, int amount) => ExternalChangePlayerStat(statName, amount));
+            _story.BindExternalFunction("getPlayerStat", (string statName) => ExternalGetPlayerStat(statName));
 
-            _story!.BindExternalFunction("getPlayerStat", (string statName) =>
-            {
-                string callId = Guid.NewGuid().ToString();
-                // Queue the marker for Home.razor to process
-                IOService.Output.WriteDialogueLine($"__EXTERNAL__getPlayerStat:{callId}:{statName}");
-                // Return a placeholder for Ink (will be replaced later)
-                return $"__PENDING__{callId}";
-            });
-
-            _story!.BindExternalFunction("setSilentPath", (string silentPath, int silentMs) => ExternalSetSilentPath(silentPath, silentMs));
-
-            
-        }
-
-        public void ResolveExternalFunction(string functionName, string callId, params string[] args)
-        {
-            if (_story == null) return;
-
-            object? result = functionName switch
-            {
-                // Flags
-                "setFlag" => ExternalSetFlag(args[0], bool.Parse(args[1])),
-                "getFlag" => ExternalGetFlag(args[0]),
-                "hasFlag" => ExternalHasFlag(args[0]),
-                "toggleFlag" => ExternalToggleFlag(args[0]),
-                "removeFlag" => ExternalRemoveFlag(args[0]),
-
-                // Counters
-                "setCounter" => ExternalSetCounter(args[0], int.Parse(args[1])),
-                "getCounter" => ExternalGetCounter(args[0]),
-                "hasCounter" => ExternalHasCounter(args[0]),
-                "incCounter" => ExternalIncCounter(args[0], int.Parse(args[1])),
-                "decCounter" => ExternalDecCounter(args[0], int.Parse(args[1])),
-                "removeCounter" => ExternalRemoveCounter(args[0]),
-
-                // Labels
-                "setLabel" => ExternalSetLabel(args[0], args[1]),
-                "getLabel" => ExternalGetLabel(args[0]),
-                "hasLabel" => ExternalHasLabel(args[0]),
-                "removeLabel" => ExternalRemoveLabel(args[0]),
-
-                // Variables
-                "setVar" => ExternalSetVar(args[0], args[1]),
-                "getVar" => ExternalGetVar(args[0]),
-
-                // Inventory
-                "playerHas" => ExternalPlayerHas(args[0]),
-
-                // Masks
-                "playerGiveMask" => ExternalPlayerGiveMask(args[0]),
-                "playerTryTakeMask" => ExternalPlayerTryTakeMask(args[0]),
-                "playerWearingMask" => ExternalPlayerWearingMask(args[0]),
-                "playerForceMask" => ExternalPlayerForceMask(args[0]),
-
-                // Stats
-                "changePlayerStat" => ExternalChangePlayerStat(args[0], int.Parse(args[1])),
-                "getPlayerStat" => ExternalGetPlayerStat(args[0]),
-
-                // Silent Path
-                "setSilentPath" => ExternalSetSilentPath(args[0], int.Parse(args[1])),
-
-                _ => null
-            };
-
-            if (_story != null && result != null)
-            {
-                _story.variablesState[$"{functionName}_result_{callId}"] = result ?? "";
-            }
+            // --- Silent Path ---
+            _story.BindExternalFunction("setSilentPath", (string silentPath, int silentMs) => ExternalSetSilentPath(silentPath, silentMs));
         }
 
         public object ExternalSetFlag(string key, bool value) { _gameState.SetFlag(key, value); return null; }

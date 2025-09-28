@@ -9,16 +9,16 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         public List<string> Names => ["stats"];
         public string Description => "Shows your current stats.";
 
-        public bool TryExecute(List<string> args, Player player)
+        public async Task<bool> TryExecute(List<string> args, Player player)
         {
             if (args.Count > 0)
             {
-                IOService.Output.DisplayFailMessage("Did you mean \"stats\"?");
+                await IOService.Output.DisplayFailMessage("Did you mean \"stats\"?");
                 return false;
             }
 
-            IOService.Output.WriteNonDialogueLine("Your current stats:");
-            IOService.Output.WriteNonDialogueLine(player.Stats.GetFormattedStats());
+            await IOService.Output.WriteNonDialogueLine("Your current stats:");
+            await IOService.Output.WriteNonDialogueLine(player.Stats.GetFormattedStats());
 
             return true;
         }

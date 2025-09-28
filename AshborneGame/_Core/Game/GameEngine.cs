@@ -58,18 +58,18 @@ namespace AshborneGame._Core.Game
             InitialiseGameWorld(player);
         }
 
-        private void OnOssanethDomainVisitCountFour(GameEvent evt)
+        private async void OnOssanethDomainVisitCountFour(GameEvent evt)
         {
             // Start the outro dialogue (fire-and-forget previously; now log explicitly)
-            IOService.Output.DisplayDebugMessage("Event 'ossaneth.domain.visitcount.4' received. Launching outro dialogue...", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.INFO);
+            await IOService.Output.DisplayDebugMessage("Event 'ossaneth.domain.visitcount.4' received. Launching outro dialogue...", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.INFO);
             Console.WriteLine("[GameEngine] ossaneth.domain.visitcount.4 received; starting outro dialogue");
             // Intentionally not awaited because this is a sync event handler; dialogue service internally tracks running state.
             var _ = _dialogueService.StartDialogue("Act1_Scene1_Ossaneth_Domain_Outro");
         }
 
-        public void Start()
+        public async void Start()
         {
-            StartGameLoop(GameContext.Player, GameContext.GameState);
+            await StartGameLoop(GameContext.Player, GameContext.GameState);
         }
 
         public async Task StartGameLoopAsync()
@@ -317,7 +317,7 @@ namespace AshborneGame._Core.Game
         }
 
 
-        private void InitialiseGameWorld(Player player)
+        private async void InitialiseGameWorld(Player player)
         {
             //var torch = ItemFactory.CreateLightSourceEquipment("torch", "A small torch that lights up the area.", new List<string> { "hand", "offhand" }, ItemQualities.None, -1, 32);
             //var damagePotion = ItemFactory.CreateHealthPotion("damage potion", -20);
@@ -329,7 +329,7 @@ namespace AshborneGame._Core.Game
             //player.Inventory.AddItem(damagePotion, 5);
             //player.Inventory.AddItem(scroll, 1);
 
-            IOService.Output.DisplayDebugMessage("Game world initialised.");
+            await IOService.Output.DisplayDebugMessage("Game world initialised.");
         }
 
         public async Task StartGameLoop(Player player, GameStateManager gameState)
@@ -338,7 +338,7 @@ namespace AshborneGame._Core.Game
 
             await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_Ossaneth_Domain_Intro");
 
-            IOService.Output.WriteNonDialogueLine(player.CurrentLocation.GetDescription(player, gameState));
+            await IOService.Output.WriteNonDialogueLine(player.CurrentLocation.GetDescription(player, gameState));
 
             gameState.StartTickLoop();
             _isRunning = true;
@@ -346,58 +346,58 @@ namespace AshborneGame._Core.Game
             {
                 if (_dialogueRunning) continue;
 
-                string inputStr = IOService.Input.GetPlayerInput().Trim().ToLowerInvariant();
+                string inputStr = IOService.Input.GetPlayerInput().Result.Trim().ToLowerInvariant();
 
                 if (string.IsNullOrWhiteSpace(inputStr))
                 {
-                    IOService.Output.DisplayFailMessage("You must enter a command.");
+                    await IOService.Output.DisplayFailMessage("You must enter a command.");
                     continue;
                 }
 
                 var splitInput = inputStr.Split(' ').ToList();
                 var action = CommandManager.ExtractAction(splitInput, out List<string> args);
 
-                bool isValidCommand = CommandManager.TryExecute(action, args, player);
+                bool isValidCommand = CommandManager.TryExecute(action, args, player).Result;
 
                 while (!isValidCommand)
                 {
-                    IOService.Output.DisplayFailMessage("Invalid command. Please try again or type 'help' for assistance.");
+                    await IOService.Output.DisplayFailMessage("Invalid command. Please try again or type 'help' for assistance.");
 
 
-                    inputStr = IOService.Input.GetPlayerInput().Trim();
+                    inputStr = IOService.Input.GetPlayerInput().Result.Trim();
                     if (string.IsNullOrWhiteSpace(inputStr)) continue;
 
                     splitInput = inputStr.Split(' ').ToList();
                     action = CommandManager.ExtractAction(splitInput, out var args2);
 
-                    isValidCommand = CommandManager.TryExecute(action, args2, player);
+                    isValidCommand = CommandManager.TryExecute(action, args2, player).Result;
                 }
             }
             gameState.StopTickLoop();
         }
 
-        public void ReceiveCommand(string input)
+        public async void ReceiveCommand(string input)
         {
             if (!_isRunning)
             {
-                IOService.Output.DisplayFailMessage("Game is not running.");
+                await IOService.Output.DisplayFailMessage("Game is not running.");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(input))
             {
-                IOService.Output.DisplayFailMessage("You must enter a command.");
+                await IOService.Output.DisplayFailMessage("You must enter a command.");
                 return;
             }
 
             var splitInput = input.Split(' ').ToList();
             var action = CommandManager.ExtractAction(splitInput, out List<string> args);
 
-            bool isValidCommand = CommandManager.TryExecute(action, args, GameContext.Player);
+            bool isValidCommand = CommandManager.TryExecute(action, args, GameContext.Player).Result;
 
             if (!isValidCommand)
             {
-                IOService.Output.DisplayFailMessage("Invalid command. Please try again or type 'help' for assistance.");
+                await IOService.Output.DisplayFailMessage("Invalid command. Please try again or type 'help' for assistance.");
             }
         }
 

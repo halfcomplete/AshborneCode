@@ -9,19 +9,19 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         public List<string> Names => ["help"];
         public string Description => "Provides information about possible commands.";
 
-        public bool TryExecute(List<string> args, Player player)
+        public async Task<bool> TryExecute(List<string> args, Player player)
         {
             if (args.Count > 1)
             {
-                IOService.Output.WriteNonDialogueLine("Did you mean just 'help'?");
+                await IOService.Output.WriteNonDialogueLine("Did you mean just 'help'?");
                 return false;
             }
 
-            IOService.Output.WriteNonDialogueLine("Available commands:");
+            await IOService.Output.WriteNonDialogueLine("Available commands:");
             for (int i = 0; i < CommandManager.Commands.Count; i++)
             {
                 var command = CommandManager.Commands[CommandManager.Commands.Keys.ToList()[i]];
-                IOService.Output.WriteNonDialogueLine($"{i + 1}. '{command.Names[0]}' - {command.Description}");
+                await IOService.Output.WriteNonDialogueLine($"{i + 1}. '{command.Names[0]}' - {command.Description}");
             }
 
             return true;

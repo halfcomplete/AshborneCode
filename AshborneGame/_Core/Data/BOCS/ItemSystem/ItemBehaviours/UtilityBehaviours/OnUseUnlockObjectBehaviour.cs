@@ -23,9 +23,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviou
             ConsumeOnUse = consumeOnUse;
         }
 
-        public void OnUse(Player player)
+        public async void OnUse(Player player)
         {
-            IOService.Output.DisplayDebugMessage("On Use Trigger successfully called for OnUseUnlockObjectBehaviour", ConsoleMessageTypes.INFO);
+            await IOService.Output.DisplayDebugMessage("On Use Trigger successfully called for OnUseUnlockObjectBehaviour", ConsoleMessageTypes.INFO);
             BOCSGameObject? targetObject = null; // Reset targetObject to null before searching
             // If we're in a sublocation, get the object directly
             if (player.CurrentSublocation != null)
@@ -34,7 +34,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviou
             }
             else // If we're in a regular location, output and return
             {
-                IOService.Output.WriteNonDialogueLine("There's nothing to unlock here.");
+                await IOService.Output.WriteNonDialogueLine("There's nothing to unlock here.");
                 return;
             }
 
@@ -47,7 +47,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviou
                     return;
                 }
             }
-            IOService.Output.WriteNonDialogueLine("There's nothing to unlock here.");
+            await IOService.Output.WriteNonDialogueLine("There's nothing to unlock here.");
         }
 
         public override OnUseUnlockObjectBehaviour DeepClone()

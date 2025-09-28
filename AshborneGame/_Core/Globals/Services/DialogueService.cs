@@ -37,27 +37,27 @@ namespace AshborneGame._Core.Globals.Services
             Console.WriteLine($"[DialogueService] StartDialogue invoked with key='{originalKey}' (before path resolution)");
             try
             {
-                IOService.Output.DisplayDebugMessage($"Starting dialogue: {inkFilePath}", ConsoleMessageTypes.INFO);
-                IOService.Output.DisplayDebugMessage($"Current directory: {Directory.GetCurrentDirectory()}", ConsoleMessageTypes.INFO);
+                await IOService.Output.DisplayDebugMessage($"Starting dialogue: {inkFilePath}", ConsoleMessageTypes.INFO);
+                await IOService.Output.DisplayDebugMessage($"Current directory: {Directory.GetCurrentDirectory()}", ConsoleMessageTypes.INFO);
                 DialogueStart?.Invoke();
-                inkFilePath = FilePathResolver.FromDialogue(inkFilePath);
-                IOService.Output.DisplayDebugMessage($"[DialogueService] Resolved ink file path='{inkFilePath}' for key='{originalKey}'");
-                IOService.Output.DisplayDebugMessage($"Loading file: {inkFilePath}", ConsoleMessageTypes.INFO);
+                inkFilePath = await FilePathResolver.FromDialogue(inkFilePath);
+                await IOService.Output.DisplayDebugMessage($"[DialogueService] Resolved ink file path='{inkFilePath}' for key='{originalKey}'");
+                await IOService.Output.DisplayDebugMessage($"Loading file: {inkFilePath}", ConsoleMessageTypes.INFO);
                 await _inkRunner.LoadFromFileAsync(inkFilePath);
-                IOService.Output.DisplayDebugMessage("Running Ink story...", ConsoleMessageTypes.INFO);
+                await IOService.Output.DisplayDebugMessage("Running Ink story...", ConsoleMessageTypes.INFO);
                 await _inkRunner.RunAsync();
-                IOService.Output.DisplayDebugMessage("RunAsync() completed.", ConsoleMessageTypes.INFO);
+                await IOService.Output.DisplayDebugMessage("RunAsync() completed.", ConsoleMessageTypes.INFO);
                 Console.WriteLine($"[DialogueService] Dialogue run completed for key='{originalKey}'");
             }
             catch (Exception ex)
             {
-                IOService.Output.DisplayDebugMessage($"Dialogue error: {ex.Message}", ConsoleMessageTypes.ERROR);
-                IOService.Output.DisplayDebugMessage($"Error type: {ex.GetType().Name}", ConsoleMessageTypes.ERROR);
+                await IOService.Output.DisplayDebugMessage($"Dialogue error: {ex.Message}", ConsoleMessageTypes.ERROR);
+                await IOService.Output.DisplayDebugMessage($"Error type: {ex.GetType().Name}", ConsoleMessageTypes.ERROR);
                 if (ex is FileNotFoundException fileEx)
                 {
-                    IOService.Output.DisplayDebugMessage($"File not found: {fileEx.FileName}", ConsoleMessageTypes.ERROR);
+                    await IOService.Output.DisplayDebugMessage($"File not found: {fileEx.FileName}", ConsoleMessageTypes.ERROR);
                 }
-                IOService.Output.DisplayDebugMessage($"Stack trace: {ex.StackTrace}", ConsoleMessageTypes.ERROR);
+                await IOService.Output.DisplayDebugMessage($"Stack trace: {ex.StackTrace}", ConsoleMessageTypes.ERROR);
                 throw;
             }
         }

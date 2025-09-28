@@ -15,9 +15,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.OtherBehaviours
             this.message = message;
         }
 
-        public void OnUse(Player player)
+        public async void OnUse(Player player)
         {
-            IOService.Output.DisplayDebugMessage($"On Use Trigger successfully called, message: {message}", ConsoleMessageTypes.INFO);
+            await IOService.Output.DisplayDebugMessage($"On Use Trigger successfully called, message: {message}", ConsoleMessageTypes.INFO);
         }
 
         public override OnUseLogMessage DeepClone()

@@ -16,11 +16,11 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.CombatBehaviour
             BaseDamage = damageAmount;
             ConsumeOnUse = consumeOnUse;
         }
-        public void OnUse(Player player)
+        public async void OnUse(Player player)
         {
             // Implementation for dealing damage to the target
             // For now just print a message
-            IOService.Output.WriteNonDialogueLine($"You deal {BaseDamage} damage to the target!");
+            await IOService.Output.WriteNonDialogueLine($"You deal {BaseDamage} damage to the target!");
         }
 
         public override OnPlayerUseDealDamageBehaviour DeepClone()

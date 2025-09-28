@@ -9,12 +9,13 @@ namespace AshborneGame.ConsolePort
 {
     public class ConsoleOutputHandler : IOutputHandler
     {
-        public void Write(string message)
+        public Task Write(string message)
         {
             Console.Write(message);
+            return Task.CompletedTask;
         }
 
-        public void Write(string message, int ms)
+        public Task Write(string message, int ms)
         {
             // Process inline slow markers in the message
             var (processedMessage, characterSpeeds) = ProcessInlineSlowMarkersWithSpeeds(message, ms);
@@ -118,26 +119,28 @@ namespace AshborneGame.ConsolePort
                 i += 1;
             }
 #endif
+            return Task.CompletedTask;
         }
 
-        public void WriteDialogueLine(string message)
+        public Task WriteDialogueLine(string message)
         {
-            WriteDialogueLine(message, OutputConstants.DefaultTypeSpeed);
+            return WriteDialogueLine(message, OutputConstants.DefaultTypeSpeed);
         }
 
-        public void WriteDialogueLine(string message, int ms)
+        public Task WriteDialogueLine(string message, int ms)
         {
             WriteNonDialogueLine(message, ms);
+            return Task.CompletedTask;
         }
 
         // TODO: Refactor maybe?
-        public void WriteNonDialogueLine(string message)
+        public Task WriteNonDialogueLine(string message)
         {
             // Write a line with default delay
-            WriteNonDialogueLine(message, OutputConstants.DefaultNonDialogueOutputSpeed);
+            return WriteNonDialogueLine(message, OutputConstants.DefaultNonDialogueOutputSpeed);
         }
 
-        public void WriteNonDialogueLine(string message, int ms)
+        public Task WriteNonDialogueLine(string message, int ms)
         {
             // Handle special pause marker: ms__PAUSE__
             if (message.EndsWith(OutputConstants.DialoguePauseMarker))
@@ -151,7 +154,7 @@ namespace AshborneGame.ConsolePort
                 {
                     Thread.Sleep(OutputConstants.DefaultPauseDuration);
                 }
-                return;
+                return Task.CompletedTask;
             }
 
             // Handle new line marker: __NL__
@@ -179,7 +182,7 @@ namespace AshborneGame.ConsolePort
                 string typewriterMessage = message.Substring(startIndex, endIndex - startIndex);
                 
                 Write(typewriterMessage, ms);
-                return;
+                return Task.CompletedTask;
             }
 
 #if DEBUG
@@ -197,6 +200,7 @@ namespace AshborneGame.ConsolePort
             int adjustedMs = ms == OutputConstants.DefaultTypeSpeed ? ms : (int)(ms * OutputConstants.NonDialogueOutputSpeedMultiplier); // Only apply multiplier if not dialogue
             Thread.Sleep((adjustedMs + modification) * OutputConstants.NewLinePauseMultiplier);
 #endif
+            return Task.CompletedTask;
         }
 
         private (string processedMessage, List<int> characterSpeeds) ProcessInlineSlowMarkersWithSpeeds(string message, int defaultMs)
@@ -281,7 +285,7 @@ namespace AshborneGame.ConsolePort
             return (processedMessage.ToString(), characterSpeeds);
         }
 
-        public void DisplayDebugMessage(string message, ConsoleMessageTypes type)
+        public Task DisplayDebugMessage(string message, ConsoleMessageTypes type)
         {
             switch (type)
             {
@@ -304,11 +308,13 @@ namespace AshborneGame.ConsolePort
 #endif
 
             Console.ResetColor();
+            return Task.CompletedTask;
         }
 
-        public void DisplayFailMessage(string message)
+        public Task DisplayFailMessage(string message)
         {
             Console.WriteLine($"[FAIL] {message}");
+            return Task.CompletedTask;
         }
     }
 }

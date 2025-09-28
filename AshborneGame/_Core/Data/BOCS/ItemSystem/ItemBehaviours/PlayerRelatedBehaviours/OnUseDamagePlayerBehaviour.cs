@@ -15,11 +15,11 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
             DamageAmount = damageAmount;
             ConsumeOnUse = consumeOnUse;
         }
-        public void OnUse(Player player)
+        public async void OnUse(Player player)
         {
             // Logic to apply damage to the player
             player.ChangeHealth(-DamageAmount);
-            IOService.Output.WriteNonDialogueLine($"You take {DamageAmount} damage. You now have {player.Stats.GetStat(PlayerStatType.Health)} HP.");
+            await IOService.Output.WriteNonDialogueLine($"You take {DamageAmount} damage. You now have {player.Stats.GetStat(PlayerStatType.Health)} HP.");
         }
 
         public override OnUseDamagePlayerBehaviour DeepClone()

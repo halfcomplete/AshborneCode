@@ -13,11 +13,11 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         public List<string> Names => ["close"];
         public string Description => "Closes an object.";
 
-        public bool TryExecute(List<string> args, Player player)
+        public async Task<bool> TryExecute(List<string> args, Player player)
         {
             if (args.Count == 0)
             {
-                IOService.Output.DisplayFailMessage("Close what? Specify an object.");
+                await IOService.Output.DisplayFailMessage("Close what? Specify an object.");
                 return false;
             }
 
@@ -26,13 +26,13 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 
             if (sublocation == null)
             {
-                IOService.Output.DisplayFailMessage("There's nothing to close here.");
+                await IOService.Output.DisplayFailMessage("There's nothing to close here.");
                 return false;
             }
 
-            if (sublocation.FocusObject.TryGetBehaviour<IInteractable>(out var openCloseBehaviour) && openCloseBehaviour is ContainerBehaviour)
+            if (sublocation.FocusObject.TryGetBehaviour<IInteractable>(out var openCloseBehaviour).Result && openCloseBehaviour is ContainerBehaviour)
             {
-                if (sublocation.FocusObject.TryGetBehaviour<IInteractable>(out var lockUnlockBehaviour) && lockUnlockBehaviour is LockUnlockBehaviour)
+                if (sublocation.FocusObject.TryGetBehaviour<IInteractable>(out var lockUnlockBehaviour).Result && lockUnlockBehaviour is LockUnlockBehaviour)
                 {
                     LockUnlockBehaviour lockUnlockBehaviour1 = (LockUnlockBehaviour)lockUnlockBehaviour;
                     openCloseBehaviour.Interact(ObjectInteractionTypes.Close, player);
@@ -41,7 +41,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             }
             else
             {
-                IOService.Output.DisplayFailMessage($"You cannot close that.");
+                await IOService.Output.DisplayFailMessage($"You cannot close that.");
                 return false;
             }
         }

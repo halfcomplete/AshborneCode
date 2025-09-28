@@ -12,22 +12,22 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         public List<string> Names => ["talk to"];
         public string Description => "Begins a conversation with an NPC.";
 
-        public bool TryExecute(List<string> args, Player player)
+        public async Task<bool> TryExecute(List<string> args, Player player)
         {
             if (args.Count == 0)
             {
-                IOService.Output.DisplayFailMessage("Talk to whom? Specify a target.");
+                await IOService.Output.DisplayFailMessage("Talk to whom? Specify a target.");
                 return false;
             }
             string targetName = string.Join(" ", args).Trim();
             if (player.CurrentSublocation == null)
             {
-                IOService.Output.DisplayFailMessage("You are not in a place where you can talk.");
+                await IOService.Output.DisplayFailMessage("You are not in a place where you can talk.");
                 return false;
             }
             if (player.CurrentSublocation.FocusObject is not NPC)
             {
-                IOService.Output.DisplayFailMessage($"There is no one to talk to.");
+                await IOService.Output.DisplayFailMessage($"There is no one to talk to.");
                 return false;
             }
 
@@ -37,12 +37,12 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             // Check if the NPC's name or synonyms match the target name
             if (!npc.MatchesName(targetName))
             {
-                IOService.Output.DisplayFailMessage($"There is no one named '{targetName}' here.");
+                await IOService.Output.DisplayFailMessage($"There is no one named '{targetName}' here.");
                 return false;
             }
 
             // May cause an issue where this method returns true before the dialogue begins
-            npc.Talk(player);
+            await npc.Talk(player);
             return true;
         }
     }

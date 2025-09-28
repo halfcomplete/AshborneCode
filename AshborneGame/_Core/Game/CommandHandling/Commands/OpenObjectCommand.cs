@@ -14,11 +14,11 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         public List<string> Names => ["open"];
         public string Description => "Opens an object.";
 
-        public bool TryExecute(List<string> args, Player player)
+        public async Task<bool> TryExecute(List<string> args, Player player)
         {
             if (args.Count == 0)
             {
-                IOService.Output.DisplayFailMessage("Open what? Specify an object.");
+                await IOService.Output.DisplayFailMessage("Open what? Specify an object.");
                 return false;
             }
 
@@ -29,15 +29,15 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 
             if (allIInteractableBehaviours == null)
             {
-                IOService.Output.DisplayFailMessage($"That is not an object here.");
+                await IOService.Output.DisplayFailMessage($"That is not an object here.");
                 return false;
             }
 
-            IOService.Output.DisplayDebugMessage($"You are trying to open {objectName}.");
-            IOService.Output.DisplayDebugMessage($"The object has the following behaviours: {string.Join(", ", allIInteractableBehaviours.Select(b => b.GetType().Name))}.");
+            await IOService.Output.DisplayDebugMessage($"You are trying to open {objectName}.");
+            await IOService.Output.DisplayDebugMessage($"The object has the following behaviours: {string.Join(", ", allIInteractableBehaviours.Select(b => b.GetType().Name))}.");
             if (!allIInteractableBehaviours.ToList().Any(b => b.GetType() == typeof(OpenCloseBehaviour)))
             {
-                IOService.Output.DisplayFailMessage($"You can't open that.");
+                await IOService.Output.DisplayFailMessage($"You can't open that.");
                 return false;
             }
 
@@ -46,7 +46,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                 var lockUnlockBehaviour = allIInteractableBehaviours.FirstOrDefault(b => b is LockUnlockBehaviour) as LockUnlockBehaviour;
                 if (lockUnlockBehaviour!.IsLocked)
                 {
-                    IOService.Output.DisplayFailMessage($"You cannot open that because it is locked.");
+                    await IOService.Output.DisplayFailMessage($"You cannot open that because it is locked.");
                     return false;
                 }
                 var openCloseBehaviour = allIInteractableBehaviours.FirstOrDefault(b => b is OpenCloseBehaviour) as OpenCloseBehaviour;

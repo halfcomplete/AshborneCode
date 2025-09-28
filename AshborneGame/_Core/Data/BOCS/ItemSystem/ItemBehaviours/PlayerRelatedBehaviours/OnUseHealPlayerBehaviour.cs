@@ -15,11 +15,11 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
             HealAmount = healAmount;
             ConsumeOnUse = consumeOnUse;
         }
-        public void OnUse(Player player)
+        public async void OnUse(Player player)
         {
             // Logic to heal the player
             player.ChangeHealth(HealAmount);
-            IOService.Output.WriteNonDialogueLine($"You heal for {HealAmount} HP. You now have {player.Stats.GetStat(PlayerStatType.Health)} HP.");
+            await IOService.Output.WriteNonDialogueLine($"You heal for {HealAmount} HP. You now have {player.Stats.GetStat(PlayerStatType.Health)} HP.");
         }
 
         public override OnUseHealPlayerBehaviour DeepClone()

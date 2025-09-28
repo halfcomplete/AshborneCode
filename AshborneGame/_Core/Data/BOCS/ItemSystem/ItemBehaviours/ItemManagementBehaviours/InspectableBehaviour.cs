@@ -32,21 +32,21 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.ItemManagementB
             _requiresIdentification = requiresIdentification;
         }
 
-        public void Inspect()
+        public async void Inspect()
         {
             if (IsInspected)
             {
-                IOService.Output.WriteNonDialogueLine("You have already inspected this item.");
+                await IOService.Output.WriteNonDialogueLine("You have already inspected this item.");
                 return;
             }
 
-            IOService.Output.WriteNonDialogueLine(_baseDescription);
+            await IOService.Output.WriteNonDialogueLine(_baseDescription);
 
             // TODO: Implement logic to reveal hidden lore based on player actions or conditions, such as having a specific skill, item or quest completion.
 
             if (_rarity >= ItemQualities.Rare)
             {
-                IOService.Output.WriteNonDialogueLine("This item seems extremely valuable.");
+                await IOService.Output.WriteNonDialogueLine("This item seems extremely valuable.");
             }
 
             IsInspected = true;

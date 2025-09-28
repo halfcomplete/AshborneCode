@@ -24,12 +24,12 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.CombatBehaviour
             Durability = maxDurability;
         }
 
-        public void OnBreak(Player player)
+        public async void OnBreak(Player player)
         {
             // Implementation for what happens when the item breaks
             if (ParentObject is Item item)
             {
-                IOService.Output.WriteNonDialogueLine($"{item.Name} has broken!");
+                await IOService.Output.WriteNonDialogueLine($"{item.Name} has broken!");
                 player.Inventory.RemoveItem(item, 1); // Remove the item from the player's inventory
             }
         }

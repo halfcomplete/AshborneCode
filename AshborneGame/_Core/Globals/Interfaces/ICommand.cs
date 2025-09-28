@@ -6,6 +6,6 @@ namespace AshborneGame._Core.Globals.Interfaces
     {
         List<string> Names { get; }
         string Description { get; }
-        bool TryExecute(List<string> arguments, Player player);
+        Task<bool> TryExecute(List<string> arguments, Player player);
     }
 }

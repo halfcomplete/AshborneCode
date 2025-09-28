@@ -12,9 +12,9 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
             Message = message ?? throw new ArgumentNullException(nameof(message), "Log message cannot be null.");
         }
 
-        public void OnAttacked()
+        public async void OnAttacked()
         {
-            IOService.Output.WriteNonDialogueLine(Message);
+            await IOService.Output.WriteNonDialogueLine(Message);
         }
     }
 }

@@ -12,11 +12,11 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
         public override List<string> Names => ["give"];
         public override string Description => "Takes something from the player and gives it to someone / something else.";
 
-        public override bool TryExecute(List<string> args, Player player)
+        public override async Task<bool> TryExecute(List<string> args, Player player)
         {
             if (args.Count == 0)
             {
-                IOService.Output.DisplayFailMessage("Give what? Specify an item and optionally a quantity (e.g. 'give 3 gold coin').");
+                await IOService.Output.DisplayFailMessage("Give what? Specify an item and optionally a quantity (e.g. 'give 3 gold coin').");
                 return false;
             }
 
@@ -25,7 +25,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 
             if (destinationInventory == null)
             {
-                IOService.Output.DisplayFailMessage("You are not targeting a container or an NPC with an inventory.");
+                await IOService.Output.DisplayFailMessage("You are not targeting a container or an NPC with an inventory.");
                 return false;
             }
 
@@ -41,7 +41,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
                 }
                 else
                 {
-                    IOService.Output.DisplayFailMessage("Invalid amount.");
+                    await IOService.Output.DisplayFailMessage("Invalid amount.");
                     return false;
                 }
             }
@@ -50,14 +50,14 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
             {
                 if (string.IsNullOrEmpty(itemName))
                 {
-                    return GiveAllItems(player, originInventory, destinationInventory);
+                    return GiveAllItems(player, originInventory, destinationInventory).Result;
                 }
                 else
                 {
                     Item? targetItem = originInventory.GetItem(itemName);
                     if (targetItem == null)
                     {
-                        IOService.Output.DisplayFailMessage($"You cannot give {itemName} because it is not in your inventory.");
+                        await IOService.Output.DisplayFailMessage($"You cannot give {itemName} because it is not in your inventory.");
                         return false;
                     }
                     GiveAllOfAnItem(originInventory, destinationInventory, targetItem);
@@ -67,14 +67,14 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 
             if (string.IsNullOrEmpty(itemName))
             {
-                IOService.Output.DisplayFailMessage("Give what? Specify an item.");
+                await IOService.Output.DisplayFailMessage("Give what? Specify an item.");
                 return false;
             }
 
             Item? item = originInventory.GetItem(itemName);
             if (item == null)
             {
-                IOService.Output.DisplayFailMessage($"You cannot give {itemName} because it is not in your inventory.");
+                await IOService.Output.DisplayFailMessage($"You cannot give {itemName} because it is not in your inventory.");
                 return false;
             }
 
@@ -89,12 +89,12 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 
             if (availableCount < quantity)
             {
-                IOService.Output.DisplayFailMessage($"You don't have enough {itemName} to give {quantity}.");
+                await IOService.Output.DisplayFailMessage($"You don't have enough {itemName} to give {quantity}.");
                 return false;
             }
 
             originInventory.TransferItem(originInventory, destinationInventory, item, quantity);
-            IOService.Output.WriteNonDialogueLine($"Successfully gave {quantity} x {item.Name}.");
+            await IOService.Output.WriteNonDialogueLine($"Successfully gave {quantity} x {item.Name}.");
 
             ShowInventorySummary(player, player.Inventory, "Your inventory now contains:");
             ShowInventorySummary(player, destinationInventory, "The opened container / NPC now has:");
@@ -108,7 +108,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
                 return player.OpenedInventory;
 
             if (player.CurrentNPCInteraction != null &&
-                player.CurrentNPCInteraction.TryGetBehaviour<IHasInventory>(out var npcInventory))
+                player.CurrentNPCInteraction.TryGetBehaviour<IHasInventory>(out var npcInventory).Result)
             {
                 return npcInventory.Inventory;
             }
@@ -116,16 +116,16 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
             return null;
         }
 
-        private bool GiveAllItems(Player player, Inventory origin, Inventory? destination)
+        private async Task<bool> GiveAllItems(Player player, Inventory origin, Inventory? destination)
         {
             if (destination == null)
             {
-                IOService.Output.DisplayFailMessage("There is no opened container or NPC to give items to.");
+                await IOService.Output.DisplayFailMessage("There is no opened container or NPC to give items to.");
                 return false;
             }
 
             origin.TransferAllItems(origin, destination);
-            IOService.Output.WriteNonDialogueLine("You gave all your items.");
+            await IOService.Output.WriteNonDialogueLine("You gave all your items.");
 
             ShowInventorySummary(player, origin, "Your inventory is now empty.");
             ShowInventorySummary(player, destination, "The opened container / NPC now has:");

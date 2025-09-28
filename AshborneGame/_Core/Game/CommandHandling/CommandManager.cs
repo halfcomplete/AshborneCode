@@ -43,7 +43,7 @@ namespace AshborneGame._Core.Game.CommandHandling
             _commands[keywords] = command;
         }
 
-        public static bool TryExecute(string action, List<string> args, Player player)
+        public static async Task<bool> TryExecute(string action, List<string> args, Player player)
         {
             // Check sublocation custom commands first
             if (player.CurrentSublocation != null)
@@ -54,7 +54,7 @@ namespace AshborneGame._Core.Game.CommandHandling
                     args2.Insert(0, action);
                     if (string.Join(' ', args2).Equals(kvp.Key, StringComparison.OrdinalIgnoreCase))
                     {
-                        IOService.Output.WriteNonDialogueLine(kvp.Value.message.Invoke());
+                        await IOService.Output.WriteNonDialogueLine(kvp.Value.message.Invoke());
                         kvp.Value.effect?.Invoke();
                         return true;
                     }
@@ -68,7 +68,7 @@ namespace AshborneGame._Core.Game.CommandHandling
                 args2.Insert(0, action);
                 if (string.Join(' ', args2).Equals(kvp.Key, StringComparison.OrdinalIgnoreCase))
                 {
-                    IOService.Output.WriteNonDialogueLine(kvp.Value.message.Invoke());
+                    await IOService.Output.WriteNonDialogueLine(kvp.Value.message.Invoke());
                     kvp.Value.effect?.Invoke();
                     return true;
                 }
@@ -76,12 +76,12 @@ namespace AshborneGame._Core.Game.CommandHandling
 
             if (CheckIfCaughtByCommandBuckets(player, action, out string message))
             {
-                IOService.Output.WriteNonDialogueLine(message);
+                await IOService.Output.WriteNonDialogueLine(message);
                 return true;
             }
 
             ICommand command = _commands.FirstOrDefault(c => c.Key.Contains(action.ToLower())).Value;
-            if (command != null && command.TryExecute(args, player))
+            if (command != null && command.TryExecute(args, player).Result)
             {
                 return true;
             }

@@ -131,7 +131,7 @@ namespace AshborneGame._Core._Player
         /// </summary>
         /// <param name="newLocation">The sublocation to move to.</param>
         /// <exception cref="ArgumentNullException">Thrown when newLocation is null.</exception>
-        public void MoveTo(Location newLocation)
+        public async void MoveTo(Location newLocation)
         {
             if (CurrentSublocation == null)
             {
@@ -157,13 +157,13 @@ namespace AshborneGame._Core._Player
                     { "visitCount", CurrentLocation.VisitCount }
                 });
                 EventBus.Call(evt);
-                IOService.Output.DisplayDebugMessage("[MoveTo] Fired ossaneth.domain.visitcount.4 event", ConsoleMessageTypes.INFO);
+                await IOService.Output.DisplayDebugMessage("[MoveTo] Fired ossaneth.domain.visitcount.4 event", ConsoleMessageTypes.INFO);
             }
 
                 // Suppress description on the special 4th Eye Platform visit (outro) so dialogue leads
                 if (!(sceneMatch && nameMatch && visitMatch))
                 {
-                    IOService.Output.WriteNonDialogueLine(newLocation.GetDescription(this, GameContext.GameState));
+                    await IOService.Output.WriteNonDialogueLine(newLocation.GetDescription(this, GameContext.GameState));
                 }
         }
 
@@ -171,7 +171,7 @@ namespace AshborneGame._Core._Player
         /// Same as MoveTo, but prints 'You are back at {location name}.'
         /// Does NOT increment visit count (force move).
         /// </summary>
-        public void ForceMoveTo(Location newLocation)
+        public async void ForceMoveTo(Location newLocation)
         {
             if (CurrentSublocation == null)
             {
@@ -183,10 +183,10 @@ namespace AshborneGame._Core._Player
             
             // Force move does NOT increment visit count
             
-            IOService.Output.WriteNonDialogueLine($"You are back at {CurrentLocation.Name.DisplayName}.\n\n");
+            await IOService.Output.WriteNonDialogueLine($"You are back at {CurrentLocation.Name.DisplayName}.\n\n");
         }
 
-        public void MoveTo(Sublocation newSublocation)
+        public async void MoveTo(Sublocation newSublocation)
         {
             CurrentSublocation = newSublocation;
             
@@ -194,10 +194,10 @@ namespace AshborneGame._Core._Player
             CurrentSublocation.VisitCount++;
 
             // Get description AFTER incrementing visit count
-            IOService.Output.WriteNonDialogueLine(newSublocation.GetDescription(this, GameContext.GameState));
+            await IOService.Output.WriteNonDialogueLine(newSublocation.GetDescription(this, GameContext.GameState));
         }
 
-        public void MoveTo(Scene newScene)
+        public async void MoveTo(Scene newScene)
         {
             CurrentScene = newScene;
             if (OperatingSystem.IsBrowser())
@@ -206,12 +206,12 @@ namespace AshborneGame._Core._Player
                 // Instead, the scene header is displayed in the UI
                 return;
             }
-            IOService.Output.WriteNonDialogueLine(newScene.GetHeader());
+            await IOService.Output.WriteNonDialogueLine(newScene.GetHeader());
         }
 
-        public void SetupMoveTo(Location newLocation, Scene newScene, bool displayDescription = true)
+        public async void SetupMoveTo(Location newLocation, Scene newScene, bool displayDescription = true)
         {
-            IOService.Output.DisplayDebugMessage($"Set up move to location: {newLocation.Name} in scene: {newScene.DisplayName}");
+            await IOService.Output.DisplayDebugMessage($"Set up move to location: {newLocation.Name} in scene: {newScene.DisplayName}");
             CurrentScene = newScene;
             CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
             CurrentSublocation = null;
@@ -220,7 +220,7 @@ namespace AshborneGame._Core._Player
             // Setup move sets visit count to 1 (first visit)
             CurrentLocation.VisitCount = 1;
 
-            if (displayDescription) IOService.Output.WriteNonDialogueLine(CurrentLocation.GetDescription(GameContext.Player, GameContext.GameState));
+            if (displayDescription) await IOService.Output.WriteNonDialogueLine(CurrentLocation.GetDescription(GameContext.Player, GameContext.GameState));
 
             // In Blazor, don't write the scene header to the console
             // Instead, the scene header is displayed in the UI
@@ -228,14 +228,14 @@ namespace AshborneGame._Core._Player
             {
                 return;
             }
-            IOService.Output.WriteNonDialogueLine(newScene.GetHeader());
+            await IOService.Output.WriteNonDialogueLine(newScene.GetHeader());
         }
 
         /// <summary>
         /// Moves the player based on parsed input.
         /// </summary>
         /// <param name="parsedInput">The parsed input containing the direction or location to move to.</param>
-        public bool TryMoveTo(List<string> parsedInput)
+        public async Task<bool> TryMoveTo(List<string> parsedInput)
         {
             if (parsedInput == null || parsedInput.Count == 0)
             {
@@ -244,12 +244,12 @@ namespace AshborneGame._Core._Player
 
             string place = string.Join(" ", parsedInput).ToLower().Trim();
 
-            IOService.Output.DisplayDebugMessage("Move to... " + place, ConsoleMessageTypes.INFO);
+            await IOService.Output.DisplayDebugMessage("Move to... " + place, ConsoleMessageTypes.INFO);
 
             // Directional movement
             if (DirectionConstants.CardinalDirections.Contains(place))
             {
-                return TryMoveDirectionally(place);
+                return TryMoveDirectionally(place).Result;
             }
 
             // Sublocation movement
@@ -266,7 +266,7 @@ namespace AshborneGame._Core._Player
                 var location = CurrentScene.Locations.First(l => l.Name.Matches(place));
                 if (location == CurrentLocation)
                 {
-                    IOService.Output.WriteNonDialogueLine(location.GetDescription(this, GameContext.GameState));
+                    await IOService.Output.WriteNonDialogueLine(location.GetDescription(this, GameContext.GameState));
                     return true;
                 }
                 MoveTo(location);
@@ -276,12 +276,12 @@ namespace AshborneGame._Core._Player
             // Already at location/sublocation
             if (CurrentLocation.Name.Matches(place))
             {
-                IOService.Output.WriteNonDialogueLine(CurrentLocation.GetDescription(this, GameContext.GameState));
+                await IOService.Output.WriteNonDialogueLine(CurrentLocation.GetDescription(this, GameContext.GameState));
                 return true;
             }
             if (CurrentSublocation != null && CurrentSublocation.Name.Matches(place))
             {
-                IOService.Output.WriteNonDialogueLine(CurrentSublocation.GetDescription(this, GameContext.GameState));
+                await IOService.Output.WriteNonDialogueLine(CurrentSublocation.GetDescription(this, GameContext.GameState));
                 return true;
             }
 
@@ -289,7 +289,7 @@ namespace AshborneGame._Core._Player
             return TryMoveToSublocation(place);
         }
 
-        private bool TryMoveDirectionally(string direction)
+        private async Task<bool> TryMoveDirectionally(string direction)
         {
             if (CurrentSublocation != null)
             {
@@ -300,7 +300,7 @@ namespace AshborneGame._Core._Player
                     MoveTo(CurrentSublocation.Exits["back"]);
                     return true;
                 }
-                IOService.Output.DisplayFailMessage("You can't go that way from here.");
+                await IOService.Output.DisplayFailMessage("You can't go that way from here.");
                 return false;
             }
             else
@@ -312,8 +312,8 @@ namespace AshborneGame._Core._Player
                 }
                 // Provide debug info on available exits to aid troubleshooting
                 var available = string.Join(", ", CurrentLocation.Exits.Keys);
-                IOService.Output.DisplayDebugMessage($"No exit '{direction}' from {CurrentLocation.Name.DisplayName}. Available: [{available}]", ConsoleMessageTypes.WARNING);
-                IOService.Output.DisplayFailMessage("You can't go that way.");
+                await IOService.Output.DisplayDebugMessage($"No exit '{direction}' from {CurrentLocation.Name.DisplayName}. Available: [{available}]", ConsoleMessageTypes.WARNING);
+                await IOService.Output.DisplayFailMessage("You can't go that way.");
                 return false;
             }
         }
@@ -333,11 +333,11 @@ namespace AshborneGame._Core._Player
             return false;
         }
 
-        public void EquipItem(Item item, string slot)
+        public async void EquipItem(Item item, string slot)
         {
-            if (item.TryGetBehaviour<IEquippable>(out var equippableBehaviour) && equippableBehaviour.EquipInfo.IsEquippable)
+            if (item.TryGetBehaviour<IEquippable>(out var equippableBehaviour).Result && equippableBehaviour.EquipInfo.IsEquippable)
             {
-                IOService.Output.DisplayDebugMessage($"Attempting to equip {item} on player's {slot}.", ConsoleMessageTypes.INFO);
+                await IOService.Output.DisplayDebugMessage($"Attempting to equip {item} on player's {slot}.", ConsoleMessageTypes.INFO);
                 if (!equippableBehaviour.EquipInfo.BodyParts.Contains(slot.ToLower()))
                 {
                     throw new ArgumentException($"Item cannot be equipped in the {slot} slot. Valid slots are: {string.Join(", ", equippableBehaviour.EquipInfo.BodyParts)}");
@@ -346,17 +346,17 @@ namespace AshborneGame._Core._Player
                 {
                     // If the slot is already occupied, unequip the current item
                     UnequipItem(EquippedItems[slot.ToLower()]!, slot);
-                    IOService.Output.WriteNonDialogueLine($"You unequip the {_item.Name} from your {slot}.");
+                    await IOService.Output.WriteNonDialogueLine($"You unequip the {_item.Name} from your {slot}.");
 
                     // Then equip the item in the specified slot
                     EquippedItems[slot.ToLower()] = item;
-                    IOService.Output.WriteNonDialogueLine($"You equip the {item.Name} on your {slot}.");
+                    await IOService.Output.WriteNonDialogueLine($"You equip the {item.Name} on your {slot}.");
                 }
                 else
                 {
                     // Equip the item in the specified slot
                     EquippedItems[slot.ToLower()] = item;
-                    IOService.Output.WriteNonDialogueLine($"You equip the {item.Name} on your {slot}.");
+                    await IOService.Output.WriteNonDialogueLine($"You equip the {item.Name} on your {slot}.");
                 }
             }
             else
@@ -374,29 +374,29 @@ namespace AshborneGame._Core._Player
             EquippedItems[slot.ToLower()] = null;
         }
 
-        public void Attack(NPC npc)
+        public async void Attack(NPC npc)
         {
-            if (npc.TryGetBehaviour<ICanBeAttacked>(out var attackableBehaviour))
+            if (npc.TryGetBehaviour<ICanBeAttacked>(out var attackableBehaviour).Result)
             {
                 float damage = 0;
                 var (baseStrength, bonusStrength, totalStrength) = Stats.GetStat(PlayerStatType.Strength);
-                if (EquippedItems.TryGetValue("hand", out var weapon) && weapon != null && weapon.TryGetBehaviour<ICanDamage>(out var damageBehaviour))
+                if (EquippedItems.TryGetValue("hand", out var weapon) && weapon != null && weapon.TryGetBehaviour<ICanDamage>(out var damageBehaviour).Result)
                 {
                     damage = (float)(damageBehaviour.BaseDamage + totalStrength * 0.5); // Example damage calculation
-                    IOService.Output.WriteNonDialogueLine($"You attack {npc.Name} with {weapon.Name} for {damage} damage.");
+                    await IOService.Output.WriteNonDialogueLine($"You attack {npc.Name} with {weapon.Name} for {damage} damage.");
                 }
                 else
                 {
                     // If no weapon is equipped, use bare hands
                     damage = totalStrength;
-                    IOService.Output.WriteNonDialogueLine($"You attack {npc.Name} with your bare hands for {damage} damage.");
+                    await IOService.Output.WriteNonDialogueLine($"You attack {npc.Name} with your bare hands for {damage} damage.");
                 }
                 attackableBehaviour.Attacked(damage);
-                IOService.Output.WriteNonDialogueLine($"You attack {npc.Name} for {damage} damage. {npc.Name} now has {attackableBehaviour.Health} health left.");
+                await IOService.Output.WriteNonDialogueLine($"You attack {npc.Name} for {damage} damage. {npc.Name} now has {attackableBehaviour.Health} health left.");
             }
             else
             {
-                IOService.Output.WriteNonDialogueLine($"{npc.Name} cannot be attacked.");
+                await IOService.Output.WriteNonDialogueLine($"{npc.Name} cannot be attacked.");
             }
         }
 
@@ -405,7 +405,7 @@ namespace AshborneGame._Core._Player
         /// </summary>
         /// <param name="variableName">The name of the variable to set.</param>
         /// <param name="value">The value to set.</param>
-        public void SetVariable(string variableName, int value)
+        public async void SetVariable(string variableName, int value)
         {
             switch (variableName.ToLower())
             {
@@ -413,25 +413,25 @@ namespace AshborneGame._Core._Player
                     Visibility = value;
                     break;
                 default:
-                    IOService.Output.WriteNonDialogueLine($"Variable '{variableName}' is not recognized.");
+                    await IOService.Output.WriteNonDialogueLine($"Variable '{variableName}' is not recognized.");
                     break;
             }
         }
 
-        public void ChangeHealth(int amount)
+        public async void ChangeHealth(int amount)
         {
             (int baseHealth, _, _) = Stats.GetStat(PlayerStatType.Health);
             (_, _, int totalMaxHealth) = Stats.GetStat(PlayerStatType.MaxHealth);
             Stats.SetBase(PlayerStatType.Health, Math.Clamp(baseHealth + amount, 0, totalMaxHealth));
-            IOService.Output.WriteNonDialogueLine($"You have been healed by {amount} points.");
+            await IOService.Output.WriteNonDialogueLine($"You have been healed by {amount} points.");
         }
 
-        public void SetHealth(int amount)
+        public async void SetHealth(int amount)
         {
             (int baseHealth, _, _) = Stats.GetStat(PlayerStatType.Health);
             (_, _, int totalMaxHealth) = Stats.GetStat(PlayerStatType.MaxHealth);
             Stats.SetBase(PlayerStatType.Health, Math.Clamp(baseHealth, 0, totalMaxHealth));
-            IOService.Output.WriteNonDialogueLine($"Your health has been set to {amount} points.");
+            await IOService.Output.WriteNonDialogueLine($"Your health has been set to {amount} points.");
         }
     }
 }

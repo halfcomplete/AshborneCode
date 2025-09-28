@@ -12,7 +12,7 @@ public class OnTurnStartAttackPlayerComponent : ICanAttackPlayer
     public Item Weapon { get; set; }
     public int BaseAttackPower { get; set; }
 
-    public int AttackPower => BaseAttackPower + GetWeaponAttackPower();
+    public int AttackPower => BaseAttackPower + GetWeaponAttackPower().Result;
     public int AttackDamage => AttackPower;
 
     public OnTurnStartAttackPlayerComponent(Item weapon, int baseAttackPower)
@@ -21,18 +21,18 @@ public class OnTurnStartAttackPlayerComponent : ICanAttackPlayer
         BaseAttackPower = baseAttackPower;
     }
 
-    private int GetWeaponAttackPower()
+    private Task<int> GetWeaponAttackPower()
     {
-        if (Weapon.TryGetBehaviour<ICanDamage>(out var component))
+        if (Weapon.TryGetBehaviour<ICanDamage>(out var component).Result)
         {
-            return component.BaseDamage;
+            return Task.FromResult(component.BaseDamage);
         }
-        return 0;
+        return Task.FromResult(0);
     }
 
-    public void AttackPlayer(Player player)
+    public async void AttackPlayer(Player player)
     {
         player.ChangeHealth(-AttackDamage);
-        IOService.Output.WriteNonDialogueLine($"The enemy attacks you with {Weapon.Name} for {AttackDamage} damage. You now have {player.Stats.GetStat(PlayerStatType.Health)} HP left.");
+        await IOService.Output.WriteNonDialogueLine($"The enemy attacks you with {Weapon.Name} for {AttackDamage} damage. You now have {player.Stats.GetStat(PlayerStatType.Health)} HP left.");
     }
 }

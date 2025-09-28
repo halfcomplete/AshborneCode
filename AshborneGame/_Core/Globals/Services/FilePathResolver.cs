@@ -17,7 +17,7 @@ namespace AshborneGame._Core.Globals.Services
         /// <returns></returns>
         /// <exception cref="ArgumentException">Thrown when the provided file name is null or empty.</exception>
         /// <exception cref="FileNotFoundException">Thrown when the provided file name does not exist in the calculated path.</exception>
-        public static string FromDialogue(string scriptFilename)
+        public static async Task<string> FromDialogue(string scriptFilename)
         {
             if (string.IsNullOrWhiteSpace(scriptFilename))
                 throw new ArgumentException("Dialogue filename cannot be null or empty.");
@@ -38,7 +38,7 @@ namespace AshborneGame._Core.Globals.Services
             {
                 // Use relative web path (not /absolute!)
                 string webPath = $"Dialogue/{actFolder}/{sceneFolder}/{fullFileName}";
-                IOService.Output.DisplayDebugMessage($"[WASM] Using web path: {webPath}", ConsoleMessageTypes.INFO);
+                await IOService.Output.DisplayDebugMessage($"[WASM] Using web path: {webPath}", ConsoleMessageTypes.INFO);
                 return webPath;
             }
 
@@ -47,11 +47,11 @@ namespace AshborneGame._Core.Globals.Services
 
             if (!File.Exists(fullPath))
             {
-                IOService.Output.DisplayDebugMessage($"[LOCAL] File not found at: {fullPath}", ConsoleMessageTypes.ERROR);
+                await IOService.Output.DisplayDebugMessage($"[LOCAL] File not found at: {fullPath}", ConsoleMessageTypes.ERROR);
                 throw new FileNotFoundException($"[LOCAL] Dialogue file missing: {fullPath}");
             }
 
-            IOService.Output.DisplayDebugMessage($"[LOCAL] Resolved file path: {fullPath}", ConsoleMessageTypes.INFO);
+            await IOService.Output.DisplayDebugMessage($"[LOCAL] Resolved file path: {fullPath}", ConsoleMessageTypes.INFO);
             return fullPath;
         }
     }

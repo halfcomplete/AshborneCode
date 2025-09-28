@@ -12,11 +12,11 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         public List<string> Names { get; } = ["use"];
         public string Description { get; } = "Use an item from your inventory.";
 
-        public bool TryExecute(List<string> args, Player player)
+        public async Task<bool> TryExecute(List<string> args, Player player)
         {
             if (args.Count == 0)
             {
-                IOService.Output.DisplayFailMessage("Usage: use <item_name>");
+                await IOService.Output.DisplayFailMessage("Usage: use <item_name>");
                 return false;
             }
 
@@ -25,23 +25,23 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 
             if (item == null)
             {
-                IOService.Output.DisplayFailMessage($"You do not have an item named '{itemName}' in your inventory.");
+                await IOService.Output.DisplayFailMessage($"You do not have an item named '{itemName}' in your inventory.");
                 return false;
             }
 
             if (!item.Behaviours.ContainsKey(typeof(IUsable)))
             {
-                IOService.Output.DisplayFailMessage($"The item '{item.Name}' cannot be used.");
+                await IOService.Output.DisplayFailMessage($"The item '{item.Name}' cannot be used.");
                 return false;
             }
 
-            IOService.Output.DisplayDebugMessage($"Parsed Input for 'use': {string.Join(" ", args)}", ConsoleMessageTypes.INFO); // Debugging output
-            IOService.Output.DisplayDebugMessage($"Using item: {item.Name}", ConsoleMessageTypes.INFO); // Debugging output
+            await IOService.Output.DisplayDebugMessage($"Parsed Input for 'use': {string.Join(" ", args)}", ConsoleMessageTypes.INFO); // Debugging output
+            await IOService.Output.DisplayDebugMessage($"Using item: {item.Name}", ConsoleMessageTypes.INFO); // Debugging output
 
             IUsable usableItem = (IUsable)item.Behaviours[typeof(IUsable)][0];
             usableItem.Use(player);
 
-            IOService.Output.WriteNonDialogueLine($"You used {item.Name}.");
+            await IOService.Output.WriteNonDialogueLine($"You used {item.Name}.");
 
             return true;
         }

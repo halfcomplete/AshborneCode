@@ -21,7 +21,7 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
             IsOpen = isOpenInitially;
         }
 
-        public void Interact(ObjectInteractionTypes _interaction, Player player)
+        public async void Interact(ObjectInteractionTypes _interaction, Player player)
         {
             switch (_interaction)
             {
@@ -32,30 +32,30 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
                     Close(player);
                     break;
                 default:
-                    IOService.Output.WriteNonDialogueLine("Invalid interaction type for OpenCloseBehaviour.");
+                    await IOService.Output.WriteNonDialogueLine("Invalid interaction type for OpenCloseBehaviour.");
                     break;
             }
         }
 
-        private void Open(Player player)
+        private async void Open(Player player)
         {
             var behaviours = ParentObject.GetAllBehaviours<IInteractable>();
 
             if (behaviours.FirstOrDefault(s => s.GetType() == typeof(LockUnlockBehaviour)) is LockUnlockBehaviour lockBehaviour && lockBehaviour.IsLocked)
             {
-                IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is locked. You need to unlock it first.");
+                await IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is locked. You need to unlock it first.");
                 return;
             }
 
             if (IsOpen)
             {
-                IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is already open.");
+                await IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is already open.");
                 return;
             }
 
             IsOpen = true;
-            IOService.Output.DisplayDebugMessage($"Behaviours available for {ParentObject.Name}: {string.Join(", ", behaviours.Select(b => b.GetType().Name))}", ConsoleMessageTypes.INFO);
-            IOService.Output.WriteNonDialogueLine($"You open the {ParentObject.Name}.");
+            await IOService.Output.DisplayDebugMessage($"Behaviours available for {ParentObject.Name}: {string.Join(", ", behaviours.Select(b => b.GetType().Name))}", ConsoleMessageTypes.INFO);
+            await IOService.Output.WriteNonDialogueLine($"You open the {ParentObject.Name}.");
             
             if (ParentObject.GetAllBehaviours<IHasInventory>().FirstOrDefault(s => s.GetType() == typeof(ContainerBehaviour)) is ContainerBehaviour containerBehaviour)
             {
@@ -63,33 +63,33 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
                 (bool isEmpty, string contents) = containerBehaviour.Inventory.GetInventoryContents(player: null);
                 if (!isEmpty)
                 {
-                    IOService.Output.WriteNonDialogueLine($"Inside the {ParentObject.Name} you see:");
-                    IOService.Output.WriteNonDialogueLine(contents);
+                    await IOService.Output.WriteNonDialogueLine($"Inside the {ParentObject.Name} you see:");
+                    await IOService.Output.WriteNonDialogueLine(contents);
                 }
                 else
                 {
-                    IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is empty.");
+                    await IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is empty.");
                 }
             }
 
-            if (ParentObject.TryGetBehaviour<ExitToNewLocationBehaviour>(out var exitToNewLocationBehaviour) && player.CurrentSublocation != null)
+            if (ParentObject.TryGetBehaviour<ExitToNewLocationBehaviour>(out var exitToNewLocationBehaviour).Result && player.CurrentSublocation != null)
             {
                 ILocation sublocation = player.CurrentSublocation;
                 sublocation.AddExit("through", exitToNewLocationBehaviour.Location);
             }
         }
 
-        private void Close(Player player)
+        private async void Close(Player player)
         {
             if (!IsOpen)
             {
-                IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is already closed.");
+                await IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is already closed.");
                 return;
             }
             
             IsOpen = false;
             player.OpenedInventory = null;
-            IOService.Output.WriteNonDialogueLine($"You close the {ParentObject.Name}.");
+            await IOService.Output.WriteNonDialogueLine($"You close the {ParentObject.Name}.");
         }
     }
 }

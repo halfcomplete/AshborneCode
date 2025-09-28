@@ -89,7 +89,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
             }
             else if (Greeting != null)
             {
-                IOService.Output.Write($"{Name}: {Greeting}");
+                await IOService.Output.Write($"{Name}: {Greeting}");
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
+using System.Runtime.CompilerServices;
 
 namespace AshborneGame._Core.Data.BOCS;
 
@@ -19,7 +20,7 @@ public abstract class BOCSGameObject
     public Dictionary<Type, List<object>> Behaviours { get; private set; } = new();
 
     #region Behaviours
-    public void AddBehaviour(Type type, object behaviour)
+    public async void AddBehaviour(Type type, object behaviour)
     {
         if (type == null || behaviour == null)
             throw new ArgumentNullException();
@@ -45,31 +46,26 @@ public abstract class BOCSGameObject
 
         if (type == typeof(IUsable))
         {
-            IOService.Output.DisplayDebugMessage($"{Name} is now usable.", ConsoleMessageTypes.ERROR);
+            await IOService.Output.DisplayDebugMessage($"{Name} is now usable.", ConsoleMessageTypes.ERROR);
         }
 
-        IOService.Output.DisplayDebugMessage($"Added behaviour of type {type.FullName} to {Name}.", ConsoleMessageTypes.INFO);
-        IOService.Output.DisplayDebugMessage($"All registered behaviours for {Name}: {string.Join(", ", Behaviours.Keys.Select(t => t.Name))}", ConsoleMessageTypes.INFO);
+        await IOService.Output.DisplayDebugMessage($"Added behaviour of type {type.FullName} to {Name}.", ConsoleMessageTypes.INFO);
+        await IOService.Output.DisplayDebugMessage($"All registered behaviours for {Name}: {string.Join(", ", Behaviours.Keys.Select(t => t.Name))}", ConsoleMessageTypes.INFO);
         foreach (var b in Behaviours)
         {
-            IOService.Output.DisplayDebugMessage($"- {b.GetType().Name}: {string.Join(", ", b)}", ConsoleMessageTypes.INFO);
+            await IOService.Output.DisplayDebugMessage($"- {b.GetType().Name}: {string.Join(", ", b)}", ConsoleMessageTypes.INFO);
         }
     }
 
     public void RemoveBehaviour<T>() where T : class => Behaviours.Remove(typeof(T));
 
-    public bool TryGetBehaviour<T>(out T behaviour) where T : class
+    public Task<bool> TryGetBehaviour<T>(out T behaviour) where T : class
     {
-        IOService.Output.DisplayDebugMessage($"Trying to get behaviour of type {typeof(T).FullName} from {Name}.", ConsoleMessageTypes.INFO);
         if (Behaviours.TryGetValue(typeof(T), out var behaviours) && behaviours.Count > 0 && behaviours[0] is T castedBehaviour)
         {
-            IOService.Output.DisplayDebugMessage($"Successfully retrieved behaviour of type {typeof(T).Name} from {Name}.", ConsoleMessageTypes.INFO);
             behaviour = castedBehaviour;
             return true;
         }
-        IOService.Output.DisplayDebugMessage($"Failed to retrieve behaviour of type {typeof(T).Name} from {Name}. This could be correct.", ConsoleMessageTypes.WARNING);
-        IOService.Output.DisplayDebugMessage($"Current behaviours count: {Behaviours.Count}", ConsoleMessageTypes.INFO);
-        IOService.Output.DisplayDebugMessage($"Available behaviours: {string.Join(", ", Behaviours.Keys.Select(k => k.Name))}", ConsoleMessageTypes.INFO);
         behaviour = null!;
         return false;
     }

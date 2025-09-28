@@ -27,19 +27,19 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.BaseCommands
 			return 0; // Invalid
 		}
 
-		protected void ShowInventorySummary(Player player, Inventory inventory, string header)
+		protected async void ShowInventorySummary(Player player, Inventory inventory, string header)
 		{
-			IOService.Output.WriteNonDialogueLine(header);
+			await IOService.Output.WriteNonDialogueLine(header);
 			var (isEmpty, contents) = inventory.GetInventoryContents(player);
-			IOService.Output.WriteNonDialogueLine(isEmpty ? "Nothing." : header);
+			await IOService.Output.WriteNonDialogueLine(isEmpty ? "Nothing." : header);
 			if (!isEmpty)
 			{
-				IOService.Output.WriteNonDialogueLine(contents);
+				await IOService.Output.WriteNonDialogueLine(contents);
 			}
 		}
 
 		public abstract List<string> Names { get; }
 		public abstract string Description { get; }
-		public abstract bool TryExecute(List<string> args, Player player);
+		public abstract Task<bool> TryExecute(List<string> args, Player player);
 	}
 }

@@ -585,22 +585,6 @@
                 await InvokeAsync(StateHasChanged);
                 continue;
             }
-            // Handle deferred external function marker
-            if (line.StartsWith("__EXTERNAL__"))
-            {
-                // Format: __EXTERNAL__funcName:callId:arg1:arg2:...
-                var parts = line.Substring("__EXTERNAL__".Length).Split(':');
-                if (parts.Length >= 3)
-                {
-                    var funcName = parts[0];
-                    var callId = parts[1];
-                    var args = parts.Skip(2).ToArray();
-                    // Call InkRunner to resolve and update Ink variable
-                    GameContext.InkRunner?.ResolveExternalFunction(funcName, callId, args);
-                    // Do not display marker line
-                    continue;
-                }
-            }
             if (line.Contains("__NL__"))
             {
                 Console.WriteLine("__NL__ marker encountered.");
@@ -661,7 +645,7 @@
                 // Check if this is a proper dialogue choice line
                 if (bracketEnd > 0 && int.TryParse(line.Substring(1, bracketEnd - 1), out int choiceNumber))
                 {
-                    IOService.Output.DisplayDebugMessage($"[DEBUG] Detected dialogue choice in line: {line}");
+                    await IOService.Output.DisplayDebugMessage($"[DEBUG] Detected dialogue choice in line: {line}");
                     string choiceText = line.Substring(bracketEnd + 1).Trim();
                     if (!string.IsNullOrWhiteSpace(choiceText))
                     {
@@ -676,9 +660,9 @@
                     {
                         // We are currently processing the last choice, so start the silent timer
                         choiceText = string.Empty;
-                        IOService.Output.DisplayDebugMessage("Silent path is set and wait > 0, starting silent timer UI.");
+                        await IOService.Output.DisplayDebugMessage("Silent path is set and wait > 0, starting silent timer UI.");
                         StartSilentTimerUI(GameContext.InkRunner.SilentPathWait);
-                        IOService.Output.DisplayDebugMessage("Silent path is set and wait > 0, starting silent timer UI.");
+                        await IOService.Output.DisplayDebugMessage("Silent path is set and wait > 0, starting silent timer UI.");
                         Task<int> playerInputTask = IOService.Input.GetChoiceInputAsync(choiceNumber);
                         Task silentTimerTask;
                         CancellationTokenSource? silentCts = null;
@@ -693,37 +677,37 @@
                             silentTimerTask = Task.Delay(-1);
                         }
 
-                        IOService.Output.DisplayDebugMessage($"Silent Timer Task set to delay for {GameContext.InkRunner.SilentPathWait} ms at {DateTime.Now}.");
+                        await IOService.Output.DisplayDebugMessage($"Silent Timer Task set to delay for {GameContext.InkRunner.SilentPathWait} ms at {DateTime.Now}.");
 
                         var completed = await Task.WhenAny(playerInputTask, silentTimerTask);
                         GameContext.InkRunner.CancelExternalChoiceAwait();
                         StopSilentTimerUI();
                         if (completed == playerInputTask)
                         {
-                            IOService.Output.DisplayDebugMessage($"Player made a choice.");
+                            await IOService.Output.DisplayDebugMessage($"Player made a choice.");
                             // Player made a choice
                             silentCts?.Cancel();
-                            IOService.Output.DisplayDebugMessage($"silentCts cancelled.");
+                            await IOService.Output.DisplayDebugMessage($"silentCts cancelled.");
                             await GameContext.InkRunner.StopSilentTimer();
-                            IOService.Output.DisplayDebugMessage($"Silent Timer stopped.");
+                            await IOService.Output.DisplayDebugMessage($"Silent Timer stopped.");
                             await GameContext.InkRunner.ResetSilentPath();
-                            IOService.Output.DisplayDebugMessage($"Silent Path reset.");
+                            await IOService.Output.DisplayDebugMessage($"Silent Path reset.");
                             int choice = playerInputTask.Result;
-                            IOService.Output.DisplayDebugMessage($"[DEBUG] Home.razor: Choice {choice} selected at {DateTime.Now}");
+                            await IOService.Output.DisplayDebugMessage($"[DEBUG] Home.razor: Choice {choice} selected at {DateTime.Now}");
                             if (GameContext.InkRunner.Story.currentChoices.Count > 0 && choice > 0 && choice <= GameContext.InkRunner.Story.currentChoices.Count)
                             {
                                 GameContext.InkRunner.Story.ChooseChoiceIndex(choice - 1);
                             }
                             else
                             {
-                                IOService.Output.DisplayDebugMessage("[DEBUG] InkRunner: Invalid choice or story finished after choice selection. Skipping.");
+                                await IOService.Output.DisplayDebugMessage("[DEBUG] InkRunner: Invalid choice or story finished after choice selection. Skipping.");
                                 return;
                             }
                         }
                         else if (completed == silentTimerTask && !string.IsNullOrWhiteSpace(GameContext.InkRunner.CurrentSilentPath))
                         {
                             // Silent timer finished first: jump to silent path in same loop
-                            IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Silent timer triggered, jumping to silent path {GameContext.InkRunner.CurrentSilentPath} at {DateTime.Now}");
+                            await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Silent timer triggered, jumping to silent path {GameContext.InkRunner.CurrentSilentPath} at {DateTime.Now}");
                             GameContext.InkRunner.Story.ChoosePathString(GameContext.InkRunner.CurrentSilentPath);
                             await GameContext.InkRunner.ResetSilentPath();
                         }
@@ -972,14 +956,14 @@
 
     private async Task<int> GetDialogueChoice(int choiceCount)
     {
-        IOService.Output.DisplayDebugMessage($"[DEBUG] GetDialogueChoice called with count={choiceCount} at {DateTime.Now}, isInDialogue={isInDialogue}");
+        await IOService.Output.DisplayDebugMessage($"[DEBUG] GetDialogueChoice called with count={choiceCount} at {DateTime.Now}, isInDialogue={isInDialogue}");
         choiceCompletionSource = new TaskCompletionSource<int>();
 
-        IOService.Output.DisplayDebugMessage("Waiting for choiceCompletionSource.");
+        await IOService.Output.DisplayDebugMessage("Waiting for choiceCompletionSource.");
         int choice = await choiceCompletionSource.Task;
-        IOService.Output.DisplayDebugMessage("Choice number selected: " + choice);
+        await IOService.Output.DisplayDebugMessage("Choice number selected: " + choice);
         dialogueChoices.Clear();
-        IOService.Output.DisplayDebugMessage("Dialogue choices cleared.");
+        await IOService.Output.DisplayDebugMessage("Dialogue choices cleared.");
         await InvokeAsync(StateHasChanged);
 
         // Defensive: If the story is finished after the choice, do not return a choice
@@ -988,7 +972,7 @@
              !GameContext.InkRunner.Story.canContinue && 
              (GameContext.InkRunner.Story.currentChoices == null || GameContext.InkRunner.Story.currentChoices.Count == 0)))
         {
-            IOService.Output.DisplayDebugMessage("[DEBUG] GetDialogueChoice: Story is finished after waiting, not returning a choice.");
+            await IOService.Output.DisplayDebugMessage("[DEBUG] GetDialogueChoice: Story is finished after waiting, not returning a choice.");
             return -1;
         }
 
@@ -997,7 +981,7 @@
 
     private async Task SelectDialogueChoice(int choice)
     {
-        IOService.Output.DisplayDebugMessage("Select Dialogue Choice called with choice number: " + choice);
+        await IOService.Output.DisplayDebugMessage("Select Dialogue Choice called with choice number: " + choice);
         choiceCompletionSource?.SetResult(choice);
         await Task.Delay(20);
         choiceCompletionSource = new TaskCompletionSource<int>();
@@ -1030,24 +1014,24 @@
             }
             try
             {
-                IOService.Output.WriteNonDialogueLine($"> {userInput}");
+                await IOService.Output.WriteNonDialogueLine($"> {userInput}");
                 string command = userInput.Trim();
                 #if DEBUG
-                IOService.Output.DisplayDebugMessage($"[DEBUG] Executing command: '{command}'");
-                IOService.Output.DisplayDebugMessage($"[DEBUG] Player location: {GameContext.Player.CurrentLocation.Name}");
-                IOService.Output.DisplayDebugMessage($"[DEBUG] Player sublocation: {(GameContext.Player.CurrentSublocation?.Name.ReferenceName ?? "None")}");
-                IOService.Output.DisplayDebugMessage($"[DEBUG] Sublocation object: {(GameContext.Player.CurrentSublocation?.FocusObject?.GetType().Name ?? "None")}");
+                await IOService.Output.DisplayDebugMessage($"[DEBUG] Executing command: '{command}'");
+                await IOService.Output.DisplayDebugMessage($"[DEBUG] Player location: {GameContext.Player.CurrentLocation.Name}");
+                await IOService.Output.DisplayDebugMessage($"[DEBUG] Player sublocation: {(GameContext.Player.CurrentSublocation?.Name.ReferenceName ?? "None")}");
+                await IOService.Output.DisplayDebugMessage($"[DEBUG] Sublocation object: {(GameContext.Player.CurrentSublocation?.FocusObject?.GetType().Name ?? "None")}");
                 #endif
                 engine.ReceiveCommand(command);
                 #if DEBUG
-                IOService.Output.DisplayDebugMessage($"[DEBUG] Command execution completed");
+                await IOService.Output.DisplayDebugMessage($"[DEBUG] Command execution completed");
                 #endif
             }
             catch (Exception ex)
             {
                 #if DEBUG
-                IOService.Output.DisplayDebugMessage($"[ERROR] Command execution failed: {ex.Message}");
-                IOService.Output.DisplayDebugMessage($"[ERROR] Stack trace: {ex.StackTrace}");
+                await IOService.Output.DisplayDebugMessage($"[ERROR] Command execution failed: {ex.Message}");
+                await IOService.Output.DisplayDebugMessage($"[ERROR] Stack trace: {ex.StackTrace}");
                 #endif
             }
             finally
@@ -1069,7 +1053,7 @@
         }
         catch (Exception ex)
         {
-            IOService.Output.DisplayDebugMessage($"\n[ERROR] JS interop failed: {ex.Message}\n");
+            await IOService.Output.DisplayDebugMessage($"\n[ERROR] JS interop failed: {ex.Message}\n");
             await InvokeAsync(StateHasChanged);
         }
     }

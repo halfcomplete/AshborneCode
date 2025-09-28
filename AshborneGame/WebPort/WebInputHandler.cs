@@ -28,9 +28,9 @@ namespace AshborneGame.WebPort
         }
 
         // Legacy sync methods for compatibility
-        public string GetPlayerInput(string prompt = "What will you say?")
+        public Task<string> GetPlayerInput(string prompt = "What will you say?")
         {
-            return GetPlayerInputAsync(prompt).GetAwaiter().GetResult();
+            return GetPlayerInputAsync(prompt);
         }
         private string ParseNameInput(string input)
         {
@@ -53,9 +53,9 @@ namespace AshborneGame.WebPort
             return words.Length > 1 ? words.Last() : input.Trim();
         }
 
-        public int GetChoiceInput(int choiceCount)
+        public Task<int> GetChoiceInput(int choiceCount)
         {
-            return GetChoiceInputAsync(choiceCount).GetAwaiter().GetResult();
+            return GetChoiceInputAsync(choiceCount);
         }
     }
 }

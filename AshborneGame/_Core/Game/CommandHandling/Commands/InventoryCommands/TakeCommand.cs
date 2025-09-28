@@ -12,11 +12,11 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
         public override List<string> Names => ["take"];
         public override string Description => "Takes an item from an object or NPC.";
 
-        public override bool TryExecute(List<string> args, Player player)
+        public override async Task<bool> TryExecute(List<string> args, Player player)
         {
             if (args.Count == 0)
             {
-                IOService.Output.DisplayFailMessage("Take what? Specify an item and optionally a quantity (e.g. 'take 2 gold coin').");
+                await IOService.Output.DisplayFailMessage("Take what? Specify an item and optionally a quantity (e.g. 'take 2 gold coin').");
                 return false;
             }
 
@@ -26,7 +26,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 
             if (originInventory == null)
             {
-                IOService.Output.DisplayFailMessage("There is no open container or NPC inventory to take items from.");
+                await IOService.Output.DisplayFailMessage("There is no open container or NPC inventory to take items from.");
                 return false;
             }
 
@@ -41,7 +41,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
                 }
                 else
                 {
-                    IOService.Output.DisplayFailMessage("Invalid amount.");
+                    await IOService.Output.DisplayFailMessage("Invalid amount.");
                     return false;
                 }
                 
@@ -59,7 +59,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
                     Item? targetItem = originInventory.GetItem(itemName);
                     if (targetItem == null)
                     {
-                        IOService.Output.DisplayFailMessage($"You cannot take {itemName} because it is not there.");
+                        await IOService.Output.DisplayFailMessage($"You cannot take {itemName} because it is not there.");
                         return false;
                     }
 
@@ -71,14 +71,14 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 
             if (string.IsNullOrEmpty(itemName))
             {
-                IOService.Output.DisplayFailMessage("Take what? Specify an item.");
+                await IOService.Output.DisplayFailMessage("Take what? Specify an item.");
                 return false;
             }
 
             Item? item = originInventory.GetItem(itemName);
             if (item == null)
             {
-                IOService.Output.DisplayFailMessage($"You cannot take {itemName} because it is not there.");
+                await IOService.Output.DisplayFailMessage($"You cannot take {itemName} because it is not there.");
                 return false;
             }
 
@@ -93,12 +93,12 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 
             if (availableCount < quantity)
             {
-                IOService.Output.DisplayFailMessage($"There are not enough {itemName} to take {quantity}.");
+                await IOService.Output.DisplayFailMessage($"There are not enough {itemName} to take {quantity}.");
                 return false;
             }
 
             originInventory.TransferItem(originInventory, destinationInventory, item, quantity);
-            IOService.Output.WriteNonDialogueLine($"Successfully took {quantity} x {item.Name}.");
+            await IOService.Output.WriteNonDialogueLine($"Successfully took {quantity} x {item.Name}.");
 
             ShowInventorySummary(player, player.Inventory, "Your inventory now contains:");
             ShowInventorySummary(player, originInventory, "The container / NPC now has:");
@@ -112,7 +112,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
                 return player.OpenedInventory;
 
             if (player.CurrentNPCInteraction != null &&
-                player.CurrentNPCInteraction.TryGetBehaviour<IHasInventory>(out var npcInventory))
+                player.CurrentNPCInteraction.TryGetBehaviour<IHasInventory>(out var npcInventory).Result)
             {
                 return npcInventory.Inventory;
             }
@@ -120,10 +120,10 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
             return null;
         }
 
-        private void TakeAllItems(Player player, Inventory origin, Inventory destination)
+        private async void TakeAllItems(Player player, Inventory origin, Inventory destination)
         {
             origin.TransferAllItems(origin, destination);
-            IOService.Output.WriteNonDialogueLine("You took all available items.");
+            await IOService.Output.WriteNonDialogueLine("You took all available items.");
 
             ShowInventorySummary(player, destination, "Your inventory now contains:");
             ShowInventorySummary(player, origin, "The container / NPC now has:");

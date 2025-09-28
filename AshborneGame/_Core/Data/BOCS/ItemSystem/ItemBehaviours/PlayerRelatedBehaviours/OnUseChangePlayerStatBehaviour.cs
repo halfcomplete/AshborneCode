@@ -26,9 +26,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
             StatType = statType;
         }
 
-        public void OnUse(Player player)
+        public async void OnUse(Player player)
         {
-            IOService.Output.WriteNonDialogueLine($"You use the item to change your {StatType} by {ChangeAmount}.");
+            await IOService.Output.WriteNonDialogueLine($"You use the item to change your {StatType} by {ChangeAmount}.");
 
             switch (StatType)
             {
@@ -39,7 +39,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
                     throw new ArgumentOutOfRangeException(nameof(StatType), $"Unsupported stat type: {StatType}");
             }
 
-            IOService.Output.WriteNonDialogueLine($"You now have {player.Stats.GetStat(PlayerStatType.Health)} HP.");
+            await IOService.Output.WriteNonDialogueLine($"You now have {player.Stats.GetStat(PlayerStatType.Health)} HP.");
         }
 
         public override OnUseChangePlayerStatBehaviour DeepClone()
