@@ -160,11 +160,11 @@ namespace AshborneGame._Core._Player
                 await IOService.Output.DisplayDebugMessage("[MoveTo] Fired ossaneth.domain.visitcount.4 event", ConsoleMessageTypes.INFO);
             }
 
-                // Suppress description on the special 4th Eye Platform visit (outro) so dialogue leads
-                if (!(sceneMatch && nameMatch && visitMatch))
-                {
-                    await IOService.Output.WriteNonDialogueLine(newLocation.GetDescription(this, GameContext.GameState));
-                }
+            // Suppress description on the special 4th Eye Platform visit (outro) so dialogue leads
+            if (!(sceneMatch && nameMatch && visitMatch))
+            {
+                await IOService.Output.WriteNonDialogueLine(newLocation.GetDescription(this, GameContext.GameState));
+            }
         }
 
         /// <summary>

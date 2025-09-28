@@ -671,13 +671,15 @@
                         {
                             silentCts = new CancellationTokenSource();
                             silentTimerTask = Task.Delay(GameContext.InkRunner.SilentPathWait, silentCts.Token);
+                            await IOService.Output.DisplayDebugMessage($"Silent Timer Task set to delay for {GameContext.InkRunner.SilentPathWait} ms at {DateTime.Now}.");
                         }
                         else
                         {
                             silentTimerTask = Task.Delay(-1);
+                            await IOService.Output.DisplayDebugMessage($"Silent Timer Task set to delay for infinite ms at {DateTime.Now}.");
                         }
 
-                        await IOService.Output.DisplayDebugMessage($"Silent Timer Task set to delay for {GameContext.InkRunner.SilentPathWait} ms at {DateTime.Now}.");
+                  
 
                         var completed = await Task.WhenAny(playerInputTask, silentTimerTask);
                         GameContext.InkRunner.CancelExternalChoiceAwait();

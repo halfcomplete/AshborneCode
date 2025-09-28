@@ -32,7 +32,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.ItemManagementB
             _requiresIdentification = requiresIdentification;
         }
 
-        public async void Inspect()
+        public async Task Inspect()
         {
             if (IsInspected)
             {

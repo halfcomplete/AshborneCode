@@ -272,6 +272,7 @@ namespace AshborneGame._Core.SceneManagement
                 if (_hasPrintedDialogueEnd)
                 {
                     await IOService.Output.DisplayDebugMessage("Returning from RunAsync().");
+                    _hasPrintedDialogueEnd = false;
                     return;
                 }
             }
