@@ -66,17 +66,19 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
                     {
                         continue;
                     }
-
-                    foreach (var behaviour in kvp.Value)
-                    {
-                        dynamic dynamicBehaviour = behaviour;
-                        var clone = dynamicBehaviour.DeepClone();
-                        newItem.AddBehaviour(kvp.Key, clone);
-                        if (clone is IAwareOfParentObject awareOfParent)
-                        {
-                            awareOfParent.ParentObject = newItem;
-                        }
-                    }
+                    //foreach (var behaviour in kvp.Value)
+                    //{
+                    //    // See if this Behaviour has a DeepClone method
+                    //    if (behaviour.GetType().GetMethod("DeepClone") != null)
+                    //    {
+                    //        var clone = behaviour.DeepClone();
+                    //    }
+                    //    newItem.AddBehaviour(kvp.Key, clone);
+                    //    if (clone is IAwareOfParentObject awareOfParent)
+                    //    {
+                    //        awareOfParent.ParentObject = newItem;
+                    //    }
+                    //}
                 }
                 
                 _slots.Add(new InventorySlot(newItem, toAdd));

@@ -64,10 +64,10 @@ public abstract class BOCSGameObject
         if (Behaviours.TryGetValue(typeof(T), out var behaviours) && behaviours.Count > 0 && behaviours[0] is T castedBehaviour)
         {
             behaviour = castedBehaviour;
-            return true;
+            return Task.FromResult(true);
         }
         behaviour = null!;
-        return false;
+        return Task.FromResult(false);
     }
 
     public bool HasBehaviours<T>() where T : class => Behaviours.ContainsKey(typeof(T)) && Behaviours[typeof(T)].Count > 0;

@@ -407,6 +407,7 @@ namespace AshborneGame._Core.SceneManagement
         public object ExternalPlayerForceMask(string maskName)
         {
             _gameState.ForcePlayerMask(maskName);
+            Console.WriteLine($"[DEBUG] Forced player to wear mask: {maskName} at {System.DateTime.Now}");
             return null;
         }
 

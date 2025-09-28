@@ -36,5 +36,12 @@ namespace AshborneGame._Core.Globals.Constants
 
         public const string In = "in";
         public const string Through = "through";
+
+        public static IReadOnlyCollection<string> AllDirections =
+        [
+            North, South, East, West,
+            Back, Up, Down, Forward, Left, Right,
+            In, Through
+        ];
     }
 }

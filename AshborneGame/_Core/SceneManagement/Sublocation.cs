@@ -119,7 +119,7 @@ namespace AshborneGame._Core.SceneManagement
                 sb.AppendLine("From here you can go:");
                 foreach (var exit in Exits)
                 {
-                    if (DirectionConstants.CardinalDirections.Contains(exit.Key))
+                    if (DirectionConstants.AllDirections.Contains(exit.Key))
                     {
                         sb.AppendLine($"- {exit.Key} to {exit.Value.Name.DisplayName}");
                     }
