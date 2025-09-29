@@ -50,7 +50,7 @@ if (!(Test-Path $source)) {
     exit 1
 }
 
-if ($destination != "D:\C# Projects\Ashborne") {
+if ($destination -ne "D:\C# Projects\Ashborne") {
     Write-Error "[ERROR] 'destination' set to $destination, instead of 'D:\C# Projects\Ashborne'. Exiting for safety"
     exit 1
 }
