@@ -12,7 +12,13 @@ public class OnTurnStartAttackPlayerComponent : ICanAttackPlayer
     public Item Weapon { get; set; }
     public int BaseAttackPower { get; set; }
 
-    public int AttackPower => BaseAttackPower + GetWeaponAttackPower().Result;
+    private int _attackPower;
+    public int AttackPower => _attackPower;
+    public async Task UpdateAttackPowerAsync()
+    {
+        _attackPower = BaseAttackPower + await GetWeaponAttackPower();
+    }
+
     public int AttackDamage => AttackPower;
 
     public OnTurnStartAttackPlayerComponent(Item weapon, int baseAttackPower)
@@ -21,13 +27,14 @@ public class OnTurnStartAttackPlayerComponent : ICanAttackPlayer
         BaseAttackPower = baseAttackPower;
     }
 
-    private Task<int> GetWeaponAttackPower()
+    private async Task<int> GetWeaponAttackPower()
     {
-        if (Weapon.TryGetBehaviour<ICanDamage>(out var component).Result)
+        var behaviour = await Weapon.TryGetBehaviour<ICanDamage>();
+        if (behaviour.Item1)
         {
-            return Task.FromResult(component.BaseDamage);
+            return behaviour.Item2.BaseDamage;
         }
-        return Task.FromResult(0);
+        return 0;
     }
 
     public async void AttackPlayer(Player player)

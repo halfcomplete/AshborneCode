@@ -36,7 +36,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
                     player.ChangeHealth(ChangeAmount);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(StatType), $"Unsupported stat type: {StatType}");
+                    //throw new ArgumentOutOfRangeException(nameof(StatType), $"Unsupported stat type: {StatType}");
+                    break;
             }
 
             await IOService.Output.WriteNonDialogueLine($"You now have {player.Stats.GetStat(PlayerStatType.Health)} HP.");

@@ -7,6 +7,7 @@ using AshborneGame._Core.SceneManagement;
 using Ink.Runtime;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace AshborneGame._Core.Game
 {
@@ -100,13 +101,14 @@ namespace AshborneGame._Core.Game
             });
         }
 
-        public void StopTickLoop()
+        public async Task StopTickLoop()
         {
             if (_tickCancellation == null || !_tickRunning)
                 return;
 
             _tickCancellation.Cancel();
-            _tickTask?.Wait(); // Optional: wait for cleanup
+            if (_tickTask != null)
+                await _tickTask;
             _tickCancellation.Dispose();
             _tickCancellation = null;
             _tickTask = null;

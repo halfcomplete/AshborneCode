@@ -60,7 +60,7 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
             if (ParentObject.GetAllBehaviours<IHasInventory>().FirstOrDefault(s => s.GetType() == typeof(ContainerBehaviour)) is ContainerBehaviour containerBehaviour)
             {
                 player.OpenedInventory = containerBehaviour.Inventory;
-                (bool isEmpty, string contents) = containerBehaviour.Inventory.GetInventoryContents(player: null);
+                (bool isEmpty, string contents) = await containerBehaviour.Inventory.GetInventoryContents(player: null);
                 if (!isEmpty)
                 {
                     await IOService.Output.WriteNonDialogueLine($"Inside the {ParentObject.Name} you see:");
@@ -71,8 +71,8 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
                     await IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is empty.");
                 }
             }
-
-            if (ParentObject.TryGetBehaviour<ExitToNewLocationBehaviour>(out var exitToNewLocationBehaviour).Result && player.CurrentSublocation != null)
+            (bool hasExitBehaviour, ExitToNewLocationBehaviour exitToNewLocationBehaviour) = await ParentObject.TryGetBehaviour<ExitToNewLocationBehaviour>();
+            if (hasExitBehaviour && player.CurrentSublocation != null)
             {
                 ILocation sublocation = player.CurrentSublocation;
                 sublocation.AddExit("through", exitToNewLocationBehaviour.Location);

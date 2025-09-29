@@ -30,9 +30,12 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                 return false;
             }
 
-            if (sublocation.FocusObject.TryGetBehaviour<IInteractable>(out var openCloseBehaviour).Result && openCloseBehaviour is ContainerBehaviour)
+            (bool hasOpenCloseBehaviour, var openCloseBehaviour) = await sublocation.FocusObject.TryGetBehaviour<IInteractable>();
+
+            if (hasOpenCloseBehaviour && openCloseBehaviour is ContainerBehaviour)
             {
-                if (sublocation.FocusObject.TryGetBehaviour<IInteractable>(out var lockUnlockBehaviour).Result && lockUnlockBehaviour is LockUnlockBehaviour)
+                (bool hasLockUnlockBehaviour, var lockUnlockBehaviour) = await sublocation.FocusObject.TryGetBehaviour<IInteractable>();
+                if (hasLockUnlockBehaviour && lockUnlockBehaviour is LockUnlockBehaviour)
                 {
                     LockUnlockBehaviour lockUnlockBehaviour1 = (LockUnlockBehaviour)lockUnlockBehaviour;
                     openCloseBehaviour.Interact(ObjectInteractionTypes.Close, player);

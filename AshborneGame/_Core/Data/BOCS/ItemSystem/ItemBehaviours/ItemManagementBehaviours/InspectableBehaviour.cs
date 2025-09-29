@@ -11,17 +11,15 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.ItemManagementB
         public BOCSGameObject ParentObject { get; set; }
         private string _baseDescription;
         private ItemQualities _rarity;
-        private string? _hiddenLore;
-        private bool _requiresIdentification = false;
+        private string? _inspectDesc;
         public bool IsInspected { get; private set; } = false;
 
-        public InspectableBehaviour(BOCSGameObject parentObject, string baseDesc, ItemQualities rarity, string? hiddenLore, bool requiresIdentification = false)
+        public InspectableBehaviour(BOCSGameObject parentObject, string baseDesc, ItemQualities rarity, string? inspectDesc)
         {
             ParentObject = parentObject ?? throw new ArgumentNullException(nameof(parentObject));
             _baseDescription = baseDesc;
             _rarity = rarity;
-            _hiddenLore = hiddenLore;
-            _requiresIdentification = requiresIdentification;
+            _inspectDesc = inspectDesc;
         }
 
         public InspectableBehaviour(BOCSGameObject parentObject, string baseDesc, bool requiresIdentification = false)
@@ -29,7 +27,6 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.ItemManagementB
             ParentObject = parentObject ?? throw new ArgumentNullException(nameof(parentObject));
             _baseDescription = baseDesc;
             _rarity = ItemQualities.None;
-            _requiresIdentification = requiresIdentification;
         }
 
         public async Task Inspect()
@@ -40,21 +37,30 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.ItemManagementB
                 return;
             }
 
-            await IOService.Output.WriteNonDialogueLine(_baseDescription);
-
             // TODO: Implement logic to reveal hidden lore based on player actions or conditions, such as having a specific skill, item or quest completion.
 
-            if (_rarity >= ItemQualities.Rare)
+            if (_inspectDesc == null)
             {
-                await IOService.Output.WriteNonDialogueLine("This item seems extremely valuable.");
+                await IOService.Output.WriteNonDialogueLine($"You inspect the {ParentObject.Name}; there is nothing interesting about it.");
+                if (_rarity >= ItemQualities.Rare)
+                {
+                    await IOService.Output.WriteNonDialogueLine("However, it seems extremely valuable.");
+                }
             }
-
+            else
+            {
+                await IOService.Output.WriteNonDialogueLine(_inspectDesc);
+                if (_rarity >= ItemQualities.Rare)
+                {
+                    await IOService.Output.WriteNonDialogueLine("It seems extremely valuable.");
+                }
+            }
             IsInspected = true;
         }
 
         public override InspectableBehaviour DeepClone()
         {
-            return new InspectableBehaviour(ParentObject, _baseDescription, _rarity, _hiddenLore, _requiresIdentification)
+            return new InspectableBehaviour(ParentObject, _baseDescription, _rarity, _inspectDesc)
             {
                 IsInspected = IsInspected,
             };

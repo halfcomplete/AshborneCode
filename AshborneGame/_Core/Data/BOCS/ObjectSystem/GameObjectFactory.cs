@@ -35,14 +35,15 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem
             return gameObject;
         }
 
-        public static GameObject CreateDoor(string name, string description, Location location, bool isOpen = false)
+        public static async Task<GameObject> CreateDoor(string name, string description, Location location, bool isOpen = false)
         {
             var gameObject = new GameObject(name, description);
             gameObject.AddBehaviour(typeof(IInteractable), new OpenCloseBehaviour(gameObject, isOpen));
             gameObject.AddBehaviour(typeof(IExit), new ExitToNewLocationBehaviour(location));
             (gameObject, var describableBehaviour) = AddDescribableBehaviour(gameObject);
+            var (hasBehaviour, behaviour) = await gameObject.TryGetBehaviour<OpenCloseBehaviour>();
             describableBehaviour.AddCondition(_ => (
-                gameObject.TryGetBehaviour<IInteractable>(out var behaviour).Result && behaviour is OpenCloseBehaviour openCloseBehaviour && openCloseBehaviour.IsOpen
+                hasBehaviour && behaviour is OpenCloseBehaviour openCloseBehaviour && openCloseBehaviour.IsOpen
                 ),
             "It's slightly ajar.");
 

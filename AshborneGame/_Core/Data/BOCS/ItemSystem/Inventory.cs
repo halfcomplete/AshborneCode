@@ -66,19 +66,27 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
                     {
                         continue;
                     }
-                    //foreach (var behaviour in kvp.Value)
-                    //{
-                    //    // See if this Behaviour has a DeepClone method
-                    //    if (behaviour.GetType().GetMethod("DeepClone") != null)
-                    //    {
-                    //        var clone = behaviour.DeepClone();
-                    //    }
-                    //    newItem.AddBehaviour(kvp.Key, clone);
-                    //    if (clone is IAwareOfParentObject awareOfParent)
-                    //    {
-                    //        awareOfParent.ParentObject = newItem;
-                    //    }
-                    //}
+                    foreach (var behaviour in kvp.Value)
+                    {
+                        // See if this Behaviour has a DeepClone method
+                        var clonedBehaviour = behaviour is IItemBehaviourBase cloneable
+                            ? cloneable.DeepClone()
+                            : null;
+
+                        if (clonedBehaviour != null)
+                        {
+                            newItem.AddBehaviour(kvp.Key, clonedBehaviour);
+                        }
+                        else
+                        {
+                            newItem.AddBehaviour(kvp.Key, behaviour);
+                        }
+
+                        if (clonedBehaviour is IAwareOfParentObject awareOfParent)
+                        {
+                            awareOfParent.ParentObject = newItem;
+                        }
+                    }
                 }
                 
                 _slots.Add(new InventorySlot(newItem, toAdd));
@@ -136,7 +144,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         /// <summary>
         /// Returns a textual summary of the inventory.
         /// </summary>
-        public (bool, string) GetInventoryContents(Player? player)
+        public async Task<(bool, string)> GetInventoryContents(Player? player)
         {
             if (_slots.Count == 0)
                 return (true, "");
@@ -147,7 +155,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
                 var equipped = string.Empty;
                 if (player != null)
                 {
-                    if (slot.Item.TryGetBehaviour<IEquippable>(out var equippableBehaviour).Result && equippableBehaviour.EquipInfo.IsEquippable)
+                    var (hasBehaviour, equippableBehaviour) = await slot.Item.TryGetBehaviour<IEquippable>();
+                    if (hasBehaviour && equippableBehaviour.EquipInfo.IsEquippable)
                     {
                         // If the item is equippable, check if it's equipped
                         var isEquipped = player.EquippedItems.TryGetValue(slot.Item.Name.ToLower(), out var equippedItem) && equippedItem != null;
@@ -163,7 +172,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
 
         public async void PrintInventoryContents(Player player)
         {
-            var (isEmpty, contents) = GetInventoryContents(player);
+            var (isEmpty, contents) = await GetInventoryContents(player);
             if (isEmpty)
             {
                 await IOService.Output.WriteNonDialogueLine("Your inventory is empty.");

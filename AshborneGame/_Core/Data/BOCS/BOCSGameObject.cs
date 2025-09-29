@@ -59,15 +59,24 @@ public abstract class BOCSGameObject
 
     public void RemoveBehaviour<T>() where T : class => Behaviours.Remove(typeof(T));
 
-    public Task<bool> TryGetBehaviour<T>(out T behaviour) where T : class
+    public async Task<(bool, T)> TryGetBehaviour<T>() where T : class
     {
+        await IOService.Output.DisplayDebugMessage($"Attempting to get behaviour of type {typeof(T).FullName} from {Name}.", ConsoleMessageTypes.INFO);
+        await IOService.Output.DisplayDebugMessage($"{Name} has Behaviours:", ConsoleMessageTypes.INFO);
+        foreach (var kvp in Behaviours)
+        {
+            foreach (var b in kvp.Value)
+            {
+                await IOService.Output.DisplayDebugMessage($"- {kvp.Key.Name}: {b.GetType().FullName}", ConsoleMessageTypes.INFO);
+            }
+        }
         if (Behaviours.TryGetValue(typeof(T), out var behaviours) && behaviours.Count > 0 && behaviours[0] is T castedBehaviour)
         {
-            behaviour = castedBehaviour;
-            return Task.FromResult(true);
+            await IOService.Output.DisplayDebugMessage($"Successfully retrieved behaviour of type {typeof(T).FullName} from {Name}", ConsoleMessageTypes.INFO);
+            return (true, castedBehaviour);
         }
-        behaviour = null!;
-        return Task.FromResult(false);
+        await IOService.Output.DisplayDebugMessage($"Failed to retrieve behaviour of type {typeof(T).Name} from {Name}.", ConsoleMessageTypes.INFO);
+        return (false, null!);
     }
 
     public bool HasBehaviours<T>() where T : class => Behaviours.ContainsKey(typeof(T)) && Behaviours[typeof(T)].Count > 0;

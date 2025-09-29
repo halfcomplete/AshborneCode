@@ -52,7 +52,7 @@ namespace AshborneGame.WebPort
 
         public async Task DisplayFailMessage(string message)
         {
-            await _debugCallback(ConsoleMessageTypes.ERROR, message);
+            await WriteNonDialogueLine(message);
         }
 
         public async Task DisplayDebugMessage(string message, ConsoleMessageTypes type = ConsoleMessageTypes.INFO)

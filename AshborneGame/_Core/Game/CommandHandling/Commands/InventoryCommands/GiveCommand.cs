@@ -21,7 +21,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
             }
 
             Inventory originInventory = player.Inventory;
-            Inventory? destinationInventory = ResolveDestinationInventory(player);
+            Inventory? destinationInventory = await ResolveDestinationInventory(player);
 
             if (destinationInventory == null)
             {
@@ -50,7 +50,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
             {
                 if (string.IsNullOrEmpty(itemName))
                 {
-                    return GiveAllItems(player, originInventory, destinationInventory).Result;
+                    return await GiveAllItems(player, originInventory, destinationInventory);
                 }
                 else
                 {
@@ -102,13 +102,13 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
             return true;
         }
 
-        private Inventory? ResolveDestinationInventory(Player player)
+        private async Task<Inventory?> ResolveDestinationInventory(Player player)
         {
             if (player.OpenedInventory != null)
                 return player.OpenedInventory;
-
-            if (player.CurrentNPCInteraction != null &&
-                player.CurrentNPCInteraction.TryGetBehaviour<IHasInventory>(out var npcInventory).Result)
+            if (player.CurrentNPCInteraction == null) return null;
+            (bool hasInventory, var npcInventory) = await player.CurrentNPCInteraction.TryGetBehaviour<IHasInventory>();
+            if (hasInventory)
             {
                 return npcInventory.Inventory;
             }

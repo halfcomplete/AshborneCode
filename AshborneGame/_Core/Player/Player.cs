@@ -147,7 +147,7 @@ namespace AshborneGame._Core._Player
             // Fire event if Ossaneth Domain and visit count == 4
             bool sceneMatch = newLocation.Scene != null && newLocation.Scene.DisplayName == "Ossaneth's Domain";
             bool nameMatch = newLocation.Name.ReferenceName == "Eye Platform";
-            bool visitMatch = CurrentLocation.VisitCount == 2;
+            bool visitMatch = CurrentLocation.VisitCount == 3;
             Console.WriteLine($"[MoveTo] Location={newLocation.Name.DisplayName} Scene={(newLocation.Scene?.DisplayName ?? "<null>")} VisitCount={CurrentLocation.VisitCount} sceneMatch={sceneMatch} nameMatch={nameMatch} visitMatch={visitMatch}", ConsoleMessageTypes.INFO);
             if (sceneMatch && nameMatch && visitMatch)
             {
@@ -249,7 +249,7 @@ namespace AshborneGame._Core._Player
             // Directional movement
             if (DirectionConstants.CardinalDirections.Contains(place))
             {
-                return TryMoveDirectionally(place).Result;
+                return await TryMoveDirectionally(place);
             }
 
             // Sublocation movement
@@ -335,7 +335,8 @@ namespace AshborneGame._Core._Player
 
         public async void EquipItem(Item item, string slot)
         {
-            if (item.TryGetBehaviour<IEquippable>(out var equippableBehaviour).Result && equippableBehaviour.EquipInfo.IsEquippable)
+            (bool hasEquippableBehaviour, var equippableBehaviour) = await item.TryGetBehaviour<IEquippable>();
+            if (hasEquippableBehaviour && equippableBehaviour.EquipInfo.IsEquippable)
             {
                 await IOService.Output.DisplayDebugMessage($"Attempting to equip {item} on player's {slot}.", ConsoleMessageTypes.INFO);
                 if (!equippableBehaviour.EquipInfo.BodyParts.Contains(slot.ToLower()))
@@ -376,11 +377,13 @@ namespace AshborneGame._Core._Player
 
         public async void Attack(NPC npc)
         {
-            if (npc.TryGetBehaviour<ICanBeAttacked>(out var attackableBehaviour).Result)
+            (bool hasAttackableBehaviour, var attackableBehaviour) = await npc.TryGetBehaviour<ICanBeAttacked>();
+            if (hasAttackableBehaviour)
             {
                 float damage = 0;
                 var (baseStrength, bonusStrength, totalStrength) = Stats.GetStat(PlayerStatType.Strength);
-                if (EquippedItems.TryGetValue("hand", out var weapon) && weapon != null && weapon.TryGetBehaviour<ICanDamage>(out var damageBehaviour).Result)
+                (bool hasDamageBehaviour, var damageBehaviour) = await npc.TryGetBehaviour<ICanDamage>();
+                if (EquippedItems.TryGetValue("hand", out var weapon) && weapon != null && hasDamageBehaviour)
                 {
                     damage = (float)(damageBehaviour.BaseDamage + totalStrength * 0.5); // Example damage calculation
                     await IOService.Output.WriteNonDialogueLine($"You attack {npc.Name} with {weapon.Name} for {damage} damage.");

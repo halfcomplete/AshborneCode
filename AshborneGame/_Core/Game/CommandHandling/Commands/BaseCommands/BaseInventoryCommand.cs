@@ -30,7 +30,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.BaseCommands
 		protected async void ShowInventorySummary(Player player, Inventory inventory, string header)
 		{
 			await IOService.Output.WriteNonDialogueLine(header);
-			var (isEmpty, contents) = inventory.GetInventoryContents(player);
+			(var isEmpty, var contents) = await inventory.GetInventoryContents(player);
 			await IOService.Output.WriteNonDialogueLine(isEmpty ? "Nothing." : header);
 			if (!isEmpty)
 			{

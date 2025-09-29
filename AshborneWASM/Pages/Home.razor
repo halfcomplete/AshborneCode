@@ -694,7 +694,7 @@
                             await IOService.Output.DisplayDebugMessage($"Silent Timer stopped.");
                             await GameContext.InkRunner.ResetSilentPath();
                             await IOService.Output.DisplayDebugMessage($"Silent Path reset.");
-                            int choice = playerInputTask.Result;
+                            int choice = await playerInputTask;
                             await IOService.Output.DisplayDebugMessage($"[DEBUG] Home.razor: Choice {choice} selected at {DateTime.Now}");
                             if (GameContext.InkRunner.Story.currentChoices.Count > 0 && choice > 0 && choice <= GameContext.InkRunner.Story.currentChoices.Count)
                             {
@@ -825,34 +825,12 @@
 
                 // Console.WriteLine($"[DEBUG] Speed={currentSpeed}.");
 
-                // Calculate delay with special handling for non-dialogue output
-                int delay;
-                int baseDelay;
                 // Console.WriteLine($"[DEBUG] Calculating delay.");
 #if DEBUG
-                baseDelay = await CharacterOutputDelayCalculator.CalculateDebugDelayAsync(letter, currentSpeed, isEnd);
+                int delay = await CharacterOutputDelayCalculator.CalculateDebugDelayAsync(letter, currentSpeed, isEnd);
 #else
-                baseDelay = await CharacterOutputDelayCalculator.CalculateDelayAsync(letter, currentSpeed, isEnd);
+                int delay = await CharacterOutputDelayCalculator.CalculateDelayAsync(letter, currentSpeed, isEnd);
 #endif
-                // Console.WriteLine($"[DEBUG] Base delay calculated: {baseDelay} ms");
-                if (!isInDialogue)
-                {
-                    // Console.WriteLine($"[DEBUG] Not in dialogue, applying non-dialogue speed multiplier.");
-                    bool isPunctuation = letter == '.' || letter == '—' || letter == ',' || letter == '"' || letter == ':' || letter == ']' || letter == ')';
-                    if (isPunctuation)
-                    {
-                        delay = baseDelay;
-                    }
-                    else
-                    {
-                        delay = (int)(baseDelay * OutputConstants.NonDialogueOutputSpeedMultiplier);
-                    }
-                }
-                else
-                {
-                    // Console.WriteLine($"[DEBUG] In dialogue, using base delay.");
-                    delay = baseDelay;
-                }
                 // Console.WriteLine($"[DEBUG] Waiting for delay: {delay} ms");
                 await Task.Delay(delay);
                 globalCharIndex++;

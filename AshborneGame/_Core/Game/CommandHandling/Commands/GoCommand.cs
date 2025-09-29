@@ -20,7 +20,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 
             await IOService.Output.DisplayDebugMessage($"Parsed Input for 'go': {string.Join(" ", args)}", ConsoleMessageTypes.INFO); // Debugging output
 
-            return player.TryMoveTo(args).Result;
+            return await player.TryMoveTo(args);
         }
     }
 }

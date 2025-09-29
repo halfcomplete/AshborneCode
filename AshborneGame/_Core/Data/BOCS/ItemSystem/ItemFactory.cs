@@ -78,7 +78,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             var item = new Item(name, description, useDescription, stackLimit, ItemTypes.Consumable, ItemQualities.Mythic);
             item.AddBehaviour(typeof(IUsable), new UsableBehaviour(item));
             item.AddBehaviour(typeof(IActOnUse), new OnUseChangePlayerStatBehaviour(30, PlayerStatType.Strength));
-            item.AddBehaviour(typeof(IInspectable), new InspectableBehaviour(item, item.Description, item.Quality, inspectDesc, true));
+            item.AddBehaviour(typeof(IInspectable), new InspectableBehaviour(item, item.Description, item.Quality, inspectDesc));
             return item;
         }
 

@@ -9,7 +9,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
     internal class InspectItemCommand : ICommand
     {
         public List<string> Names => ["inspect"];
-        public string Description => "Inspect an an in-game item for details.";
+        public string Description => "Inspect an in-game item for details.";
 
         public async Task<bool> TryExecute(List<string> args, Player player)
         {
@@ -23,7 +23,8 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             Item? item = player.Inventory.GetItem(itemName);
             if (item != null)
             {
-                if (!item.TryGetBehaviour<IInspectable>(out var inspectableBehaviour).Result)
+                (bool canBeInspected, var inspectableBehaviour) = await item.TryGetBehaviour<IInspectable>();
+                if (!canBeInspected)
                 {
                     await IOService.Output.DisplayFailMessage($"That can't be inspected.");
                     return false;
@@ -33,7 +34,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             }
             else
             {
-                await IOService.Output.DisplayFailMessage($"You don't have a {itemName} to inspect.");
+                await IOService.Output.DisplayFailMessage($"You don't have a '{itemName}' to inspect.");
                 return false;
             }
         }

@@ -64,7 +64,7 @@ namespace AshborneGame._Core.Game
             await IOService.Output.DisplayDebugMessage("Event 'ossaneth.domain.visitcount.4' received. Launching outro dialogue...", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.INFO);
             Console.WriteLine("[GameEngine] ossaneth.domain.visitcount.4 received; starting outro dialogue");
             // Intentionally not awaited because this is a sync event handler; dialogue service internally tracks running state.
-            var _ = _dialogueService.StartDialogue("Act1_Scene1_Ossaneth_Domain_Outro");
+            await _dialogueService.StartDialogue("Act1_Scene1_Ossaneth_Domain_Outro");
         }
 
         public async void Start()
@@ -206,9 +206,9 @@ namespace AshborneGame._Core.Game
 
             Item mirrorShard = ItemFactory.CreateMagicScroll(
                 "mirror shard",
-                "A small shard of a mirror from Ossaneth's Domain that seems to reflect deeper than a normal mirror.",
+                "A small, sharp mirror shard from Ossaneth's Domain.",
                 "You try to use the shard, but nothing happens.",
-                "You hold the shard up to your face. You feel a strange emptiness inside you.");
+                "You hold the shard up to your face and feel a strange emptiness inside you. Light faintly glints off it as you turn it around in your hand.");
 
             Sublocation mirrorShardSublocation = new Sublocation(hallOfMirrors, mirrorShard, new LocationIdentifier("mirror shard", new List<string> { "shard", "mirror shard", "shard of glass", "shard of mirror", "shard of a mirror" }),
                 new DescriptionComposer(
@@ -290,7 +290,7 @@ namespace AshborneGame._Core.Game
             templeOfTheBound.AddSublocation(new Sublocation(templeOfTheBound, boundOne, new LocationIdentifier("circle of candles", new List<string>() { "circle", "candles", "candle circle" }), new DescriptionComposer(
                 new LookDescription("You look closer at the circle. It's made up of 12 white wax candles placed precisely around the prisoner. Beneath the candles and the prisoner is a scrawled red 12-pointed star, with the centre circle formed by the intersecting lines slightly aflame. Shadows dance on the floor. You shiver. The fire is not warm.",
                 "You look at the circle again. The shadows seem to have grown larger and sharper. Or is the eerie holiness of the temple finally getting to your mind."),
-                new VisitDescription("You walk up to the circle of candles. The prisoner is a sorry sight—crippled, ragged, and chained to the ground, they are surrounded by the circle of candles, as though a ritual will take place soon. Or has it already finished? You wouldn't be surprised if that were the case—but maybe you should talk to them.",
+                new VisitDescription("You walk up to the circle of candles. The prisoner is a sorry sight—crippled, ragged, and chained to the ground. They are surrounded by the circle of candles, as though a ritual will take place soon. Or has it already finished? You wouldn't be surprised if that were the case — but maybe you should talk to them.",
                 "You walk up to the circle again. The candles dim ever so slightly as your movement shakes the otherwise still air.",
                 "You go to the circle again. The candles and shadows tire of your presence. And perhaps the prisoner does too."),
                 new SensoryDescription("The flames are red and wild — almost as wild as the prisoner.",
@@ -346,7 +346,8 @@ namespace AshborneGame._Core.Game
             {
                 if (_dialogueRunning) continue;
 
-                string inputStr = IOService.Input.GetPlayerInput().Result.Trim().ToLowerInvariant();
+                string inputStr = await IOService.Input.GetPlayerInput();
+                inputStr = inputStr.Trim().ToLower();
 
                 if (string.IsNullOrWhiteSpace(inputStr))
                 {
@@ -357,23 +358,24 @@ namespace AshborneGame._Core.Game
                 var splitInput = inputStr.Split(' ').ToList();
                 var action = CommandManager.ExtractAction(splitInput, out List<string> args);
 
-                bool isValidCommand = CommandManager.TryExecute(action, args, player).Result;
+                bool isValidCommand = await CommandManager.TryExecute(action, args, player);
 
                 while (!isValidCommand)
                 {
                     await IOService.Output.DisplayFailMessage("Invalid command. Please try again or type 'help' for assistance.");
 
 
-                    inputStr = IOService.Input.GetPlayerInput().Result.Trim();
+                    inputStr = await IOService.Input.GetPlayerInput();
+                    inputStr = inputStr.Trim().ToLower();
                     if (string.IsNullOrWhiteSpace(inputStr)) continue;
 
                     splitInput = inputStr.Split(' ').ToList();
                     action = CommandManager.ExtractAction(splitInput, out var args2);
 
-                    isValidCommand = CommandManager.TryExecute(action, args2, player).Result;
+                    isValidCommand = await CommandManager.TryExecute(action, args2, player);
                 }
             }
-            gameState.StopTickLoop();
+            await gameState.StopTickLoop();
         }
 
         public async void ReceiveCommand(string input)
@@ -393,7 +395,7 @@ namespace AshborneGame._Core.Game
             var splitInput = input.Split(' ').ToList();
             var action = CommandManager.ExtractAction(splitInput, out List<string> args);
 
-            bool isValidCommand = CommandManager.TryExecute(action, args, GameContext.Player).Result;
+            bool isValidCommand = await CommandManager.TryExecute(action, args, GameContext.Player);
 
             if (!isValidCommand)
             {

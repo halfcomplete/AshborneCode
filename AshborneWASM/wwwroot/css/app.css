@@ -607,13 +607,13 @@ input {
     font-size: 4rem; letter-spacing:0.12em;
     color:#f8eecb; text-shadow:0 4px 32px #000a,0 2px 8px #bfae8e44;
     margin-bottom:1.6rem; user-select:none;
-    opacity:1; transition:opacity 0.9s ease-in-out;
+    opacity:1; transition:opacity 2s ease-in-out;
 }
 .outro-sub-text {
     font-family: 'AnonymousPro-Regular', monospace;
     font-size:1.3rem; letter-spacing:0.08em;
     color:#e2d6bb; text-shadow:0 2px 16px #000a,0 1px 4px #bfae8e33;
-    opacity:1; transition:opacity 0.9s ease-in-out;
+    opacity:1; transition:opacity 2s ease-in-out;
 }
 .outro-main-text.fade-out, .outro-sub-text.fade-out { opacity:0; }
 .outro-main-text.fade-in, .outro-sub-text.fade-in { opacity:1; }

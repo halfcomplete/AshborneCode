@@ -81,7 +81,7 @@ namespace AshborneGame._Core.Game.CommandHandling
             }
 
             ICommand command = _commands.FirstOrDefault(c => c.Key.Contains(action.ToLower())).Value;
-            if (command != null && command.TryExecute(args, player).Result)
+            if (command != null && await command.TryExecute(args, player))
             {
                 return true;
             }
