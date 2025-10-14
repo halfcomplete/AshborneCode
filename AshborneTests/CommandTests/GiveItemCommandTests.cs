@@ -28,7 +28,7 @@ namespace AshborneTests.CommandTests
         {
             var player = TestUtils.CreateTestPlayer();
             player.Inventory.AddItem(TestUtils.CreateTestItem());
-            var testSublocation = TestUtils.CreateTestSublocation(TestUtils.CreateTestNPCWithInventory());
+            var testSublocation = TestUtils.CreateTestSublocation(await TestUtils.CreateTestNPCWithInventory());
             player.MoveTo(testSublocation);
 
             bool result = await CommandManager.TryExecute("give", ["1", "torch"], player);
@@ -61,7 +61,7 @@ namespace AshborneTests.CommandTests
 
             bool result = await CommandManager.TryExecute("give", ["1", "torch"], player);
 
-            var npc = TestUtils.CreateTestNPCWithInventory();
+            var npc = await TestUtils.CreateTestNPCWithInventory();
             var testSublocation2 = TestUtils.CreateTestSublocation(npc);
             player.MoveTo(testSublocation2);
             player.CurrentNPCInteraction = npc;
@@ -77,7 +77,7 @@ namespace AshborneTests.CommandTests
         {
             var player = TestUtils.CreateTestPlayer();
             player.Inventory.AddItem(TestUtils.CreateTestItem(), 2);
-            var chest = TestUtils.CreateTestGameObjectChest(true);
+            var chest = await TestUtils.CreateTestGameObjectChest(true);
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
             (_, IInteractable openClose) = await chest.TryGetBehaviour<IInteractable>();
@@ -85,7 +85,7 @@ namespace AshborneTests.CommandTests
 
             bool result = await CommandManager.TryExecute("give", ["-1", "test_item"], player);
 
-            var npc = TestUtils.CreateTestNPCWithInventory();
+            var npc = await TestUtils.CreateTestNPCWithInventory();
             var testSublocation2 = TestUtils.CreateTestSublocation(npc);
             player.MoveTo(testSublocation2);
             player.CurrentNPCInteraction = npc;
@@ -101,7 +101,7 @@ namespace AshborneTests.CommandTests
         {
             var player = TestUtils.CreateTestPlayer();
             player.Inventory.AddItem(TestUtils.CreateTestItem());
-            var chest = TestUtils.CreateTestGameObjectChest(false);
+            var chest = await TestUtils.CreateTestGameObjectChest(false);
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
             (_, IInteractable openClose) = await chest.TryGetBehaviour<IInteractable>();
@@ -109,7 +109,7 @@ namespace AshborneTests.CommandTests
 
             bool result = await CommandManager.TryExecute("give", ["0", "test_item"], player);
 
-            var npc = TestUtils.CreateTestNPCWithInventory();
+            var npc = await TestUtils.CreateTestNPCWithInventory();
             var testSublocation2 = TestUtils.CreateTestSublocation(npc);
             player.MoveTo(testSublocation2);
             player.CurrentNPCInteraction = npc;
@@ -125,7 +125,7 @@ namespace AshborneTests.CommandTests
         {
             var player = TestUtils.CreateTestPlayer();
             player.Inventory.AddItem(TestUtils.CreateTestItem());
-            var chest = TestUtils.CreateTestGameObjectChest();
+            var chest = await TestUtils.CreateTestGameObjectChest();
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
             (_, IInteractable openClose) = await chest.TryGetBehaviour<IInteractable>();
@@ -133,7 +133,7 @@ namespace AshborneTests.CommandTests
 
             bool result = await CommandManager.TryExecute("give", ["item_test"], player);
 
-            var npc = TestUtils.CreateTestNPCWithInventory();
+            var npc = await TestUtils.CreateTestNPCWithInventory();
             var testSublocation2 = TestUtils.CreateTestSublocation(npc);
             player.MoveTo(testSublocation2);
             player.CurrentNPCInteraction = npc;
@@ -149,7 +149,7 @@ namespace AshborneTests.CommandTests
         {
             var player = TestUtils.CreateTestPlayer();
             player.Inventory.AddItem(TestUtils.CreateTestItem(), 2);
-            var chest = TestUtils.CreateTestGameObjectChest();
+            var chest = await TestUtils.CreateTestGameObjectChest();
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
             (_, IInteractable openClose) = await chest.TryGetBehaviour<IInteractable>();
@@ -157,7 +157,7 @@ namespace AshborneTests.CommandTests
 
             bool result = await CommandManager.TryExecute("give", ["1", "item_test"], player);
 
-            var npc = TestUtils.CreateTestNPCWithInventory();
+            var npc = await TestUtils.CreateTestNPCWithInventory();
             var testSublocation2 = TestUtils.CreateTestSublocation(npc);
             player.MoveTo(testSublocation2);
             player.CurrentNPCInteraction = npc;
@@ -173,7 +173,7 @@ namespace AshborneTests.CommandTests
         {
             var player = TestUtils.CreateTestPlayer();
             player.Inventory.AddItem(TestUtils.CreateTestItem(), 2);
-            var chest = TestUtils.CreateTestGameObjectChest(false);
+            var chest = await TestUtils.CreateTestGameObjectChest(false);
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
             chest.GetAllBehaviours<IInteractable>().Where(s => s.GetType() == typeof(OpenCloseBehaviour)).ToList()[0].Interact(ObjectInteractionTypes.Open, player);
@@ -186,7 +186,7 @@ namespace AshborneTests.CommandTests
             player.Inventory.Slots.Count().Should().Be(0);
 
             player.OpenedInventory = null;
-            var npc = TestUtils.CreateTestNPCWithInventory();
+            var npc = await TestUtils.CreateTestNPCWithInventory();
             var testSublocation2 = TestUtils.CreateTestSublocation(npc);
             player.Inventory.AddItem(TestUtils.CreateTestItem(), 2);
             player.MoveTo(testSublocation2);
@@ -205,7 +205,7 @@ namespace AshborneTests.CommandTests
         {
             var player = TestUtils.CreateTestPlayer();
             player.Inventory.AddItem(TestUtils.CreateTestItem(), 2);
-            var chest = TestUtils.CreateTestGameObjectChest(false);
+            var chest = await TestUtils.CreateTestGameObjectChest(false);
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
             (_, IInteractable openClose) = await chest.TryGetBehaviour<IInteractable>();
@@ -219,7 +219,7 @@ namespace AshborneTests.CommandTests
             player.Inventory.Slots.Count().Should().Be(1);
 
             player.OpenedInventory = null;
-            var npc = TestUtils.CreateTestNPCWithInventory();
+            var npc = await TestUtils.CreateTestNPCWithInventory();
             var testSublocation2 = TestUtils.CreateTestSublocation(npc);
             player.MoveTo(testSublocation2);
             player.CurrentNPCInteraction = npc;
@@ -237,7 +237,7 @@ namespace AshborneTests.CommandTests
         {
             var player = TestUtils.CreateTestPlayer();
             player.Inventory.AddItem(TestUtils.CreateTestItem(), 2);
-            var chest = TestUtils.CreateTestGameObjectChest(false);
+            var chest = await TestUtils.CreateTestGameObjectChest(false);
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
             (_, IInteractable openClose) = await chest.TryGetBehaviour<IInteractable>();
@@ -251,7 +251,7 @@ namespace AshborneTests.CommandTests
             player.Inventory.Slots.Count().Should().Be(1);
 
             player.OpenedInventory = null;
-            var npc = TestUtils.CreateTestNPCWithInventory();
+            var npc = await TestUtils.CreateTestNPCWithInventory();
             var testSublocation2 = TestUtils.CreateTestSublocation(npc);
             player.MoveTo(testSublocation2);
             player.CurrentNPCInteraction = npc;

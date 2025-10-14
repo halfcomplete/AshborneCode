@@ -42,11 +42,11 @@ namespace AshborneTests
         /// <summary>
         /// Creates a test NPC with a default name "TestNPCWithInventory" and adds a TradeableNPCBehaviour to it. Optionally adds items to the NPC's inventory.
         /// </summary>
-        static internal NPC CreateTestNPCWithInventory(int itemNumber = 0)
+        static internal async Task<NPC> CreateTestNPCWithInventory(int itemNumber = 0)
         {
             var npc = CreateTestNPC();
             npc.AddBehaviour(typeof(IHasInventory), new TradeableNPCBehaviour());
-            npc.TryGetBehaviour<IHasInventory>(out var inv);
+            (_, var inv) = await npc.TryGetBehaviour<IHasInventory>();
             if (itemNumber > 0)
                 inv.Inventory.AddItem(CreateTestItem(), itemNumber);
             return npc;
@@ -60,7 +60,6 @@ namespace AshborneTests
             var descriptor = new LocationIdentifier(name, null);
             var narrative = new DescriptionComposer();
             return new Location(descriptor, narrative, Guid.NewGuid().ToString());
-            return new Location(descriptor, new AshborneGame._Core.Game.DescriptionHandling.DescriptionComposer(), System.Guid.NewGuid().ToString());
         }
 
         /// <summary>
@@ -68,7 +67,7 @@ namespace AshborneTests
         /// </summary>
         static internal Sublocation CreateTestSublocation(BOCSGameObject gameObject)
         {
-            var parent = CreateTestLocation(System.Guid.NewGuid().ToString());
+            var parent = CreateTestLocation(Guid.NewGuid().ToString());
             var identifier = new LocationIdentifier("test", null);
             if (gameObject is GameObject go)
             {
@@ -76,10 +75,10 @@ namespace AshborneTests
                     parent,
                     go,
                     identifier,
-                    new AshborneGame._Core.Game.DescriptionHandling.DescriptionComposer(),
-                    System.Guid.NewGuid().ToString(),
-                    "dfg",
-                    "fggh"
+                    new DescriptionComposer(),
+                    Guid.NewGuid().ToString(),
+                    "[shortened positional phrase]",
+                    "[short ref desc]"
                 );
             }
             else
@@ -93,12 +92,12 @@ namespace AshborneTests
             return new GameObject(name, "A test object.");
         }
 
-        static internal GameObject CreateTestGameObjectChest(bool hasItem = false, int amount = 1)
+        static internal async Task<GameObject> CreateTestGameObjectChest(bool hasItem = false, int amount = 1)
         {
             GameObject chest = GameObjectFactory.CreateChest("Test chest", "A test chest");
-            chest.TryGetBehaviour<IHasInventory>(out IHasInventory inventory);
+            (_, var inv) = await chest.TryGetBehaviour<IHasInventory>();
             if (hasItem)
-                inventory.Inventory.AddItem(CreateTestItem(), amount);
+                inv.Inventory.AddItem(CreateTestItem(), amount);
             return chest;
         }
 

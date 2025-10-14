@@ -21,31 +21,31 @@ namespace AshborneTests.CommandTests
     public class TakeItemCommandTests
     {
         [Fact]
-        internal void TakeItem_Fails_When_No_Container_Is_Opened()
+        internal async void TakeItem_Fails_When_No_Container_Is_Opened()
         {
             var player = TestUtils.CreateTestPlayer();
             var testSublocation = TestUtils.CreateTestSublocation(TestUtils.CreateTestGameObject());
             player.MoveTo(testSublocation);
 
-            bool result = CommandManager.TryExecute("take", ["1", "torch"], player);
+            bool result = await CommandManager.TryExecute("take", ["1", "torch"], player);
 
             Assert.False(result);
         }
 
         [Fact]
-        internal void TakeItem_Fails_When_No_NPC_Is_Interacted_With()
+        internal async void TakeItem_Fails_When_No_NPC_Is_Interacted_With()
         {
             var player = TestUtils.CreateTestPlayer();
             var testSublocation = TestUtils.CreateTestSublocation(TestUtils.CreateTestNPC());
             player.MoveTo(testSublocation);
 
-            bool result = CommandManager.TryExecute("take", ["1", "torch"], player);
+            bool result = await CommandManager.TryExecute("take", ["1", "torch"], player);
 
             Assert.False(result);
         }
 
         [Fact]
-        internal void TakeItem_Fails_When_NPC_Is_Not_Tradeable_With()
+        internal async void TakeItem_Fails_When_NPC_Is_Not_Tradeable_With()
         {
             var player = TestUtils.CreateTestPlayer();
             var npc = TestUtils.CreateTestNPC();
@@ -53,221 +53,221 @@ namespace AshborneTests.CommandTests
             player.MoveTo(testSublocation);
             player.CurrentNPCInteraction = npc;
 
-            bool result = CommandManager.TryExecute("take", ["1", "torch"], player);
+            bool result = await CommandManager.TryExecute("take", ["1", "torch"], player);
 
             Assert.False(result);
         }
 
         [Fact]
-        internal void TakeItem_Fails_When_Item_Does_Not_Exist()
+        internal async void TakeItem_Fails_When_Item_Does_Not_Exist()
         {
             var player = TestUtils.CreateTestPlayer();
-            var testSublocation = TestUtils.CreateTestSublocation(TestUtils.CreateTestGameObjectChest());
+            var testSublocation = TestUtils.CreateTestSublocation(await TestUtils.CreateTestGameObjectChest());
             player.MoveTo(testSublocation);
 
-            bool result = CommandManager.TryExecute("take", ["1", "torch"], player);
+            bool result = await CommandManager.TryExecute("take", ["1", "torch"], player);
 
-            var npc = TestUtils.CreateTestNPCWithInventory();
+            var npc = await TestUtils.CreateTestNPCWithInventory();
             var testSublocation2 = TestUtils.CreateTestSublocation(npc);
             player.MoveTo(testSublocation2);
             player.CurrentNPCInteraction = npc;
 
-            bool result2 = CommandManager.TryExecute("take", ["1", "torch"], player);
+            bool result2 = await CommandManager.TryExecute("take", ["1", "torch"], player);
 
             Assert.False(result);
             Assert.False(result2);
         }
 
         [Fact]
-        internal void TakeItem_Fails_With_Negative_Amount()
+        internal async void TakeItem_Fails_With_Negative_Amount()
         {
             var player = TestUtils.CreateTestPlayer();
-            var chest = TestUtils.CreateTestGameObjectChest(true);
+            var chest = await TestUtils.CreateTestGameObjectChest(true);
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
-            chest.TryGetBehaviour<IInteractable>(out IInteractable openClose);
-            openClose.Interact(ObjectInteractionTypes.Open, player);
-            chest.TryGetBehaviour<IHasInventory>(out var hasInventory);
-            hasInventory.Inventory.AddItem(TestUtils.CreateTestItem());
+            (_, var openCloseBehaviour) = await chest.TryGetBehaviour<IInteractable>();
+            openCloseBehaviour.Interact(ObjectInteractionTypes.Open, player);
+            (_, var inventoryBehaviour) = await chest.TryGetBehaviour<IHasInventory>();
+            inventoryBehaviour.Inventory.AddItem(TestUtils.CreateTestItem());
 
-            bool result = CommandManager.TryExecute("take", ["-1", "test_item"], player);
+            bool result = await CommandManager.TryExecute("take", ["-1", "test_item"], player);
 
-            var npc = TestUtils.CreateTestNPCWithInventory();
+            var npc = await TestUtils.CreateTestNPCWithInventory();
             var testSublocation2 = TestUtils.CreateTestSublocation(npc);
             player.MoveTo(testSublocation2);
             player.CurrentNPCInteraction = npc;
 
-            bool result2 = CommandManager.TryExecute("take", ["-1", "test_item"], player);
+            bool result2 = await CommandManager.TryExecute("take", ["-1", "test_item"], player);
 
             Assert.False(result);
             Assert.False(result2);
         }
 
         [Fact]
-        internal void TakeItem_Fails_With_Zero_Amount()
+        internal async void TakeItem_Fails_With_Zero_Amount()
         {
             var player = TestUtils.CreateTestPlayer();
-            var chest = TestUtils.CreateTestGameObjectChest(false);
+            var chest = await TestUtils.CreateTestGameObjectChest(false);
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
-            chest.TryGetBehaviour<IInteractable>(out IInteractable openClose);
-            openClose.Interact(ObjectInteractionTypes.Open, player);
-            chest.TryGetBehaviour<IHasInventory>(out var hasInventory);
-            hasInventory.Inventory.AddItem(TestUtils.CreateTestItem());
+            (_, var openCloseBehaviour) = await chest.TryGetBehaviour<IInteractable>();
+            openCloseBehaviour.Interact(ObjectInteractionTypes.Open, player);
+            (_, var inventoryBehaviour) = await chest.TryGetBehaviour<IHasInventory>();
+            inventoryBehaviour.Inventory.AddItem(TestUtils.CreateTestItem());
 
-            bool result = CommandManager.TryExecute("take", ["0", "test_item"], player);
+            bool result = await CommandManager.TryExecute("take", ["0", "test_item"], player);
 
-            var npc = TestUtils.CreateTestNPCWithInventory();
+            var npc = await TestUtils.CreateTestNPCWithInventory();
             var testSublocation2 = TestUtils.CreateTestSublocation(npc);
             player.MoveTo(testSublocation2);
             player.CurrentNPCInteraction = npc;
 
-            bool result2 = CommandManager.TryExecute("take", ["0", "test_item"], player);
+            bool result2 = await CommandManager.TryExecute("take", ["0", "test_item"], player);
 
             Assert.False(result);
             Assert.False(result2);
         }
 
         [Fact]
-        internal void TakeItem_Fails_With_No_Provided_Quantity_And_Invalid_ItemName()
+        internal async void TakeItem_Fails_With_No_Provided_Quantity_And_Invalid_ItemName()
         {
             var player = TestUtils.CreateTestPlayer();
-            var chest = TestUtils.CreateTestGameObjectChest();
+            var chest = await TestUtils.CreateTestGameObjectChest();
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
-            chest.TryGetBehaviour<IInteractable>(out IInteractable openClose);
-            openClose.Interact(ObjectInteractionTypes.Open, player);
-            chest.TryGetBehaviour<IHasInventory>(out var hasInventory);
-            hasInventory.Inventory.AddItem(TestUtils.CreateTestItem());
+            (_, var openCloseBehaviour) = await chest.TryGetBehaviour<IInteractable>();
+            openCloseBehaviour.Interact(ObjectInteractionTypes.Open, player);
+            (_, var inventoryBehaviour) = await chest.TryGetBehaviour<IHasInventory>();
+            inventoryBehaviour.Inventory.AddItem(TestUtils.CreateTestItem());
 
-            bool result = CommandManager.TryExecute("take", ["item_test"], player);
+            bool result = await CommandManager.TryExecute("take", ["item_test"], player);
 
-            var npc = TestUtils.CreateTestNPCWithInventory();
+            var npc = await TestUtils.CreateTestNPCWithInventory();
             var testSublocation2 = TestUtils.CreateTestSublocation(npc);
             player.MoveTo(testSublocation2);
             player.CurrentNPCInteraction = npc;
 
-            bool result2 = CommandManager.TryExecute("take", ["item_test"], player);
+            bool result2 = await CommandManager.TryExecute("take", ["item_test"], player);
 
             Assert.False(result);
             Assert.False(result2);
         }
 
         [Fact]
-        internal void TakeAllItem_Fails_When_Item_Does_Not_Exist()
+        internal async void TakeAllItem_Fails_When_Item_Does_Not_Exist()
         {
             var player = TestUtils.CreateTestPlayer();
-            var chest = TestUtils.CreateTestGameObjectChest(true);
+            var chest = await TestUtils.CreateTestGameObjectChest(true);
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
-            chest.TryGetBehaviour<IInteractable>(out var openClose);
-            openClose.Interact(ObjectInteractionTypes.Open, player);
-            chest.TryGetBehaviour<IHasInventory>(out var hasInventory);
-            hasInventory.Inventory.AddItem(TestUtils.CreateTestItem());
+            (_, var openCloseBehaviour) = await chest.TryGetBehaviour<IInteractable>();
+            openCloseBehaviour.Interact(ObjectInteractionTypes.Open, player);
+            (_, var inventoryBehaviour) = await chest.TryGetBehaviour<IHasInventory>();
+            inventoryBehaviour.Inventory.AddItem(TestUtils.CreateTestItem());
 
-            bool result = CommandManager.TryExecute("take", ["1", "item_test"], player);
+            bool result = await CommandManager.TryExecute("take", ["1", "item_test"], player);
 
-            var npc = TestUtils.CreateTestNPCWithInventory(1);
+            var npc = await TestUtils.CreateTestNPCWithInventory(1);
             var testSublocation2 = TestUtils.CreateTestSublocation(npc);
             player.MoveTo(testSublocation2);
             player.CurrentNPCInteraction = npc;
 
-            bool result2 = CommandManager.TryExecute("take", ["1", "item_test"], player);
+            bool result2 = await CommandManager.TryExecute("take", ["1", "item_test"], player);
 
             Assert.False(result);
             Assert.False(result2);
         }
 
         [Fact]
-        internal void TakeAllItem_Succeeds_In_Good_Conditions()
+        internal async void TakeAllItem_Succeeds_In_Good_Conditions()
         {
             var player = TestUtils.CreateTestPlayer();
-            var chest = TestUtils.CreateTestGameObjectChest(true, 2);
+            var chest = await TestUtils.CreateTestGameObjectChest(true, 2);
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
             chest.GetAllBehaviours<IInteractable>().Where(s => s.GetType() == typeof(OpenCloseBehaviour)).ToList()[0].Interact(ObjectInteractionTypes.Open, player);
 
-            bool result = CommandManager.TryExecute("take", ["all", "test_item"], player);
-            chest.TryGetBehaviour<IHasInventory>(out var hasInventory);
+            bool result = await CommandManager.TryExecute("take", ["all", "test_item"], player);
+            (_, var inventoryBehaviour) = await chest.TryGetBehaviour<IHasInventory>();
 
             Assert.True(result);
-            hasInventory.Inventory.Slots.Count().Should().Be(0);
+            inventoryBehaviour.Inventory.Slots.Count().Should().Be(0);
             player.Inventory.Slots.Sum(s => s.Quantity).Should().Be(2);
 
             player.OpenedInventory = null;
-            var npc = TestUtils.CreateTestNPCWithInventory(2);
+            var npc = await TestUtils.CreateTestNPCWithInventory(2);
             var testSublocation2 = TestUtils.CreateTestSublocation(npc);
             player.MoveTo(testSublocation2);
             player.CurrentNPCInteraction = npc;
 
-            bool result2 = CommandManager.TryExecute("take", ["all", "test_item"], player);
-            npc.TryGetBehaviour<IHasInventory>(out var npcHasInventory);
+            bool result2 = await CommandManager.TryExecute("take", ["all", "test_item"], player);
+            (_, var npcInventoryBehaviour) = await npc.TryGetBehaviour<IHasInventory>();
 
             Assert.True(result);
-            npcHasInventory.Inventory.Slots.Count().Should().Be(0);
+            npcInventoryBehaviour.Inventory.Slots.Count().Should().Be(0);
             player.Inventory.Slots.Sum(s => s.Quantity).Should().Be(4);
         }
 
         [Fact]
-        internal void TakeItem_Succeeds_In_Good_Conditions()
+        internal async void TakeItem_Succeeds_In_Good_Conditions()
         {
             var player = TestUtils.CreateTestPlayer();
-            var chest = TestUtils.CreateTestGameObjectChest(true);
+            var chest = await TestUtils.CreateTestGameObjectChest(true);
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
-            chest.TryGetBehaviour<IInteractable>(out var openClose);
-            openClose.Interact(ObjectInteractionTypes.Open, player);
+            (_, var openCloseBehaviour) = await chest.TryGetBehaviour<IInteractable>();
+            openCloseBehaviour.Interact(ObjectInteractionTypes.Open, player);
 
-            bool result = CommandManager.TryExecute("take", ["1", "test_item"], player);
-            chest.TryGetBehaviour<IHasInventory>(out var hasInventory);
+            bool result = await CommandManager.TryExecute("take", ["1", "test_item"], player);
+            (_, var inventoryBehaviour) = await chest.TryGetBehaviour<IHasInventory>();
 
             Assert.True(result);
-            hasInventory.Inventory.Slots.Count().Should().Be(0);
+            inventoryBehaviour.Inventory.Slots.Count().Should().Be(0);
             player.Inventory.Slots.Sum(s => s.Quantity).Should().Be(1);
 
             player.OpenedInventory = null;
-            var npc = TestUtils.CreateTestNPCWithInventory(1);
+            var npc = await TestUtils.CreateTestNPCWithInventory(1);
             var testSublocation2 = TestUtils.CreateTestSublocation(npc);
             player.MoveTo(testSublocation2);
             player.CurrentNPCInteraction = npc;
 
-            bool result2 = CommandManager.TryExecute("take", ["1", "test_item"], player);
-            npc.TryGetBehaviour<IHasInventory>(out var npcHasInventory);
+            bool result2 = await CommandManager.TryExecute("take", ["1", "test_item"], player);
+            (_, var npcInventoryBehaviour) = await npc.TryGetBehaviour<IHasInventory>();
 
             Assert.True(result2);
-            npcHasInventory.Inventory.Slots.Count().Should().Be(0);
+            npcInventoryBehaviour.Inventory.Slots.Count().Should().Be(0);
             player.Inventory.Slots.Sum(s => s.Quantity).Should().Be(2);
         }
 
         [Fact]
-        internal void TakeItem_Succeeds_With_No_Provided_Quantity_But_Valid_ItemName()
+        internal async void TakeItem_Succeeds_With_No_Provided_Quantity_But_Valid_ItemName()
         {
             var player = TestUtils.CreateTestPlayer();
-            var chest = TestUtils.CreateTestGameObjectChest(true);
+            var chest = await TestUtils.CreateTestGameObjectChest(true);
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
-            chest.TryGetBehaviour<IInteractable>(out var openClose);
-            openClose.Interact(ObjectInteractionTypes.Open, player);
+            (_, var openCloseBehaviour) = await chest.TryGetBehaviour<IInteractable>();
+            openCloseBehaviour.Interact(ObjectInteractionTypes.Open, player);
 
-            bool result = CommandManager.TryExecute("take", ["test_item"], player);
-            chest.TryGetBehaviour<IHasInventory>(out var hasInventory);
+            bool result = await CommandManager.TryExecute("take", ["test_item"], player);
+            (_, var inventoryBehaviour) = await chest.TryGetBehaviour<IHasInventory>();
 
             Assert.True(result);
-            hasInventory.Inventory.Slots.Count().Should().Be(0);
+            inventoryBehaviour.Inventory.Slots.Count().Should().Be(0);
             player.Inventory.Slots.Sum(s => s.Quantity).Should().Be(1);
 
             player.OpenedInventory = null;
-            var npc = TestUtils.CreateTestNPCWithInventory(1);
+            var npc = await TestUtils.CreateTestNPCWithInventory(1);
             npc.AddBehaviour(typeof(IHasInventory), new TradeableNPCBehaviour());
             var testSublocation2 = TestUtils.CreateTestSublocation(npc);
             player.MoveTo(testSublocation2);
             player.CurrentNPCInteraction = npc;
 
-            bool result2 = CommandManager.TryExecute("take", ["test_item"], player);
-            npc.TryGetBehaviour<IHasInventory>(out var npcHasInventory);
+            bool result2 = await CommandManager.TryExecute("take", ["test_item"], player);
+            (_, var npcInventoryBehaviour) = await npc.TryGetBehaviour<IHasInventory>();
 
             Assert.True(result2);
-            npcHasInventory.Inventory.Slots.Count().Should().Be(0);
+            npcInventoryBehaviour.Inventory.Slots.Count().Should().Be(0);
             player.Inventory.Slots.Sum(s => s.Quantity).Should().Be(2);
         }
     }

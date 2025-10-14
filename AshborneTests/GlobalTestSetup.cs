@@ -14,9 +14,11 @@ namespace AshborneTests
             // This runs ONCE before ANY tests in this collection
             Console.WriteLine(">>> Running global test setup...");
 
-            IOService.Initialise(new Mock<IInputHandler>().Object, new Mock<IOutputHandler>().Object);
             Player player = new Player();
-            GameContext.Initialise(player, new GameStateManager(player), new Mock<DialogueService>().Object, new Mock<InkRunner>().Object, new Mock<GameEngine>().Object);
+            GameStateManager gameStateManager = new GameStateManager(player);
+            AppEnvironment app = new AppEnvironment();
+            InkRunner inkRunner = new Mock<InkRunner>(gameStateManager, player, app).Object;
+            GameContext.Initialise(player, gameStateManager, new Mock<DialogueService>(inkRunner).Object, inkRunner, new Mock<GameEngine>(new Mock<IInputHandler>().Object, new Mock<IOutputHandler>().Object, app).Object);
         }
     }
 

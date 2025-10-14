@@ -13,10 +13,10 @@ namespace AshborneGame._Core.Globals.Services
     {
         private readonly InkRunner _inkRunner;
         private string? _currentDialogueKey = null;
-    private string? _lastDialogueKey = null;
+        private string? _lastDialogueKey = null;
 
-    public string? CurrentDialogueKey => _currentDialogueKey;
-    public string? LastDialogueKey => _lastDialogueKey;
+        public string? CurrentDialogueKey => _currentDialogueKey;
+        public string? LastDialogueKey => _lastDialogueKey;
 
         public DialogueService(InkRunner inkRunner)
         {
