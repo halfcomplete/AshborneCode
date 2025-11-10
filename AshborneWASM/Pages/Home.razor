@@ -7,6 +7,7 @@
 @using AshborneGame.WebPort
 @using Microsoft.JSInterop
 @using System.Timers
+@using System.Text.RegularExpressions;
 @page "/"
 @inject IJSRuntime JS
 
@@ -42,11 +43,41 @@
         <div class="game-screen">
             <div class="game-output">@((MarkupString)RenderGameText(gameText))</div>
 @code {
+    private static string ParseColours(string input)
+    {
+        if (string.IsNullOrEmpty(input)) return input;
+
+        // Strict first
+        input = OutputConstants.ColourTagRegexStrict.Replace(input, m =>
+        {
+            var hex = m.Groups[1].Value;
+            var inner = m.Groups[2].Value;
+            return $"<span style=\"color:#{hex};\">{inner}</span>";
+        });
+
+        // Then lenient (fix missing slash on the closing tag)
+        input = OutputConstants.ColourTagRegexLenient.Replace(input, m =>
+        {
+            var hex = m.Groups[1].Value;
+            var inner = m.Groups[2].Value;
+            return $"<span style=\"color:#{hex};\">{inner}</span>";
+        });
+
+        return input;
+    }
+
     private string RenderGameText(string text)
     {
-        // Replace <i>...</i> with <span class="game-italic">...</span>
+        if (string.IsNullOrEmpty(text))
+            return string.Empty;
+
+        // First: colour tags -> <span style="color:#...">
+        text = ParseColours(text);
+
+        // Then: <i>...</i> -> <span class='game-italic'>...</span>
         var sb = new System.Text.StringBuilder();
         int idx = 0;
+
         while (idx < text.Length)
         {
             int start = text.IndexOf(OutputConstants.InlineItalicStartMarker, idx);
@@ -55,20 +86,30 @@
                 sb.Append(text.Substring(idx).Replace("\n", "<br />"));
                 break;
             }
+
+            // Append text before <i>
             sb.Append(text.Substring(idx, start - idx).Replace("\n", "<br />"));
+
             int end = text.IndexOf(OutputConstants.InlineItalicEndMarker, start);
             if (end == -1)
             {
+                // Unterminated <i>—treat the remainder as plain text
                 sb.Append(text.Substring(start).Replace("\n", "<br />"));
                 break;
             }
+
             int contentStart = start + OutputConstants.InlineItalicStartMarker.Length;
             string italicContent = text.Substring(contentStart, end - contentStart);
-            sb.Append($"<span class='game-italic'>{System.Net.WebUtility.HtmlEncode(italicContent)}</span>");
+
+            sb.Append($"<span class='game-italic'>{italicContent.Replace("\n", "<br />")}</span>");
+
             idx = end + OutputConstants.InlineItalicEndMarker.Length;
         }
+
         return sb.ToString();
     }
+}
+
 }
             <div class="input-gif-overlay-container">
                 <div class="input-overlay-wrapper">
@@ -442,7 +483,7 @@
         var outputHandler = new WebOutputHandler(
         async line => EnqueueOutput(line),
         async line => EnqueueOutput($"{OutputConstants.DefaultTypeSpeed * OutputConstants.NonDialogueOutputSpeedMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}"),
-        async (type, msg) => EnqueueOutput($"[{type}]: {msg}")
+        async (type, msg) => Console.WriteLine($"[{type}]: {msg}")
         );
 #else
         var outputHandler = new WebOutputHandler(
@@ -487,7 +528,7 @@
                 InvokeAsync(StateHasChanged);
             };
             GameContext.InkRunner.StartOssanethTimer += StartOssanethSigilTimer;
-			GameContext.InkRunner.StopOssanethTimer += () => ossanethSigilTimer?.Dispose();
+            GameContext.InkRunner.StopOssanethTimer += () => ossanethSigilTimer?.Dispose();
         }
 
         // Do NOT start the game loop here; it will be started after fade.
@@ -679,7 +720,7 @@
                             await IOService.Output.DisplayDebugMessage($"Silent Timer Task set to delay for infinite ms at {DateTime.Now}.");
                         }
 
-                  
+
 
                         var completed = await Task.WhenAny(playerInputTask, silentTimerTask);
                         GameContext.InkRunner.CancelExternalChoiceAwait();
@@ -801,6 +842,7 @@
                     i += OutputConstants.InlineItalicEndMarker.Length - 1;
                     continue;
                 }
+
                 char letter = msgLine[i];
                 string charToAdd = inItalic ? $"<span class='game-italic'>{System.Net.WebUtility.HtmlEncode(letter.ToString())}</span>" : System.Net.WebUtility.HtmlEncode(letter.ToString());
                 typedLine += charToAdd;
@@ -836,6 +878,24 @@
                 globalCharIndex++;
                 // Console.WriteLine($"[DEBUG] Finished typing character.");
             }
+            await IOService.Output.DisplayDebugMessage($"[DEBUG] Found matches: {string.Join(", ", OutputConstants.ColourTagRegexStrict.Matches(typedLine))}");
+            // Strict first
+            typedLine = OutputConstants.ColourTagRegexStrict.Replace(typedLine, m =>
+            {
+                var hex = m.Groups[1].Value;
+                var inner = m.Groups[2].Value;
+                return $"<span style=\"color:#{hex};\">{inner}</span>";
+            });
+
+            // Then lenient (fix missing slash on the closing tag)
+            typedLine = OutputConstants.ColourTagRegexLenient.Replace(typedLine, m =>
+            {
+                var hex = m.Groups[1].Value;
+                var inner = m.Groups[2].Value;
+                return $"<span style=\"color:#{hex};\">{inner}</span>";
+            });
+
+			await IOService.Output.DisplayDebugMessage($"[DEBUG] Finished typing line: {msgLine}");
             buffer.Add(typedLine);
             gameText = string.Join('\n', buffer);
             await InvokeAsync(StateHasChanged);

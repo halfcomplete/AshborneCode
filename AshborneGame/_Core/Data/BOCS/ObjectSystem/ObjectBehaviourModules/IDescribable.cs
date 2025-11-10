@@ -1,7 +1,7 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Game;
 
-namespace AshborneGame._Core.Globals.Interfaces
+namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviourModules
 {
     public interface IDescribable  
     {

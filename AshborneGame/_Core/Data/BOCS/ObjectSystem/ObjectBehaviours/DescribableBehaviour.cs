@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Game;
+using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviourModules;
 
 namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 {
     /// <summary>
     /// Used by LocationNarrativeProfile, GameObjects, NPCs, etc. for conditional descriptions.
     /// </summary>
-    public class DescribableBehaviour
+    public class DescribableBehaviour : IDescribable
     {
         /// <summary>
         /// List of (condition, description) pairs.
         /// </summary>
-        public List<(Func<GameStateManager, bool> Condition, string Description)> Conditions { get; } = new();
+        public List<(Func<GameStateManager, bool> condition, string description)> Conditions { get; } = new();
 
         /// <summary>
         /// Adds a new conditional description.
@@ -30,8 +31,8 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
         public string GetDescription(Player player, GameStateManager state)
         {
             var applicable = Conditions
-                .Where(c => c.Condition(state))
-                .Select(c => c.Description)
+                .Where(c => c.condition(state))
+                .Select(c => c.description)
                 .ToList();
 
             return string.Join(" ", applicable);

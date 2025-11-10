@@ -1,4 +1,5 @@
-﻿
+﻿using System.Text.RegularExpressions;
+
 namespace AshborneGame._Core.Globals.Constants
 {
     public static class OutputConstants
@@ -11,6 +12,25 @@ namespace AshborneGame._Core.Globals.Constants
         /// The marker that indicates the end of an inline italic section within typewriter text.
         /// </summary>
         public const string InlineItalicEndMarker = "</i>";
+        /// <summary>
+        /// The regex that indicates the start of an inline coloured section within typewriter text.
+        /// </summary>
+        public const string InlineColourStartRegex = "<c=>";
+        /// <summary>
+        /// The regex that indicates the end of an inline coloured section within typewriter text.
+        /// </summary>
+        public const string InlineColourEndRegex = "</i>";
+
+        // <c=AABBCC>...</c=AABBCC>
+        public static readonly Regex ColourTagRegexStrict = new(
+        @"<c=([0-9A-Fa-f]{6})>(.*?)</c=\1>",
+        RegexOptions.Singleline | RegexOptions.Compiled);
+
+        // <c=AABBCC>...<c=AABBCC> (missing slash)
+        // We accept a closing tag that mistakenly omits '/', and still convert it.
+        public static readonly Regex ColourTagRegexLenient = new(
+        @"<c=([0-9A-Fa-f]{6})>(.*?)<c=\1>",
+        RegexOptions.Singleline | RegexOptions.Compiled);
         /// <summary>
         /// Default type speed for Release builds in milliseconds per character.
         /// </summary>

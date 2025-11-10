@@ -207,7 +207,7 @@ body {
 }
 
 .loading-progress-bar-fill {
-    width: calc(var(--blazor-load-percentage, 0%) * 1.15);
+    width: calc(var(--blazor-load-percentage, 0%));
     height: 100%;
     background: linear-gradient(90deg, #bfae8e 60%, #8c7c5a 100%);
     background: #f8eecb;

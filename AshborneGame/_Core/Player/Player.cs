@@ -247,7 +247,7 @@ namespace AshborneGame._Core._Player
             await IOService.Output.DisplayDebugMessage("Move to... " + place, ConsoleMessageTypes.INFO);
 
             // Directional movement
-            if (DirectionConstants.CardinalDirections.Contains(place))
+            if (DirectionConstants.CardinalDirections.Contains(place) || place.Equals(DirectionConstants.Back))
             {
                 return await TryMoveDirectionally(place);
             }

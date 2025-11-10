@@ -69,22 +69,15 @@ namespace AshborneTests
         {
             var parent = CreateTestLocation(Guid.NewGuid().ToString());
             var identifier = new LocationIdentifier("test", null);
-            if (gameObject is GameObject go)
-            {
-                return new Sublocation(
-                    parent,
-                    go,
-                    identifier,
-                    new DescriptionComposer(),
-                    Guid.NewGuid().ToString(),
-                    "[shortened positional phrase]",
-                    "[short ref desc]"
-                );
-            }
-            else
-            {
-                throw new InvalidCastException("gameObject must be a GameObject for Sublocation test creation.");
-            }
+            return new Sublocation(
+                parent,
+                gameObject,
+                identifier,
+                new DescriptionComposer(),
+                Guid.NewGuid().ToString(),
+                "[shortened positional phrase]",
+                "[short ref desc]"
+            );
         }
 
         static internal GameObject CreateTestGameObject(string name = "Test Object")
