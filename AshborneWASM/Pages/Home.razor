@@ -41,7 +41,7 @@
             }
         </div>
         <div class="game-screen">
-            <div class="game-output">@((MarkupString)RenderGameText(gameText))</div>
+            <div class="game-output">@((MarkupString)gameText)</div>
 @code {
     private static string ParseColours(string input)
     {
@@ -106,6 +106,7 @@
             idx = end + OutputConstants.InlineItalicEndMarker.Length;
         }
 
+		InvokeAsync(StateHasChanged).GetAwaiter();
         return sb.ToString();
     }
 }
@@ -626,14 +627,6 @@
                 await InvokeAsync(StateHasChanged);
                 continue;
             }
-            if (line.Contains("__NL__"))
-            {
-                Console.WriteLine("__NL__ marker encountered.");
-                dialogueChoices.Clear();
-                // Handle new line marker
-                gameText += "\n";
-                continue; // Do not add another new line after this
-            }
 
             // Handle special pause marker: ms__PAUSE__
             if (line.TrimEnd().EndsWith(OutputConstants.DialoguePauseMarker))
@@ -663,7 +656,7 @@
             if (line.Equals(OutputConstants.NewLineMarker))
             {
                 Console.WriteLine($"[DEBUG] Detected new line marker in line: {line}");
-                gameText += "\n";
+                gameText += "<br />";
                 await InvokeAsync(StateHasChanged);
                 await AutoScrollToBottom();
                 await Task.Delay(OutputConstants.DefaultTypeSpeed * OutputConstants.NewLinePauseMultiplier);
@@ -765,14 +758,14 @@
                 }
             }
 
-            // Normal line
+            // Normal line - render markup (colours/italics) and append an HTML line break
             if (!string.IsNullOrWhiteSpace(line))
             {
-                gameText += line + "\n";
+                gameText += RenderGameText(line) + "<br />";
             }
             else
             {
-                gameText += "\n";
+                gameText += "<br />";
             }
             await InvokeAsync(StateHasChanged);
             await AutoScrollToBottom();
@@ -816,96 +809,95 @@
         await InvokeAsync(StateHasChanged);
         Console.WriteLine($"[DEBUG] InvokeAsync called after setting isTypingDialogue");
 
-        // Split into lines and type each line separately
-        string[] lines = processedMessage.Split('\n');
-        var buffer = gameText.Split('\n').ToList(); // Keep previous lines
-        int globalCharIndex = 0; // Track character position across all lines
+        // Convert processed message into HTML (handles italic and colour tags and converts \n to <br />)
+        string htmlMessage = RenderGameText(processedMessage);
 
-        foreach (var msgLine in lines)
+        // Tokenize HTML into tags and text chunks. Tags (e.g. <span ...>, <br />) are inserted immediately
+        // and text chunks are typed character-by-character.
+        List<(string text, bool isTag)> tokens = new List<(string, bool)>();
+        int p = 0;
+        while (p < htmlMessage.Length)
         {
-            Console.WriteLine($"[DEBUG] Typing line: {msgLine}");
-            string typedLine = "";
-            bool inItalic = false;
-            for (int i = 0; i < msgLine.Length; i++)
+            if (htmlMessage[p] == '<')
             {
-                // Console.WriteLine($"[DEBUG] Typing char {i}/{msgLine.Length} in line: {msgLine}");
-                // Check for start/end italic markers
-                if (msgLine.Substring(i).StartsWith(OutputConstants.InlineItalicStartMarker))
+                int gt = htmlMessage.IndexOf('>', p);
+                if (gt == -1)
                 {
-                    inItalic = true;
-                    i += OutputConstants.InlineItalicStartMarker.Length - 1;
-                    continue;
+                    // malformed tag — treat rest as text
+                    tokens.Add((htmlMessage.Substring(p), false));
+                    break;
                 }
-                if (msgLine.Substring(i).StartsWith(OutputConstants.InlineItalicEndMarker))
-                {
-                    inItalic = false;
-                    i += OutputConstants.InlineItalicEndMarker.Length - 1;
-                    continue;
-                }
+                var tag = htmlMessage.Substring(p, gt - p + 1);
+                tokens.Add((tag, true));
+                p = gt + 1;
+            }
+            else
+            {
+                int lt = htmlMessage.IndexOf('<', p);
+                if (lt == -1) lt = htmlMessage.Length;
+                var txt = htmlMessage.Substring(p, lt - p);
+                tokens.Add((txt, false));
+                p = lt;
+            }
+        }
 
-                char letter = msgLine[i];
-                string charToAdd = inItalic ? $"<span class='game-italic'>{System.Net.WebUtility.HtmlEncode(letter.ToString())}</span>" : System.Net.WebUtility.HtmlEncode(letter.ToString());
-                typedLine += charToAdd;
-                gameText = string.Join('\n', buffer) + (buffer.Count > 0 ? "\n" : "") + typedLine;
-                // Console.WriteLine($"[DEBUG] Invoking StateHasChanged.");
+        // Prepare typing across tokens
+        var existing = gameText ?? string.Empty;
+        var typedBuilder = new StringBuilder();
+        int globalCharIndex = 0;
+
+        foreach (var token in tokens)
+        {
+            if (token.isTag)
+            {
+                // Append tags immediately (they don't consume characterSpeed slots)
+                typedBuilder.Append(token.text);
                 await InvokeAsync(StateHasChanged);
-                // Console.WriteLine($"[DEBUG] Invoking AutoScrollToBottom().");
-                await AutoScrollToBottom();
-                // Console.WriteLine($"[DEBUG] Calculating isEnd.");
+                // No delay for tags
+                continue;
+            }
 
-                // Calculate isEnd using the same logic as Console version
-                bool isEnd = i == msgLine.Length - 1 || 
-                            (i + 1 < msgLine.Length && msgLine[i + 1].Equals(' ')) || 
-                            (i + 1 < msgLine.Length && msgLine[i + 1].Equals('\n'));
-                // Console.WriteLine($"[DEBUG] Getting speed.");
-                // Get the speed for this character (if available)
+            // Type text chunk character by character
+            for (int ci = 0; ci < token.text.Length; ci++)
+            {
+                char letter = token.text[ci];
+                // Append encoded character
+                typedBuilder.Append(System.Net.WebUtility.HtmlEncode(letter.ToString()));
+
+                // Update gameText and UI (use HTML line break between previous content and this typed block,
+                // but avoid duplicating <br /> if `existing` already ends with one)
+                var separator = string.Empty;
+                if (!string.IsNullOrEmpty(existing) && !existing.EndsWith("<br />"))
+                    separator = "<br />";
+                gameText = existing + separator + typedBuilder.ToString();
+                await InvokeAsync(StateHasChanged);
+                await AutoScrollToBottom();
+
+                // Determine isEnd (approx): consider space or end-of-chunk
+                bool isEnd = (ci == token.text.Length - 1) || (ci + 1 < token.text.Length && token.text[ci + 1] == ' ');
+
                 int currentSpeed = ms;
                 if (characterSpeeds != null && characterSpeeds.Count > globalCharIndex)
-                {
                     currentSpeed = characterSpeeds[globalCharIndex];
-                }
 
-                // Console.WriteLine($"[DEBUG] Speed={currentSpeed}.");
-
-                // Console.WriteLine($"[DEBUG] Calculating delay.");
 #if DEBUG
                 int delay = await CharacterOutputDelayCalculator.CalculateDebugDelayAsync(letter, currentSpeed, isEnd);
 #else
                 int delay = await CharacterOutputDelayCalculator.CalculateDelayAsync(letter, currentSpeed, isEnd);
 #endif
-                // Console.WriteLine($"[DEBUG] Waiting for delay: {delay} ms");
                 await Task.Delay(delay);
                 globalCharIndex++;
-                // Console.WriteLine($"[DEBUG] Finished typing character.");
             }
-            await IOService.Output.DisplayDebugMessage($"[DEBUG] Found matches: {string.Join(", ", OutputConstants.ColourTagRegexStrict.Matches(typedLine))}");
-            // Strict first
-            typedLine = OutputConstants.ColourTagRegexStrict.Replace(typedLine, m =>
-            {
-                var hex = m.Groups[1].Value;
-                var inner = m.Groups[2].Value;
-                return $"<span style=\"color:#{hex};\">{inner}</span>";
-            });
-
-            // Then lenient (fix missing slash on the closing tag)
-            typedLine = OutputConstants.ColourTagRegexLenient.Replace(typedLine, m =>
-            {
-                var hex = m.Groups[1].Value;
-                var inner = m.Groups[2].Value;
-                return $"<span style=\"color:#{hex};\">{inner}</span>";
-            });
-
-			await IOService.Output.DisplayDebugMessage($"[DEBUG] Finished typing line: {msgLine}");
-            buffer.Add(typedLine);
-            gameText = string.Join('\n', buffer);
-            await InvokeAsync(StateHasChanged);
-            await AutoScrollToBottom();
-#if DEBUG
-            await Task.Delay(Convert.ToInt32(Math.Round(ms * OutputConstants.NewLinePauseMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier)));
-#else
-            await Task.Delay(ms * OutputConstants.NewLinePauseMultiplier);
-#endif
         }
+
+        // Commit typed content to the main gameText buffer
+        var finalSeparator = string.Empty;
+        if (!string.IsNullOrEmpty(existing) && !existing.EndsWith("<br />"))
+            finalSeparator = "<br />";
+        gameText = string.IsNullOrEmpty(existing)
+            ? typedBuilder.ToString()
+            : existing + finalSeparator + typedBuilder.ToString();
+
         Console.WriteLine($"[DEBUG] Finished typing dialogue: {message}");
         isTypingDialogue = false;
         await InvokeAsync(StateHasChanged);
