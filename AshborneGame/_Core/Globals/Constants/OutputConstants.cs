@@ -12,14 +12,10 @@ namespace AshborneGame._Core.Globals.Constants
         /// The marker that indicates the end of an inline italic section within typewriter text.
         /// </summary>
         public const string InlineItalicEndMarker = "</i>";
-        /// <summary>
-        /// The regex that indicates the start of an inline coloured section within typewriter text.
-        /// </summary>
-        public const string InlineColourStartRegex = "<c=>";
-        /// <summary>
-        /// The regex that indicates the end of an inline coloured section within typewriter text.
-        /// </summary>
-        public const string InlineColourEndRegex = "</i>";
+
+        public static readonly Regex SpeakerTagRegex = new(
+            "__S:[A-Za-z]+__", RegexOptions.Compiled);
+
 
         // <c=AABBCC>...</c=AABBCC>
         public static readonly Regex ColourTagRegexStrict = new(

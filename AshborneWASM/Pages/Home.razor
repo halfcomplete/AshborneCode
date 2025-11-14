@@ -42,74 +42,96 @@
         </div>
         <div class="game-screen">
             <div class="game-output">@((MarkupString)gameText)</div>
-@code {
-    private static string ParseColours(string input)
-    {
-        if (string.IsNullOrEmpty(input)) return input;
 
-        // Strict first
-        input = OutputConstants.ColourTagRegexStrict.Replace(input, m =>
-        {
-            var hex = m.Groups[1].Value;
-            var inner = m.Groups[2].Value;
-            return $"<span style=\"color:#{hex};\">{inner}</span>";
-        });
+            @code {
+                private static string ParseSpeakerTags(string input)
+                {
+                    if (string.IsNullOrEmpty(input)) return input;
 
-        // Then lenient (fix missing slash on the closing tag)
-        input = OutputConstants.ColourTagRegexLenient.Replace(input, m =>
-        {
-            var hex = m.Groups[1].Value;
-            var inner = m.Groups[2].Value;
-            return $"<span style=\"color:#{hex};\">{inner}</span>";
-        });
+                    var matches = OutputConstants.SpeakerTagRegex.Matches(input);
+                    foreach (Match m in matches)
+                    {
+                        var speakerName = m.Groups[1].Value;
+                        try
+                        {
+                            string colour = SpeakerColourPairs.SpeakerToColour[speakerName];
+                        }
+                        catch (KeyNotFoundException)
+                        {
+                            IOService.Output.DisplayDebugMessage($"Speaker '{speakerName}' not found in SpeakerColourPairs. Using default colour.", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.ERROR);
+                        }
+                        var colourHex = SpeakerColourPairs.SpeakerToColour.GetValueOrDefault(speakerName, "FFFFFF");
+                    };
+					return input;
+                }
 
-        return input;
-    }
+                private static string ParseColours(string input)
+                {
+                    if (string.IsNullOrEmpty(input)) return input;
 
-    private string RenderGameText(string text)
-    {
-        if (string.IsNullOrEmpty(text))
-            return string.Empty;
+                    // Strict first
+                    input = OutputConstants.ColourTagRegexStrict.Replace(input, m =>
+                    {
+                        var hex = m.Groups[1].Value;
+                        var inner = m.Groups[2].Value;
+                        return $"<span style=\"color:#{hex};\">{inner}</span>";
+                    });
 
-        // First: colour tags -> <span style="color:#...">
-        text = ParseColours(text);
+                    // Then lenient (fix missing slash on the closing tag)
+                    input = OutputConstants.ColourTagRegexLenient.Replace(input, m =>
+                    {
+                        var hex = m.Groups[1].Value;
+                        var inner = m.Groups[2].Value;
+                        return $"<span style=\"color:#{hex};\">{inner}</span>";
+                    });
 
-        // Then: <i>...</i> -> <span class='game-italic'>...</span>
-        var sb = new System.Text.StringBuilder();
-        int idx = 0;
+                    return input;
+                }
 
-        while (idx < text.Length)
-        {
-            int start = text.IndexOf(OutputConstants.InlineItalicStartMarker, idx);
-            if (start == -1)
-            {
-                sb.Append(text.Substring(idx).Replace("\n", "<br />"));
-                break;
+                private string RenderGameText(string text)
+                {
+                    if (string.IsNullOrEmpty(text))
+                        return string.Empty;
+
+                    // First: colour tags -> <span style="color:#...">
+                    text = ParseColours(text);
+
+                    // Then: <i>...</i> -> <span class='game-italic'>...</span>
+                    var sb = new System.Text.StringBuilder();
+                    int idx = 0;
+
+                    while (idx < text.Length)
+                    {
+                        int start = text.IndexOf(OutputConstants.InlineItalicStartMarker, idx);
+                        if (start == -1)
+                        {
+                            sb.Append(text.Substring(idx).Replace("\n", "<br />"));
+                            break;
+                        }
+
+                        // Append text before <i>
+                        sb.Append(text.Substring(idx, start - idx).Replace("\n", "<br />"));
+
+                        int end = text.IndexOf(OutputConstants.InlineItalicEndMarker, start);
+                        if (end == -1)
+                        {
+                            // Unterminated <i>—treat the remainder as plain text
+                            sb.Append(text.Substring(start).Replace("\n", "<br />"));
+                            break;
+                        }
+
+                        int contentStart = start + OutputConstants.InlineItalicStartMarker.Length;
+                        string italicContent = text.Substring(contentStart, end - contentStart);
+
+                        sb.Append($"<span class='game-italic'>{italicContent.Replace("\n", "<br />")}</span>");
+
+                        idx = end + OutputConstants.InlineItalicEndMarker.Length;
+                    }
+
+		            InvokeAsync(StateHasChanged).GetAwaiter();
+                    return sb.ToString();
+                }
             }
-
-            // Append text before <i>
-            sb.Append(text.Substring(idx, start - idx).Replace("\n", "<br />"));
-
-            int end = text.IndexOf(OutputConstants.InlineItalicEndMarker, start);
-            if (end == -1)
-            {
-                // Unterminated <i>—treat the remainder as plain text
-                sb.Append(text.Substring(start).Replace("\n", "<br />"));
-                break;
-            }
-
-            int contentStart = start + OutputConstants.InlineItalicStartMarker.Length;
-            string italicContent = text.Substring(contentStart, end - contentStart);
-
-            sb.Append($"<span class='game-italic'>{italicContent.Replace("\n", "<br />")}</span>");
-
-            idx = end + OutputConstants.InlineItalicEndMarker.Length;
-        }
-
-		InvokeAsync(StateHasChanged).GetAwaiter();
-        return sb.ToString();
-    }
-}
 
 }
             <div class="input-gif-overlay-container">
@@ -653,10 +675,10 @@
             }
 
             // Handle new line marker
-            if (line.Equals(OutputConstants.NewLineMarker))
+            if (line.Contains(OutputConstants.NewLineMarker))
             {
                 Console.WriteLine($"[DEBUG] Detected new line marker in line: {line}");
-                gameText += "<br />";
+                gameText += "<br>";
                 await InvokeAsync(StateHasChanged);
                 await AutoScrollToBottom();
                 await Task.Delay(OutputConstants.DefaultTypeSpeed * OutputConstants.NewLinePauseMultiplier);

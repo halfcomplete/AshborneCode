@@ -17,7 +17,6 @@ namespace AshborneGame.ConsolePort
 
         public Task Write(string message, int ms)
         {
-            // Process inline slow markers in the message
             var (processedMessage, characterSpeeds) = ProcessInlineSlowMarkersWithSpeeds(message, ms);
 
 #if DEBUG
