@@ -143,7 +143,6 @@
                 }
             }
 
-}
             <div class="input-gif-overlay-container">
                 <div class="input-overlay-wrapper">
                     @if (GameContext.Player?.EquippedItems["face"]?.Name == MaskNameConstants.Ossaneth)
@@ -701,11 +700,44 @@
             if (line.Contains(OutputConstants.TypewriterStartMarker) && line.Contains(OutputConstants.TypewriterEndMarker))
             {
                 dialogueChoices.Clear();
-                await HandleTypewriterEffect(line, nextLine);
+                // If the previous line indicated this line should be coloured, wrap any speech
+                // (quoted text) with the appropriate colour tag before rendering.
                 if (isNextLineColoured.coloured)
                 {
+                    try
+                    {
+                        line = OutputConstants.SpeechRegex.Replace(line, m => $"<c={isNextLineColoured.hexColour}>{m.Value}</c={isNextLineColoured.hexColour}>");
+                    }
+                    catch (Exception ex)
+                    {
+                        await IOService.Output.DisplayDebugMessage($"Error colouring speech: {ex.Message}", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.ERROR);
+                    }
+                    // Reset the flag after applying colouring
                     isNextLineColoured = (false, "FFFFFF");
                 }
+                else
+                {
+                    // If not, then check if the contents of this line can indicate the speaker by seeing if any speaker's name is in the line itself.
+                    foreach (string speakerName in SpeakerColourPairs.SpeakerToColour.Keys)
+                    {
+                        if (line.Contains(speakerName) && line.Contains("\""))
+                        {
+                            try
+                            {
+                                line = OutputConstants.SpeechRegex.Replace(line, m => $"<c={SpeakerColourPairs.SpeakerToColour[speakerName]}>{m.Value}</c={SpeakerColourPairs.SpeakerToColour[speakerName]}>");
+                            }
+                            catch (Exception ex)
+                            {
+                                await IOService.Output.DisplayDebugMessage($"Error colouring speech: {ex.Message}", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.ERROR);
+                            }
+
+                            // For safety
+                            isNextLineColoured = (false, "FFFFFF");
+                        }
+                    }
+                }
+                await HandleTypewriterEffect(line);
+
                 continue;
             }
 
@@ -797,11 +829,23 @@
             // Normal line - render markup (colours/italics) and append an HTML line break
             if (!string.IsNullOrWhiteSpace(line))
             {
+                // If the previous line indicated this line should be coloured, wrap any speech
+                // (quoted text) with the appropriate colour tag before rendering.
                 if (isNextLineColoured.coloured)
                 {
-					isNextLineColoured = (false, "FFFFFF");
+                    try
+                    {
+                        line = OutputConstants.SpeechRegex.Replace(line, m => $"<c={isNextLineColoured.hexColour}>{m.Value}</c={isNextLineColoured.hexColour}>");
+                    }
+                    catch (Exception ex)
+                    {
+                        await IOService.Output.DisplayDebugMessage($"Error colouring speech: {ex.Message}", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.ERROR);
+                    }
+                    // Reset the flag after applying colouring
+                    isNextLineColoured = (false, "FFFFFF");
                 }
-                gameText += RenderGameText($"<c=\"{isNextLineColoured.hexColour}\">" + line + $"</c=\"{isNextLineColoured.hexColour}\">") + "<br />";
+
+                gameText += RenderGameText(line) + "<br />";
             }
             else
             {
@@ -815,48 +859,9 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private Task<string> FindNextLineFromOutputQueue()
+    private async Task HandleTypewriterEffect(string line)
     {
-        var newOutputQueue = new Queue<string>(outputQueue);
-        string nextLine = string.Empty;
-        while (newOutputQueue.Count > 0)
-        {
-            nextLine = newOutputQueue.Dequeue();
-            IOService.Output.DisplayDebugMessage($"[DEBUG] FindNextLineFromOutputQueue: examining next line in queue ({nextLine})");
-            if (nextLine.Contains(OutputConstants.NewLineMarker))
-            {
-                IOService.Output.DisplayDebugMessage($"[DEBUG] FindNextLineFromOutputQueue: line '{nextLine}' contains a new line marker");
-                continue;
-            }
-            if (nextLine.Contains(OutputConstants.DialoguePauseMarker))
-            {
-                IOService.Output.DisplayDebugMessage($"[DEBUG] FindNextLineFromOutputQueue: line '{nextLine}' contains a dialogue pause marker");
-                continue;
-            }
-            if (nextLine.Contains(OutputConstants.DialogueEndMarker))
-            {
-                IOService.Output.DisplayDebugMessage($"[DEBUG] FindNextLineFromOutputQueue: line '{nextLine}' contains a dialogue end marker");
-                continue;
-            }
-            if ((nextLine.Contains("[") && nextLine.Contains("]") && nextLine.Trim().Length > 2))
-            {
-                IOService.Output.DisplayDebugMessage($"[DEBUG] FindNextLineFromOutputQueue: line '{nextLine}' contains a choice marker");
-                continue;
-            }
-            if (string.IsNullOrEmpty(nextLine))
-            {
-                IOService.Output.DisplayDebugMessage($"[DEBUG] FindNextLineFromOutputQueue: line '{nextLine}' is null or empty");
-                continue;
-            }
-            break;
-        }
-        IOService.Output.DisplayDebugMessage($"[DEBUG] FindNextLineFromOutputQueue: found next line: ({nextLine})");
-		return Task.FromResult(nextLine);
-    }
-
-    private async Task HandleTypewriterEffect(string line, string nextLine)
-    {
-        Console.WriteLine($"[DEBUG] Handling typewriter effect for line: {line}. nextLine='{nextLine}'");
+        Console.WriteLine($"[DEBUG] Handling typewriter effect for line: {line}");
         if (line.Contains(OutputConstants.DialogueEndMarker))
         {
             Console.WriteLine($"[DEBUG] HandleTypewriterEffect: Flushed output, ending dialogue at {DateTime.Now}");
@@ -885,11 +890,10 @@
 
         isTypingDialogue = true;
         Console.WriteLine($"[DEBUG] isTypingDialogue set to true for message: {message}");
-        await InvokeAsync(StateHasChanged);
-        Console.WriteLine($"[DEBUG] InvokeAsync called after setting isTypingDialogue");
 
         // Convert processed message into HTML (handles italic and colour tags and converts \n to <br />)
         string htmlMessage = RenderGameText(processedMessage);
+        if (OutputConstants.SpeakerTagRegex.IsMatch(line)) return;
 
         // Tokenize HTML into tags and text chunks. Tags (e.g. <span ...>, <br />) are inserted immediately
         // and text chunks are typed character-by-character.

@@ -81,6 +81,7 @@ input[type="range"] {
     accent-color: #bfae8e;
     margin-top: 0.2rem;
     margin-bottom: 0.2rem;
+    border-radius: 10px;
     padding: 0;
 }
 .settings-btn {
