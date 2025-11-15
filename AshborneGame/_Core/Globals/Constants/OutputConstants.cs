@@ -14,7 +14,11 @@ namespace AshborneGame._Core.Globals.Constants
         public const string InlineItalicEndMarker = "</i>";
 
         public static readonly Regex SpeakerTagRegex = new(
-            "__S:[A-Za-z]+__", RegexOptions.Compiled);
+            "__S:([A-Za-z]+)__", RegexOptions.Compiled);
+
+        // replace all matches of speech with an enclosing colour marker using isNextLineColoured
+        public static readonly Regex SpeechRegex = new(
+            "\"[^\"]*\"", RegexOptions.Compiled);
 
 
         // <c=AABBCC>...</c=AABBCC>

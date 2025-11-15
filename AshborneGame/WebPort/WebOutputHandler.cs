@@ -47,7 +47,7 @@ namespace AshborneGame.WebPort
 
         public async Task WriteDialogueLine(string message, int ms)
         {
-            await _writeDialogueLineCallback($"{OutputConstants.DefaultTypeSpeed * OutputConstants.TypeSpeedMultiplier}{OutputConstants.TypewriterStartMarker}{parsed}{OutputConstants.TypewriterEndMarker}");
+            await _writeDialogueLineCallback($"{OutputConstants.DefaultTypeSpeed * OutputConstants.TypeSpeedMultiplier}{OutputConstants.TypewriterStartMarker}{message}{OutputConstants.TypewriterEndMarker}");
         }
 
         public async Task DisplayFailMessage(string message)

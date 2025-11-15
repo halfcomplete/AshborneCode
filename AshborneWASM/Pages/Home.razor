@@ -48,21 +48,30 @@
                 {
                     if (string.IsNullOrEmpty(input)) return input;
 
-                    var matches = OutputConstants.SpeakerTagRegex.Matches(input);
-                    foreach (Match m in matches)
+                    // Split into lines while preserving newline tokens
+                    var parts = Regex.Split(input, "(\\r?\\n)");
+                    IOService.Output.DisplayDebugMessage($"[DEBUG] ParseSpeakerTags: Split input into {parts.Length} parts: {string.Join(", ", parts)}");
+                    for (int i = 0; i < parts.Length; i++)
                     {
-                        var speakerName = m.Groups[1].Value;
-                        try
-                        {
-                            string colour = SpeakerColourPairs.SpeakerToColour[speakerName];
-                        }
-                        catch (KeyNotFoundException)
-                        {
-                            IOService.Output.DisplayDebugMessage($"Speaker '{speakerName}' not found in SpeakerColourPairs. Using default colour.", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.ERROR);
-                        }
+                        var line = parts[i];
+                        IOService.Output.DisplayDebugMessage($"[DEBUG] ParseSpeakerTags: Processing part {i}: '{line}'");
+                        if (string.IsNullOrWhiteSpace(line))
+                            continue;
+                        IOService.Output.DisplayDebugMessage($"[DEBUG] ParseSpeakerTags: Checking for speaker tag in line: '{line}'");
+                        var match = OutputConstants.SpeakerTagRegex.Match(line);
+                        if (!match.Success)
+                            continue;
+
+                        IOService.Output.DisplayDebugMessage($"[DEBUG] ParseSpeakerTags: Found speaker tag in line: '{line}'");
+
+                        var speakerName = match.Groups[1].Value;
                         var colourHex = SpeakerColourPairs.SpeakerToColour.GetValueOrDefault(speakerName, "FFFFFF");
-                    };
-					return input;
+                        IOService.Output.DisplayDebugMessage($"[DEBUG] ParseSpeakerTags: Speaker '{speakerName}' has colour #{colourHex}");
+
+                        Home.isNextLineColoured = (true, colourHex);
+                    }
+
+                    return string.Concat(parts);
                 }
 
                 private static string ParseColours(string input)
@@ -88,40 +97,41 @@
                     return input;
                 }
 
-                private string RenderGameText(string text)
+                private string RenderGameText(string line)
                 {
-                    if (string.IsNullOrEmpty(text))
+                    if (string.IsNullOrEmpty(line))
                         return string.Empty;
 
+					line = ParseSpeakerTags(line);
                     // First: colour tags -> <span style="color:#...">
-                    text = ParseColours(text);
+                    line = ParseColours(line);
 
                     // Then: <i>...</i> -> <span class='game-italic'>...</span>
                     var sb = new System.Text.StringBuilder();
                     int idx = 0;
 
-                    while (idx < text.Length)
+                    while (idx < line.Length)
                     {
-                        int start = text.IndexOf(OutputConstants.InlineItalicStartMarker, idx);
+                        int start = line.IndexOf(OutputConstants.InlineItalicStartMarker, idx);
                         if (start == -1)
                         {
-                            sb.Append(text.Substring(idx).Replace("\n", "<br />"));
+                            sb.Append(line.Substring(idx).Replace("\n", "<br />"));
                             break;
                         }
 
                         // Append text before <i>
-                        sb.Append(text.Substring(idx, start - idx).Replace("\n", "<br />"));
+                        sb.Append(line.Substring(idx, start - idx).Replace("\n", "<br />"));
 
-                        int end = text.IndexOf(OutputConstants.InlineItalicEndMarker, start);
+                        int end = line.IndexOf(OutputConstants.InlineItalicEndMarker, start);
                         if (end == -1)
                         {
                             // Unterminated <i>—treat the remainder as plain text
-                            sb.Append(text.Substring(start).Replace("\n", "<br />"));
+                            sb.Append(line.Substring(start).Replace("\n", "<br />"));
                             break;
                         }
 
                         int contentStart = start + OutputConstants.InlineItalicStartMarker.Length;
-                        string italicContent = text.Substring(contentStart, end - contentStart);
+                        string italicContent = line.Substring(contentStart, end - contentStart);
 
                         sb.Append($"<span class='game-italic'>{italicContent.Replace("\n", "<br />")}</span>");
 
@@ -346,12 +356,12 @@
     private int introPhase = 0;
     private string introText = "";
     private bool introFading = false;
-    private const int IntroDelayMs = 2000;
-    private const int IntroFadeDurationMs = 800;
-    private const int Phase1DurationMs = 5000; // 5 seconds for phase 1
-    private const int Phase2DurationMs = 3000; // 3 seconds for phase 2
-    private const int Phase3DurationMs = 4000; // 4 seconds for phase 3
-    private const int FinalPhaseDurationMs = 5000; // 5 seconds for final phase enlargement
+    private const int IntroDelayMs = 10; // 2 seconds
+    private const int IntroFadeDurationMs = 10; // 800 ms
+    private const int Phase1DurationMs = 10; // 5 seconds for phase 1
+    private const int Phase2DurationMs = 10; // 3 seconds for phase 2
+    private const int Phase3DurationMs = 10; // 4 seconds for phase 3
+    private const int FinalPhaseDurationMs = 10; // 5 seconds for final phase enlargement
 
     // Output queue for all output (lines, pauses, typewriter)
     private Queue<string> outputQueue = new Queue<string>();
@@ -391,6 +401,8 @@
     private bool isIntroTransitioning = false;
     private bool introTextFading = false;
     private bool isFinalPhase = false;
+
+    static private (bool coloured, string hexColour) isNextLineColoured = (false, "FFFFFF");
 
     private void StartListeningAnimation()
     {
@@ -503,11 +515,11 @@
             throw new InvalidOperationException("AppEnvironment is not injected.");
         }
 #if DEBUG
-        var outputHandler = new WebOutputHandler(
-        async line => EnqueueOutput(line),
-        async line => EnqueueOutput($"{OutputConstants.DefaultTypeSpeed * OutputConstants.NonDialogueOutputSpeedMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}"),
-        async (type, msg) => Console.WriteLine($"[{type}]: {msg}")
-        );
+    var outputHandler = new WebOutputHandler(
+    async line => EnqueueOutput(line),
+    async line => EnqueueOutput($"{OutputConstants.DefaultTypeSpeed * OutputConstants.NonDialogueOutputSpeedMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}"),
+    async (type, msg) => Console.WriteLine($"[{type}]: {msg}")
+    );
 #else
         var outputHandler = new WebOutputHandler(
             async line => EnqueueOutput(line),
@@ -689,7 +701,11 @@
             if (line.Contains(OutputConstants.TypewriterStartMarker) && line.Contains(OutputConstants.TypewriterEndMarker))
             {
                 dialogueChoices.Clear();
-                await HandleTypewriterEffect(line);
+                await HandleTypewriterEffect(line, nextLine);
+                if (isNextLineColoured.coloured)
+                {
+                    isNextLineColoured = (false, "FFFFFF");
+                }
                 continue;
             }
 
@@ -734,8 +750,6 @@
                             silentTimerTask = Task.Delay(-1);
                             await IOService.Output.DisplayDebugMessage($"Silent Timer Task set to delay for infinite ms at {DateTime.Now}.");
                         }
-
-
 
                         var completed = await Task.WhenAny(playerInputTask, silentTimerTask);
                         GameContext.InkRunner.CancelExternalChoiceAwait();
@@ -783,7 +797,11 @@
             // Normal line - render markup (colours/italics) and append an HTML line break
             if (!string.IsNullOrWhiteSpace(line))
             {
-                gameText += RenderGameText(line) + "<br />";
+                if (isNextLineColoured.coloured)
+                {
+					isNextLineColoured = (false, "FFFFFF");
+                }
+                gameText += RenderGameText($"<c=\"{isNextLineColoured.hexColour}\">" + line + $"</c=\"{isNextLineColoured.hexColour}\">") + "<br />";
             }
             else
             {
@@ -797,9 +815,48 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task HandleTypewriterEffect(string line)
+    private Task<string> FindNextLineFromOutputQueue()
     {
-        Console.WriteLine($"[DEBUG] Handling typewriter effect for line: {line}");
+        var newOutputQueue = new Queue<string>(outputQueue);
+        string nextLine = string.Empty;
+        while (newOutputQueue.Count > 0)
+        {
+            nextLine = newOutputQueue.Dequeue();
+            IOService.Output.DisplayDebugMessage($"[DEBUG] FindNextLineFromOutputQueue: examining next line in queue ({nextLine})");
+            if (nextLine.Contains(OutputConstants.NewLineMarker))
+            {
+                IOService.Output.DisplayDebugMessage($"[DEBUG] FindNextLineFromOutputQueue: line '{nextLine}' contains a new line marker");
+                continue;
+            }
+            if (nextLine.Contains(OutputConstants.DialoguePauseMarker))
+            {
+                IOService.Output.DisplayDebugMessage($"[DEBUG] FindNextLineFromOutputQueue: line '{nextLine}' contains a dialogue pause marker");
+                continue;
+            }
+            if (nextLine.Contains(OutputConstants.DialogueEndMarker))
+            {
+                IOService.Output.DisplayDebugMessage($"[DEBUG] FindNextLineFromOutputQueue: line '{nextLine}' contains a dialogue end marker");
+                continue;
+            }
+            if ((nextLine.Contains("[") && nextLine.Contains("]") && nextLine.Trim().Length > 2))
+            {
+                IOService.Output.DisplayDebugMessage($"[DEBUG] FindNextLineFromOutputQueue: line '{nextLine}' contains a choice marker");
+                continue;
+            }
+            if (string.IsNullOrEmpty(nextLine))
+            {
+                IOService.Output.DisplayDebugMessage($"[DEBUG] FindNextLineFromOutputQueue: line '{nextLine}' is null or empty");
+                continue;
+            }
+            break;
+        }
+        IOService.Output.DisplayDebugMessage($"[DEBUG] FindNextLineFromOutputQueue: found next line: ({nextLine})");
+		return Task.FromResult(nextLine);
+    }
+
+    private async Task HandleTypewriterEffect(string line, string nextLine)
+    {
+        Console.WriteLine($"[DEBUG] Handling typewriter effect for line: {line}. nextLine='{nextLine}'");
         if (line.Contains(OutputConstants.DialogueEndMarker))
         {
             Console.WriteLine($"[DEBUG] HandleTypewriterEffect: Flushed output, ending dialogue at {DateTime.Now}");
