@@ -28,6 +28,8 @@ namespace AshborneGame._Core._Player
         /// </summary>
         public Location CurrentLocation { get; private set; }
 
+        public Location? PreviousLocation { get; private set; } = null;
+
         public Sublocation? CurrentSublocation { get; private set; } = null;
 
         /// <summary>
@@ -137,6 +139,7 @@ namespace AshborneGame._Core._Player
             {
                 GameContext.GameState.OnPlayerEnterLocation(newLocation);
             }
+            PreviousLocation = CurrentLocation;
             CurrentLocation = newLocation;
             CurrentSublocation = null;
 
@@ -305,6 +308,14 @@ namespace AshborneGame._Core._Player
             }
             else
             {
+                if (direction == "back")
+                {
+                    if (PreviousLocation != null)
+                    {
+                        MoveTo(PreviousLocation);
+                        return true;
+                    }
+                }
                 if (CurrentLocation.Exits.TryGetValue(direction, out var newLocation))
                 {
                     MoveTo(newLocation);

@@ -96,7 +96,7 @@ namespace AshborneGame._Core.Game.CommandHandling
             {
                 var word = input[0].ToLowerInvariant();
                 // Check if direction
-                if (DirectionConstants.CardinalDirections.Contains(word))
+                if (DirectionConstants.CardinalDirections.Contains(word) || word == "back")
                 {
                     args = new List<string> { word };
                     return "go";
