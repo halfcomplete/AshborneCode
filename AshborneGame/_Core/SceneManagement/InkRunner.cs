@@ -407,7 +407,7 @@ namespace AshborneGame._Core.SceneManagement
         public object ExternalPlayerWearingMask(string maskName) => _gameState.PlayerWearingMask(maskName);
         public object ExternalPlayerForceMask(string maskName)
         {
-            IOService.Output.WriteNonDialogueLine(OutputConstants.ForceMaskMarker + maskName);
+            IOService.Output.WriteDialogueLine(OutputConstants.ForceMaskMarker + maskName);
             return null;
         }
 

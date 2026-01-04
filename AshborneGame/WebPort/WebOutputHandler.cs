@@ -31,11 +31,8 @@ namespace AshborneGame.WebPort
         }
 
         /// <summary>
-        /// Enqueues a message to be written that is not dialogue. Used for descriptions and non-dialogue marker text.
+        /// Enqueues a message to be written that is not dialogue. Used for descriptions. Is typewritten by default.
         /// </summary>
-        /// <remarks>
-        /// Set "message" to be 
-        /// </remarks>
         /// <param name="message">The message to be written.</param>
         /// <returns></returns>
         public async Task WriteNonDialogueLine(string message)
@@ -48,11 +45,21 @@ namespace AshborneGame.WebPort
             await _writeNonDialogueLineCallback(message);
         }
 
+        /// <summary>
+        /// Enqueues a message to be written as dialogue. Is not typewritten by default.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public async Task WriteDialogueLine(string message)
         {
             await _writeDialogueLineCallback(message);
         }
 
+        /// <summary>
+        /// Enqueues a message to be written as dialogue. Is typewritten by default in the implementation.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public async Task WriteDialogueLine(string message, int ms)
         {
             await _writeDialogueLineCallback($"{OutputConstants.DefaultTypeSpeed * OutputConstants.TypeSpeedMultiplier}{OutputConstants.TypewriterStartMarker}{message}{OutputConstants.TypewriterEndMarker}");

@@ -115,6 +115,7 @@ input[type="range"] {
     font-style: normal;
 }
 
+/* #region Resetting and Errors*/
 /* Reset body and center everything */
 html, body {
     margin: 0;
@@ -171,7 +172,9 @@ body {
     .blazor-error-boundary::after {
         content: "An error has occurred.";
     }
+/* #endregion */
 
+/* #region Loading*/
 .loading-progress {
     position: relative;
     display: flex;
@@ -242,6 +245,8 @@ body {
     margin-left: auto;
     margin-right: auto;
 }
+
+/* #endregion */
 
 .scene-header {
     position: sticky;
@@ -735,4 +740,25 @@ input {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+/* Text Special Effects (SFX) Animations */
+
+/* SFX Shake: Character offset animation for shaking text effect */
+@keyframes sfx-shake-animation {
+    0% { transform: translate(0, 0); }
+    10% { transform: translate(-1px, 1px); }
+    20% { transform: translate(1px, -1px); }
+    30% { transform: translate(-1px, -1px); }
+    40% { transform: translate(1px, 1px); }
+    50% { transform: translate(0, -1px); }
+    60% { transform: translate(-1px, 0); }
+    70% { transform: translate(1px, 1px); }
+    80% { transform: translate(-1px, -1px); }
+    90% { transform: translate(1px, 0); }
+    100% { transform: translate(0, 0); }
+}
+
+.sfx-shake {
+    display: inline-block;
+    animation: sfx-shake-animation 0.2s ease-in-out infinite;
 }

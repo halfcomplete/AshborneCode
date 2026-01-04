@@ -31,6 +31,12 @@ namespace AshborneGame._Core.Globals.Constants
         public static readonly Regex ColourTagRegexLenient = new(
         @"<c=([0-9A-Fa-f]{6})>(.*?)<c=\1>",
         RegexOptions.Singleline | RegexOptions.Compiled);
+
+        // <sfx="###">...</sfx="###"> - Text special effects marker
+        public static readonly Regex SFXTagRegex = new(
+        @"<sfx=""([A-Za-z0-9_-]+)"">(.*?)</sfx=""[A-Za-z0-9_-]+"">",
+        RegexOptions.Singleline | RegexOptions.Compiled);
+
         /// <summary>
         /// Default type speed for Release builds in milliseconds per character.
         /// </summary>

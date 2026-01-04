@@ -97,6 +97,14 @@
                     return input;
                 }
 
+                private static string ParseSFX(string input)
+                {
+                    if (string.IsNullOrEmpty(input)) return input;
+
+                    // Replace SFX markers with spans using SFXFormatter service
+                    return SFXFormatter.ConvertSFXToSpans(input);
+                }
+
                 private string RenderGameText(string line)
                 {
                     if (string.IsNullOrEmpty(line))
@@ -105,6 +113,8 @@
 					line = ParseSpeakerTags(line);
                     // First: colour tags -> <span style="color:#...">
                     line = ParseColours(line);
+                    // Then: SFX tags -> <span class='sfx-...'>
+                    line = ParseSFX(line);
 
                     // Then: <i>...</i> -> <span class='game-italic'>...</span>
                     var sb = new System.Text.StringBuilder();
@@ -514,11 +524,11 @@
             throw new InvalidOperationException("AppEnvironment is not injected.");
         }
 #if DEBUG
-        var outputHandler = new WebOutputHandler(
-        async line => EnqueueOutput(line),
-        async line => EnqueueOutput($"{OutputConstants.DefaultTypeSpeed * OutputConstants.NonDialogueOutputSpeedMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}"),
-        async (type, msg) => Console.WriteLine($"[{type}]: {msg}")
-        );
+    var outputHandler = new WebOutputHandler(
+    async line => EnqueueOutput(line),
+    async line => EnqueueOutput($"{OutputConstants.DefaultTypeSpeed * OutputConstants.NonDialogueOutputSpeedMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}"),
+    async (type, msg) => Console.WriteLine($"[{type}]: {msg}")
+    );
 #else
         var outputHandler = new WebOutputHandler(
             async line => EnqueueOutput(line),
@@ -607,8 +617,6 @@
         InvokeAsync(StateHasChanged);
     }
 
-    // TODO: Change so that non-dialogue text printing is also typewritten.
-    // Enqueue output for sequential processing
     private void EnqueueOutput(string line)
     {
 #if DEBUG
@@ -664,7 +672,10 @@
             // Handle force player mask marker
             if (line.Trim().StartsWith(OutputConstants.ForceMaskMarker) && GameContext.GameState.Masks.ContainsKey(line.Substring(OutputConstants.ForceMaskMarker.Length)))
             {
+                Console.WriteLine($"[DEBUG] Detected force player mask marker in line: {line}. Forcing mask {line.Substring(OutputConstants.ForceMaskMarker.Length)}");
                 GameContext.GameState.ForcePlayerMask(line.Substring(OutputConstants.ForceMaskMarker.Length));
+                await InvokeAsync(StateHasChanged);
+                continue;
             }
 
             // Handle special pause marker: ms__PAUSE__
