@@ -172,8 +172,6 @@ body {
         content: "An error has occurred.";
     }
 
-/* TODO: Add a background to the loading screen. */
-
 .loading-progress {
     position: relative;
     display: flex;

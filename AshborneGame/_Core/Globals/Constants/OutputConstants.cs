@@ -171,6 +171,8 @@ namespace AshborneGame._Core.Globals.Constants
         /// </summary>
         public const string DialogueEndMarker = "__END__";
 
+        public const string ForceMaskMarker = "__FORCE_MASK__";
+
         /// <summary>
         /// Multiplier for non-dialogue output speed (e.g., 1.2x faster).
         /// </summary>

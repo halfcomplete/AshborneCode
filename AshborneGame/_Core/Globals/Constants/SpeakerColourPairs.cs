@@ -5,9 +5,9 @@ namespace AshborneGame._Core.Globals.Constants
     {
         public static Dictionary<string, string> SpeakerToColour = new()
         {
-            { "Judgement", "FFFFFF" },  // White
-            { "Mercy", "FF0000" },      // Red
-            { "Truth", "0000FF" }       // Blue
+            { "Judgement", "D1CDCD" },  // Dust Grey
+            { "Mercy", "B80B0B" },      // Brick Ember
+            { "Truth", "2F7DB8" }       // Steel Blue
         };
     }
 }

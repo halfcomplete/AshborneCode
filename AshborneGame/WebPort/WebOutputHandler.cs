@@ -30,6 +30,14 @@ namespace AshborneGame.WebPort
             await _writeDialogueLineCallback(message);
         }
 
+        /// <summary>
+        /// Enqueues a message to be written that is not dialogue. Used for descriptions and non-dialogue marker text.
+        /// </summary>
+        /// <remarks>
+        /// Set "message" to be 
+        /// </remarks>
+        /// <param name="message">The message to be written.</param>
+        /// <returns></returns>
         public async Task WriteNonDialogueLine(string message)
         {
             await _writeNonDialogueLineCallback(message);

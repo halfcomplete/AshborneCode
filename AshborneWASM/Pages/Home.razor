@@ -514,11 +514,11 @@
             throw new InvalidOperationException("AppEnvironment is not injected.");
         }
 #if DEBUG
-    var outputHandler = new WebOutputHandler(
-    async line => EnqueueOutput(line),
-    async line => EnqueueOutput($"{OutputConstants.DefaultTypeSpeed * OutputConstants.NonDialogueOutputSpeedMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}"),
-    async (type, msg) => Console.WriteLine($"[{type}]: {msg}")
-    );
+        var outputHandler = new WebOutputHandler(
+        async line => EnqueueOutput(line),
+        async line => EnqueueOutput($"{OutputConstants.DefaultTypeSpeed * OutputConstants.NonDialogueOutputSpeedMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}"),
+        async (type, msg) => Console.WriteLine($"[{type}]: {msg}")
+        );
 #else
         var outputHandler = new WebOutputHandler(
             async line => EnqueueOutput(line),
@@ -649,7 +649,7 @@
         {
             var line = outputQueue.Dequeue();
 #if DEBUG
-            Console.WriteLine($"[DEBUG] ProcessOutputQueue: {line}");
+            Console.WriteLine($"[DEBUG] ProcessOutputQueue: {line ?? "Line is null"}");
 #endif
             if (line.Contains(OutputConstants.DialogueEndMarker))
             {
@@ -659,6 +659,12 @@
                 GameContext.InkRunner?.DialogueFinishedOutputting();
                 await InvokeAsync(StateHasChanged);
                 continue;
+            }
+
+            // Handle force player mask marker
+            if (line.Trim().StartsWith(OutputConstants.ForceMaskMarker) && GameContext.GameState.Masks.ContainsKey(line.Substring(OutputConstants.ForceMaskMarker.Length)))
+            {
+                GameContext.GameState.ForcePlayerMask(line.Substring(OutputConstants.ForceMaskMarker.Length));
             }
 
             // Handle special pause marker: ms__PAUSE__

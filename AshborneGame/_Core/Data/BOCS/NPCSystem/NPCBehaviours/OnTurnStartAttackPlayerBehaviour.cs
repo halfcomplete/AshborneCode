@@ -7,7 +7,7 @@ using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
 
 namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
-public class OnTurnStartAttackPlayerComponent : ICanAttackPlayer
+public class OnTurnStartAttackPlayerBehaviour : ICanAttackPlayer
 {
     public Item Weapon { get; set; }
     public int BaseAttackPower { get; set; }
@@ -21,7 +21,7 @@ public class OnTurnStartAttackPlayerComponent : ICanAttackPlayer
 
     public int AttackDamage => AttackPower;
 
-    public OnTurnStartAttackPlayerComponent(Item weapon, int baseAttackPower)
+    public OnTurnStartAttackPlayerBehaviour(Item weapon, int baseAttackPower)
     {
         Weapon = weapon ?? throw new ArgumentNullException(nameof(weapon), "Weapon cannot be null.");
         BaseAttackPower = baseAttackPower;
