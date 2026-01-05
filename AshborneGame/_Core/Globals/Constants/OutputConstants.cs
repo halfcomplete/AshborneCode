@@ -180,6 +180,23 @@ namespace AshborneGame._Core.Globals.Constants
         public const string ForceMaskMarker = "__FORCE_MASK__";
 
         /// <summary>
+        /// The marker that indicates a blur animation effect should occur.
+        /// Format: __ANIMATE_BLUR__targetOpacity__durationSecs__fadeBackDurationSecs__waitSecs
+        /// targetOpacity: 0.0 to 1.0 (target blur opacity to fade to)
+        /// durationSecs: duration in seconds for fading to target opacity
+        /// fadeBackDurationSecs: duration in seconds to fade back to full transparency (-1 = no fade back)
+        /// waitSecs: duration in seconds to wait between fade-in and fade-out (ignored if fadeBackDurationSecs is -1)
+        /// </summary>
+        public const string BlurAnimationMarker = "__ANIMATE_BLUR__";
+
+        /// <summary>
+        /// Regex to parse blur animation markers with capture groups for (targetOpacity, durationSecs, fadeBackDurationSecs, waitSecs)
+        /// </summary>
+        public static readonly Regex BlurAnimationRegex = new(
+            @"__ANIMATE_BLUR__([0-9]*\.?[0-9]+)__([0-9]*\.?[0-9]+)__(-?[0-9]*\.?[0-9]+)__([0-9]*\.?[0-9]+)",
+            RegexOptions.Compiled);
+
+        /// <summary>
         /// Multiplier for non-dialogue output speed (e.g., 1.2x faster).
         /// </summary>
         public const float NonDialogueOutputSpeedMultiplier = 3.5f;

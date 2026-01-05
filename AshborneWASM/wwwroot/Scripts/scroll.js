@@ -21,4 +21,121 @@ window.addEventListener('DOMContentLoaded', function () {
             window.autoScrollGameOutput = false;
         }
     });
-}); 
+});
+
+// Animate blur overlay with fade-back support using RGBA and backdrop-filter blur
+window.animateBlurOverlay = function (targetOpacity, durationSecs, fadeBackDurationSecs, waitSecs) {
+    console.log(`[DEBUG] animateBlurOverlay called: targetOpacity=${targetOpacity}, durationSecs=${durationSecs}, fadeBackDurationSecs=${fadeBackDurationSecs}, waitSecs=${waitSecs}`);
+    
+    var blurOverlay = document.querySelector('.blur-overlay');
+    if (!blurOverlay) {
+        console.error("[ERROR] animateBlurOverlay: blur-overlay element not found!");
+        return;
+    }
+    
+    console.log("[DEBUG] blur-overlay element found, starting animation");
+    
+    // Ensure the element is visible first
+    blurOverlay.style.display = 'block';
+    blurOverlay.style.pointerEvents = 'auto';
+    
+    // Read current RGBA values to start from
+    var computedStyle = window.getComputedStyle(blurOverlay);
+    var bgColor = computedStyle.backgroundColor;
+    var backdropFilter = computedStyle.backdropFilter || 'blur(0px)';
+    
+    // Parse current opacity from backgroundColor (format: rgba(0, 0, 0, alpha))
+    var currentOpacity = 0;
+    var rgbaMatch = bgColor.match(/^rgba\(([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?, ([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?, ([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?, ([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?\)$/gm);
+    if (rgbaMatch && rgbaMatch[4]) {
+        currentOpacity = parseFloat(rgbaMatch[4]);
+    }
+    
+    // Parse current blur amount from backdropFilter (format: blur(Xpx) or none)
+    var currentBlurPx = 0;
+    var blurMatch = backdropFilter.match(/blur\((\d+(?:\.\d+)?)px\)/);
+    if (blurMatch && blurMatch[1]) {
+        currentBlurPx = parseFloat(blurMatch[1]);
+    }
+    
+    console.log(`[DEBUG] Current state: opacity=${currentOpacity.toFixed(3)}, blur=${currentBlurPx.toFixed(2)}px`);
+    
+    var maxBlurPx = 10 * targetOpacity;
+    console.log(`[DEBUG] Initial background color: ${bgColor}, backdropFilter: ${backdropFilter}`);
+    
+    // Animate to target opacity and max blur
+    var startTime = Date.now();
+    var durationMs = durationSecs * 1000;
+    
+    console.log(`[DEBUG] Starting fade-in animation: duration=${durationMs}ms, target=${targetOpacity}`);
+    
+    var animateTo = function () {
+        var elapsed = Date.now() - startTime;
+        var progress = Math.min(elapsed / durationMs, 1);
+        
+        // Linear interpolation from current to target opacity
+        var newOpacity = currentOpacity + (targetOpacity - currentOpacity) * progress;
+        var newBlur = Math.max(0, maxBlurPx * (progress - 0.03));
+        
+        blurOverlay.style.backgroundColor = `rgba(0, 0, 0, ${newOpacity})`;
+        blurOverlay.style.backdropFilter = `blur(${newBlur}px)`;
+        blurOverlay.style.webkitBackdropFilter = `blur(${newBlur}px)`;
+        
+        console.log(`[DEBUG] Fade-in progress: ${(progress * 100).toFixed(1)}%, opacity=${newOpacity.toFixed(3)}, blur=${newBlur.toFixed(2)}px`);
+        
+        if (progress < 1) {
+            requestAnimationFrame(animateTo);
+        } else {
+            // Animation to target opacity complete
+            blurOverlay.style.backgroundColor = `rgba(0, 0, 0, ${targetOpacity})`;
+            blurOverlay.style.backdropFilter = `blur(${maxBlurPx}px)`;
+            blurOverlay.style.webkitBackdropFilter = `blur(${maxBlurPx}px)`;
+            console.log(`[DEBUG] Fade-in complete, opacity set to ${targetOpacity}, blur set to ${maxBlurPx}px`);
+            
+            // Handle fade back if specified and not -1
+            if (fadeBackDurationSecs >= 0) {
+                var waitMs = waitSecs * 1000;
+                console.log(`[DEBUG] Will wait ${waitMs}ms before fading back over ${fadeBackDurationSecs}s`);
+                setTimeout(function () {
+                    animateFadeBack();
+                }, waitMs);
+            }
+        }
+    };
+    
+    var animateFadeBack = function () {
+        console.log(`[DEBUG] Starting fade-back animation: duration=${fadeBackDurationSecs * 1000}ms`);
+        
+        var fadeBackStartTime = Date.now();
+        var fadeBackDurationMs = fadeBackDurationSecs * 1000;
+        
+        var animateBack = function () {
+            var elapsed = Date.now() - fadeBackStartTime;
+            var progress = Math.min(elapsed / fadeBackDurationMs, 1);
+            
+            // Linear interpolation from target opacity back to 0
+            var newOpacity = targetOpacity * (1 - progress);
+            var newBlur = maxBlurPx * (1 - progress);
+            
+            blurOverlay.style.backgroundColor = `rgba(0, 0, 0, ${newOpacity})`;
+            blurOverlay.style.backdropFilter = `blur(${newBlur}px)`;
+            blurOverlay.style.webkitBackdropFilter = `blur(${newBlur}px)`;
+            
+            console.log(`[DEBUG] Fade-back progress: ${(progress * 100).toFixed(1)}%, opacity=${newOpacity.toFixed(3)}, blur=${newBlur.toFixed(2)}px`);
+            
+            if (progress < 1) {
+                requestAnimationFrame(animateBack);
+            } else {
+                blurOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+                blurOverlay.style.backdropFilter = 'blur(0px)';
+                blurOverlay.style.webkitBackdropFilter = 'blur(0px)';
+                console.log(`[DEBUG] Fade-back complete, opacity and blur reset to 0`);
+            }
+        };
+        
+        requestAnimationFrame(animateBack);
+    };
+    
+    console.log("[DEBUG] Starting requestAnimationFrame for fade-in");
+    requestAnimationFrame(animateTo);
+};

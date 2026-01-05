@@ -741,7 +741,10 @@ input {
     align-items: center;
     justify-content: center;
 }
-/* Text Special Effects (SFX) Animations */
+
+
+
+/* #region Text Special Effects (SFX) Animations */
 
 /* Wrapper shake: smooth, shared motion */
 .sfx-shake-weak,
@@ -868,4 +871,19 @@ input {
 
 .sfx-char {
     animation-duration: 0.08s;
+}
+
+/* #endregion */
+
+.blur-overlay {
+    position: fixed; /* Covers the whole viewport */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0); /* Transparent background */
+    backdrop-filter: blur(0px); /* The magic happens here */
+    /* Vendor prefixes might be needed for older browser support: */
+    -webkit-backdrop-filter: blur(0px);
+    z-index: 10; /* Ensure it is on top of other content */
 }

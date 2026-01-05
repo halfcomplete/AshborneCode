@@ -222,28 +222,32 @@
             </div>
         </div>
     </div>
-    @if (!hasStarted || isFading)
-        {
-            <div class="title-screen @(isFading ? "fade-out" : "") @(isIntroTransitioning ? "fade-overlap" : "")">
-                <div class="title-logo">ASHBORNE</div>
-                <button class="begin-button" @onclick="BeginGame">Begin</button>
+    @if (!hasIntroStarted || isFading)
+    {
+        <div class="title-screen @(isFading ? "fade-out" : "") @(isIntroTransitioning ? "fade-overlap" : "")">
+            <div class="title-logo">ASHBORNE</div>
+            <button class="begin-button" @onclick="BeginGame">Begin</button>
+        </div>
+    }
+    @if (introPhase > 0 || isIntroTransitioning)
+    {
+        <div class="intro-screen @(introFading ? "fade-out" : "fade-in")">
+            <div class="intro-text @(introTextFading ? "fade-out" : "fade-in") @(isFinalPhase ? "final-phase" : "")">@introText</div>
+        </div>
+    }
+    @if (isOutroActive)
+    {
+        <div class="outro-screen @(isOutroFadingIn ? "fade-in" : "")">
+            <div class="outro-wrapper">
+                <div class="outro-main-text @(isOutroFadingIn ? "fade-in" : "fade-out")">ASHBORNE DEMO COMPLETE</div>
+                <div class="outro-sub-text @(isOutroFadingIn ? "fade-in" : "fade-out")">Thank you for playing!</div>
             </div>
-        }
-        @if (introPhase > 0 || isIntroTransitioning)
-        {
-            <div class="intro-screen @(introFading ? "fade-out" : "fade-in")">
-                <div class="intro-text @(introTextFading ? "fade-out" : "fade-in") @(isFinalPhase ? "final-phase" : "")">@introText</div>
-            </div>
-        }
-        @if (isOutroActive)
-        {
-            <div class="outro-screen @(isOutroFadingIn ? "fade-in" : "")">
-                <div class="outro-wrapper">
-                    <div class="outro-main-text @(isOutroFadingIn ? "fade-in" : "fade-out")">ASHBORNE DEMO COMPLETE</div>
-                    <div class="outro-sub-text @(isOutroFadingIn ? "fade-in" : "fade-out")">Thank you for playing!</div>
-                </div>
-            </div>
-        }
+        </div>
+    }
+    @if (blurOverlayEnabled)
+    {
+		<div class="blur-overlay"></div>
+    }
 </div>
 
 @* <div>
@@ -256,6 +260,7 @@
 </div> *@
 
 @code {
+    private bool blurOverlayEnabled = false;
     private bool isOutroActive = false;
     private bool isOutroFadingIn = false;
     // Only show outro overlay after all output and typewriter effect is finished
@@ -357,7 +362,7 @@
     private bool isDialogueInput = false;
     private TaskCompletionSource<string> playerInputTcs;
     private TaskCompletionSource<bool> choicesAvailableTcs;
-    private bool hasStarted = false;
+    private bool hasIntroStarted = false;
     private bool isFading = false;
     private const int FadeDurationMs = 1000;
 
@@ -515,6 +520,27 @@
         }
     }
 
+    private async Task AnimateBlurOverlayAsync(float targetOpacity, float durationSecs, float fadeBackDurationSecs, float waitSecs)
+    {
+        try
+        {
+            Console.WriteLine($"[DEBUG] AnimateBlurOverlayAsync called with targetOpacity={targetOpacity}, durationSecs={durationSecs}, fadeBackDurationSecs={fadeBackDurationSecs}, waitSecs={waitSecs}");
+            blurOverlayEnabled = true;
+            await InvokeAsync(StateHasChanged);
+
+            // Wait for DOM to update before starting animation
+            await Task.Delay(50);
+
+            // Call JavaScript function to animate the blur overlay
+            await JS.InvokeVoidAsync("animateBlurOverlay", targetOpacity, durationSecs, fadeBackDurationSecs, waitSecs);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] AnimateBlurOverlayAsync failed: {ex.Message}");
+        }
+    }
+
+
 
     protected override void OnInitialized()
     {
@@ -524,11 +550,11 @@
             throw new InvalidOperationException("AppEnvironment is not injected.");
         }
 #if DEBUG
-    var outputHandler = new WebOutputHandler(
-    async line => EnqueueOutput(line),
-    async line => EnqueueOutput($"{OutputConstants.DefaultTypeSpeed * OutputConstants.NonDialogueOutputSpeedMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}"),
-    async (type, msg) => Console.WriteLine($"[{type}]: {msg}")
-    );
+        var outputHandler = new WebOutputHandler(
+        async line => EnqueueOutput(line),
+        async line => EnqueueOutput($"{OutputConstants.DefaultTypeSpeed * OutputConstants.NonDialogueOutputSpeedMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}"),
+        async (type, msg) => Console.WriteLine($"[{type}]: {msg}")
+        );
 #else
         var outputHandler = new WebOutputHandler(
             async line => EnqueueOutput(line),
@@ -676,6 +702,27 @@
                 GameContext.GameState.ForcePlayerMask(line.Substring(OutputConstants.ForceMaskMarker.Length));
                 await InvokeAsync(StateHasChanged);
                 continue;
+            }
+
+            // Handle blur animation marker: __ANIMATE_BLUR__targetOpacity__durationSecs__fadeBackDurationSecs__waitSecs
+            if (line.Contains(OutputConstants.BlurAnimationMarker))
+            {
+                Console.WriteLine("[DEBUG] Detected blur animation marker in line: " + line);
+                var match = OutputConstants.BlurAnimationRegex.Match(line);
+                if (match.Success && match.Groups.Count >= 5)
+                {
+                    Console.WriteLine("[DEBUG] Blur animation regex matched successfully.");
+                    if (float.TryParse(match.Groups[1].Value, out float targetOpacity) &&
+                        float.TryParse(match.Groups[2].Value, out float durationSecs) &&
+                        float.TryParse(match.Groups[3].Value, out float fadeBackDurationSecs) &&
+                        float.TryParse(match.Groups[4].Value, out float waitSecs))
+                    {
+                        Console.WriteLine($"[DEBUG] Detected blur animation marker: targetOpacity={targetOpacity}, durationSecs={durationSecs}, fadeBackDurationSecs={fadeBackDurationSecs}, waitSecs={waitSecs}");
+                        await AnimateBlurOverlayAsync(targetOpacity, durationSecs, fadeBackDurationSecs, waitSecs);
+                        await InvokeAsync(StateHasChanged);
+                    }
+                }
+                continue; // Do not add blur marker to output buffer
             }
 
             // Handle special pause marker: ms__PAUSE__
@@ -1196,7 +1243,7 @@
         isFading = true;
         StateHasChanged();
         await Task.Delay(FadeDurationMs); // Let title screen fully fade out
-        hasStarted = true;
+        hasIntroStarted = true;
         isFading = false;
         StateHasChanged();
         await Task.Delay(2000); // 2 second pause with just background

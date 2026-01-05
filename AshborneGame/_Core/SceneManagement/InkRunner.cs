@@ -291,6 +291,7 @@ namespace AshborneGame._Core.SceneManagement
         private void InitialiseBindings()
         {
             if (_story == null) return;
+            Console.WriteLine("[DEBUG] InitialiseBindings called - registering external functions");
 
             // --- Flags ---
             _story.BindExternalFunction("setFlag", (string key, bool value) => ExternalSetFlag(key, value));
@@ -332,6 +333,22 @@ namespace AshborneGame._Core.SceneManagement
 
             // --- Silent Path ---
             _story.BindExternalFunction("setSilentPath", (string silentPath, int silentMs) => ExternalSetSilentPath(silentPath, silentMs));
+
+            // --- Blur Animation ---
+            _story.BindExternalFunction("animateBlur", (float targetOpacity, float durationSecs, float fadeBackDurationSecs, float waitSecs) =>
+            {
+                Console.WriteLine($"[DEBUG] animateBlur binding called with args: {targetOpacity}, {durationSecs}, {fadeBackDurationSecs}, {waitSecs}");
+                try
+                {
+                    return ExternalAnimateBlur(targetOpacity, durationSecs, fadeBackDurationSecs, waitSecs);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ERROR] ExternalAnimateBlur threw exception: {ex.Message}\n{ex.StackTrace}");
+                    return null;
+                }
+            });
+            Console.WriteLine("[DEBUG] animateBlur binding registered successfully");
         }
 
         public object ExternalSetFlag(string key, bool value) { _gameState.SetFlag(key, value); return null; }
@@ -428,6 +445,45 @@ namespace AshborneGame._Core.SceneManagement
         public object ExternalSetSilentPath(string silentPath, int silentMs)
         {
             _currentSilentPath = (silentPath, silentMs);
+            return null;
+        }
+
+        public object ExternalAnimateBlur(float targetOpacity, float durationSecs, float fadeBackDurationSecs, float waitSecs)
+        {
+            Console.WriteLine($"[DEBUG] ExternalAnimateBlur method entered (before modifiers): targetOpacity={targetOpacity}, durationSecs={durationSecs}, fadeBackDurationSecs={fadeBackDurationSecs}, waitSecs={waitSecs}");
+            
+            // Apply speed modifiers to match dialogue/typewriter speed settings
+            // In debug builds, apply debug modifier (100x faster)
+#if DEBUG
+            durationSecs *= OutputConstants.DefaultDebugTypeSpeedModifier;
+            fadeBackDurationSecs *= OutputConstants.DefaultDebugTypeSpeedModifier;
+            waitSecs *= OutputConstants.DefaultDebugTypeSpeedModifier;
+            Console.WriteLine($"[DEBUG] ExternalAnimateBlur: Applied DEBUG modifier (0.01x)");
+#else
+            // Apply user type speed multiplier (0.5 = half speed, 3.0 = triple speed)
+            // Divide because slower multiplier (0.5) should make durations LONGER, not shorter
+            durationSecs /= (float)OutputConstants.TypeSpeedMultiplier;
+            fadeBackDurationSecs /= (float)OutputConstants.TypeSpeedMultiplier;
+            waitSecs /= (float)OutputConstants.TypeSpeedMultiplier;
+            Console.WriteLine($"[DEBUG] ExternalAnimateBlur: Applied TypeSpeedMultiplier ({OutputConstants.TypeSpeedMultiplier}x)");
+#endif
+            
+            Console.WriteLine($"[DEBUG] ExternalAnimateBlur method (after modifiers): targetOpacity={targetOpacity}, durationSecs={durationSecs}, fadeBackDurationSecs={fadeBackDurationSecs}, waitSecs={waitSecs}");
+            
+            // Format: __ANIMATE_BLUR__targetOpacity__durationSecs__fadeBackDurationSecs__waitSecs
+            string blurMarker = $"{OutputConstants.BlurAnimationMarker}{targetOpacity}__{durationSecs}__{fadeBackDurationSecs}__{waitSecs}";
+            Console.WriteLine($"[DEBUG] ExternalAnimateBlur: Formatted marker as: {blurMarker}");
+            
+            if (IOService.Output == null)
+            {
+                Console.WriteLine("[ERROR] ExternalAnimateBlur: IOService.Output is null!");
+                return null;
+            }
+            
+            Console.WriteLine($"[DEBUG] ExternalAnimateBlur: Calling WriteDialogueLine with marker");
+            IOService.Output.WriteDialogueLine(blurMarker);
+            Console.WriteLine($"[DEBUG] ExternalAnimateBlur: WriteDialogueLine completed successfully");
+            
             return null;
         }
 
