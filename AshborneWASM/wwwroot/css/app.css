@@ -743,22 +743,129 @@ input {
 }
 /* Text Special Effects (SFX) Animations */
 
-/* SFX Shake: Character offset animation for shaking text effect */
-@keyframes sfx-shake-animation {
-    0% { transform: translate(0, 0); }
-    10% { transform: translate(-1px, 1px); }
-    20% { transform: translate(1px, -1px); }
-    30% { transform: translate(-1px, -1px); }
-    40% { transform: translate(1px, 1px); }
-    50% { transform: translate(0, -1px); }
-    60% { transform: translate(-1px, 0); }
-    70% { transform: translate(1px, 1px); }
-    80% { transform: translate(-1px, -1px); }
-    90% { transform: translate(1px, 0); }
-    100% { transform: translate(0, 0); }
+/* Wrapper shake: smooth, shared motion */
+.sfx-shake-weak,
+.sfx-shake,
+.sfx-shake-strong {
+    display: inline-block;
+    animation: sfx-shake-global 0.4s ease-in-out infinite;
+}
+
+@keyframes sfx-shake-global {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    10% {
+        transform: translate(calc(-1 * var(--shake)), var(--shake));
+    }
+
+    20% {
+        transform: translate(var(--shake), calc(-1 * var(--shake)));
+    }
+
+    30% {
+        transform: translate(calc(-1 * var(--shake)), calc(-1 * var(--shake)));
+    }
+
+    40% {
+        transform: translate(var(--shake), var(--shake));
+    }
+
+    50% {
+        transform: translate(0, calc(-1 * var(--shake)));
+    }
+
+    60% {
+        transform: translate(calc(-1 * var(--shake)), 0);
+    }
+
+    70% {
+        transform: translate(var(--shake), var(--shake));
+    }
+
+    80% {
+        transform: translate(calc(-2 * var(--shake)), calc(-2 * var(--shake)));
+    }
+
+    90% {
+        transform: translate(var(--shake), 0);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+.sfx-char {
+    display: inline-block;
+    animation: sfx-shake-char 0.12s linear infinite;
+    will-change: transform;
+    animation-delay: calc(var(--i) * -0.02s);
+    --shake: 1px;
+}
+
+@keyframes sfx-shake-char {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    10% {
+        transform: translate(calc(-1 * var(--shake)), var(--shake));
+    }
+
+    20% {
+        transform: translate(var(--shake), calc(-1 * var(--shake)));
+    }
+
+    30% {
+        transform: translate(calc(-1 * var(--shake)), calc(-1 * var(--shake)));
+    }
+
+    40% {
+        transform: translate(var(--shake), var(--shake));
+    }
+
+    50% {
+        transform: translate(0, calc(-1 * var(--shake)));
+    }
+
+    60% {
+        transform: translate(calc(-1 * var(--shake)), 0);
+    }
+
+    70% {
+        transform: translate(var(--shake), var(--shake));
+    }
+
+    80% {
+        transform: translate(calc(-2 * var(--shake)), calc(-2 * var(--shake)));
+    }
+
+    90% {
+        transform: translate(var(--shake), 0);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+.sfx-shake-weak {
+    animation-duration: 0.5s;
+    --shake: 0.3px;
 }
 
 .sfx-shake {
-    display: inline-block;
-    animation: sfx-shake-animation 0.2s ease-in-out infinite;
+    animation-duration: 0.4s;
+    --shake: 0.5px;
+}
+
+.sfx-shake-strong {
+    animation-duration: 0.3s;
+    --shake: 1px;
+}
+
+.sfx-char {
+    animation-duration: 0.08s;
 }

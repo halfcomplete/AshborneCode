@@ -1,5 +1,6 @@
-using System.Text.RegularExpressions;
 using AshborneGame._Core.Globals.Constants;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace AshborneGame._Core.Globals.Services
 {
@@ -20,13 +21,33 @@ namespace AshborneGame._Core.Globals.Services
             if (string.IsNullOrEmpty(input))
                 return input;
 
-            // Replace every SFX tag in the input
             return OutputConstants.SFXTagRegex.Replace(input, m =>
             {
                 var effectName = m.Groups[1].Value;
                 var content = m.Groups[2].Value;
-                return $"<span class=\"{effectName}\">{content}</span>";
+
+                var sb = new StringBuilder();
+                sb.Append($"<span class=\"{effectName}\">{content}");
+
+                //for (int i = 0; i < content.Length; i++)
+                //{
+                //    char c = content[i];
+
+                //    // Preserve spaces cleanly
+                //    if (c == ' ')
+                //    {
+                //        sb.Append(" ");
+                //    }
+                //    else
+                //    {
+                //        sb.Append($"<span class=\"sfx-char\" style=\"--i:{i}\">{c}</span>");
+                //    }
+                //}
+
+                sb.Append("</span>");
+                return sb.ToString();
             });
         }
+
     }
 }
