@@ -40,6 +40,7 @@ namespace AshborneGame._Core.Game
 
             GameContext.Initialise(player, gameState, _dialogueService, inkRunner, this);
             gameState.InitialiseMasks(MaskInitialiser.InitialiseMasks());
+            // Test
 
             ((Location startingLocation, Scene startingLocationGroup), (_firstLocation, _firstScene)) = InitialiseStartingLocation(player);
             player.SetupMoveTo(startingLocation, startingLocationGroup, false);
