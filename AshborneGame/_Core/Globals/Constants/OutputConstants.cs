@@ -32,9 +32,9 @@ namespace AshborneGame._Core.Globals.Constants
         @"<c=([0-9A-Fa-f]{6})>(.*?)<c=\1>",
         RegexOptions.Singleline | RegexOptions.Compiled);
 
-        // <sfx="###">...</sfx="###"> - Text special effects marker
+        // <sfx=effect-name>...</sfx=effect-name> - Text special effects marker
         public static readonly Regex SFXTagRegex = new(
-        @"<sfx=""([A-Za-z0-9_-]+)"">(.*?)</sfx=""[A-Za-z0-9_-]+"">",
+        @"<sfx=([^>]+)>(.*?)</sfx=\1>",
         RegexOptions.Singleline | RegexOptions.Compiled);
 
         /// <summary>

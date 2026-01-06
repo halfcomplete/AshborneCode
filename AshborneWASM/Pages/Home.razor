@@ -113,10 +113,19 @@
 					line = ParseSpeakerTags(line);
                     // First: colour tags -> <span style="color:#...">
                     line = ParseColours(line);
-                    // Then: SFX tags -> <span class='sfx-...'>
+					IOService.Output.DisplayDebugMessage($"RenderGameText: After ParseColours: '{line}'");
+                    
+                    // Then: <i>...</i> -> <span class='game-italic'>...</span>
+                    line = ParseItalics(line);
+                    
+                    // Finally: SFX tags (after all other HTML is in place)
                     line = ParseSFX(line);
 
-                    // Then: <i>...</i> -> <span class='game-italic'>...</span>
+                    return line;
+                }
+                
+                private string ParseItalics(string line)
+                {
                     var sb = new System.Text.StringBuilder();
                     int idx = 0;
 
@@ -531,13 +540,24 @@
             // Wait for DOM to update before starting animation
             await Task.Delay(50);
 
+            // Create a reference to this component so JavaScript can call back
+            var dotNetReference = DotNetObjectReference.Create(this);
+
             // Call JavaScript function to animate the blur overlay
-            await JS.InvokeVoidAsync("animateBlurOverlay", targetOpacity, durationSecs, fadeBackDurationSecs, waitSecs);
+            await JS.InvokeVoidAsync("animateBlurOverlay", targetOpacity, durationSecs, fadeBackDurationSecs, waitSecs, dotNetReference);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[ERROR] AnimateBlurOverlayAsync failed: {ex.Message}");
         }
+    }
+
+    [JSInvokable]
+    public void DisableBlurOverlay()
+    {
+        Console.WriteLine("[DEBUG] DisableBlurOverlay called from JavaScript");
+        blurOverlayEnabled = false;
+        InvokeAsync(StateHasChanged);
     }
 
 
@@ -955,7 +975,7 @@
         isTypingDialogue = true;
         Console.WriteLine($"[DEBUG] isTypingDialogue set to true for message: {message}");
 
-        // Convert processed message into HTML (handles italic and colour tags and converts \n to <br />)
+        // Convert processed message into HTML (handles italic, colour and SFX tags and converts \n to <br />)
         string htmlMessage = RenderGameText(processedMessage);
         if (OutputConstants.SpeakerTagRegex.IsMatch(line)) return;
 

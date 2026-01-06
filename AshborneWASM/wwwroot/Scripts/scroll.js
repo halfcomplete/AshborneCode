@@ -24,7 +24,7 @@ window.addEventListener('DOMContentLoaded', function () {
 });
 
 // Animate blur overlay with fade-back support using RGBA and backdrop-filter blur
-window.animateBlurOverlay = function (targetOpacity, durationSecs, fadeBackDurationSecs, waitSecs) {
+window.animateBlurOverlay = function (targetOpacity, durationSecs, fadeBackDurationSecs, waitSecs, dotNetReference) {
     console.log(`[DEBUG] animateBlurOverlay called: targetOpacity=${targetOpacity}, durationSecs=${durationSecs}, fadeBackDurationSecs=${fadeBackDurationSecs}, waitSecs=${waitSecs}`);
     
     var blurOverlay = document.querySelector('.blur-overlay');
@@ -46,10 +46,17 @@ window.animateBlurOverlay = function (targetOpacity, durationSecs, fadeBackDurat
     
     // Parse current opacity from backgroundColor (format: rgba(0, 0, 0, alpha))
     var currentOpacity = 0;
-    var rgbaMatch = bgColor.match(/^rgba\(([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?, ([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?, ([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?, ([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?\)$/gm);
-    if (rgbaMatch && rgbaMatch[4]) {
-        currentOpacity = parseFloat(rgbaMatch[4]);
+    console.log("[DEBUG] Current background color: " + bgColor);
+    var rgbaMatch = bgColor.match(/^rgba\(([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?, ([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?, ([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?, ([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?\)$/m);
+    console.log("[DEBUG] Full match (rgbaMatch[0]): " + (rgbaMatch ? rgbaMatch[0] : 'null'));
+    console.log("[DEBUG] Red value (rgbaMatch[1]): " + (rgbaMatch ? rgbaMatch[1] : 'null'));
+    console.log("[DEBUG] Green value (rgbaMatch[3]): " + (rgbaMatch ? rgbaMatch[3] : 'null'));
+    console.log("[DEBUG] Blue value (rgbaMatch[5]): " + (rgbaMatch ? rgbaMatch[5] : 'null'));
+    console.log("[DEBUG] Alpha value (rgbaMatch[7]): " + (rgbaMatch ? rgbaMatch[7] : 'null'));
+    if (rgbaMatch && rgbaMatch[7]) {
+        currentOpacity = parseFloat(rgbaMatch[7]);
     }
+    console.log("[DEBUG] Parsed current opacity: " + currentOpacity);
     
     // Parse current blur amount from backdropFilter (format: blur(Xpx) or none)
     var currentBlurPx = 0;
@@ -57,6 +64,8 @@ window.animateBlurOverlay = function (targetOpacity, durationSecs, fadeBackDurat
     if (blurMatch && blurMatch[1]) {
         currentBlurPx = parseFloat(blurMatch[1]);
     }
+
+    console.log("[DEBUG] Parsed current blur: " + currentBlurPx + "px");
     
     console.log(`[DEBUG] Current state: opacity=${currentOpacity.toFixed(3)}, blur=${currentBlurPx.toFixed(2)}px`);
     
@@ -73,9 +82,9 @@ window.animateBlurOverlay = function (targetOpacity, durationSecs, fadeBackDurat
         var elapsed = Date.now() - startTime;
         var progress = Math.min(elapsed / durationMs, 1);
         
-        // Linear interpolation from current to target opacity
+        // Linear interpolation from current to target opacity and blur
         var newOpacity = currentOpacity + (targetOpacity - currentOpacity) * progress;
-        var newBlur = Math.max(0, maxBlurPx * (progress - 0.03));
+        var newBlur = currentBlurPx + (maxBlurPx - currentBlurPx) * progress;
         
         blurOverlay.style.backgroundColor = `rgba(0, 0, 0, ${newOpacity})`;
         blurOverlay.style.backdropFilter = `blur(${newBlur}px)`;
@@ -130,6 +139,11 @@ window.animateBlurOverlay = function (targetOpacity, durationSecs, fadeBackDurat
                 blurOverlay.style.backdropFilter = 'blur(0px)';
                 blurOverlay.style.webkitBackdropFilter = 'blur(0px)';
                 console.log(`[DEBUG] Fade-back complete, opacity and blur reset to 0`);
+                
+                // Disable the blur overlay in C#
+                if (dotNetReference) {
+                    dotNetReference.invokeMethodAsync('DisableBlurOverlay');
+                }
             }
         };
         

@@ -27,22 +27,40 @@ namespace AshborneGame._Core.Globals.Services
                 var content = m.Groups[2].Value;
 
                 var sb = new StringBuilder();
-                sb.Append($"<span class=\"{effectName}\">{content}");
+                sb.Append($"<span class=\"{effectName}\">");
 
-                //for (int i = 0; i < content.Length; i++)
-                //{
-                //    char c = content[i];
+                // Parse content and wrap only actual text characters, not HTML tags
+                int charIndex = 0;
+                int i = 0;
+                while (i < content.Length)
+                {
+                    // Check if we're at the start of an HTML tag
+                    if (content[i] == '<')
+                    {
+                        // Find the end of the tag
+                        int tagEnd = content.IndexOf('>', i);
+                        if (tagEnd != -1)
+                        {
+                            // Append the entire HTML tag as-is
+                            sb.Append(content.Substring(i, tagEnd - i + 1));
+                            i = tagEnd + 1;
+                            continue;
+                        }
+                    }
 
-                //    // Preserve spaces cleanly
-                //    if (c == ' ')
-                //    {
-                //        sb.Append(" ");
-                //    }
-                //    else
-                //    {
-                //        sb.Append($"<span class=\"sfx-char\" style=\"--i:{i}\">{c}</span>");
-                //    }
-                //}
+                    // Regular character - wrap it
+                    char c = content[i];
+                    if (c == ' ')
+                    {
+                        sb.Append(" ");
+                    }
+                    else
+                    {
+                        sb.Append($"<span class=\"sfx-char\" style=\"--i:{charIndex}\">{c}</span>");
+                        charIndex++;
+                    }
+                    i++;
+                }
 
                 sb.Append("</span>");
                 return sb.ToString();

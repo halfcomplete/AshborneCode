@@ -856,7 +856,7 @@ input {
 
 .sfx-shake-weak {
     animation-duration: 0.5s;
-    --shake: 0.3px;
+    --shake: 0.4px;
 }
 
 .sfx-shake {
