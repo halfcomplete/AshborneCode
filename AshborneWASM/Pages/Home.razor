@@ -1012,6 +1012,10 @@
         var existing = gameText ?? string.Empty;
         var typedBuilder = new StringBuilder();
         int globalCharIndex = 0;
+        
+        // Batch DOM updates to reduce layout thrashing
+        const int batchSize = 2; // Update UI every 2 characters for smoother performance
+        int charsSinceLastUpdate = 0;
 
         foreach (var token in tokens)
         {
@@ -1019,8 +1023,17 @@
             {
                 // Append tags immediately (they don't consume characterSpeed slots)
                 typedBuilder.Append(token.text);
-                await InvokeAsync(StateHasChanged);
-                // No delay for tags
+                // Only update if we have pending characters
+                if (charsSinceLastUpdate > 0)
+                {
+                    var separator = string.Empty;
+                    if (!string.IsNullOrEmpty(existing) && !existing.EndsWith("<br />"))
+                        separator = "<br />";
+                    gameText = existing + separator + typedBuilder.ToString();
+                    await InvokeAsync(StateHasChanged);
+                    await AutoScrollToBottom();
+                    charsSinceLastUpdate = 0;
+                }
                 continue;
             }
 
@@ -1030,15 +1043,7 @@
                 char letter = token.text[ci];
                 // Append encoded character
                 typedBuilder.Append(System.Net.WebUtility.HtmlEncode(letter.ToString()));
-
-                // Update gameText and UI (use HTML line break between previous content and this typed block,
-                // but avoid duplicating <br /> if `existing` already ends with one)
-                var separator = string.Empty;
-                if (!string.IsNullOrEmpty(existing) && !existing.EndsWith("<br />"))
-                    separator = "<br />";
-                gameText = existing + separator + typedBuilder.ToString();
-                await InvokeAsync(StateHasChanged);
-                await AutoScrollToBottom();
+                charsSinceLastUpdate++;
 
                 // Determine isEnd (approx): consider space or end-of-chunk
                 bool isEnd = (ci == token.text.Length - 1) || (ci + 1 < token.text.Length && token.text[ci + 1] == ' ');
@@ -1046,6 +1051,19 @@
                 int currentSpeed = ms;
                 if (characterSpeeds != null && characterSpeeds.Count > globalCharIndex)
                     currentSpeed = characterSpeeds[globalCharIndex];
+
+                // Batch update: only update UI every batchSize characters or at end
+                bool shouldUpdate = charsSinceLastUpdate >= batchSize || isEnd;
+                if (shouldUpdate)
+                {
+                    var separator = string.Empty;
+                    if (!string.IsNullOrEmpty(existing) && !existing.EndsWith("<br />"))
+                        separator = "<br />";
+                    gameText = existing + separator + typedBuilder.ToString();
+                    await InvokeAsync(StateHasChanged);
+                    await AutoScrollToBottom();
+                    charsSinceLastUpdate = 0;
+                }
 
 #if DEBUG
                 int delay = await CharacterOutputDelayCalculator.CalculateDebugDelayAsync(letter, currentSpeed, isEnd);

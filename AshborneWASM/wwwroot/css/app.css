@@ -312,6 +312,8 @@ body {
     box-sizing: border-box;
     transition: box-shadow 0.2s;
     border-bottom: none;
+    /* Performance optimizations for smooth animations during text output */
+    contain: layout style paint;
 }
 
     .game-output::-webkit-scrollbar {
@@ -752,105 +754,112 @@ input {
 .sfx-shake-strong {
     display: inline-block;
     animation: sfx-shake-global 0.4s ease-in-out infinite;
+    /* GPU acceleration and performance optimizations */
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 @keyframes sfx-shake-global {
     0% {
-        transform: translate(0, 0);
+        transform: translate(0, 0) translateZ(0);
     }
 
     10% {
-        transform: translate(calc(-1 * var(--shake)), var(--shake));
+        transform: translate(calc(-1 * var(--shake)), var(--shake)) translateZ(0);
     }
 
     20% {
-        transform: translate(var(--shake), calc(-1 * var(--shake)));
+        transform: translate(var(--shake), calc(-1 * var(--shake))) translateZ(0);
     }
 
     30% {
-        transform: translate(calc(-1 * var(--shake)), calc(-1 * var(--shake)));
+        transform: translate(calc(-1 * var(--shake)), calc(-1 * var(--shake))) translateZ(0);
     }
 
     40% {
-        transform: translate(var(--shake), var(--shake));
+        transform: translate(var(--shake), var(--shake)) translateZ(0);
     }
 
     50% {
-        transform: translate(0, calc(-1 * var(--shake)));
+        transform: translate(0, calc(-1 * var(--shake))) translateZ(0);
     }
 
     60% {
-        transform: translate(calc(-1 * var(--shake)), 0);
+        transform: translate(calc(-1 * var(--shake)), 0) translateZ(0);
     }
 
     70% {
-        transform: translate(var(--shake), var(--shake));
+        transform: translate(var(--shake), var(--shake)) translateZ(0);
     }
 
     80% {
-        transform: translate(calc(-2 * var(--shake)), calc(-2 * var(--shake)));
+        transform: translate(calc(-2 * var(--shake)), calc(-2 * var(--shake))) translateZ(0);
     }
 
     90% {
-        transform: translate(var(--shake), 0);
+        transform: translate(var(--shake), 0) translateZ(0);
     }
 
     100% {
-        transform: translate(0, 0);
+        transform: translate(0, 0) translateZ(0);
     }
 }
 
 .sfx-char {
     display: inline-block;
     animation: sfx-shake-char 0.12s linear infinite;
-    will-change: transform;
     animation-delay: calc(var(--i) * -0.02s);
     --shake: 1px;
+    /* GPU acceleration and performance optimizations */
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 @keyframes sfx-shake-char {
     0% {
-        transform: translate(0, 0);
+        transform: translate(0, 0) translateZ(0);
     }
 
     10% {
-        transform: translate(calc(-1 * var(--shake)), var(--shake));
+        transform: translate(calc(-1 * var(--shake)), var(--shake)) translateZ(0);
     }
 
     20% {
-        transform: translate(var(--shake), calc(-1 * var(--shake)));
+        transform: translate(var(--shake), calc(-1 * var(--shake))) translateZ(0);
     }
 
     30% {
-        transform: translate(calc(-1 * var(--shake)), calc(-1 * var(--shake)));
+        transform: translate(calc(-1 * var(--shake)), calc(-1 * var(--shake))) translateZ(0);
     }
 
     40% {
-        transform: translate(var(--shake), var(--shake));
+        transform: translate(var(--shake), var(--shake)) translateZ(0);
     }
 
     50% {
-        transform: translate(0, calc(-1 * var(--shake)));
+        transform: translate(0, calc(-1 * var(--shake))) translateZ(0);
     }
 
     60% {
-        transform: translate(calc(-1 * var(--shake)), 0);
+        transform: translate(calc(-1 * var(--shake)), 0) translateZ(0);
     }
 
     70% {
-        transform: translate(var(--shake), var(--shake));
+        transform: translate(var(--shake), var(--shake)) translateZ(0);
     }
 
     80% {
-        transform: translate(calc(-2 * var(--shake)), calc(-2 * var(--shake)));
+        transform: translate(calc(-2 * var(--shake)), calc(-2 * var(--shake))) translateZ(0);
     }
 
     90% {
-        transform: translate(var(--shake), 0);
+        transform: translate(var(--shake), 0) translateZ(0);
     }
 
     100% {
-        transform: translate(0, 0);
+        transform: translate(0, 0) translateZ(0);
     }
 }
 
