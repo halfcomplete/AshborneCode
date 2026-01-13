@@ -218,7 +218,7 @@ namespace AshborneGame._Core.SceneManagement
                                 playerInput = await IOService.Input.GetPlayerInput(prompt);
                             }
                         }
-                        GameContext.GameState.SetLabel("player.input", playerInput);
+                        GameContext.GameState.SetLabel(GameStateKeyConstants.Labels, playerInput);
                         await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Player input received at {DateTime.Now}", ConsoleMessageTypes.INFO);
                         _canContinue = _story.canContinue;
                         continue;
@@ -351,75 +351,134 @@ namespace AshborneGame._Core.SceneManagement
             Console.WriteLine("[DEBUG] animateBlur binding registered successfully");
         }
 
-        public object ExternalSetFlag(string key, bool value) { _gameState.SetFlag(key, value); return null; }
-        public object ExternalGetFlag(string key) => _gameState.TryGetFlag(key, out var value) ? value : -1; // Flag does not exist
-        public object ExternalHasFlag(string key) => _gameState.HasFlag(key);
+        public object ExternalSetFlag(string key, bool value)
+        {
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetFlagKey(key);
+            _gameState.SetFlag(validatedKey, value);
+            return null;
+        }
+
+        public object ExternalGetFlag(string key)
+        {
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetFlagKey(key);
+            return _gameState.TryGetFlag(validatedKey, out var value) ? value : -1; // Flag does not exist
+        }
+
+        public object ExternalHasFlag(string key)
+        {
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetFlagKey(key);
+            return _gameState.HasFlag(validatedKey);
+        }
+
         public object ExternalToggleFlag(string key)
         {
-            var result = _gameState.TryToggleFlag(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetFlagKey(key);
+            var result = _gameState.TryToggleFlag(validatedKey);
             if (result == null)
                 return -1; // Flag does not exist
             return result;
         }
+
         public object ExternalRemoveFlag(string key)
         {
-            if (!_gameState.HasFlag(key))
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetFlagKey(key);
+            if (!_gameState.HasFlag(validatedKey))
                 return false;
-            _gameState.RemoveFlag(key);
+            _gameState.RemoveFlag(validatedKey);
             return true;
         }
 
-        public object ExternalSetCounter(string key, int value) { _gameState.SetCounter(key, value); return null; }
-        public object ExternalGetCounter(string key) => _gameState.TryGetCounter(key, out var result) ? result : throw new Exception($"Counter '{key}' does not exist.");
-        public object ExternalHasCounter(string key) => _gameState.HasCounter(key);
+        public object ExternalSetCounter(string key, int value)
+        {
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey(key);
+            _gameState.SetCounter(validatedKey, value);
+            return null;
+        }
+
+        public object ExternalGetCounter(string key)
+        {
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey(key);
+            return _gameState.TryGetCounter(validatedKey, out var result) ? result : throw new Exception($"Counter '{key}' does not exist.");
+        }
+
+        public object ExternalHasCounter(string key)
+        {
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey(key);
+            return _gameState.HasCounter(validatedKey);
+        }
+
         public object ExternalIncCounter(string key, int amount)
         {
-            if (!_gameState.TryIncrementCounter(key, amount))
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey(key);
+            if (!_gameState.TryIncrementCounter(validatedKey, amount))
                 return false;
             return true;
         }
+
         public object ExternalDecCounter(string key, int amount)
         {
-            if (!_gameState.TryDecrementCounter(key, amount))
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey(key);
+            if (!_gameState.TryDecrementCounter(validatedKey, amount))
                 return false;
             return true;
         }
+
         public object ExternalRemoveCounter(string key)
         {
-            return _gameState.RemoveCounter(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey(key);
+            return _gameState.RemoveCounter(validatedKey);
         }
 
         public object ExternalSetLabel(string key, string value)
         {
-            _gameState.SetLabel(key, value);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetLabelKey(key);
+            _gameState.SetLabel(validatedKey, value);
             return value;
         }
 
         public object ExternalGetLabel(string key)
         {
-            var label = _gameState.TryGetLabel(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetLabelKey(key);
+            var label = _gameState.TryGetLabel(validatedKey);
             if (label == null)
                 return false;
             return label;
         }
-        public object ExternalHasLabel(string key) => _gameState.HasLabel(key);
+
+        public object ExternalHasLabel(string key)
+        {
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetLabelKey(key);
+            return _gameState.HasLabel(validatedKey);
+        }
+
         public object ExternalRemoveLabel(string key)
         {
-            if (!_gameState.HasLabel(key))
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetLabelKey(key);
+            if (!_gameState.HasLabel(validatedKey))
                 throw new Exception($"Cannot remove non-existent label '{key}'.");
-            _gameState.RemoveLabel(key);
+            _gameState.RemoveLabel(validatedKey);
             return null;
         }
 
-        public object ExternalSetVar(string key, string value) { _gameState.SetVariable(key, value); return null; }
-        public object ExternalGetVar(string key) => _gameState.TryGetVariable(key) ?? throw new Exception($"Variable '{key}' does not exist.");
+        public object ExternalSetVar(string key, string value)
+        {
+            var varKey = new GameStateKey<object>(key);
+            _gameState.SetVariable(varKey, value);
+            return null;
+        }
+
+        public object ExternalGetVar(string key)
+        {
+            var varKey = new GameStateKey<object>(key);
+            return _gameState.TryGetVariable(varKey) ?? throw new Exception($"Variable '{key}' does not exist.");
+        }
 
         public object ExternalPlayerHas(string itemName)
         {
             Item? item = _player.Inventory.GetItem(itemName);
             return item != null;
         }
-        public object ExternalPlayerGiveMask(string maskName) { _gameState.GivePlayerMask(maskName); return null; }
+        public object ExternalPlayerGiveMask(string maskName) => _gameState.TryGivePlayerMask(maskName);
         public object ExternalPlayerTryTakeMask(string maskName) => _gameState.TryTakePlayerMask(maskName);
         public object ExternalPlayerWearingMask(string maskName) => _gameState.PlayerWearingMask(maskName);
         public object ExternalPlayerForceMask(string maskName)

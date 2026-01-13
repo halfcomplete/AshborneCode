@@ -161,11 +161,12 @@ namespace AshborneGame._Core.Game.CommandHandling
             }
             else if (CommandCatchers.HelpVerbs.Contains(action))
             {
-                if (!GameContext.GameState.TryIncrementCounter("player.prayers"))
+                var counterKey = new GameStateKey<int>("player.prayers");
+                if (!GameContext.GameState.TryIncrementCounter(counterKey))
                 {
-                    GameContext.GameState.SetCounter("player.prayers", 1);
+                    GameContext.GameState.SetCounter(counterKey, 1);
                 }
-                GameEvent playerPrayedEvent = new GameEvent("player.actions.prayed", new Dictionary<string, object>()
+                GameEvent playerPrayedEvent = new GameEvent(EventNameConstants.Player.Actions.Prayed, new Dictionary<string, object>()
                 {
                     {"location_group", "Ossaneth's Domain"}
                 });

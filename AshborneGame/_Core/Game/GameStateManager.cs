@@ -3,6 +3,7 @@ using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem;
 using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Globals.Constants;
+using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.SceneManagement;
 using Ink.Runtime;
 using System.ComponentModel.DataAnnotations;
@@ -117,14 +118,14 @@ namespace AshborneGame._Core.Game
 
         // ----------- FLAGS (True/False binary states) -----------
 
-        public void SetFlag(string key, bool value) => Flags[key] = value;
+        public void SetFlag(GameStateKey<bool> key, bool value) => Flags[key] = value;
 
         /// <summary>
         /// Gets the value of the provided flag name.
         /// </summary>
         /// <param name="key"></param>
         /// <returns>A bool? value, true if the flag is true, false if the flag is false, null if the flag doesn't exist.</returns>
-        public bool TryGetFlag(string key, out bool value) 
+        public bool TryGetFlag(GameStateKey<bool> key, out bool value) 
         {
             return Flags.TryGetValue(key, out value);
         }
@@ -132,12 +133,12 @@ namespace AshborneGame._Core.Game
         /// <summary>
         /// Gets whether the flag exists.
         /// </summary>
-        public bool HasFlag(string key) => Flags.ContainsKey(key);
+        public bool HasFlag(GameStateKey<bool> key) => Flags.ContainsKey(key);
 
         /// <summary>
         /// Removes the flag.
         /// </summary>
-        public void RemoveFlag(string key) => Flags.Remove(key);
+        public void RemoveFlag(GameStateKey<bool> key) => Flags.Remove(key);
 
         /// <summary>
         /// Toggles a flag
@@ -146,7 +147,7 @@ namespace AshborneGame._Core.Game
         /// If it was true, this sets it to false, else it's set to true.
         /// </summary>
         /// <returns>True if the flag is now true. False if the flag is now false. Null if the flag doesn't exist.</returns>
-        public bool? TryToggleFlag(string key)
+        public bool? TryToggleFlag(GameStateKey<bool> key)
         {
             if (Flags.ContainsKey(key))
             {
@@ -159,13 +160,13 @@ namespace AshborneGame._Core.Game
 
         // ----------- COUNTERS (Integers with mutations) -----------
 
-        public void SetCounter(string key, int value) => Counters[key] = value;
+        public void SetCounter(GameStateKey<int> key, int value) => Counters[key] = value;
 
         /// <summary>
         /// Gets the value of a counter.
         /// </summary>
         /// <returns>True if it was successful, false if not. Out integer value.</returns>
-        public bool TryGetCounter(string key, out int value)
+        public bool TryGetCounter(GameStateKey<int> key, out int value)
         {
             return Counters.TryGetValue(key, out value);
         }
@@ -175,7 +176,7 @@ namespace AshborneGame._Core.Game
         /// Increments a counter by amount.
         /// </summary>
         /// <returns>True if it was successful. False otherwise.</returns>
-        public bool TryIncrementCounter(string key, int amount = 1)
+        public bool TryIncrementCounter(GameStateKey<int> key, int amount = 1)
         {
             if (!TryGetCounter(key, out var baseValue))
             {
@@ -189,7 +190,7 @@ namespace AshborneGame._Core.Game
         /// Decrements a counter by an amount. Sets it to 0 if it goes below 0.
         /// </summary>
         /// <returns>True if it was successful. False otherwise.</returns>
-        public bool TryDecrementCounter(string key, int amount = 1)
+        public bool TryDecrementCounter(GameStateKey<int> key, int amount = 1)
         {
             if (!TryGetCounter(key, out var baseValue))
             {
@@ -200,14 +201,14 @@ namespace AshborneGame._Core.Game
             return true;
         }
 
-        public bool HasCounter(string key) => Counters.ContainsKey(key);
+        public bool HasCounter(GameStateKey<int> key) => Counters.ContainsKey(key);
 
-        public bool RemoveCounter(string key) => Counters.Remove(key);
+        public bool RemoveCounter(GameStateKey<int> key) => Counters.Remove(key);
 
         // ----------- LABELS (String storage) ----------
 
-        public void SetLabel(string key, string value) => Labels[key] = value;
-        public string? TryGetLabel(string key)
+        public void SetLabel(GameStateKey<string> key, string value) => Labels[key] = value;
+        public string? TryGetLabel(GameStateKey<string> key)
         {
             if (Labels.TryGetValue(key, out string? value))
                 return value;
@@ -215,19 +216,19 @@ namespace AshborneGame._Core.Game
                 return null;
         }
 
-        public bool HasLabel(string key) => Labels.Keys.Contains(key);
+        public bool HasLabel(GameStateKey<string> key) => Labels.Keys.Contains(key);
 
-        public bool RemoveLabel(string key) => Labels.Remove(key);
+        public bool RemoveLabel(GameStateKey<string> key) => Labels.Remove(key);
 
         // ----------- VARIABLES (Generic object storage) -----------
 
-        public void SetVariable(string key, object value) => Variables[key] = value;
+        public void SetVariable(GameStateKey<object> key, object value) => Variables[key] = value;
 
         /// <summary>
         /// Attempts to get the value of the variable.
         /// </summary>
         /// <returns>The value if successful, null otherwise.</returns>
-        public object? TryGetVariable(string key) =>
+        public object? TryGetVariable(GameStateKey<object> key) =>
             Variables.TryGetValue(key, out var value) ? value : null;
 
         /// <summary>
@@ -236,21 +237,30 @@ namespace AshborneGame._Core.Game
         /// <typeparam name="T"></typeparam>
         /// <param name="key"></param>
         /// <returns></returns>
-        public T? GetVariable<T>(string key)
+        public T? GetVariable<T>(GameStateKey<object> key)
         {
             if (Variables.TryGetValue(key, out var value) && value is T typedValue)
                 return typedValue;
             return default;
         }
 
-        public bool HasVariable(string key) => Variables.ContainsKey(key);
+        public bool HasVariable(GameStateKey<object> key) => Variables.ContainsKey(key);
 
-        public void RemoveVariable(string key) => Variables.Remove(key);
+        public void RemoveVariable(GameStateKey<object> key) => Variables.Remove(key);
 
         // ----------- MASKS -----------
-        public void GivePlayerMask(string maskName)
+        public bool TryGivePlayerMask(string maskName)
         {
-            _player.Inventory.AddItem(Masks[maskName]);
+            try
+            {
+                _player.Inventory.AddItem(Masks[maskName]);
+                return true;
+            }
+            catch (KeyNotFoundException e)
+            {
+                IOService.Output.DisplayDebugMessage("[GameStateManager] Attempted to give player a mask that doesn't exist in Masks dictionary: " + maskName + ". StackTrace: " + e.StackTrace, Globals.Enums.ConsoleMessageTypes.ERROR);
+                return false;
+            }
         }
 
         public bool TryTakePlayerMask(string maskName)
@@ -384,7 +394,7 @@ namespace AshborneGame._Core.Game
                     SetFlag("Flags.Player.Actions.In.OssanethDreamspace_OutroTriggered", true);
                     
                     // Publish event for the outro dialogue
-                    var outroEvent = new GameEvent("player.dreamspace.outro.triggered", new Dictionary<string, object>
+                    var outroEvent = new GameEvent(EventNameConstants.Player.Dreamspace.OutroTriggered, new Dictionary<string, object>
                     {
                         { "visited_count", visitedCount },
                         { "location_name", location.Name.ReferenceName }
@@ -403,6 +413,8 @@ namespace AshborneGame._Core.Game
         }
 
         // ----------- UTILITIES -----------
+
+        public GameStateKey<>
 
         public void ClearAll()
         {

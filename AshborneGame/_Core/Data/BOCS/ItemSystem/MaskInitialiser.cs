@@ -47,7 +47,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             // Add various triggers and messages for Ossaneth
             interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger
             (
-                EventName: "player.actions.prayed",
+                EventName: EventNameConstants.Player.Actions.Prayed,
                 EventCondition: evt => evt.Get<string>("location_group") == "Ossaneth's Domain",
                 StateCondition: state => state.TryGetCounter("player.prayers", out var times) && times == 1,
                 Message: "Pray without fear, child, for the Eye sees, and hears, all."
@@ -55,7 +55,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
 
             interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger
             (
-                EventName: "player.actions.prayed",
+                EventName: EventNameConstants.Player.Actions.Prayed,
                 EventCondition: evt => evt.Get<string>("location_group") == "Ossaneth's Domain",
                 StateCondition: state => state.TryGetCounter("player.prayers", out var times) && times == 2,
                 Message: "As I said, do not fear."
@@ -63,7 +63,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
 
             interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger
             (
-                EventName: "player.actions.prayed",
+                EventName: EventNameConstants.Player.Actions.Prayed,
                 EventCondition: evt => evt.Get<string>("location_group") == "Ossaneth's Domain",
                 StateCondition: state => state.TryGetCounter("player.prayers", out var times) && times == 3,
                 Message: "Again? How many times must you pray..."
@@ -71,7 +71,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
 
             interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger
             (
-                EventName: "player.actions.prayed",
+                EventName: EventNameConstants.Player.Actions.Prayed,
                 EventCondition: evt => evt.Get<string>("location_group") == "Ossaneth's Domain",
                 StateCondition: state => state.TryGetCounter("player.prayers", out var times) && times == 4,
                 Message: "Neither God nor I will answer to your prayers anymore.",
