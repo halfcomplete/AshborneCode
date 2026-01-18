@@ -218,7 +218,7 @@ namespace AshborneGame._Core.SceneManagement
                                 playerInput = await IOService.Input.GetPlayerInput(prompt);
                             }
                         }
-                        GameContext.GameState.SetLabel(GameStateKeyConstants.Labels, playerInput);
+                        GameContext.GameState.SetLabel(GameStateKeyConstants.Labels.Player.Input, playerInput);
                         await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Player input received at {DateTime.Now}", ConsoleMessageTypes.INFO);
                         _canContinue = _story.canContinue;
                         continue;

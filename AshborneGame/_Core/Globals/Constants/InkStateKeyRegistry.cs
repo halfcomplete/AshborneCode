@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.Globals.Enums;
@@ -25,78 +26,117 @@ namespace AshborneGame._Core.Globals.Constants
 
         static InkStateKeyRegistry()
         {
-            // Register all valid flag keys from GameStateKeyConstants
             RegisterFlags();
-            
-            // Register all valid counter keys from GameStateKeyConstants
             RegisterCounters();
-            
-            // Register all valid label keys from GameStateKeyConstants
             RegisterLabels();
+        }
+
+        public static List<FieldInfo> GetAllStaticFields(Type type)
+        {
+            List<FieldInfo> fields = new List<FieldInfo>();
+
+            // 1. Get static fields in the current type
+            // Use BindingFlags.Static, BindingFlags.Public, BindingFlags.NonPublic to get all access levels
+            fields.AddRange(type.GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly));
+
+            // 2. Get all nested types (classes/structs) in the current type
+            Type[] nestedTypes = type.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic);
+
+            foreach (Type nestedType in nestedTypes)
+            {
+                // A static class in C# is internally represented as a sealed and abstract class
+                // This condition checks if the nested type is a static class
+                if (nestedType.IsAbstract && nestedType.IsSealed)
+                {
+                    // Recursively call the method for nested static classes
+                    fields.AddRange(GetAllStaticFields(nestedType));
+                }
+            }
+
+            return fields;
         }
 
         private static void RegisterFlags()
         {
-            // Flags: Player actions in Ossaneth's Domain
-            FlagRegistry.Add(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedHallwayOfMirrors, 
-                GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedHallwayOfMirrors);
-            FlagRegistry.Add(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedTempleOfTheBound, 
-                GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedTempleOfTheBound);
-            FlagRegistry.Add(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedThroneRoom, 
-                GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedThroneRoom);
-            FlagRegistry.Add(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedBloodClocks, 
-                GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedBloodClocks);
-            FlagRegistry.Add(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_TalkedToBoundOne, 
-                GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_TalkedToBoundOne);
+            Type flagsStaticClass = typeof(GameStateKeyConstants.Flags);
+            // Recursively get all the static fields in the Flags static class and its nested static classes
+            var staticFields = GetAllStaticFields(flagsStaticClass);
 
-            // Additional flags that appear in Ink scripts (dynamically set strings)
-            // These are common patterns that Ink scripts will use. Register them as "known unknown" patterns
-            // that we allow through but log warnings for.
-            RegisterDynamicFlagPatterns();
+            foreach (var field in staticFields)
+            {
+                if (field.FieldType == typeof(GameStateKey<bool>))
+                {
+                    object? value = field.GetValue(null);
+                    if (value == null)
+                    {
+                        IOService.Output.DisplayDebugMessage($"Field '{field.Name}' in '{flagsStaticClass.FullName}' is null. Skipping registration.", ConsoleMessageTypes.WARNING);
+                        continue;
+                    }
+                    var flagKey = (GameStateKey<bool>)value;
+                    RegisterFlag(flagKey);
+                }
+            }
         }
 
         private static void RegisterCounters()
         {
-            // Counters: Player progression
-            CounterRegistry.Add(GameStateKeyConstants.Counters.Player.CurrentSceneNo, 
-                GameStateKeyConstants.Counters.Player.CurrentSceneNo);
-            CounterRegistry.Add(GameStateKeyConstants.Counters.Player.CurrentActNo, 
-                GameStateKeyConstants.Counters.Player.CurrentActNo);
+            Type countersStaticClass = typeof(GameStateKeyConstants.Counters);
+            // Recursively get all the static fields in the Counters static class and its nested static classes
+            var staticFields = GetAllStaticFields(countersStaticClass);
 
-            // Additional dynamic counters from Ink
-            RegisterDynamicCounterPatterns();
+            foreach (var field in staticFields)
+            {
+                if (field.FieldType == typeof(GameStateKey<int>))
+                {
+                    object? value = field.GetValue(null);
+                    if (value == null)
+                    {
+                        IOService.Output.DisplayDebugMessage($"Field '{field.Name}' in '{countersStaticClass.FullName}' is null. Skipping registration.", ConsoleMessageTypes.WARNING);
+                        continue;
+                    }
+                    var counterKey = (GameStateKey<int>)value;
+                    RegisterCounter(counterKey);
+                }
+            }
         }
 
         private static void RegisterLabels()
         {
-            // Labels: Player state strings
-            LabelRegistry.Add(GameStateKeyConstants.Labels.Player.Name, 
-                GameStateKeyConstants.Labels.Player.Name);
-            LabelRegistry.Add(GameStateKeyConstants.Labels.Player.Input, 
-                GameStateKeyConstants.Labels.Player.Input);
+            Type labelsStaticClass = typeof(GameStateKeyConstants.Labels);
+            // Recursively get all the static fields in the Labels static class and its nested static classes
+            var staticFields = GetAllStaticFields(labelsStaticClass);
+
+            foreach (var field in staticFields)
+            {
+                if (field.FieldType == typeof(GameStateKey<string>))
+                {
+                    object? value = field.GetValue(null);
+                    if (value == null)
+                    {
+                        IOService.Output.DisplayDebugMessage($"Field '{field.Name}' in '{labelsStaticClass.FullName}' is null. Skipping registration.", ConsoleMessageTypes.WARNING);
+                        continue;
+                    }
+                    var labelKey = (GameStateKey<string>)value;
+                    RegisterLabel(labelKey);
+                }
+            }
         }
 
-        /// <summary>
-        /// Registers dynamic flag patterns that Ink scripts commonly use.
-        /// These are patterns like "player.received_ossaneth", "player.actions.*", etc.
-        /// While not explicitly defined in constants, we whitelist these common prefixes.
-        /// </summary>
-        private static void RegisterDynamicFlagPatterns()
+        private static void RegisterFlag(GameStateKey<bool> flagKey)
         {
-            // Allow any flag starting with these prefixes as they're set dynamically by Ink
-            // Common pattern: "player.actions.talked.to_*", "player.actions.*", etc.
-            // These will be validated with a prefix check instead of exact match
+            FlagRegistry.Add(flagKey.Key, flagKey);
         }
 
-        /// <summary>
-        /// Registers dynamic counter patterns that Ink scripts commonly use.
-        /// These include counters like "player.prayers", "player.masks_count", etc.
-        /// </summary>
-        private static void RegisterDynamicCounterPatterns()
+        private static void RegisterCounter(GameStateKey<int> counterKey)
         {
-            // Common counters that are set by Ink but not defined as constants
-            // These follow a standard naming pattern: "player.*" or similar
+            CounterRegistry.Add(counterKey.Key, counterKey);
         }
+
+        private static void RegisterLabel(GameStateKey<string> labelKey)
+        {
+            LabelRegistry.Add(labelKey.Key, labelKey);
+        }
+
 
         /// <summary>
         /// Validates and retrieves a flag key from the registry.
@@ -111,19 +151,11 @@ namespace AshborneGame._Core.Globals.Constants
             if (FlagRegistry.TryGetValue(inkStringKey, out var key))
                 return key;
 
-            // Check if it matches known dynamic patterns
-            if (IsValidDynamicFlagKey(inkStringKey))
-            {
-                LogWarning($"Flag key '{inkStringKey}' is not in the known constants registry but matches a whitelisted pattern. " +
-                    "Consider adding it to GameStateKeyConstants for better type safety.");
-                return new GameStateKey<bool>(inkStringKey);
-            }
-
             // Unknown key - fail fast
             throw new InvalidOperationException(
                 $"Unknown flag key from Ink: '{inkStringKey}'. " +
-                $"All flag keys must be registered in {nameof(InkStateKeyRegistry)} or {nameof(GameStateKeyConstants)}. " +
-                $"This is likely a typo in an Ink script. Known flags: {string.Join(", ", FlagRegistry.Keys)}");
+                $"All flag keys must be registered as a readonly static field in {nameof(GameStateKeyConstants.Flags)}. " +
+                $"This is likely a typo in the Ink script.");
         }
 
         /// <summary>
@@ -139,19 +171,11 @@ namespace AshborneGame._Core.Globals.Constants
             if (CounterRegistry.TryGetValue(inkStringKey, out var key))
                 return key;
 
-            // Check if it matches known dynamic patterns
-            if (IsValidDynamicCounterKey(inkStringKey))
-            {
-                LogWarning($"Counter key '{inkStringKey}' is not in the known constants registry but matches a whitelisted pattern. " +
-                    "Consider adding it to GameStateKeyConstants for better type safety.");
-                return new GameStateKey<int>(inkStringKey);
-            }
-
             // Unknown key - fail fast
             throw new InvalidOperationException(
                 $"Unknown counter key from Ink: '{inkStringKey}'. " +
-                $"All counter keys must be registered in {nameof(InkStateKeyRegistry)} or {nameof(GameStateKeyConstants)}. " +
-                $"This is likely a typo in an Ink script. Known counters: {string.Join(", ", CounterRegistry.Keys)}");
+                $"All counter keys must be registered as a readonly static field in {nameof(GameStateKeyConstants.Counters)}. " +
+                $"This is likely a typo in the Ink script. Known counters: {string.Join(", ", CounterRegistry.Keys)}");
         }
 
         /// <summary>
@@ -167,74 +191,11 @@ namespace AshborneGame._Core.Globals.Constants
             if (LabelRegistry.TryGetValue(inkStringKey, out var key))
                 return key;
 
-            // Check if it matches known dynamic patterns
-            if (IsValidDynamicLabelKey(inkStringKey))
-            {
-                LogWarning($"Label key '{inkStringKey}' is not in the known constants registry but matches a whitelisted pattern. " +
-                    "Consider adding it to GameStateKeyConstants for better type safety.");
-                return new GameStateKey<string>(inkStringKey);
-            }
-
             // Unknown key - fail fast
             throw new InvalidOperationException(
                 $"Unknown label key from Ink: '{inkStringKey}'. " +
-                $"All label keys must be registered in {nameof(InkStateKeyRegistry)} or {nameof(GameStateKeyConstants)}. " +
-                $"This is likely a typo in an Ink script. Known labels: {string.Join(", ", LabelRegistry.Keys)}");
-        }
-
-        /// <summary>
-        /// Checks if a flag key matches known dynamic patterns.
-        /// Allows common Ink patterns that aren't explicitly registered.
-        /// </summary>
-        private static bool IsValidDynamicFlagKey(string key)
-        {
-            // Pattern: player.actions.* (any player action tracking)
-            if (key.StartsWith("player.actions."))
-                return true;
-
-            // Pattern: player.received_* (tracking receipt of items/masks)
-            if (key.StartsWith("player.received_"))
-                return true;
-
-            // Pattern: Flags.Player.* (dynamically created flags)
-            if (key.StartsWith("Flags.Player."))
-                return true;
-
-            return false;
-        }
-
-        /// <summary>
-        /// Checks if a counter key matches known dynamic patterns.
-        /// Allows common Ink patterns that aren't explicitly registered.
-        /// </summary>
-        private static bool IsValidDynamicCounterKey(string key)
-        {
-            // Pattern: player.* (any player counter)
-            if (key.StartsWith("player."))
-                return true;
-
-            // Pattern: Counters.* (dynamically created counters)
-            if (key.StartsWith("Counters."))
-                return true;
-
-            return false;
-        }
-
-        /// <summary>
-        /// Checks if a label key matches known dynamic patterns.
-        /// Allows common Ink patterns that aren't explicitly registered.
-        /// </summary>
-        private static bool IsValidDynamicLabelKey(string key)
-        {
-            // Pattern: player.* (any player label)
-            if (key.StartsWith("player."))
-                return true;
-
-            // Pattern: Labels.* (dynamically created labels)
-            if (key.StartsWith("Labels."))
-                return true;
-
-            return false;
+                $"All label keys must be registered as a readonly static field in {nameof(GameStateKeyConstants.Labels)}. " +
+                $"This is likely a typo in the Ink script.");
         }
 
         /// <summary>

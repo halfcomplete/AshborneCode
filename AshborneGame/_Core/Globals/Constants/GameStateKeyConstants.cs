@@ -33,6 +33,14 @@ namespace AshborneGame._Core.Globals.Constants
                         /// </summary>
                         public static readonly GameStateKey<bool> OssanethDreamspace_VisitedThroneRoom = new("Flags.Player.Actions.In.OssanethDreamspace_VisitedThroneRoom");
                         /// <summary>
+                        /// Flags.Player.Actions.In.OssanethDomain_SatOnThrone
+                        /// </summary>
+                        public static readonly GameStateKey<bool> OssanethDomain_SatOnThrone = new("Flags.Player.Actions.In.OssanethDomain_SatOnThrone");
+                        /// <summary>
+                        /// Flags.Player.Actions.In.OssanethDomain_TouchedKnife
+                        /// </summary>
+                        public static readonly GameStateKey<bool> OssanethDomain_TouchedKnife = new("Flags.Player.Actions.In.OssanethDomain_TouchedKnife");
+                        /// <summary>
                         /// Flags.Player.Actions.In.OssanethDreamspace_VisitedBloodClocks
                         /// </summary>
                         public static readonly GameStateKey<bool> OssanethDreamspace_VisitedBloodClocks = new("Flags.Player.Actions.In.OssanethDreamspace_VisitedBloodClocks");
@@ -42,11 +50,6 @@ namespace AshborneGame._Core.Globals.Constants
                         public static readonly GameStateKey<bool> OssanethDreamspace_TalkedToBoundOne = new("Flags.Player.Actions.In.OssanethDreamspace_VisitedBloodClocks");
                     }
                 }
-            }
-
-            public static class Events
-            {
-                public const string SomeEventKey = "Events.SomeEventKey";
             }
         }
 
@@ -62,6 +65,10 @@ namespace AshborneGame._Core.Globals.Constants
                 /// Counters.Player.CurrentActNo
                 /// </summary>
                 public static readonly GameStateKey<int> CurrentActNo = new("Counters.Player.CurrentActNo");
+                /// <summary>
+                /// Counters.Player.Prayers
+                /// </summary>
+                public static readonly GameStateKey<int> Prayers = new("Counters.Player.Prayers");
             }
         }
 

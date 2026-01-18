@@ -77,7 +77,7 @@ namespace AshborneGame._Core.Game.DescriptionHandling
         public ConditionalDescription Not()
         {
             if (_entries.Count == 0)
-                throw new InvalidOperationException("Call When() before Not()");
+                throw new InvalidOperationException("Call When(...) before Not()");
             var last = _entries.Last();
             var prev = last.Predicate;
             last.Predicate = (p, g) => !prev(p, g);

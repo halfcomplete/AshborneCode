@@ -53,7 +53,7 @@ namespace AshborneGame._Core.Game
             };
             
             // Subscribe to Ossaneth Domain visit count event
-            EventBus.Subscribe(EventNameConstants.Ossaneth.DomainVisitCountFour, OnOssanethDomainVisitCountFour);
+            EventBus.Subscribe(EventNameConstants.Ossaneth.Domain.OnEyePlatformVisitCountEqualFour, OnOssanethDomainVisitCountFour);
             
             InitialiseGameWorld(player);
         }
@@ -61,8 +61,8 @@ namespace AshborneGame._Core.Game
         private async void OnOssanethDomainVisitCountFour(GameEvent evt)
         {
             // Start the outro dialogue (fire-and-forget previously; now log explicitly)
-            await IOService.Output.DisplayDebugMessage($"Event '{EventNameConstants.Ossaneth.DomainVisitCountFour}' received. Launching outro dialogue...", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.INFO);
-            Console.WriteLine($"[GameEngine] {EventNameConstants.Ossaneth.DomainVisitCountFour} received; starting outro dialogue");
+            await IOService.Output.DisplayDebugMessage($"Event '{EventNameConstants.Ossaneth.Domain.OnEyePlatformVisitCountEqualFour}' received. Launching outro dialogue...", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.INFO);
+            Console.WriteLine($"[GameEngine] {EventNameConstants.Ossaneth.Domain.OnEyePlatformVisitCountEqualFour} received; starting outro dialogue");
             // Intentionally not awaited because this is a sync event handler; dialogue service internally tracks running state.
             await _dialogueService.StartDialogue("Act1_Scene1_Ossaneth_Domain_Outro");
         }

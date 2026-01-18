@@ -12,10 +12,21 @@ namespace AshborneGame._Core.Globals.Constants
         /// </summary>
         public static class Ossaneth
         {
-            /// <summary>
-            /// Fired when the player has visited 4 unique locations in Ossaneth's Domain.
-            /// </summary>
-            public const string DomainVisitCountFour = "ossaneth.domain.visitcount.4";
+            public static class Domain
+            {
+                /// <summary>
+                /// Raised when the player has visited 4 unique locations in Ossaneth's Domain.
+                /// </summary>
+                public const string OnEyePlatformVisitCountEqualFour = "Events.Ossaneth.Domain.OnEyePlatformVisitCountEqualFour";
+
+                /// <summary>
+                /// Raised when the outro sequence should trigger (visited 2+ dreamspace locations).
+                /// Event data:
+                ///   - "visited_count" (int): Number of dreamspace locations visited
+                ///   - "location_name" (string): Reference name of the current location
+                /// </summary>
+                public const string OnOutroTriggered = "Events.Ossaneth.Domain.OnOutroTriggered";
+            }
         }
 
         /// <summary>
@@ -29,26 +40,12 @@ namespace AshborneGame._Core.Globals.Constants
             public static class Actions
             {
                 /// <summary>
-                /// Fired when the player prays (location-specific action).
+                /// Raised when the player prays (location-specific action).
                 /// Event data: 
                 ///   - "location_group" (string): The location group where the prayer occurred (e.g., "Ossaneth's Domain")
                 /// </summary>
-                public const string Prayed = "player.actions.prayed";
-            }
-
-            /// <summary>
-            /// Events related to the player's progression through dream sequences.
-            /// </summary>
-            public static class Dreamspace
-            {
-                /// <summary>
-                /// Fired when the outro sequence should trigger (visited 2+ dreamspace locations).
-                /// Event data:
-                ///   - "visited_count" (int): Number of dreamspace locations visited
-                ///   - "location_name" (string): Reference name of the current location
-                /// </summary>
-                public const string OutroTriggered = "player.dreamspace.outro.triggered";
-            }
+                public const string Prayed = "Events.Player.Actions.OnPrayed";
+            }   
         }
     }
 }

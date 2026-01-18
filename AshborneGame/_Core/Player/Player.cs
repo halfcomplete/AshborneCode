@@ -154,13 +154,13 @@ namespace AshborneGame._Core._Player
             Console.WriteLine($"[MoveTo] Location={newLocation.Name.DisplayName} Scene={(newLocation.Scene?.DisplayName ?? "<null>")} VisitCount={CurrentLocation.VisitCount} sceneMatch={sceneMatch} nameMatch={nameMatch} visitMatch={visitMatch}", ConsoleMessageTypes.INFO);
             if (sceneMatch && nameMatch && visitMatch)
             {
-                var evt = new GameEvent(EventNameConstants.Ossaneth.DomainVisitCountFour, new Dictionary<string, object>
+                var evt = new GameEvent(EventNameConstants.Ossaneth.Domain.OnEyePlatformVisitCountEqualFour, new Dictionary<string, object>
                 {
                     { "location", newLocation },
                     { "visitCount", CurrentLocation.VisitCount }
                 });
                 EventBus.Call(evt);
-                await IOService.Output.DisplayDebugMessage($"[MoveTo] Fired {EventNameConstants.Ossaneth.DomainVisitCountFour} event", ConsoleMessageTypes.INFO);
+                await IOService.Output.DisplayDebugMessage($"[MoveTo] Fired {EventNameConstants.Ossaneth.Domain.OnEyePlatformVisitCountEqualFour} event", ConsoleMessageTypes.INFO);
             }
 
             // Suppress description on the special 4th Eye Platform visit (outro) so dialogue leads
