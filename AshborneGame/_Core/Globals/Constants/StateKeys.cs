@@ -8,9 +8,10 @@ namespace AshborneGame._Core.Globals.Constants
         public override string ToString() => Key;
 
         public static implicit operator string(GameStateKey<T> key) => key.Key;
+        public static implicit operator GameStateKey<T>(string key) => new(key);
     }
 
-    public static class GameStateKeyConstants
+    public static class StateKeys
     {
         public static class Flags
         {

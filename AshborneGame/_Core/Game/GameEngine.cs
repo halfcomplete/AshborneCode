@@ -34,7 +34,7 @@ namespace AshborneGame._Core.Game
 
             Player player = new Player("Hero");
             var gameState = new GameStateManager(player);
-            gameState.SetCounter(GameStateKeyConstants.Counters.Player.CurrentActNo, 1);
+            gameState.SetCounter(StateKeys.Counters.Player.CurrentActNo, 1);
             var inkRunner = new InkRunner(gameState, player, appEnvironment);
             _dialogueService = new DialogueService(inkRunner);
 
@@ -108,7 +108,7 @@ namespace AshborneGame._Core.Game
                 ConditionalDescription.Create()
                 .When((player, gameState) =>
                 {
-                    if (gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedHallwayOfMirrors, out bool value) &&
+                    if (gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethDreamspace_VisitedHallwayOfMirrors, out bool value) &&
                     player.CurrentLocation.VisitCount == 1 || player.CurrentLocation.VisitCount == 2 || player.CurrentLocation.VisitCount == 4)
                     {
                         return value;
@@ -119,7 +119,7 @@ namespace AshborneGame._Core.Game
                 .Once()
                 .When((player, gameState) =>
                 {
-                    if (gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedHallwayOfMirrors, out bool value) &&
+                    if (gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethDreamspace_VisitedHallwayOfMirrors, out bool value) &&
                     player.CurrentLocation.VisitCount == 3 || player.CurrentLocation.VisitCount > 4)
                     {
                         return value;
@@ -130,8 +130,8 @@ namespace AshborneGame._Core.Game
                 .Once()
                 .When((player, gameState) =>
                 {
-                    bool visitedTemple = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedTempleOfTheBound, out bool v1);
-                    bool talkedToBound = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_TalkedToBoundOne, out bool v2);
+                    bool visitedTemple = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethDreamspace_VisitedTempleOfTheBound, out bool v1);
+                    bool talkedToBound = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethDreamspace_TalkedToBoundOne, out bool v2);
                     int visits = player.CurrentLocation.VisitCount;
 
                     if (visitedTemple &&
@@ -146,8 +146,8 @@ namespace AshborneGame._Core.Game
                 .Once()
                 .When((player, gameState) =>
                 {
-                    bool visitedTemple = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedTempleOfTheBound, out bool v1);
-                    bool talkedToBound = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_TalkedToBoundOne, out bool v2);
+                    bool visitedTemple = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethDreamspace_VisitedTempleOfTheBound, out bool v1);
+                    bool talkedToBound = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethDreamspace_TalkedToBoundOne, out bool v2);
                     int visits = player.CurrentLocation.VisitCount;
 
                     if (visitedTemple && talkedToBound && (visits == 3 || visits > 4))
@@ -311,7 +311,7 @@ namespace AshborneGame._Core.Game
             var prologue = new Scene("Prologue", "Prologue");
 
             prologue.AddLocation(prologueLocation);
-            GameContext.GameState.SetCounter(GameStateKeyConstants.Counters.Player.CurrentSceneNo, 0);
+            GameContext.GameState.SetCounter(StateKeys.Counters.Player.CurrentSceneNo, 0);
 
             return ((prologueLocation, prologue), (eyePlatform, ossanethDomain));
         }

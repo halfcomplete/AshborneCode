@@ -219,6 +219,9 @@ namespace AshborneGame._Core.SceneManagement
                             }
                         }
                         GameContext.GameState.SetLabel(GameStateKeyConstants.Labels.Player.Input, playerInput);
+=======
+                        GameContext.GameState.SetLabel(StateKeys.Labels.Player.Input, playerInput);
+>>>>>>> Stashed changes
                         await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Player input received at {DateTime.Now}", ConsoleMessageTypes.INFO);
                         _canContinue = _story.canContinue;
                         continue;

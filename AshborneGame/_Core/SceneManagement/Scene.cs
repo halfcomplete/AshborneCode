@@ -54,14 +54,14 @@ namespace AshborneGame._Core.SceneManagement
         public string GetHeader()
         {
             StringBuilder header = new StringBuilder();
-            if (!GameContext.GameState.TryGetCounter(GameStateKeyConstants.Counters.Player.CurrentActNo, out int actNo))
+            if (!GameContext.GameState.TryGetCounter(StateKeys.Counters.Player.CurrentActNo, out int actNo))
             {
-                throw new Exception($"Get counter '{GameStateKeyConstants.Counters.Player.CurrentActNo}' in Scene.cs failed. Counter does not exist.");
+                throw new Exception($"Get counter '{StateKeys.Counters.Player.CurrentActNo}' in Scene.cs failed. Counter does not exist.");
             }
             header.AppendLine($"ACT {IntToRomanConversionService.IntToRoman(actNo)}"); // Placeholder
-            if (!GameContext.GameState.TryGetCounter(GameStateKeyConstants.Counters.Player.CurrentSceneNo, out int sceneNo))
+            if (!GameContext.GameState.TryGetCounter(StateKeys.Counters.Player.CurrentSceneNo, out int sceneNo))
             {
-                throw new Exception($"Get counter '{GameStateKeyConstants.Counters.Player.CurrentSceneNo}' in Scene.cs failed. Counter does not exist.");
+                throw new Exception($"Get counter '{StateKeys.Counters.Player.CurrentSceneNo}' in Scene.cs failed. Counter does not exist.");
             }
             header.AppendLine($"SCENE {IntToRomanConversionService.IntToRoman(sceneNo)}");
             header.AppendLine($"--------");
