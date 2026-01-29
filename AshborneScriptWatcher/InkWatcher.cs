@@ -2,6 +2,7 @@
 using System.IO;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using AshborneGame._Core.Globals.Constants;
 
 namespace AshborneTooling
 {
@@ -11,10 +12,25 @@ namespace AshborneTooling
         private static readonly string inkDialogueRoot = @"D:\C# Projects\AshborneDesign\Narrative";
         private static readonly string outputRoot = @"D:\C# Projects\AshborneCode\AshborneGame\_Core\Data\Dialogue";
         private static readonly string wasmRoot = @"D:\C# Projects\AshborneCode\AshborneWASM\wwwroot\Dialogue";
+
         public static async Task Main(string[] args)
         {
             Console.WriteLine("Ashborne Ink Watcher Started");
             Console.WriteLine($"Watching for changes in: {inkDialogueRoot}");
+
+            Console.WriteLine("Registered State Keys:");
+            foreach (var key in InkStateKeyRegistry.GetAllRegisteredLabelKeys())
+            {
+                Console.WriteLine($"- {key}");
+            }
+            foreach (var key in InkStateKeyRegistry.GetAllRegisteredFlagKeys())
+            {
+                Console.WriteLine($"- {key}");
+            }
+            foreach (var key in InkStateKeyRegistry.GetAllRegisteredCounterKeys())
+            {
+                Console.WriteLine($"- {key}");
+            }
 
             using var watcher = new FileSystemWatcher(inkDialogueRoot, "*.ink")
             {
@@ -35,16 +51,27 @@ namespace AshborneTooling
         {
             try
             {
+                Console.WriteLine("============================================================================");
                 Console.WriteLine($"Change detected: {e.Name} at {DateTime.Now}");
-                CompileInkFile(e.FullPath);
+                var jsonPath = CompileInkFile(e.FullPath);
+                var issues = InkDialogueValidator.ValidateSingleFile(jsonPath);
+                Console.WriteLine();
+                foreach (var issue in issues)
+                {
+                    Console.WriteLine($"[ERROR] Validation Issue in {e.Name}: {issue}");
+                }
+                if (issues.Count == 0)
+                {
+                    Console.WriteLine($"[SUCCESS] Compile and Validation complete for {e.Name}!");
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to compile {e.Name}: {ex.Message}");
+                Console.WriteLine($"Failed to compile and validate {e.Name}: {ex.Message}");
             }
         }
 
-        private static void CompileInkFile(string inkFilePath)
+        private static string CompileInkFile(string inkFilePath)
         {
             string fileName = Path.GetFileName(inkFilePath); // e.g. Act1_Scene1_intro.ink
             string[] parts = fileName.Split('_', StringSplitOptions.RemoveEmptyEntries);
@@ -52,7 +79,7 @@ namespace AshborneTooling
             if (parts.Length < 2 || !parts[0].StartsWith("Act") || !parts[1].StartsWith("Scene"))
             {
                 Console.WriteLine($"Invalid file name format: {fileName}");
-                return;
+                return "";
             }
 
             string actPart = parts[0];   // Act1
@@ -90,13 +117,14 @@ namespace AshborneTooling
                 File.Copy(jsonOutputPath, jsonWasmPath, overwrite: true);
                 File.SetLastWriteTimeUtc(jsonOutputPath, DateTime.UtcNow);
                 File.SetLastWriteTimeUtc(jsonWasmPath, DateTime.UtcNow);
-
-                Console.WriteLine($"Compiled and copied: {fileName} → Game + WASM");
             }
             else
             {
                 Console.WriteLine($"Compilation error in {fileName}:\n{error}");
+                return "";
             }
+
+            return jsonOutputPath;
         }
     }
 }

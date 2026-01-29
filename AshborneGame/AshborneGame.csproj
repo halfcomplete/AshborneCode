@@ -15,10 +15,8 @@
 
   <ItemGroup>
     <Content Include="_Core\Data\Dialogue\Act1\Scene1\Act1_Scene1_Intro_Dialogue.json" />
-    <Content Include="_Core\Data\Dialogue\Act1\Scene1\Act1_Scene1_Knife_Dialogue.json" />
     <Content Include="_Core\Data\Dialogue\Act1\Scene1\Act1_Scene1_Ossaneth_Domain_Intro.json" />
     <Content Include="_Core\Data\Dialogue\Act1\Scene1\Act1_Scene1_Prisoner_Dialogue.json" />
-    <Content Include="_Core\Data\Dialogue\Act1\Scene1\Act1_Scene1_Throne_Dialogue.json" />
   </ItemGroup>
 
   <ItemGroup>

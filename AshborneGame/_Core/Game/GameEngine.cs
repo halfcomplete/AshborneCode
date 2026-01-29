@@ -53,12 +53,12 @@ namespace AshborneGame._Core.Game
             };
             
             // Subscribe to Ossaneth Domain visit count event
-            EventBus.Subscribe(EventNameConstants.Ossaneth.Domain.OnEyePlatformVisitCountEqualFour, OnOssanethDomainVisitCountFour);
+            EventBus.Subscribe(EventNameConstants.Ossaneth.Domain.OnEyePlatformVisitCountEqualFour, OnOssanethsDomainVisitCountFour);
             
             InitialiseGameWorld(player);
         }
 
-        private async void OnOssanethDomainVisitCountFour(GameEvent evt)
+        private async void OnOssanethsDomainVisitCountFour(GameEvent evt)
         {
             // Start the outro dialogue (fire-and-forget previously; now log explicitly)
             await IOService.Output.DisplayDebugMessage($"Event '{EventNameConstants.Ossaneth.Domain.OnEyePlatformVisitCountEqualFour}' received. Launching outro dialogue...", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.INFO);
@@ -108,7 +108,7 @@ namespace AshborneGame._Core.Game
                 ConditionalDescription.Create()
                 .When((player, gameState) =>
                 {
-                    if (gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethDreamspace_VisitedHallwayOfMirrors, out bool value) &&
+                    if (gameState.TryGetFlag(StateKeys.Counters.Player.TimesVisited.OssanethsDomain_HallwayOfMirrors, out bool value) &&
                     player.CurrentLocation.VisitCount == 1 || player.CurrentLocation.VisitCount == 2 || player.CurrentLocation.VisitCount == 4)
                     {
                         return value;
@@ -119,7 +119,7 @@ namespace AshborneGame._Core.Game
                 .Once()
                 .When((player, gameState) =>
                 {
-                    if (gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethDreamspace_VisitedHallwayOfMirrors, out bool value) &&
+                    if (gameState.TryGetFlag(StateKeys.Counters.Player.TimesVisited.OssanethsDomain_HallwayOfMirrors, out bool value) &&
                     player.CurrentLocation.VisitCount == 3 || player.CurrentLocation.VisitCount > 4)
                     {
                         return value;
@@ -130,8 +130,8 @@ namespace AshborneGame._Core.Game
                 .Once()
                 .When((player, gameState) =>
                 {
-                    bool visitedTemple = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethDreamspace_VisitedTempleOfTheBound, out bool v1);
-                    bool talkedToBound = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethDreamspace_TalkedToBoundOne, out bool v2);
+                    bool visitedTemple = gameState.TryGetFlag(StateKeys.Counters.Player.TimesVisited.OssanethsDomain_TempleOfTheBound, out bool v1);
+                    bool talkedToBound = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOne, out bool v2);
                     int visits = player.CurrentLocation.VisitCount;
 
                     if (visitedTemple &&
@@ -146,8 +146,8 @@ namespace AshborneGame._Core.Game
                 .Once()
                 .When((player, gameState) =>
                 {
-                    bool visitedTemple = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethDreamspace_VisitedTempleOfTheBound, out bool v1);
-                    bool talkedToBound = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethDreamspace_TalkedToBoundOne, out bool v2);
+                    bool visitedTemple = gameState.TryGetFlag(StateKeys.Counters.Player.TimesVisited.OssanethsDomain_TempleOfTheBound, out bool v1);
+                    bool talkedToBound = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOne, out bool v2);
                     int visits = player.CurrentLocation.VisitCount;
 
                     if (visitedTemple && talkedToBound && (visits == 3 || visits > 4))
@@ -301,11 +301,11 @@ namespace AshborneGame._Core.Game
             LocationFactory.AddMutualExits(eyePlatform, templeOfTheBound, DirectionConstants.North);
 
             // Create Ossaneth's Domain scene and ensure ALL related locations are registered with it
-            var ossanethDomain = LocationFactory.CreateScene("Ossaneth's Domain", "Ossaneth's Domain", new List<Location> { eyePlatform, hallOfMirrors });
+            var OssanethsDomain = LocationFactory.CreateScene("Ossaneth's Domain", "Ossaneth's Domain", new List<Location> { eyePlatform, hallOfMirrors });
             // These two locations were previously not added to the scene, causing their Scene to remain null
             // which broke single-word command parsing (e.g. 'help') after entering them due to null CurrentScene.
-            ossanethDomain.AddLocation(chamberOfCycles);
-            ossanethDomain.AddLocation(templeOfTheBound);
+            OssanethsDomain.AddLocation(chamberOfCycles);
+            OssanethsDomain.AddLocation(templeOfTheBound);
 
             var prologueLocation = LocationFactory.CreateLocation(new Location(), new LookDescription(), new VisitDescription(), new SensoryDescription());
             var prologue = new Scene("Prologue", "Prologue");
@@ -313,7 +313,7 @@ namespace AshborneGame._Core.Game
             prologue.AddLocation(prologueLocation);
             GameContext.GameState.SetCounter(StateKeys.Counters.Player.CurrentSceneNo, 0);
 
-            return ((prologueLocation, prologue), (eyePlatform, ossanethDomain));
+            return ((prologueLocation, prologue), (eyePlatform, OssanethsDomain));
         }
 
 

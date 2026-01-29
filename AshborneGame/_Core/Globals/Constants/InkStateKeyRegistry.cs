@@ -10,7 +10,7 @@ namespace AshborneGame._Core.Globals.Constants
     /// Registry that bridges the gap between Ink's string-based state access and C#'s type-safe GameStateKey system.
     /// 
     /// Ink scripts can only pass strings when calling external C# functions. This registry validates those string keys
-    /// against known identifiers defined in GameStateKeyConstants, throwing exceptions for unknown keys.
+    /// against known identifiers defined in StateKeys, throwing exceptions for unknown keys.
     /// 
     /// This ensures that:
     /// 1. Typos in Ink scripts are caught at runtime (fail-fast)
@@ -58,7 +58,7 @@ namespace AshborneGame._Core.Globals.Constants
 
         private static void RegisterFlags()
         {
-            Type flagsStaticClass = typeof(GameStateKeyConstants.Flags);
+            Type flagsStaticClass = typeof(StateKeys.Flags);
             // Recursively get all the static fields in the Flags static class and its nested static classes
             var staticFields = GetAllStaticFields(flagsStaticClass);
 
@@ -76,11 +76,13 @@ namespace AshborneGame._Core.Globals.Constants
                     RegisterFlag(flagKey);
                 }
             }
+
+            RegisterFlag(new GameStateKey<bool>("Flags.TestFlag"));
         }
 
         private static void RegisterCounters()
         {
-            Type countersStaticClass = typeof(GameStateKeyConstants.Counters);
+            Type countersStaticClass = typeof(StateKeys.Counters);
             // Recursively get all the static fields in the Counters static class and its nested static classes
             var staticFields = GetAllStaticFields(countersStaticClass);
 
@@ -98,11 +100,13 @@ namespace AshborneGame._Core.Globals.Constants
                     RegisterCounter(counterKey);
                 }
             }
+
+            RegisterCounter(new GameStateKey<int>("Counters.TestCounter"));
         }
 
         private static void RegisterLabels()
         {
-            Type labelsStaticClass = typeof(GameStateKeyConstants.Labels);
+            Type labelsStaticClass = typeof(StateKeys.Labels);
             // Recursively get all the static fields in the Labels static class and its nested static classes
             var staticFields = GetAllStaticFields(labelsStaticClass);
 
@@ -120,6 +124,8 @@ namespace AshborneGame._Core.Globals.Constants
                     RegisterLabel(labelKey);
                 }
             }
+
+            RegisterLabel(new GameStateKey<string>("Labels.TestLabel"));
         }
 
         private static void RegisterFlag(GameStateKey<bool> flagKey)
@@ -154,7 +160,7 @@ namespace AshborneGame._Core.Globals.Constants
             // Unknown key - fail fast
             throw new InvalidOperationException(
                 $"Unknown flag key from Ink: '{inkStringKey}'. " +
-                $"All flag keys must be registered as a readonly static field in {nameof(GameStateKeyConstants.Flags)}. " +
+                $"All flag keys must be registered as a readonly static field in {nameof(StateKeys.Flags)}. " +
                 $"This is likely a typo in the Ink script.");
         }
 
@@ -174,7 +180,7 @@ namespace AshborneGame._Core.Globals.Constants
             // Unknown key - fail fast
             throw new InvalidOperationException(
                 $"Unknown counter key from Ink: '{inkStringKey}'. " +
-                $"All counter keys must be registered as a readonly static field in {nameof(GameStateKeyConstants.Counters)}. " +
+                $"All counter keys must be registered as a readonly static field in {nameof(StateKeys.Counters)}. " +
                 $"This is likely a typo in the Ink script. Known counters: {string.Join(", ", CounterRegistry.Keys)}");
         }
 
@@ -194,7 +200,7 @@ namespace AshborneGame._Core.Globals.Constants
             // Unknown key - fail fast
             throw new InvalidOperationException(
                 $"Unknown label key from Ink: '{inkStringKey}'. " +
-                $"All label keys must be registered as a readonly static field in {nameof(GameStateKeyConstants.Labels)}. " +
+                $"All label keys must be registered as a readonly static field in {nameof(StateKeys.Labels)}. " +
                 $"This is likely a typo in the Ink script.");
         }
 

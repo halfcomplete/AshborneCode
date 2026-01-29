@@ -1,4 +1,6 @@
 ﻿
+using System.Runtime.InteropServices;
+
 namespace AshborneGame._Core.Globals.Constants
 {
     public readonly struct GameStateKey<T>
@@ -21,35 +23,19 @@ namespace AshborneGame._Core.Globals.Constants
                 {
                     public static class In
                     {
-                        /// <summary>
-                        /// Flags.Player.Actions.In.OssanethDreamspace_VisitedHallwayOfMirrors
-                        /// </summary>
-                        public static readonly GameStateKey<bool> OssanethDreamspace_VisitedHallwayOfMirrors = new("Flags.Player.Actions.In.OssanethDreamspace_VisitedHallwayOfMirrors");
-                        /// <summary>
-                        /// Flags.Player.Actions.In.OssanethDreamspace_VisitedTempleOfTheBound
-                        /// </summary>
-                        public static readonly GameStateKey<bool> OssanethDreamspace_VisitedTempleOfTheBound = new("Flags.Player.Actions.In.OssanethDreamspace_VisitedTempleOfTheBound");
-                        /// <summary>
-                        /// Flags.Player.Actions.In.OssanethDreamspace_VisitedThroneRoom
-                        /// </summary>
-                        public static readonly GameStateKey<bool> OssanethDreamspace_VisitedThroneRoom = new("Flags.Player.Actions.In.OssanethDreamspace_VisitedThroneRoom");
-                        /// <summary>
-                        /// Flags.Player.Actions.In.OssanethDomain_SatOnThrone
-                        /// </summary>
-                        public static readonly GameStateKey<bool> OssanethDomain_SatOnThrone = new("Flags.Player.Actions.In.OssanethDomain_SatOnThrone");
-                        /// <summary>
-                        /// Flags.Player.Actions.In.OssanethDomain_TouchedKnife
-                        /// </summary>
-                        public static readonly GameStateKey<bool> OssanethDomain_TouchedKnife = new("Flags.Player.Actions.In.OssanethDomain_TouchedKnife");
-                        /// <summary>
-                        /// Flags.Player.Actions.In.OssanethDreamspace_VisitedBloodClocks
-                        /// </summary>
-                        public static readonly GameStateKey<bool> OssanethDreamspace_VisitedBloodClocks = new("Flags.Player.Actions.In.OssanethDreamspace_VisitedBloodClocks");
-                        /// <summary>
-                        /// Flags.Player.Actions.In.OssanethDreamspace_VisitedBloodClocks
-                        /// </summary>
-                        public static readonly GameStateKey<bool> OssanethDreamspace_TalkedToBoundOne = new("Flags.Player.Actions.In.OssanethDreamspace_VisitedBloodClocks");
+                        public static class OssanethsDomain
+                        {
+                            public static readonly GameStateKey<bool> TalkedToBoundOne = new("Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOne");
+                            public static readonly GameStateKey<bool> TalkedToBoundOneHelp = new("Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOneHelp");
+                            public static readonly GameStateKey<bool> TalkedToBoundOneSelf = new("Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOneSelf");
+                            public static readonly GameStateKey<bool> TalkedToBoundOnePast = new("Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOnePast");
+                        }
                     }
+                }
+
+                public static class Received
+                {
+                    public static readonly GameStateKey<bool> OssanethMask = new("Flags.Player.Received.OssanethMask");
                 }
             }
         }
@@ -58,18 +44,23 @@ namespace AshborneGame._Core.Globals.Constants
         {
             public static class Player
             {
-                /// <summary>
-                /// Counters.Player.CurrentSceneNo
-                /// </summary>
                 public static readonly GameStateKey<int> CurrentSceneNo = new("Counters.Player.CurrentSceneNo");
-                /// <summary>
-                /// Counters.Player.CurrentActNo
-                /// </summary>
                 public static readonly GameStateKey<int> CurrentActNo = new("Counters.Player.CurrentActNo");
-                /// <summary>
-                /// Counters.Player.Prayers
-                /// </summary>
                 public static readonly GameStateKey<int> Prayers = new("Counters.Player.Prayers");
+
+                public static class TimesEncountered
+                {
+                    public static readonly GameStateKey<int> Ossaneth = new("Counters.Player.TimesEncountered.Ossaneth");
+                    public static readonly GameStateKey<int> Witnesses = new("Counters.Player.TimesEncountered.Witnesses");
+                }
+
+                public static class TimesVisited
+                {
+                    public static readonly GameStateKey<int> OssanethsDomain = new("Counters.Player.TimesVisited.OssanethsDomain");
+                    public static readonly GameStateKey<bool> OssanethsDomain_HallwayOfMirrors = new("Flags.Player.Actions.In.OssanethsDomain.VisitedHallwayOfMirrors");
+                    public static readonly GameStateKey<bool> OssanethsDomain_TempleOfTheBound = new("Flags.Player.Actions.In.OssanethsDomain_VisitedTempleOfTheBound");
+                    public static readonly GameStateKey<bool> OssanethsDomain_ThroneRoom = new("Flags.Player.Actions.In.OssanethsDomain_VisitedThroneRoom");
+                }
             }
         }
 
@@ -77,13 +68,7 @@ namespace AshborneGame._Core.Globals.Constants
         {
             public static class Player
             {
-                /// <summary>
-                /// Labels.Player.Name
-                /// </summary>
                 public static readonly GameStateKey<string> Name = new("Labels.Player.Name");
-                /// <summary>
-                /// Labels.Player.Input
-                /// </summary>
                 public static readonly GameStateKey<string> Input = new("Labels.Player.Input");
             }
         }

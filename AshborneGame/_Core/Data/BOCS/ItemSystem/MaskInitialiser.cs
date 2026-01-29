@@ -49,7 +49,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             (
                 EventName: EventNameConstants.Player.Actions.Prayed,
                 EventCondition: evt => evt.Get<string>("location_group") == "Ossaneth's Domain",
-                StateCondition: state => state.TryGetCounter(GameStateKeyConstants.Counters.Player.Prayers, out var times) && times == 1,
+                StateCondition: state => state.TryGetCounter(StateKeys.Counters.Player.Prayers, out var times) && times == 1,
                 Message: "Pray without fear, child, for the Eye sees, and hears, all."
             ));
 
@@ -57,7 +57,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             (
                 EventName: EventNameConstants.Player.Actions.Prayed,
                 EventCondition: evt => evt.Get<string>("location_group") == "Ossaneth's Domain",
-                StateCondition: state => state.TryGetCounter(GameStateKeyConstants.Counters.Player.Prayers, out var times) && times == 2,
+                StateCondition: state => state.TryGetCounter(StateKeys.Counters.Player.Prayers, out var times) && times == 2,
                 Message: "As I said, do not fear."
             ));
 
@@ -65,7 +65,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             (
                 EventName: EventNameConstants.Player.Actions.Prayed,
                 EventCondition: evt => evt.Get<string>("location_group") == "Ossaneth's Domain",
-                StateCondition: state => state.TryGetCounter(GameStateKeyConstants.Counters.Player.Prayers, out var times) && times == 3,
+                StateCondition: state => state.TryGetCounter(StateKeys.Counters.Player.Prayers, out var times) && times == 3,
                 Message: "Again? How many times must you pray..."
             ));
 
@@ -73,29 +73,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             (
                 EventName: EventNameConstants.Player.Actions.Prayed,
                 EventCondition: evt => evt.Get<string>("location_group") == "Ossaneth's Domain",
-                StateCondition: state => state.TryGetCounter(GameStateKeyConstants.Counters.Player.Prayers, out var times) && times == 4,
+                StateCondition: state => state.TryGetCounter(StateKeys.Counters.Player.Prayers, out var times) && times == 4,
                 Message: "Neither God nor I will answer to your prayers anymore.",
                 OneTime: true
-            ));
-
-            interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger
-            (
-                  EventName: "player.actions.sat_on_throne",
-                  EventCondition: evt => evt.Get<string>("location") == "throne",
-                  StateCondition: state => state.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDomain_SatOnThrone, out var value) && value,
-                  Message: null,
-                  Effect: () => GameContext.DialogueService.StartDialogue("Act1_Scene1_Throne_Dialogue"),
-                  OneTime: true
-            ));
-
-            interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger
-            (
-                  EventName: "player.actions.touched_knife",
-                  EventCondition: evt => evt.Get<string>("location") == "pedestal",
-                  StateCondition: state => state.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDomain_TouchedKnife, out var value) && value,
-                  Message: null,
-                  Effect: () => GameContext.DialogueService.StartDialogue("Act1_Scene1_Knife_Dialogue"),
-                  OneTime: true
             ));
 
             interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger

@@ -218,10 +218,7 @@ namespace AshborneGame._Core.SceneManagement
                                 playerInput = await IOService.Input.GetPlayerInput(prompt);
                             }
                         }
-                        GameContext.GameState.SetLabel(GameStateKeyConstants.Labels.Player.Input, playerInput);
-=======
                         GameContext.GameState.SetLabel(StateKeys.Labels.Player.Input, playerInput);
->>>>>>> Stashed changes
                         await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Player input received at {DateTime.Now}", ConsoleMessageTypes.INFO);
                         _canContinue = _story.canContinue;
                         continue;
@@ -356,26 +353,26 @@ namespace AshborneGame._Core.SceneManagement
 
         public object ExternalSetFlag(string key, bool value)
         {
-            var validatedKey = InkStateKeyRegistry.ValidateAndGetFlagKey(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetFlagKey("Flags." + key);
             _gameState.SetFlag(validatedKey, value);
             return null;
         }
 
         public object ExternalGetFlag(string key)
         {
-            var validatedKey = InkStateKeyRegistry.ValidateAndGetFlagKey(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetFlagKey("Flags." + key);
             return _gameState.TryGetFlag(validatedKey, out var value) ? value : -1; // Flag does not exist
         }
 
         public object ExternalHasFlag(string key)
         {
-            var validatedKey = InkStateKeyRegistry.ValidateAndGetFlagKey(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetFlagKey("Flags." + key);
             return _gameState.HasFlag(validatedKey);
         }
 
         public object ExternalToggleFlag(string key)
         {
-            var validatedKey = InkStateKeyRegistry.ValidateAndGetFlagKey(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetFlagKey("Flags." + key);
             var result = _gameState.TryToggleFlag(validatedKey);
             if (result == null)
                 return -1; // Flag does not exist
@@ -384,7 +381,7 @@ namespace AshborneGame._Core.SceneManagement
 
         public object ExternalRemoveFlag(string key)
         {
-            var validatedKey = InkStateKeyRegistry.ValidateAndGetFlagKey(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetFlagKey("Flags." + key);
             if (!_gameState.HasFlag(validatedKey))
                 return false;
             _gameState.RemoveFlag(validatedKey);
@@ -393,26 +390,26 @@ namespace AshborneGame._Core.SceneManagement
 
         public object ExternalSetCounter(string key, int value)
         {
-            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey("Counters." + key);
             _gameState.SetCounter(validatedKey, value);
             return null;
         }
 
         public object ExternalGetCounter(string key)
         {
-            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey("Counters." + key);
             return _gameState.TryGetCounter(validatedKey, out var result) ? result : throw new Exception($"Counter '{key}' does not exist.");
         }
 
         public object ExternalHasCounter(string key)
         {
-            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey("Counters." + key);
             return _gameState.HasCounter(validatedKey);
         }
 
         public object ExternalIncCounter(string key, int amount)
         {
-            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey("Counters." + key);
             if (!_gameState.TryIncrementCounter(validatedKey, amount))
                 return false;
             return true;
@@ -420,7 +417,7 @@ namespace AshborneGame._Core.SceneManagement
 
         public object ExternalDecCounter(string key, int amount)
         {
-            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey("Counters." + key);
             if (!_gameState.TryDecrementCounter(validatedKey, amount))
                 return false;
             return true;
@@ -428,20 +425,20 @@ namespace AshborneGame._Core.SceneManagement
 
         public object ExternalRemoveCounter(string key)
         {
-            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetCounterKey("Counters." + key);
             return _gameState.RemoveCounter(validatedKey);
         }
 
         public object ExternalSetLabel(string key, string value)
         {
-            var validatedKey = InkStateKeyRegistry.ValidateAndGetLabelKey(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetLabelKey("Labels." + key);
             _gameState.SetLabel(validatedKey, value);
             return value;
         }
 
         public object ExternalGetLabel(string key)
         {
-            var validatedKey = InkStateKeyRegistry.ValidateAndGetLabelKey(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetLabelKey("Labels." + key);
             var label = _gameState.TryGetLabel(validatedKey);
             if (label == null)
                 return false;
@@ -450,19 +447,20 @@ namespace AshborneGame._Core.SceneManagement
 
         public object ExternalHasLabel(string key)
         {
-            var validatedKey = InkStateKeyRegistry.ValidateAndGetLabelKey(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetLabelKey("Labels." + key);
             return _gameState.HasLabel(validatedKey);
         }
 
         public object ExternalRemoveLabel(string key)
         {
-            var validatedKey = InkStateKeyRegistry.ValidateAndGetLabelKey(key);
+            var validatedKey = InkStateKeyRegistry.ValidateAndGetLabelKey("Labels." + key);
             if (!_gameState.HasLabel(validatedKey))
                 throw new Exception($"Cannot remove non-existent label '{key}'.");
             _gameState.RemoveLabel(validatedKey);
             return null;
         }
 
+        // Variables are not registered in InkStateKeyRegistry as they are more dynamic and cannot (and should not) be pre-validated or used in Ink.
         public object ExternalSetVar(string key, string value)
         {
             var varKey = new GameStateKey<object>(key);
