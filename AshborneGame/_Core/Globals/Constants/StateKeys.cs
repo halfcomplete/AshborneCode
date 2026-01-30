@@ -57,9 +57,9 @@ namespace AshborneGame._Core.Globals.Constants
                 public static class TimesVisited
                 {
                     public static readonly GameStateKey<int> OssanethsDomain = new("Counters.Player.TimesVisited.OssanethsDomain");
-                    public static readonly GameStateKey<bool> OssanethsDomain_HallwayOfMirrors = new("Flags.Player.Actions.In.OssanethsDomain.VisitedHallwayOfMirrors");
-                    public static readonly GameStateKey<bool> OssanethsDomain_TempleOfTheBound = new("Flags.Player.Actions.In.OssanethsDomain_VisitedTempleOfTheBound");
-                    public static readonly GameStateKey<bool> OssanethsDomain_ThroneRoom = new("Flags.Player.Actions.In.OssanethsDomain_VisitedThroneRoom");
+                    public static readonly GameStateKey<int> OssanethsDomain_HallwayOfMirrors = new("Counters.Player.TimesVisited.OssanethsDomain_HallwayOfMirrors");
+                    public static readonly GameStateKey<int> OssanethsDomain_TempleOfTheBound = new("Counters.Player.TimesVisited.OssanethsDomain_TempleOfTheBound");
+                    public static readonly GameStateKey<int> OssanethsDomain_ThroneRoom = new("Counters.Player.TimesVisited.OssanethsDomain_ThroneRoom");
                 }
             }
         }
