@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AshborneGame\AshborneGame.csproj" />
+    <ProjectReference Include="..\AshborneScriptWatcher\AshborneTooling.csproj" />
   </ItemGroup>
 
   <ItemGroup>

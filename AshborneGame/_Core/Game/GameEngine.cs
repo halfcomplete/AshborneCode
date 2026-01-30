@@ -34,7 +34,7 @@ namespace AshborneGame._Core.Game
 
             Player player = new Player("Hero");
             var gameState = new GameStateManager(player);
-            gameState.SetCounter(GameStateKeyConstants.Counters.Player.CurrentActNo, 1);
+            gameState.SetCounter(StateKeys.Counters.Player.CurrentActNo, 1);
             var inkRunner = new InkRunner(gameState, player, appEnvironment);
             _dialogueService = new DialogueService(inkRunner);
 
@@ -53,12 +53,12 @@ namespace AshborneGame._Core.Game
             };
             
             // Subscribe to Ossaneth Domain visit count event
-            EventBus.Subscribe(EventNameConstants.Ossaneth.Domain.OnEyePlatformVisitCountEqualFour, OnOssanethDomainVisitCountFour);
+            EventBus.Subscribe(EventNameConstants.Ossaneth.Domain.OnEyePlatformVisitCountEqualFour, OnOssanethsDomainVisitCountFour);
             
             InitialiseGameWorld(player);
         }
 
-        private async void OnOssanethDomainVisitCountFour(GameEvent evt)
+        private async void OnOssanethsDomainVisitCountFour(GameEvent evt)
         {
             // Start the outro dialogue (fire-and-forget previously; now log explicitly)
             await IOService.Output.DisplayDebugMessage($"Event '{EventNameConstants.Ossaneth.Domain.OnEyePlatformVisitCountEqualFour}' received. Launching outro dialogue...", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.INFO);
@@ -151,8 +151,8 @@ namespace AshborneGame._Core.Game
                 ConditionalDescription.StartNew()
                     .If((player, gameState) =>
                     {
-                        bool visitedTemple = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedTempleOfTheBound, out bool v1);
-                        bool talkedToBound = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_TalkedToBoundOne, out bool v2);
+                        bool visitedTemple = gameState.TryGetFlag(StateKeys.Counters.Player.TimesVisited.OssanethsDomain_TempleOfTheBound, out bool v1);
+                        bool talkedToBound = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOne, out bool v2);
                         int visits = player.CurrentLocation.VisitCount;
 
                         if (visitedTemple && talkedToBound && (visits == 3 || visits > 4))
@@ -306,19 +306,19 @@ namespace AshborneGame._Core.Game
             LocationFactory.AddMutualExits(eyePlatform, templeOfTheBound, DirectionConstants.North);
 
             // Create Ossaneth's Domain scene and ensure ALL related locations are registered with it
-            var ossanethDomain = LocationFactory.CreateScene("Ossaneth's Domain", "Ossaneth's Domain", new List<Location> { eyePlatform, hallOfMirrors });
+            var OssanethsDomain = LocationFactory.CreateScene("Ossaneth's Domain", "Ossaneth's Domain", new List<Location> { eyePlatform, hallOfMirrors });
             // These two locations were previously not added to the scene, causing their Scene to remain null
             // which broke single-word command parsing (e.g. 'help') after entering them due to null CurrentScene.
-            ossanethDomain.AddLocation(chamberOfCycles);
-            ossanethDomain.AddLocation(templeOfTheBound);
+            OssanethsDomain.AddLocation(chamberOfCycles);
+            OssanethsDomain.AddLocation(templeOfTheBound);
 
             var prologueLocation = LocationFactory.CreateLocation(new Location(), new LookDescription(), new VisitDescription(), new SensoryDescription());
             var prologue = new Scene("Prologue", "Prologue");
 
             prologue.AddLocation(prologueLocation);
-            GameContext.GameState.SetCounter(GameStateKeyConstants.Counters.Player.CurrentSceneNo, 0);
+            GameContext.GameState.SetCounter(StateKeys.Counters.Player.CurrentSceneNo, 0);
 
-            return ((prologueLocation, prologue), (eyePlatform, ossanethDomain));
+            return ((prologueLocation, prologue), (eyePlatform, OssanethsDomain));
         }
 
 

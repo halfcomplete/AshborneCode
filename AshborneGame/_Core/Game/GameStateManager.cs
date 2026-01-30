@@ -346,9 +346,9 @@ namespace AshborneGame._Core.Game
             {
                 // We've moved to a new scene
                 // Increment the scene number
-                if (!TryDecrementCounter(GameStateKeyConstants.Counters.Player.CurrentSceneNo))
+                if (!TryDecrementCounter(StateKeys.Counters.Player.CurrentSceneNo))
                 {
-                    SetCounter(GameStateKeyConstants.Counters.Player.CurrentSceneNo, 0);
+                    SetCounter(StateKeys.Counters.Player.CurrentSceneNo, 0);
                 }
                 // Change the player's scene
                 GameContext.Player.MoveTo(GameContext.Player.CurrentLocation.Scene);
@@ -358,6 +358,7 @@ namespace AshborneGame._Core.Game
             CheckDreamspaceLocationProgress(location);
         }
 
+        // TODO: Replace with more modular and scalable "quest" tracking system
         private void CheckDreamspaceLocationProgress(Location location)
         {
             // Only track locations in Ossaneth's Domain (Dreamspace)
@@ -369,7 +370,7 @@ namespace AshborneGame._Core.Game
                 return;
 
             // Set flag for this specific location being visited
-            string locationFlagKey = $"Flags.Player.Actions.In.OssanethDreamspace_Visited{location.Name.ReferenceName.Replace(" ", "")}";
+            string locationFlagKey = $"Flags.Player.Actions.In._Visited{location.Name.ReferenceName.Replace(" ", "")}";
             SetFlag(InkStateKeyRegistry.ValidateAndGetFlagKey(locationFlagKey), true);
 
             // Count visited Dreamspace locations (excluding Eye Platform)
@@ -378,7 +379,7 @@ namespace AshborneGame._Core.Game
             
             foreach (var locName in dreamspaceLocations)
             {
-                string flagKey = $"Flags.Player.Actions.In.OssanethDreamspace_Visited{locName.Replace(" ", "")}";
+                string flagKey = $"Flags.Player.Actions.In.OssanethsDomain_Visited{locName.Replace(" ", "")}";
                 if (TryGetFlag(InkStateKeyRegistry.ValidateAndGetFlagKey(flagKey), out bool visited) && visited)
                 {
                     visitedCount++;
@@ -389,9 +390,9 @@ namespace AshborneGame._Core.Game
             if (visitedCount >= 2)
             {
                 // Check if we've already triggered the outro to avoid duplicates
-                if (!TryGetFlag(InkStateKeyRegistry.ValidateAndGetFlagKey("Flags.Player.Actions.In.OssanethDreamspace_OutroTriggered"), out bool outroTriggered) || !outroTriggered)
+                if (!TryGetFlag(InkStateKeyRegistry.ValidateAndGetFlagKey("Flags.Player.Actions.In.OssanethsDomain_OutroTriggered"), out bool outroTriggered) || !outroTriggered)
                 {
-                    SetFlag(InkStateKeyRegistry.ValidateAndGetFlagKey("Flags.Player.Actions.In.OssanethDreamspace_OutroTriggered"), true);
+                    SetFlag(InkStateKeyRegistry.ValidateAndGetFlagKey("Flags.Player.Actions.In.OssanethsDomain_OutroTriggered"), true);
                     
                     // Publish event for the outro dialogue
                     var outroEvent = new GameEvent(EventNameConstants.Ossaneth.Domain.OnOutroTriggered, new Dictionary<string, object>

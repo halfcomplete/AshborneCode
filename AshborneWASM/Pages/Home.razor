@@ -17,11 +17,11 @@
             @if (GameContext.Player?.CurrentScene != null && GameContext.GameState != null)
             {
                 int actNo = 1;
-                GameContext.GameState.TryGetCounter(GameStateKeyConstants.Counters.Player.CurrentActNo, out actNo);
+                GameContext.GameState.TryGetCounter(StateKeys.Counters.Player.CurrentActNo, out actNo);
                 string actLabel = "PART " + IntToRomanConversionService.IntToRoman(actNo);
                 var scene = GameContext.Player.CurrentScene;
                 int sceneNo = 1;
-                GameContext.GameState.TryGetCounter(GameStateKeyConstants.Counters.Player.CurrentSceneNo, out sceneNo);
+                GameContext.GameState.TryGetCounter(StateKeys.Counters.Player.CurrentSceneNo, out sceneNo);
                 string sceneLabel;
                 string final;
                 if (sceneNo != 0)

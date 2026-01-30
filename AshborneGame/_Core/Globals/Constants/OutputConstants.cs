@@ -37,6 +37,10 @@ namespace AshborneGame._Core.Globals.Constants
         @"<sfx=([^>]+)>(.*?)</sfx=\1>",
         RegexOptions.Singleline | RegexOptions.Compiled);
 
+        public static readonly Regex InkFunctionRegex = new(
+            @"""ev"",([^{]+),\{""x\(\)"":""([^""]*)"",""exArgs"":(\d)\}",
+            RegexOptions.Compiled);
+
         /// <summary>
         /// Default type speed for Release builds in milliseconds per character.
         /// </summary>
