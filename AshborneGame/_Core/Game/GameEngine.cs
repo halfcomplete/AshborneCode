@@ -105,57 +105,62 @@ namespace AshborneGame._Core.Game
                     "The platform beneath is an alien stone, black and white patterns etched into every part of the eye.",
                     "It's eerily quiet despite the chaos above and below. As though the eye is remembering, and commanding everything to be silent."),
                 new AmbientDescription(new Dictionary<TimeSpan, string>() { { TimeSpan.FromSeconds(5), "The glass keeps on spinning around you. The eye does not blink." } }),
-                ConditionalDescription.Create()
-                .When((player, gameState) =>
-                {
-                    if (gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedHallwayOfMirrors, out bool value) &&
-                    player.CurrentLocation.VisitCount == 1 || player.CurrentLocation.VisitCount == 2 || player.CurrentLocation.VisitCount == 4)
+                ConditionalDescription.StartNew()
+                    // If the player has visited the Hall of Mirrors and this is their 1st, 2nd, or 4th visit to the Eye Platform
+                    .If((player, gameState) =>
                     {
-                        return value;
-                    }
-                    return false;
-                })
-                .Show("And the mirrors reflect even deeper now, each questioning your very identity.")
-                .Once()
-                .When((player, gameState) =>
-                {
-                    if (gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedHallwayOfMirrors, out bool value) &&
-                    player.CurrentLocation.VisitCount == 3 || player.CurrentLocation.VisitCount > 4)
+                        if (gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedHallwayOfMirrors, out bool value) &&
+                        player.CurrentLocation.VisitCount == 1 || player.CurrentLocation.VisitCount == 2 || player.CurrentLocation.VisitCount == 4)
+                        {
+                            return value;
+                        }
+                        return false;
+                    })
+                    .ThenShow("And the mirrors reflect even deeper now, each questioning your very identity.")
+                    .OnlyOnce(),
+                ConditionalDescription.StartNew()
+                    // If the player has visited the Hall of Mirrors and this is their 3rd or later (>4) visit to the Eye Platform
+                    .If((player, gameState) =>
                     {
-                        return value;
-                    }
-                    return false;
-                })
-                .Show("However, the mirrors seem to reflect even deeper into you now, each questioning your very identity.")
-                .Once()
-                .When((player, gameState) =>
-                {
-                    bool visitedTemple = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedTempleOfTheBound, out bool v1);
-                    bool talkedToBound = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_TalkedToBoundOne, out bool v2);
-                    int visits = player.CurrentLocation.VisitCount;
+                        if (gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedHallwayOfMirrors, out bool value) &&
+                        player.CurrentLocation.VisitCount == 3 || player.CurrentLocation.VisitCount > 4)
+                        {
+                            return value;
+                        }
+                        return false;
+                    })
+                    .ThenShow("However, the mirrors seem to reflect even deeper into you now, each questioning your very identity.")
+                    .OnlyOnce(),
+                ConditionalDescription.StartNew()
+                    .If((player, gameState) =>
+                    {
+                        bool visitedTemple = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedTempleOfTheBound, out bool v1);
+                        bool talkedToBound = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_TalkedToBoundOne, out bool v2);
+                        int visits = player.CurrentLocation.VisitCount;
 
-                    if (visitedTemple &&
-                        talkedToBound &&
-                        (visits == 1 || visits == 2 || visits == 4))
+                        if (visitedTemple &&
+                            talkedToBound &&
+                            (visits == 1 || visits == 2 || visits == 4))
+                        {
+                            return v1 && v2;
+                        }
+                        return false;
+                    })
+                    .ThenShow("However, now the swirl almost reminds you of the Bound One — chaotic, unnerving and unpredictable. You shiver. Maybe it's best not to think about him.")
+                    .OnlyOnce(),
+                ConditionalDescription.StartNew()
+                    .If((player, gameState) =>
                     {
-                        return v1 && v2;
-                    }
-                    return false;
-                })
-                .Show("However, now the swirl almost reminds you of the Bound One — chaotic, unnerving and unpredictable. You shiver. Maybe it's best not to think about him.")
-                .Once()
-                .When((player, gameState) =>
-                {
-                    bool visitedTemple = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedTempleOfTheBound, out bool v1);
-                    bool talkedToBound = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_TalkedToBoundOne, out bool v2);
-                    int visits = player.CurrentLocation.VisitCount;
+                        bool visitedTemple = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_VisitedTempleOfTheBound, out bool v1);
+                        bool talkedToBound = gameState.TryGetFlag(GameStateKeyConstants.Flags.Player.Actions.In.OssanethDreamspace_TalkedToBoundOne, out bool v2);
+                        int visits = player.CurrentLocation.VisitCount;
 
-                    if (visitedTemple && talkedToBound && (visits == 3 || visits > 4))
-                    {
-                        return v1 && v2;
-                    }
-                    return false;
-                })
+                        if (visitedTemple && talkedToBound && (visits == 3 || visits > 4))
+                        {
+                            return v1 && v2;
+                        }
+                        return false;
+                    })
             );
 
             // Add Abyssal Rift sublocation to Eye Platform

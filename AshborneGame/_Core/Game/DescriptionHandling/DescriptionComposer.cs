@@ -13,7 +13,7 @@ namespace AshborneGame._Core.Game.DescriptionHandling
         public VisitDescription Fading { get; private set; }
         public SensoryDescription Sensory { get; private set; }
         public AmbientDescription? Ambient { get; private set; }
-        public ConditionalDescription? Conditional { get; private set; }
+        public List<ConditionalDescription>? Conditionals { get; private set; }
 
         private readonly Dictionary<string, string> positionalPhrases = new()
         {
@@ -40,13 +40,13 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             VisitDescription fading,
             SensoryDescription sensory,
             AmbientDescription? ambient = null,
-            ConditionalDescription? conditional = null)
+            params ConditionalDescription[]? conditionals)
         {
             Look = lookDescription;
             Fading = fading ?? throw new ArgumentNullException(nameof(fading), "Fading description cannot be null.");
             Sensory = sensory ?? throw new ArgumentNullException(nameof(sensory), "Sensory description cannot be null.");
             Ambient = ambient;
-            Conditional = conditional;
+            Conditionals = conditionals?.ToList();
         }
 
         public DescriptionComposer()
@@ -100,14 +100,24 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             // Add ambient snippets if available
             if (Ambient != null)
             {
-                description.Append(" " + Ambient.GetSnippetFromRandom());
+                description.Append(' ' + Ambient.GetSnippetFromRandom());
             }
 
+            var newConditionals = Conditionals != null ? new List<ConditionalDescription>(Conditionals) : new List<ConditionalDescription>();
             // Add conditional snippets if available
-            if (Conditional != null)
+            if (Conditionals != null && Conditionals.Count > 0)
             {
-                description.Append(" " + Conditional.GetDescription());
+                foreach (var conditional in Conditionals)
+                {
+                    description.Append(' ' + conditional.GetDescription(out var oneTime));
+                    if (oneTime)
+                    {
+                        newConditionals.Remove(conditional);
+                    }
+                }
             }
+
+            Conditionals = newConditionals;
 
             // Add sublocation snippets if available and not currently in a sublocation
             if (player.CurrentSublocation == null && player.CurrentLocation.Sublocations.Count > 0 && visitCount == 1)
@@ -141,10 +151,10 @@ namespace AshborneGame._Core.Game.DescriptionHandling
                 }
                     
                 description.Append(joined);
-                description.Append(".");
+                description.Append('.');
             }
 
-            description.Append("\n");
+            description.Append('\n');
 
             return description.ToString();
         }
@@ -180,11 +190,21 @@ namespace AshborneGame._Core.Game.DescriptionHandling
                 description.Append(Look.RepeatLook);
             }
 
+            var newConditionals = Conditionals != null ? new List<ConditionalDescription>(Conditionals) : new List<ConditionalDescription>();
             // Add conditional snippets if available
-            if (Conditional != null)
+            if (Conditionals != null)
             {
-                description.Append(" " + Conditional.GetDescription());
+                foreach (var conditional in Conditionals)
+                {
+                    description.Append(" " + conditional.GetDescription(out var oneTime));
+                    if (oneTime)
+                    {
+                        newConditionals.Remove(conditional);
+                    }
+                }
             }
+
+            Conditionals = newConditionals;
 
             // Increment the look count
             Look.LookCount++;

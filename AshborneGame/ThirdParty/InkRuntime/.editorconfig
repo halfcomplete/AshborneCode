@@ -1,0 +1,5 @@
+# top-most EditorConfig file for this directory
+root = true
+
+[*.cs]
+dotnet_analyzer_diagnostic.severity = none

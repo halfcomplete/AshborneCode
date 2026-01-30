@@ -1,133 +1,226 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using AshborneGame._Core._Player;
+using AshborneGame._Core.Game;
+
 
 namespace AshborneGame._Core.Game.DescriptionHandling
 {
+    /// <summary>
+    /// Fluent DSL for conditional descriptions. Usage examples:
+    /// ConditionalDescription.If(...).ThenShow(...);
+    /// ConditionalDescription.IfNot(...).ThenShow(...);
+    /// ConditionalDescription.If(...).And().If(...).ThenShow(...);
+    /// ConditionalDescription.If(...).Or().Group(ConditionalDescription.If(...).And().IfNot(...)).ThenShow(...);
+    /// </summary>
     public class ConditionalDescription
     {
-        // A private nested class to store each clause
-        private class Entry
+        public Func<Player, GameStateManager, bool> Predicate { get; private set; }
+        public string Message { get; private set; } = string.Empty;
+        public bool OneTime { get; private set; }
+        private bool _started;
+        private bool _messageAssigned;
+
+
+        private ConditionalDescription() { }
+
+        public static ConditionalDescription StartNew()
         {
-            public Func<Player, GameStateManager, bool> Predicate { get; set; }
-            public string Message { get; set; }
-            public bool OneTime { get; set; }
+            return new ConditionalDescription();
         }
 
-        // Our internal store of clauses
-        private readonly List<Entry> _entries = new();
-
-        // You can start a new builder with Create()
-        private ConditionalDescription() { }
-        public static ConditionalDescription Create() => new ConditionalDescription();
-
         /// <summary>
-        /// Takes a base predicate that will be evaluated.
+        /// Starts the conditional description with a predicate that must be true.
         /// </summary>
         /// <param name="predicate"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public ConditionalDescription When(Func<Player, GameStateManager, bool> predicate)
+        public ConditionalDescription If(Func<Player, GameStateManager, bool> predicate)
         {
-            if (predicate == null)
-                throw new ArgumentNullException(nameof(predicate));
-            var e = new Entry { Predicate = predicate };
-            _entries.Add(e);
+            return StartConditional(predicate, ClauseTypes.If);
+        }
+
+        /// <summary>
+        /// Starts the conditional description with a predicate that must be false.
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public ConditionalDescription IfNot(Func<Player, GameStateManager, bool> predicate)
+        {
+            return StartConditional(predicate, ClauseTypes.IfNot);
+        }
+
+        /// <summary>
+        /// Combines the current predicate with the provided one using logical AND.
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public ConditionalDescription AndIf(Func<Player, GameStateManager, bool> predicate)
+        {
+            EnsureStarted();
+            CombineCurrentPredicateWith(predicate, ClauseTypes.And);
             return this;
         }
 
         /// <summary>
-        /// Adds a new predicate to the chain using the 'And' operator.
+        /// Combines the current predicate with a grouped conditional description using logical AND.
         /// </summary>
-        /// <param name="next">The predicate to check next with the 'And' operator.</param>
-        /// <returns>The current conditional chain.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when 'And' is the first method in the chain.</exception>
-        public ConditionalDescription And(Func<Player, GameStateManager, bool> next)
-        {
-            if (_entries.Count == 0)
-                throw new InvalidOperationException("Call When() before And()");
-            var last = _entries.Last();
-            var prev = last.Predicate;
-            last.Predicate = (p, g) => prev(p, g) && next(p, g);
-            return this;
-        }
-
-        /// <summary>
-        /// Adds a new predicate to the chain using the 'Or' operator.
-        /// </summary>
-        /// <param name="next">The predicate to check next with the 'Or' operator.</param>
-        /// <returns>The current conditional chain.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when 'Or' is the first method in the chain.</exception>
-        public ConditionalDescription Or(Func<Player, GameStateManager, bool> next)
-        {
-            if (_entries.Count == 0)
-                throw new InvalidOperationException("Call When() before Or()");
-            var last = _entries.Last();
-            var prev = last.Predicate;
-            last.Predicate = (p, g) => prev(p, g) || next(p, g);
-            return this;
-        }
-
-        /// <summary>
-        /// Inverts the previous predicate.
-        /// </summary>
-        /// <returns>The current conditional chain.</returns>
+        /// <param name="grouped"></param>
+        /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public ConditionalDescription Not()
+        public ConditionalDescription AndIfAll(ConditionalDescription grouped)
         {
-            if (_entries.Count == 0)
-                throw new InvalidOperationException("Call When(...) before Not()");
-            var last = _entries.Last();
-            var prev = last.Predicate;
-            last.Predicate = (p, g) => !prev(p, g);
+            ArgumentNullException.ThrowIfNull(grouped);
+            EnsureStarted();
+            var nextExpression = grouped.Predicate;
+            if (nextExpression is null)
+                throw new InvalidOperationException("Grouped condition must start with If/IfNot.");
+            CombineCurrentPredicateWith(nextExpression, ClauseTypes.And);
             return this;
         }
 
-
-        // Assign the message for the last When()
-        public ConditionalDescription Show(string message)
+        /// <summary>
+        /// Combines the current predicate with the provided one using logical OR.
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public ConditionalDescription OrIf(Func<Player, GameStateManager, bool> predicate)
         {
-            if (_entries.Count == 0)
-                throw new InvalidOperationException("Call When(...) before Show(...)");
-            if (string.IsNullOrEmpty(message))
+            EnsureStarted();
+            CombineCurrentPredicateWith(predicate, ClauseTypes.Or);
+            return this;
+        }
+
+        /// <summary>
+        /// Combines the current predicate with a grouped conditional description using logical OR.
+        /// </summary>
+        /// <param name="grouped"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public ConditionalDescription OrIfAll(ConditionalDescription grouped)
+        {
+            ArgumentNullException.ThrowIfNull(grouped);
+            EnsureStarted();
+            var nextExpression = grouped.Predicate;
+            if (nextExpression is null)
+                throw new InvalidOperationException("Grouped condition must start with If/IfNot.");
+            CombineCurrentPredicateWith(nextExpression, ClauseTypes.Or);
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the message to show when the condition is met.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        public ConditionalDescription ThenShow(string message)
+        {
+            EnsureStarted();
+            if (string.IsNullOrWhiteSpace(message))
                 throw new ArgumentException("Message cannot be null or empty", nameof(message));
-            _entries.Last().Message = message;
+
+            Message = message;
+            _messageAssigned = true;
             return this;
         }
 
-        // Mark the last clause as one-time
-        public ConditionalDescription Once()
+        /// <summary>
+        /// Sets the description to be shown only once.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public ConditionalDescription OnlyOnce()
         {
-            if (_entries.Count == 0)
-                throw new InvalidOperationException("Call When(...) before Once()");
-            _entries.Last().OneTime = true;
+            if (!_messageAssigned)
+                throw new InvalidOperationException("Call ThenShow(...) before OnlyOnce().");
+            OneTime = true;
             return this;
         }
 
-        // Mark the last clause as always (never removed)
-        public ConditionalDescription Always()
+        /// <summary>
+        /// Sets the description to be shown every time the condition is met.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public ConditionalDescription Everytime()
         {
-            if (_entries.Count == 0)
-                throw new InvalidOperationException("Call When(...) before Always()");
-            _entries.Last().OneTime = false;
+            if (!_messageAssigned)
+                throw new InvalidOperationException("Call ThenShow(...) before Everytime().");
+            OneTime = false;
             return this;
         }
 
-        // Evaluate and return the first matching message
-        public string GetDescription()
+        /// <summary>
+        /// Gets the description based on the evaluation of the predicate.
+        /// </summary>
+        /// <param name="oneTime"></param>
+        /// <returns></returns>
+        public string GetDescription(out bool oneTime)
         {
-            foreach (var entry in _entries.ToList())  // clone so we can remove safely
+            
+            if (!_messageAssigned)
             {
-                if (entry.Predicate(GameContext.Player, GameContext.GameState))
-                {
-                    var msg = entry.Message ?? string.Empty;
-                    if (entry.OneTime)
-                        _entries.Remove(entry);
-                    return msg;
-                }
+                oneTime = true;
+                return string.Empty;
             }
+
+            if (Predicate(GameContext.Player, GameContext.GameState))
+            {
+                var msg = Message ?? string.Empty;
+                oneTime = OneTime;
+                return msg;
+            }
+
+            oneTime = false;
             return string.Empty;
+        }
+
+        private ConditionalDescription StartConditional(Func<Player, GameStateManager, bool> predicate, ClauseTypes clauseType)
+        {
+            ArgumentNullException.ThrowIfNull(predicate);
+            var expr = clauseType == ClauseTypes.If
+                ? predicate
+                : (p, g) => !predicate(p, g);
+
+
+            if (!_started)
+            {
+                Predicate = expr;
+                _started = true;
+                return this;
+            }
+            
+            throw new InvalidOperationException("Call If(...) or IfNot(...) only once at the beginning.");
+        }
+
+        /// <summary>
+        /// Combines the current predicate with the provided one using the given clause type.
+        /// </summary>
+        /// <param name="next">The next predicate to combine the current one with.</param>
+        /// <param name="clauseType">The type of clause to use for combining predicates.</param>
+        /// <exception cref="InvalidOperationException"><Thrown when clauseType is not And or Or./exception>
+        private void CombineCurrentPredicateWith(Func<Player, GameStateManager, bool> next, ClauseTypes clauseType)
+        {
+            var current = Predicate;
+            if (current is null)
+                throw new InvalidOperationException("No existing predicate to combine. Call If(...) or IfNot(...) first.");
+
+            Predicate = clauseType switch
+            {
+                ClauseTypes.And => (p, g) => current(p, g) && next(p, g),
+                ClauseTypes.Or => (p, g) => current(p, g) || next(p, g),
+                _ => throw new InvalidOperationException("Unsupported operator state.")
+            };
+        }
+
+        /// <summary>
+        /// Ensures that the conditional description has been started with If or IfNot.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown when the conditional description has not been started with If or IfNot.</exception>
+        private void EnsureStarted()
+        {
+            if (!_started)
+                throw new InvalidOperationException("Call If(...) or IfNot(...) first.");
         }
     }
 }

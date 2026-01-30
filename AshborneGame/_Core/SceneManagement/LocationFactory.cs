@@ -5,16 +5,15 @@ namespace AshborneGame._Core.SceneManagement
 {
     public static class LocationFactory
     {
-        public static Location CreateLocation(Location location, LookDescription lookDescription, VisitDescription fading, SensoryDescription sensory, AmbientDescription? ambient = null, ConditionalDescription? conditional = null)
+        public static Location CreateLocation(Location location, LookDescription lookDescription, VisitDescription fading, SensoryDescription sensory, AmbientDescription? ambient = null, params ConditionalDescription[] conditionals)
         {
             var descriptionComposer = new DescriptionComposer(
                 lookDescription,
                 fading,
                 sensory,
                 ambient,
-                conditional
+                conditionals .Where(c => c != null).ToArray()
             );
-
             location.SetDescriptionComposer(descriptionComposer);
             location.Name.SetParentLocation(location);
 
