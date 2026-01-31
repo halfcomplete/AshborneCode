@@ -1,7 +1,4 @@
-﻿using System;
-using AshborneGame._Core._Player;
-using AshborneGame._Core.Game;
-
+﻿using AshborneGame._Core._Player;
 
 namespace AshborneGame._Core.Game.DescriptionHandling
 {
@@ -14,6 +11,14 @@ namespace AshborneGame._Core.Game.DescriptionHandling
     /// </summary>
     public class ConditionalDescription
     {
+        private enum ClauseTypes
+        {
+            If,
+            IfNot,
+            And,
+            Or
+        }
+        
         public Func<Player, GameStateManager, bool> Predicate { get; private set; }
         public string Message { get; private set; } = string.Empty;
         public bool OneTime { get; private set; }
