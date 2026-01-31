@@ -9,6 +9,7 @@ namespace AshborneGame._Core.Game.DescriptionHandling
 {
     public class DescriptionComposer
     {
+        private bool _hasDescription;
         public LookDescription Look { get; private set; }
         public VisitDescription Fading { get; private set; }
         public SensoryDescription Sensory { get; private set; }
@@ -47,6 +48,7 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             Sensory = sensory ?? throw new ArgumentNullException(nameof(sensory), "Sensory description cannot be null.");
             Ambient = ambient;
             Conditionals = conditionals?.ToList();
+            _hasDescription = true;
         }
 
         public DescriptionComposer()
@@ -54,10 +56,14 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             Look = new LookDescription();
             Fading = new VisitDescription();
             Sensory = new SensoryDescription();
+            _hasDescription = false;
         }
 
         public string GetDescription(Player player, GameStateManager gameState)
         {
+            if (!_hasDescription)
+                throw new InvalidOperationException("DescriptionComposer: No descriptions have been set.");
+                
             StringBuilder description = new StringBuilder();
             
             // Determine which visit count to use based on whether player is in a sublocation or location

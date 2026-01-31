@@ -18,7 +18,7 @@ namespace AshborneGame._Core.SceneManagement
         /// <summary>
         /// Unique identifier for the location.
         /// </summary>
-        public string ID { get; }
+        public string ID { get; } = "Locations." + Guid.NewGuid().ToString();
 
         /// <summary>
         /// The group this location belongs to, if any.
@@ -28,7 +28,7 @@ namespace AshborneGame._Core.SceneManagement
         /// <summary>
         /// Flexible naming and parsing for the location.
         /// </summary>
-        public LocationIdentifier Name { get; }
+        public LocationNameAdapter Name { get; }
 
         /// <summary>
         /// Composer class for managing descriptions.
@@ -52,6 +52,35 @@ namespace AshborneGame._Core.SceneManagement
 
         public int VisitCount { get; set; } = 0;
 
+        /// <summary>
+        /// Creates a new Location with a given name and DescriptionComposer.
+        /// </summary>
+        /// <param name="name">LocationDescriptor for naming and parsing.</param>
+        /// <param name="composer">DescriptionComposer to combine descriptions.</param>
+        public Location(LocationNameAdapter name, DescriptionComposer composer)
+        {
+            Name = name;
+            DescriptionComposer = composer;
+        }
+
+        /// <summary>
+        /// Creates a new Location with a given name and a placeholder DescriptionComposer.
+        /// </summary>
+        /// <param name="name"></param>
+        public Location(LocationNameAdapter name)
+            : this(name, new DescriptionComposer())
+        {
+        }
+
+        public Location()
+        {
+            Scene = new Scene("default_scene", "Default Scene");
+            Name = new LocationNameAdapter("Default Location");
+            DescriptionComposer = new DescriptionComposer(
+                new LookDescription(),
+                new VisitDescription("You enter a new place.", "You are here again.", "You have been here many times."),
+                new SensoryDescription("A generic location.", "You hear ambient sounds."));
+        }
 
         /// <summary>
         /// Adds custom commands to this location.
@@ -96,41 +125,22 @@ namespace AshborneGame._Core.SceneManagement
         }
 
         /// <summary>
-        /// Creates a new Location.
-        /// </summary>
-        /// <param name="name">LocationDescriptor for naming and parsing.</param>
-        /// <param name="composer">DescriptionComposer to combine descriptions.</param>
-        /// <param name="id">Unique identifier.</param>
-        public Location(LocationIdentifier name, DescriptionComposer composer, string id)
-        {
-            Name = name;
-            DescriptionComposer = composer;
-            ID = id;
-        }
-
-        public Location(LocationIdentifier name, string id)
-            : this(name, new DescriptionComposer(), id)
-        {
-        }
-
-        public Location()
-        {
-            Scene = new Scene("default_scene", "Default Scene");
-            Name = new LocationIdentifier("Default Location");
-            DescriptionComposer = new DescriptionComposer(
-                new LookDescription(),
-                new VisitDescription("You enter a new place.", "You are here again.", "You have been here many times."),
-                new SensoryDescription("A generic location.", "You hear ambient sounds."));
-            ID = "default_location";
-        }
-
-        /// <summary>
         /// Returns the appropriate description for the player and state.
         /// </summary>
         public string GetDescription(Player player, GameStateManager state)
         {
             StringBuilder description = new StringBuilder();
-            description.AppendLine(DescriptionComposer.GetDescription(player, state));
+
+            try
+            {
+                description.AppendLine(DescriptionComposer.GetDescription(player, state));
+            }
+            catch (InvalidOperationException e)
+            {
+                // FAST FAIL FOR NOW
+                throw new InvalidOperationException($"Location.cs: DescriptionComposer for location '{Name.ReferenceName}' is not properly set up. {e.Message}");
+            }
+
             description.AppendLine(GetExits());
 
             return description.ToString();

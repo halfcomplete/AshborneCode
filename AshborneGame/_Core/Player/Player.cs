@@ -72,7 +72,7 @@ namespace AshborneGame._Core._Player
         public Player()
         {
             _name = "Hero"; // Default name
-            var descriptor = new LocationIdentifier("test location");
+            var descriptor = new LocationNameAdapter("test location");
             CurrentLocation = LocationFactory.CreateLocation(
                 new Location(descriptor, descriptor.DisplayName),
                 new LookDescription(),
@@ -101,7 +101,7 @@ namespace AshborneGame._Core._Player
         public Player(string name)
         {
             _name = name;
-            var descriptor = new LocationIdentifier("Placeholder");
+            var descriptor = new LocationNameAdapter("Placeholder");
             CurrentLocation = LocationFactory.CreateLocation(
                 new Location(descriptor, descriptor.DisplayName),
                 new LookDescription(),

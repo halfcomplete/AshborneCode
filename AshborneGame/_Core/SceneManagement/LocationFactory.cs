@@ -17,6 +17,8 @@ namespace AshborneGame._Core.SceneManagement
             location.SetDescriptionComposer(descriptionComposer);
             location.Name.SetParentLocation(location);
 
+            LocationRegistry.RegisterLocation(location);
+            
             return location;
         }
 

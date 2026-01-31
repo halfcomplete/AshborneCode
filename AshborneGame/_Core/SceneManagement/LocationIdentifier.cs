@@ -5,7 +5,7 @@ namespace AshborneGame._Core.SceneManagement
     /// <summary>
     /// Supports flexible naming for parsing, immersion, and varied prose.
     /// </summary>
-    public class LocationIdentifier
+    public class LocationNameAdapter
     {
         /// <summary>
         /// The core name of the location (e.g., "Dusty Armoury").
@@ -60,7 +60,7 @@ namespace AshborneGame._Core.SceneManagement
         /// <summary>
         /// Creates a new LocationDescriptor.
         /// </summary>
-        public LocationIdentifier(string referenceName, List<string>? synonyms = null, string article = "the")
+        public LocationNameAdapter(string referenceName, List<string>? synonyms = null, string article = "the")
         {
             ReferenceName = referenceName;
             Synonyms = synonyms ?? new List<string>();

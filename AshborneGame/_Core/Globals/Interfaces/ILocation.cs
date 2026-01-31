@@ -24,7 +24,7 @@ namespace AshborneGame._Core.Globals.Interfaces
         /// <summary>
         /// Flexible naming and parsing for the location.
         /// </summary>
-        LocationIdentifier Name { get; }
+        LocationNameAdapter Name { get; }
 
         /// <summary>
         /// Narrative profile for all types of descriptions.

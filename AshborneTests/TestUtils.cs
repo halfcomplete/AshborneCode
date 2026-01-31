@@ -57,7 +57,7 @@ namespace AshborneTests
         /// </summary>
         static internal Location CreateTestLocation(string name = "Test Location")
         {
-            var descriptor = new LocationIdentifier(name, null);
+            var descriptor = new LocationNameAdapter(name, null);
             var narrative = new DescriptionComposer();
             return new Location(descriptor, narrative, Guid.NewGuid().ToString());
         }
@@ -68,7 +68,7 @@ namespace AshborneTests
         static internal Sublocation CreateTestSublocation(BOCSGameObject gameObject)
         {
             var parent = CreateTestLocation(Guid.NewGuid().ToString());
-            var identifier = new LocationIdentifier("test", null);
+            var identifier = new LocationNameAdapter("test", null);
             return new Sublocation(
                 parent,
                 gameObject,

@@ -97,8 +97,7 @@ namespace AshborneGame._Core.Game
             // but requires a direct reference to the LOcation instance
             Location eyePlatform = LocationFactory.CreateLocation(
                 new Location(
-                    new LocationIdentifier("Eye Platform"),
-                    "Eye Platform"),
+                    new LocationNameAdapter("Eye Platform")),
                 new LookDescription(
                     "You glance around uneasily. The eye you stand on is unblinking and unmoving. Black clouds cover the sky, and the occasional lightning flashes are bright white against an otherwise dull and dark background.",
                     "You look around once more. Nothing changes — but are the shards sharper now?"),
@@ -173,7 +172,7 @@ namespace AshborneGame._Core.Game
             Sublocation platformEdge = new Sublocation(
                 eyePlatform,
                 ItemFactory.CreateFillerItem(),
-                new LocationIdentifier("platform edge", new List<string> { "edge", "side" }),
+                new LocationNameAdapter("platform edge", new List<string> { "edge", "side" }),
                 new DescriptionComposer(
                     new LookDescription(
                         "Peering over the edge, the void stretches endlessly. Fragments warp and twist as if reality itself is bending.",
@@ -200,8 +199,7 @@ namespace AshborneGame._Core.Game
 
             Location hallOfMirrors = LocationFactory.CreateLocation(
                 new Location(
-                    new LocationIdentifier("Hall of Mirrors"),
-                    "Hall of Mirrors"),
+                    new LocationNameAdapter("Hall of Mirrors")),
                 new LookDescription(
                     "You look around the hall. Everywhere, your reflection stares right back at you, each mirror containing an infinite universe of you's.",
                     "You look around the hall again. The mirrors remain ever so still, ever so silent."
@@ -221,7 +219,7 @@ namespace AshborneGame._Core.Game
                 "You try to use the shard, but nothing happens.",
                 "You hold the shard up to your face and feel a strange emptiness inside you. Light faintly glints off it as you turn it around in your hand.");
 
-            Sublocation mirrorShardSublocation = new Sublocation(hallOfMirrors, mirrorShard, new LocationIdentifier("mirror shard", new List<string> { "shard", "mirror shard", "shard of glass", "shard of mirror", "shard of a mirror" }),
+            Sublocation mirrorShardSublocation = new Sublocation(hallOfMirrors, mirrorShard, new LocationNameAdapter("mirror shard", new List<string> { "shard", "mirror shard", "shard of glass", "shard of mirror", "shard of a mirror" }),
                 new DescriptionComposer(
                     new LookDescription("You look at the shard. It is a small piece of a broken mirror, but it seems to reflect deeper than a normal mirror. You can see your reflection, but it feels... empty.",
                         "You look at the shard again. It still feels empty, but you can't shake the feeling that it is important."),
@@ -258,8 +256,7 @@ namespace AshborneGame._Core.Game
 
             Location chamberOfCycles = LocationFactory.CreateLocation(
                 new Location(
-                    new LocationIdentifier("Chamber of Cycles"),
-                    "Chamber of Cycles"),
+                    new LocationNameAdapter("Chamber of Cycles")),
                 new LookDescription(
                     "You look around the chamber, inspecting the clocks further. The clocks are broken — a tick forward is immediately followed by a jump back. Time isn't moving forward. Not anymore.",
                     "You look around the chamber again. Still, the clocks are broken. Time is frozen. Tick. Tock. Tick. Tock."),
@@ -275,8 +272,7 @@ namespace AshborneGame._Core.Game
 
             Location templeOfTheBound = LocationFactory.CreateLocation(
                 new Location(
-                    new LocationIdentifier("Temple of the Bound One"),
-                    "Temple of the Bound"),
+                    new LocationNameAdapter("Temple of the Bound One")),
                 new LookDescription(
                     "You look around the temple. The strange, alien symbols covering the walls are each etched deep into rough bricks the size of a person. You cannot read them, but as your eyes jump from one symbol to another, they glow ever so slightly against the dark. The characters are beautiful, each line a river of the unknown.",
                     "You look around the temple again. The prisoner shuffles slightly.",
@@ -298,7 +294,7 @@ namespace AshborneGame._Core.Game
             NPC boundOne = NPCFactory.CreateTalkableNPC("Bound One", "It's a sad, chained man with messy, overgrown hair and bloodred eyes.", "Act1_Scene1_Prisoner_Dialogue", 
                 new List<string> { "the prisoner", "prisoner", "the chained prisoner", "chained prisoner" });
             
-            templeOfTheBound.AddSublocation(new Sublocation(templeOfTheBound, boundOne, new LocationIdentifier("circle of candles", new List<string>() { "circle", "candles", "candle circle" }), new DescriptionComposer(
+            templeOfTheBound.AddSublocation(new Sublocation(templeOfTheBound, boundOne, new LocationNameAdapter("circle of candles", new List<string>() { "circle", "candles", "candle circle" }), new DescriptionComposer(
                 new LookDescription("You look closer at the circle. It's made up of 12 white wax candles placed precisely around the prisoner. Beneath the candles and the prisoner is a scrawled red 12-pointed star, with the centre circle formed by the intersecting lines slightly aflame. Shadows dance on the floor. You shiver. The fire is not warm.",
                 "You look at the circle again. The shadows seem to have grown larger and sharper. Or is the eerie holiness of the temple finally getting to your mind."),
                 new VisitDescription("You walk up to the circle of candles. The prisoner is a sorry sight—crippled, ragged, and chained to the ground. They are surrounded by the circle of candles, as though a ritual will take place soon. Or has it already finished? You wouldn't be surprised if that were the case — but maybe you should talk to them.",
