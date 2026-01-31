@@ -7,6 +7,7 @@ using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Interfaces;
+using AshborneGame._Core.Globals.Services;
 
 namespace AshborneGame._Core.SceneManagement
 {
@@ -20,30 +21,6 @@ namespace AshborneGame._Core.SceneManagement
         /// Format: "Locations.{normalized-name}" (e.g., "Locations.eye-platform")
         /// </summary>
         public string ID { get; }
-
-        /// <summary>
-        /// Generates a normalized slug ID from a location name.
-        /// Converts to lowercase, replaces spaces with hyphens, removes special characters.
-        /// </summary>
-        public static string GenerateSlugId(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-                return "Locations.unknown-" + Guid.NewGuid().ToString("N")[..8];
-
-            // Normalize: lowercase, replace spaces with hyphens, remove non-alphanumeric except hyphens
-            var slug = name.ToLowerInvariant()
-                .Replace(" ", "-")
-                .Replace("'", "")
-                .Replace("'", "");
-            
-            // Remove any characters that aren't letters, numbers, or hyphens
-            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9\-]", "");
-            
-            // Remove consecutive hyphens
-            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"-+", "-").Trim('-');
-
-            return $"Locations.{slug}";
-        }
 
         /// <summary>
         /// The group this location belongs to, if any.
@@ -87,7 +64,7 @@ namespace AshborneGame._Core.SceneManagement
         {
             Name = name;
             DescriptionComposer = composer;
-            ID = id ?? GenerateSlugId(name.ReferenceName);
+            ID = id ?? SlugIdService.GenerateSlugId(name.ReferenceName, "location");
         }
 
         /// <summary>
@@ -104,7 +81,7 @@ namespace AshborneGame._Core.SceneManagement
         {
             Scene = new Scene("default_scene", "Default Scene");
             Name = new LocationNameAdapter("Default Location");
-            ID = GenerateSlugId(Name.ReferenceName);
+            ID = SlugIdService.GenerateSlugId(Name.ReferenceName, "location");
             DescriptionComposer = new DescriptionComposer(
                 new LookDescription(),
                 new VisitDescription("You enter a new place.", "You are here again.", "You have been here many times."),
