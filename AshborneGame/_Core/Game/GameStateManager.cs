@@ -88,10 +88,10 @@ namespace AshborneGame._Core.Game
                     switch (quest.Status)
                     {
                         case QuestStatus.Completed:
-                            IOService.Output.DisplayDebugMessage($"[GameStateManager] Quest Completed: {quest.Name} (ID: {quest.Id})", Globals.Enums.ConsoleMessageTypes.INFO);
+                            IOService.Output.DisplayDebugMessage($"[GameStateManager] Quest Completed: {quest.Name} (ID: {quest.ID})", Globals.Enums.ConsoleMessageTypes.INFO);
                             break;
                         case QuestStatus.Failed:
-                            IOService.Output.DisplayDebugMessage($"[GameStateManager] Quest Failed: {quest.Name} (ID: {quest.Id})", Globals.Enums.ConsoleMessageTypes.WARNING);
+                            IOService.Output.DisplayDebugMessage($"[GameStateManager] Quest Failed: {quest.Name} (ID: {quest.ID})", Globals.Enums.ConsoleMessageTypes.WARNING);
                             break;
                     }
                 }

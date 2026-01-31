@@ -4,15 +4,15 @@ namespace AshborneGame._Core.QuestManagement
 {
     public class QuestProgressTracker
     {
-        private List<Func<GameStateManager, TimeSpan, bool>> _completionCriteria;
-        private List<Func<GameStateManager, TimeSpan, bool>>? _failureCriteria;
+        private QuestCriteria _completionCriteria;
+        private QuestCriteria? _failureCriteria;
 
         /// <summary>
         /// Creates a new QuestProgressTracker with the given completion and failure criteria.
         /// </summary>
         /// <param name="completionCriteria">A list of functions that determine if the quest is complete. Each function takes a GameStateManager and a TimeSpan and returns a bool.</param>
         /// <param name="failureCriteria">An optional list of functions that determine if the quest has failed. Each function takes a GameStateManager and a TimeSpan and returns a bool.</param>
-        public QuestProgressTracker(List<Func<GameStateManager, TimeSpan, bool>> completionCriteria, List<Func<GameStateManager, TimeSpan, bool>>? failureCriteria = null)
+        public QuestProgressTracker(QuestCriteria completionCriteria, QuestCriteria? failureCriteria = null)
         {
             _completionCriteria = completionCriteria;
             _failureCriteria = failureCriteria;
@@ -20,12 +20,14 @@ namespace AshborneGame._Core.QuestManagement
         
         public bool IsQuestComplete(TimeSpan delta, GameStateManager gameStateManager)
         {
-            return _completionCriteria.All(criteria => criteria(gameStateManager, delta));
+            _completionCriteria.TickTimePassed(delta);
+            return _completionCriteria.Evaluate(gameStateManager, delta);
         }
         
         public bool IsQuestFailed(TimeSpan delta, GameStateManager gameStateManager)
         {
-            return _failureCriteria != null && _failureCriteria.Any(criteria => criteria(gameStateManager, delta));
+            _failureCriteria?.TickTimePassed(delta);
+            return _failureCriteria?.Evaluate(gameStateManager, delta) ?? false;
         }
     }
 }

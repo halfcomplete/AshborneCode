@@ -1,30 +1,28 @@
 using AshborneGame._Core.Game;
+using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Services;
+using System;
 
 namespace AshborneGame._Core.QuestManagement
 {
     public class Quest
     {
-        public string Id { get; }
+        public string ID { get; }
         public string Name { get; set; }
         public string Description { get; set; }
         public QuestStatus Status { get; private set; } = QuestStatus.InProgress;
-        private QuestProgressTracker _questProgress;
-        private Action<GameStateManager> _onComplete;
-        private Action<GameStateManager>? _onFail;
 
-        public Quest(
+        
+
+        private Quest(
             string name, 
-            string description, 
-            List<Func<GameStateManager, TimeSpan, bool>> completionCriteria, 
-            Action<GameStateManager> onComplete, 
-            List<Func<GameStateManager, TimeSpan, bool>>? failureCriteria = null, 
-            Action<GameStateManager>? onFail = null)
+            string description,
+            Action<GameStateManager> onComplete,
+            Action<GameStateManager>? onFail)
         {
             Name = name;
-            Id = SlugIdService.GenerateSlugId(name, "quest");
+            ID = SlugIdService.GenerateSlugId(name, "quest");
             Description = description;
-            _questProgress = new QuestProgressTracker(completionCriteria, failureCriteria);
             _onComplete = onComplete;
             _onFail = onFail;
         }
