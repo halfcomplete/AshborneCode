@@ -1,37 +1,59 @@
-
-
+using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Services;
 
-namespace AshborneGame._Core.QuestManagement;
+namespace AshborneGame._Core.QuestManagement
+{
     public class Quest
     {
-        private enum QuestStatus
-        {
-            Inactive,
-            Active,
-            Completed,
-            Failed
-        }
         public string Id { get; }
         public string Name { get; set; }
         public string Description { get; set; }
-        private QuestStatus _status;
+        public QuestStatus Status { get; private set; } = QuestStatus.InProgress;
+        private QuestProgressTracker _questProgress;
+        private Action<GameStateManager> _onComplete;
+        private Action<GameStateManager>? _onFail;
 
-        public Quest(string name, string description)
+        public Quest(
+            string name, 
+            string description, 
+            List<Func<GameStateManager, TimeSpan, bool>> completionCriteria, 
+            Action<GameStateManager> onComplete, 
+            List<Func<GameStateManager, TimeSpan, bool>>? failureCriteria = null, 
+            Action<GameStateManager>? onFail = null)
         {
             Name = name;
             Id = SlugIdService.GenerateSlugId(name, "quest");
             Description = description;
-            _status = QuestStatus.Inactive;
+            _questProgress = new QuestProgressTracker(completionCriteria, failureCriteria);
+            _onComplete = onComplete;
+            _onFail = onFail;
         }
 
-        public void Activate()
+        /// <summary>
+        /// Ticks the quest progress, updating its status based on completion and failure criteria. Will invoke the appropriate callbacks on completion or failure.
+        /// </summary>
+        /// <param name="delta">The time elapsed since the last tick.</param>
+        /// <param name="state">The current game state manager.</param>
+        public void TickProgress(TimeSpan delta, GameStateManager state)
         {
-            if (_status == QuestStatus.Inactive)
+            if (Status != QuestStatus.InProgress)
             {
-                _status = QuestStatus.Active;
+                return;
+            }
+
+            if (_questProgress.IsQuestFailed(delta, state))
+            {
+                Status = QuestStatus.Failed;
+                _onFail?.Invoke(state);
+                return;
+            }
+
+            if (_questProgress.IsQuestComplete(delta, state))
+            {
+                Status = QuestStatus.Completed;
+                _onComplete?.Invoke(state);
+                return;
             }
         }
     }
-
-    
+}    

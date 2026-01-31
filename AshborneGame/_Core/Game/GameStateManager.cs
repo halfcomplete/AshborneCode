@@ -4,6 +4,7 @@ using AshborneGame._Core.Data.BOCS.ItemSystem;
 using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Services;
+using AshborneGame._Core.QuestManagement;
 using AshborneGame._Core.SceneManagement;
 using Ink.Runtime;
 using System.ComponentModel.DataAnnotations;
@@ -30,7 +31,9 @@ namespace AshborneGame._Core.Game
         private DateTime _locationEnteredTime;
         private TimeSpan _realTimeInCurrentLocation = TimeSpan.Zero;
         private DateTime _lastTickTime = DateTime.UtcNow;
-        private List<LocationTimeTrigger> _locationTimeTriggers = new();
+        private List<LocationTimeTrigger> _locationTimeTriggers = [];
+
+        private List<Quest> _quests = [];
 
         private CancellationTokenSource? _tickCancellation;
         private Task? _tickTask;
@@ -46,27 +49,53 @@ namespace AshborneGame._Core.Game
             Masks = masks;
         }
 
+        #region Ticking
+
         public void Tick()
         {
             var now = DateTime.UtcNow;
             var delta = now - _lastTickTime;
             _lastTickTime = now;
 
+            TickLocationTimeTracking(delta);
+            
+            TickQuestTimeTracking(delta);
+        }
+
+        private void TickLocationTimeTracking(TimeSpan delta)
+        {
             if (_currentLocation != null)
+            {
                 _realTimeInCurrentLocation += delta;
 
-            foreach (var trigger in _locationTimeTriggers)
-            {
-                if (trigger.CheckTrigger(GameContext.Player.CurrentLocation, _realTimeInCurrentLocation))
+                foreach (var trigger in _locationTimeTriggers)
                 {
-                    // Call the event
-                    EventBus.Call(trigger.EventToRaise);
-
-                    // Execute optional effect (e.g. dialogue)
-                    trigger.Effect?.Invoke();
+                    if (trigger.CheckTrigger(_currentLocation, _realTimeInCurrentLocation))
+                    {
+                        EventBus.Call(trigger.EventToRaise);
+                    }
                 }
             }
+        }
 
+        private void TickQuestTimeTracking(TimeSpan delta)
+        {
+            foreach (var quest in _quests)
+            {
+                if (quest.Status == QuestStatus.InProgress)
+                {
+                    quest.TickProgress(delta, this);
+                    switch (quest.Status)
+                    {
+                        case QuestStatus.Completed:
+                            IOService.Output.DisplayDebugMessage($"[GameStateManager] Quest Completed: {quest.Name} (ID: {quest.Id})", Globals.Enums.ConsoleMessageTypes.INFO);
+                            break;
+                        case QuestStatus.Failed:
+                            IOService.Output.DisplayDebugMessage($"[GameStateManager] Quest Failed: {quest.Name} (ID: {quest.Id})", Globals.Enums.ConsoleMessageTypes.WARNING);
+                            break;
+                    }
+                }
+            }
         }
 
         public void StartTickLoop(int tickIntervalMs = 1000)
@@ -115,6 +144,7 @@ namespace AshborneGame._Core.Game
             _tickTask = null;
         }
 
+        #endregion Tick
 
         #region Flags
         public void SetFlag(GameStateKey<bool> key, bool value) => Flags[key] = value;
@@ -301,6 +331,15 @@ namespace AshborneGame._Core.Game
         public bool PlayerWearingMask(string maskName)
         {
             return _player.EquippedItems["face"] != null && _player.EquippedItems["face"]!.Name == maskName;
+        }
+
+        #endregion
+
+        #region Quests
+
+        public void AddQuest(Quest quest)
+        {
+            _quests.Add(quest);
         }
 
         #endregion
