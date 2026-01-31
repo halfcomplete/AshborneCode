@@ -59,7 +59,8 @@ namespace AshborneTests
         {
             var descriptor = new LocationNameAdapter(name, null);
             var narrative = new DescriptionComposer();
-            return new Location(descriptor, narrative, Guid.NewGuid().ToString());
+            // Pass explicit ID to ensure uniqueness in tests
+            return new Location(descriptor, narrative, "Locations.test-" + Guid.NewGuid().ToString("N")[..8]);
         }
 
         /// <summary>

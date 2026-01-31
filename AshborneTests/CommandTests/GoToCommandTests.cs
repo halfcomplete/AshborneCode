@@ -1,11 +1,12 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Game.CommandHandling;
 using FluentAssertions;
+using AshborneTests;
 
 namespace AshborneTests.CommandTests
 {
     [Collection("AshborneTests")]
-    public class GoToCommandTests
+    public class GoToCommandTests : IsolatedTestBase
     {
         [Fact]
         public async Task GoToCommand_Fails_With_Invalid_Sublocation()

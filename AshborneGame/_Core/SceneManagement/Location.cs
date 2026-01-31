@@ -16,9 +16,34 @@ namespace AshborneGame._Core.SceneManagement
     public class Location : ILocation
     {
         /// <summary>
-        /// Unique identifier for the location.
+        /// Unique identifier for the location. Uses a slug-based format derived from the location name.
+        /// Format: "Locations.{normalized-name}" (e.g., "Locations.eye-platform")
         /// </summary>
-        public string ID { get; } = "Locations." + Guid.NewGuid().ToString();
+        public string ID { get; }
+
+        /// <summary>
+        /// Generates a normalized slug ID from a location name.
+        /// Converts to lowercase, replaces spaces with hyphens, removes special characters.
+        /// </summary>
+        public static string GenerateSlugId(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return "Locations.unknown-" + Guid.NewGuid().ToString("N")[..8];
+
+            // Normalize: lowercase, replace spaces with hyphens, remove non-alphanumeric except hyphens
+            var slug = name.ToLowerInvariant()
+                .Replace(" ", "-")
+                .Replace("'", "")
+                .Replace("'", "");
+            
+            // Remove any characters that aren't letters, numbers, or hyphens
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9\-]", "");
+            
+            // Remove consecutive hyphens
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"-+", "-").Trim('-');
+
+            return $"Locations.{slug}";
+        }
 
         /// <summary>
         /// The group this location belongs to, if any.
@@ -53,22 +78,25 @@ namespace AshborneGame._Core.SceneManagement
         public int VisitCount { get; set; } = 0;
 
         /// <summary>
-        /// Creates a new Location with a given name and DescriptionComposer.
+        /// Creates a new Location with a given name, DescriptionComposer, and explicit ID.
         /// </summary>
         /// <param name="name">LocationDescriptor for naming and parsing.</param>
         /// <param name="composer">DescriptionComposer to combine descriptions.</param>
-        public Location(LocationNameAdapter name, DescriptionComposer composer)
+        /// <param name="id">Explicit ID for the location. If null, auto-generates from name.</param>
+        public Location(LocationNameAdapter name, DescriptionComposer composer, string? id = null)
         {
             Name = name;
             DescriptionComposer = composer;
+            ID = id ?? GenerateSlugId(name.ReferenceName);
         }
 
         /// <summary>
         /// Creates a new Location with a given name and a placeholder DescriptionComposer.
         /// </summary>
-        /// <param name="name"></param>
-        public Location(LocationNameAdapter name)
-            : this(name, new DescriptionComposer())
+        /// <param name="name">LocationDescriptor for naming and parsing.</param>
+        /// <param name="id">Optional explicit ID. If null, auto-generates from name.</param>
+        public Location(LocationNameAdapter name, string? id = null)
+            : this(name, new DescriptionComposer(), id)
         {
         }
 
@@ -76,6 +104,7 @@ namespace AshborneGame._Core.SceneManagement
         {
             Scene = new Scene("default_scene", "Default Scene");
             Name = new LocationNameAdapter("Default Location");
+            ID = GenerateSlugId(Name.ReferenceName);
             DescriptionComposer = new DescriptionComposer(
                 new LookDescription(),
                 new VisitDescription("You enter a new place.", "You are here again.", "You have been here many times."),

@@ -4,9 +4,10 @@ using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Game;
 using Moq;
+using AshborneTests;
 
 [Collection("AshborneTests")]
-public class ConditionalDescriptionTests
+public class ConditionalDescriptionTests : IsolatedTestBase
 {
     [Fact]
     public void BuilderMethodIf_AddsPredicate_WhenCalledWithValidPredicate()

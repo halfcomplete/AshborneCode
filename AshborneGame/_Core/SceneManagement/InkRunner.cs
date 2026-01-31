@@ -331,6 +331,10 @@ namespace AshborneGame._Core.SceneManagement
             _story.BindExternalFunction("changePlayerStat", (string statName, int amount) => ExternalChangePlayerStat(statName, amount));
             _story.BindExternalFunction("getPlayerStat", (string statName) => ExternalGetPlayerStat(statName));
 
+            // --- Location Visit Counts ---
+            _story.BindExternalFunction("getLocationVisits", (string locationId) => ExternalGetLocationVisits(locationId));
+            _story.BindExternalFunction("incLocationVisits", (string locationId) => ExternalIncLocationVisits(locationId));
+
             // --- Silent Path ---
             _story.BindExternalFunction("setSilentPath", (string silentPath, int silentMs) => ExternalSetSilentPath(silentPath, silentMs));
 
@@ -506,6 +510,54 @@ namespace AshborneGame._Core.SceneManagement
         {
             _currentSilentPath = (silentPath, silentMs);
             return null;
+        }
+
+        /// <summary>
+        /// Gets the visit count for a location by its slug-based ID.
+        /// Throws with a clear error message if the location ID is unknown.
+        /// </summary>
+        /// <param name="locationId">The slug-based location ID (e.g., "Locations.eye-platform")</param>
+        /// <returns>The visit count for the location.</returns>
+        public object ExternalGetLocationVisits(string locationId)
+        {
+            // Normalize: if user passes just the slug without prefix, add it
+            if (!locationId.StartsWith("Locations."))
+                locationId = "Locations." + locationId;
+
+            try
+            {
+                return _gameState.GetLocationVisitCount(locationId);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                throw new InvalidOperationException(
+                    $"[Ink] getLocationVisits failed: {ex.Message}. " +
+                    $"Make sure the location ID matches exactly (e.g., 'Locations.eye-platform' or just 'eye-platform').");
+            }
+        }
+
+        /// <summary>
+        /// Increments the visit count for a location by its slug-based ID.
+        /// Throws with a clear error message if the location ID is unknown.
+        /// </summary>
+        /// <param name="locationId">The slug-based location ID (e.g., "Locations.eye-platform")</param>
+        /// <returns>The new visit count after incrementing.</returns>
+        public object ExternalIncLocationVisits(string locationId)
+        {
+            // Normalize: if user passes just the slug without prefix, add it
+            if (!locationId.StartsWith("Locations."))
+                locationId = "Locations." + locationId;
+
+            try
+            {
+                return _gameState.IncrementLocationVisitCount(locationId);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                throw new InvalidOperationException(
+                    $"[Ink] incLocationVisits failed: {ex.Message}. " +
+                    $"Make sure the location ID matches exactly (e.g., 'Locations.eye-platform' or just 'eye-platform').");
+            }
         }
 
         public object ExternalAnimateBlur(float targetOpacity, float durationSecs, float fadeBackDurationSecs, float waitSecs)

@@ -18,7 +18,7 @@ using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours;
 namespace AshborneTests.CommandTests
 {
     [Collection("AshborneTests")]
-    public class TakeItemCommandTests
+    public class TakeItemCommandTests : IsolatedTestBase
     {
         [Fact]
         internal async void TakeItem_Fails_When_No_Container_Is_Opened()

@@ -11,7 +11,7 @@ using AshborneTests;
 namespace AshborneTests.CommandTests
 {
     [Collection("AshborneTests")]
-    public class TalkToNPCCommandTests
+    public class TalkToNPCCommandTests : IsolatedTestBase
     {
         [Fact]
         public async void TalkToNPC_Fails_When_NoSublocation()

@@ -54,13 +54,11 @@ namespace AshborneGame._Core.Globals.Constants
                     public static readonly GameStateKey<int> Witnesses = new("Counters.Player.TimesEncountered.Witnesses");
                 }
 
-                public static class TimesVisited
-                {
-                    public static readonly GameStateKey<int> OssanethsDomain = new("Counters.Player.TimesVisited.OssanethsDomain");
-                    public static readonly GameStateKey<int> OssanethsDomain_HallwayOfMirrors = new("Counters.Player.TimesVisited.OssanethsDomain_HallwayOfMirrors");
-                    public static readonly GameStateKey<int> OssanethsDomain_TempleOfTheBound = new("Counters.Player.TimesVisited.OssanethsDomain_TempleOfTheBound");
-                    public static readonly GameStateKey<int> OssanethsDomain_ThroneRoom = new("Counters.Player.TimesVisited.OssanethsDomain_ThroneRoom");
-                }
+                // NOTE: TimesVisited counters have been removed.
+                // Location visit counts are now tracked directly on Location.VisitCount
+                // and accessed via GameStateManager.GetLocationVisitCount(locationId) or
+                // from Ink via getLocationVisits("location-slug") / incLocationVisits("location-slug").
+                // Location IDs are slug-based (e.g., "Locations.eye-platform").
             }
         }
 

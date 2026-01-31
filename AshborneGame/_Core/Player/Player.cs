@@ -73,8 +73,9 @@ namespace AshborneGame._Core._Player
         {
             _name = "Hero"; // Default name
             var descriptor = new LocationNameAdapter("test location");
+            // Use unique ID to avoid registry collisions in tests
             CurrentLocation = LocationFactory.CreateLocation(
-                new Location(descriptor, descriptor.DisplayName),
+                new Location(descriptor, "Locations.test-location-" + Guid.NewGuid().ToString("N")[..8]),
                 new LookDescription(),
                 new VisitDescription("You enter a new place.", "You are here again.", "You have been here many times."),
                 new SensoryDescription("A generic location.", "You hear ambient sounds.")
@@ -102,8 +103,9 @@ namespace AshborneGame._Core._Player
         {
             _name = name;
             var descriptor = new LocationNameAdapter("Placeholder");
+            // Use unique ID to avoid registry collisions in tests
             CurrentLocation = LocationFactory.CreateLocation(
-                new Location(descriptor, descriptor.DisplayName),
+                new Location(descriptor, "Locations.placeholder-" + Guid.NewGuid().ToString("N")[..8]),
                 new LookDescription(),
                 new VisitDescription("You enter a placeholder place.", "You are at the placeholder place again.", "You have been here many times."),
                 new SensoryDescription("A placeholder location.", "You hear placeholder sounds.")

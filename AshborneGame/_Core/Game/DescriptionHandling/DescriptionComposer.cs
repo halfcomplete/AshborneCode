@@ -1,8 +1,7 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Globals.Constants;
-using AshborneGame._Core.SceneManagement;
-using System.ComponentModel.Design;
-using System.Linq;
+using AshborneGame._Core.Globals.Services;
+using AshborneGame._Core.Globals.Enums;
 using System.Text;
 
 namespace AshborneGame._Core.Game.DescriptionHandling
@@ -62,8 +61,8 @@ namespace AshborneGame._Core.Game.DescriptionHandling
         public string GetDescription(Player player, GameStateManager gameState)
         {
             if (!_hasDescription)
-                throw new InvalidOperationException("DescriptionComposer: No descriptions have been set.");
-                
+                IOService.Output.DisplayDebugMessage("No descriptions have been set for DescriptionComposer.", ConsoleMessageTypes.WARNING);
+
             StringBuilder description = new StringBuilder();
             
             // Determine which visit count to use based on whether player is in a sublocation or location

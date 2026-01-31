@@ -26,5 +26,21 @@ namespace AshborneGame._Core.SceneManagement
 
             return _locationsByID.TryGetValue(id, out location);
         }
+
+        /// <summary>
+        /// Returns all registered location IDs. Useful for error messages and debugging.
+        /// </summary>
+        public static IEnumerable<string> GetAllLocationIds()
+        {
+            return _locationsByID.Keys;
+        }
+
+        /// <summary>
+        /// Clears all registered locations. Used for test isolation between tests.
+        /// </summary>
+        public static void Clear()
+        {
+            _locationsByID.Clear();
+        }
     }
 }

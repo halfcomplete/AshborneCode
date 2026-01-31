@@ -431,7 +431,8 @@ namespace AshborneGame._Core.Game
         {
             if (!LocationRegistry.GetLocationByID(id, out var location))
             {
-                throw new KeyNotFoundException($"Location with ID '{id}' not found in LocationRegistry.");
+                var knownIds = string.Join(", ", LocationRegistry.GetAllLocationIds());
+                throw new KeyNotFoundException($"Location with ID '{id}' not found in LocationRegistry. Known location IDs: [{knownIds}]");
             }
 
             if (location == null)
@@ -442,11 +443,19 @@ namespace AshborneGame._Core.Game
             return location.VisitCount;
         }
 
-        private int IncrementLocationVisitCount(string id)
+        /// <summary>
+        /// Increments the visit count for a location by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the location.</param>
+        /// <returns>The new visit count after incrementing.</returns>
+        /// <exception cref="KeyNotFoundException">Thrown when the given location ID is not found in the LocationRegistry.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the location with the given ID is null in the LocationRegistry.</exception>
+        public int IncrementLocationVisitCount(string id)
         {
             if (!LocationRegistry.GetLocationByID(id, out var location))
             {
-                throw new KeyNotFoundException($"Location with ID '{id}' not found in LocationRegistry.");
+                var knownIds = string.Join(", ", LocationRegistry.GetAllLocationIds());
+                throw new KeyNotFoundException($"Location with ID '{id}' not found in LocationRegistry. Known location IDs: [{knownIds}]");
             }
 
             if (location == null)

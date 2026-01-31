@@ -89,12 +89,10 @@ namespace AshborneGame._Core.Game
 
         private ((Location, Scene), (Location, Scene)) InitialiseStartingLocation(Player player)
         {
-            // TODO: Decide on where and how to track the number of visits the player's made to a certain location
-            // Possible options: through StateKeys.cs counters, or through accessing the Location's VisitCount property directly
-            // StateKey counters provides a loosely coupled, global method to access any Location's visit counts without a direct reference
-            // but struggles with not being storngly typed and there not being an easy way to automatically change those values
-            // Location's VisitCount property provides a strongly typed, direct method to access the visit counts
-            // but requires a direct reference to the LOcation instance
+            // Location visit counts are now tracked via Location.VisitCount property directly.
+            // Access from C#: location.VisitCount or gameState.GetLocationVisitCount("Locations.{slug}")
+            // Access from Ink: getLocationVisits("location-slug") or incLocationVisits("location-slug")
+            // Location IDs are slug-based (e.g., "Locations.eye-platform") and auto-generated from the name.
             Location eyePlatform = LocationFactory.CreateLocation(
                 new Location(
                     new LocationNameAdapter("Eye Platform")),
@@ -114,10 +112,12 @@ namespace AshborneGame._Core.Game
                     // If the player has visited the Hall of Mirrors and this is their 1st, 2nd, or 4th visit to the Eye Platform
                     .If((player, gameState) =>
                     {
-                        if (gameState.TryGetCounter(StateKeys.Counters.Player.TimesVisited.OssanethsDomain_HallwayOfMirrors, out int value) &&
-                        player.CurrentLocation.VisitCount == 1 || player.CurrentLocation.VisitCount == 2 || player.CurrentLocation.VisitCount == 4)
+                        int hallOfMirrorsVisits = gameState.GetLocationVisitCount("Locations.hall-of-mirrors");
+                        int currentVisits = player.CurrentLocation.VisitCount;
+                        if (hallOfMirrorsVisits > 0 && 
+                            (currentVisits == 1 || currentVisits == 2 || currentVisits == 4))
                         {
-                            return value > 0;
+                            return true;
                         }
                         return false;
                     })
@@ -127,10 +127,12 @@ namespace AshborneGame._Core.Game
                     // If the player has visited the Hall of Mirrors and this is their 3rd or later (>4) visit to the Eye Platform
                     .If((player, gameState) =>
                     {
-                        if (gameState.TryGetCounter(StateKeys.Counters.Player.TimesVisited.OssanethsDomain_HallwayOfMirrors, out int value) &&
-                        player.CurrentLocation.VisitCount == 3 || player.CurrentLocation.VisitCount > 4)
+                        int hallOfMirrorsVisits = gameState.GetLocationVisitCount("Locations.hall-of-mirrors");
+                        int currentVisits = player.CurrentLocation.VisitCount;
+                        if (hallOfMirrorsVisits > 0 &&
+                            (currentVisits == 3 || currentVisits > 4))
                         {
-                            return value > 0;
+                            return true;
                         }
                         return false;
                     })
@@ -139,15 +141,15 @@ namespace AshborneGame._Core.Game
                 ConditionalDescription.StartNew()
                     .If((player, gameState) =>
                     {
-                        bool visitedTemple = gameState.TryGetCounter(StateKeys.Counters.Player.TimesVisited.OssanethsDomain_TempleOfTheBound, out int v1);
-                        bool talkedToBound = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOne, out bool v2);
+                        int templeVisits = gameState.GetLocationVisitCount("Locations.temple-of-the-bound-one");
+                        bool talkedToBound = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOne, out bool v2) && v2;
                         int visits = player.CurrentLocation.VisitCount;
 
-                        if (visitedTemple &&
+                        if (templeVisits > 0 &&
                             talkedToBound &&
                             (visits == 1 || visits == 2 || visits == 4))
                         {
-                            return v1 > 0 && v2;
+                            return true;
                         }
                         return false;
                     })
@@ -156,13 +158,13 @@ namespace AshborneGame._Core.Game
                 ConditionalDescription.StartNew()
                     .If((player, gameState) =>
                     {
-                        bool visitedTemple = gameState.TryGetCounter(StateKeys.Counters.Player.TimesVisited.OssanethsDomain_TempleOfTheBound, out int v1);
-                        bool talkedToBound = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOne, out bool v2);
+                        int templeVisits = gameState.GetLocationVisitCount("Locations.temple-of-the-bound-one");
+                        bool talkedToBound = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOne, out bool v2) && v2;
                         int visits = player.CurrentLocation.VisitCount;
 
-                        if (visitedTemple && talkedToBound && (visits == 3 || visits > 4))
+                        if (templeVisits > 0 && talkedToBound && (visits == 3 || visits > 4))
                         {
-                            return v1 > 0 && v2;
+                            return true;
                         }
                         return false;
                     })
