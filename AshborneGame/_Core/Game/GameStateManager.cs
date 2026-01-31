@@ -116,8 +116,7 @@ namespace AshborneGame._Core.Game
         }
 
 
-        // ----------- FLAGS (True/False binary states) -----------
-
+        #region Flags
         public void SetFlag(GameStateKey<bool> key, bool value) => Flags[key] = value;
 
         /// <summary>
@@ -158,8 +157,9 @@ namespace AshborneGame._Core.Game
                 return null;
         }
 
-        // ----------- COUNTERS (Integers with mutations) -----------
+        #endregion
 
+        #region Counters
         public void SetCounter(GameStateKey<int> key, int value) => Counters[key] = value;
 
         /// <summary>
@@ -205,8 +205,9 @@ namespace AshborneGame._Core.Game
 
         public bool RemoveCounter(GameStateKey<int> key) => Counters.Remove(key);
 
-        // ----------- LABELS (String storage) ----------
-
+        #endregion
+        
+        #region Labels
         public void SetLabel(GameStateKey<string> key, string value) => Labels[key] = value;
         public string? TryGetLabel(GameStateKey<string> key)
         {
@@ -220,8 +221,9 @@ namespace AshborneGame._Core.Game
 
         public bool RemoveLabel(GameStateKey<string> key) => Labels.Remove(key);
 
-        // ----------- VARIABLES (Generic object storage) -----------
+        #endregion
 
+        #region Variables
         public void SetVariable(GameStateKey<object> key, object value) => Variables[key] = value;
 
         /// <summary>
@@ -248,7 +250,9 @@ namespace AshborneGame._Core.Game
 
         public void RemoveVariable(GameStateKey<object> key) => Variables.Remove(key);
 
-        // ----------- MASKS -----------
+        #endregion
+        
+        #region Masks
         public bool TryGivePlayerMask(string maskName)
         {
             try
@@ -299,7 +303,9 @@ namespace AshborneGame._Core.Game
             return _player.EquippedItems["face"] != null && _player.EquippedItems["face"]!.Name == maskName;
         }
 
-        // ----------- TIME TRACKING -----------
+        #endregion
+
+        #region Location Time Tracking
         public TimeSpan GetLiveTimeInCurrentLocation()
         {
             return _realTimeInCurrentLocation;
@@ -405,7 +411,6 @@ namespace AshborneGame._Core.Game
             }
         }
 
-
         public Location? CurrentLocation => _currentLocation;
 
         public void AddLocationTimeTrigger(LocationTimeTrigger trigger)
@@ -413,7 +418,49 @@ namespace AshborneGame._Core.Game
             _locationTimeTriggers.Add(trigger);
         }
 
-        // ----------- UTILITIES -----------
+        #endregion
+
+        #region Location Visit Tracking
+        /// <summary>
+        /// Gets the visit count for a location by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the location.</param>
+        /// <exception cref="KeyNotFoundException">Thrown when the given location ID is not found in the LocationRegistry.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the location with the given ID is null in the LocationRegistry.</exception>
+        public int GetLocationVisitCount(string id)
+        {
+            if (!LocationRegistry.GetLocationByID(id, out var location))
+            {
+                throw new KeyNotFoundException($"Location with ID '{id}' not found in LocationRegistry.");
+            }
+
+            if (location == null)
+            {
+                throw new InvalidOperationException($"Location with ID '{id}' is null in LocationRegistry.");
+            }
+
+            return location.VisitCount;
+        }
+
+        private int IncrementLocationVisitCount(string id)
+        {
+            if (!LocationRegistry.GetLocationByID(id, out var location))
+            {
+                throw new KeyNotFoundException($"Location with ID '{id}' not found in LocationRegistry.");
+            }
+
+            if (location == null)
+            {
+                throw new InvalidOperationException($"Location with ID '{id}' is null in LocationRegistry.");
+            }
+
+            location.VisitCount += 1;
+            return location.VisitCount;
+        }
+
+        #endregion
+
+        #region Utilities
         public void ClearAll()
         {
             Flags.Clear();
@@ -425,5 +472,6 @@ namespace AshborneGame._Core.Game
         {
             return $"[Flags: {Flags.Count}, Counters: {Counters.Count}, Variables: {Variables.Count}]";
         }
+        #endregion
     }
 }
