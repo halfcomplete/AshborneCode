@@ -8,7 +8,7 @@ namespace AshborneGame._Core.Globals.Interfaces
         Task Write(string message, int ms);
         Task WriteNonDialogueLine(string message);
         Task WriteNonDialogueLine(string message, int ms);
-        Task WriteDialogueLine(string message);
+        Task WriteDialogueMarkerLine(string message);
         Task WriteDialogueLine(string message, int ms);
         Task DisplayFailMessage(string message);
         Task DisplayDebugMessage(string message, ConsoleMessageTypes type = ConsoleMessageTypes.INFO);

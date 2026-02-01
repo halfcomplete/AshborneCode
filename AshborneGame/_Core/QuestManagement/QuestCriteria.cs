@@ -173,7 +173,7 @@ namespace AshborneGame._Core.QuestManagement
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public QuestCriteria ThenCompleteThisQuest()
+        public QuestCriteria ThenProgressThisQuest()
         {
             EnsureStarted();
             IsCompletionCriteria = true;
@@ -181,7 +181,7 @@ namespace AshborneGame._Core.QuestManagement
             return this;
         }
 
-        public QuestCriteria ThenFailThisQuestCriteria()
+        public QuestCriteria ThenFailThisQuest()
         {
             EnsureStarted();
             IsCompletionCriteria = false;

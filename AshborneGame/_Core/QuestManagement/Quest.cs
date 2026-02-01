@@ -12,28 +12,35 @@ namespace AshborneGame._Core.QuestManagement
         public string Description { get; set; }
         public QuestStatus Status { get; private set; } = QuestStatus.InProgress;
 
-        
+        private QuestProgressTracker _questProgress;
 
-        private Quest(
+        private Action<GameStateManager> _onComplete;
+        private Action<GameStateManager>? _onFail;
+
+        public Quest(
             string name, 
             string description,
             Action<GameStateManager> onComplete,
-            Action<GameStateManager>? onFail)
+            Action<GameStateManager>? onFail,
+            QuestProgressTracker questProgress)
         {
             Name = name;
             ID = SlugIdService.GenerateSlugId(name, "quest");
             Description = description;
             _onComplete = onComplete;
             _onFail = onFail;
+            _questProgress = questProgress;
         }
 
         /// <summary>
-        /// Ticks the quest progress, updating its status based on completion and failure criteria. Will invoke the appropriate callbacks on completion or failure.
+        /// Ticks the quest progress, updating its status based on completion and failure criteria and delta time passed. Will invoke the appropriate callbacks on completion or failure.
         /// </summary>
         /// <param name="delta">The time elapsed since the last tick.</param>
         /// <param name="state">The current game state manager.</param>
-        public void TickProgress(TimeSpan delta, GameStateManager state)
+        public void TickQuestTime(TimeSpan delta, GameStateManager state)
         {
+            _questProgress.TickCriteria(delta, state);
+
             if (Status != QuestStatus.InProgress)
             {
                 return;

@@ -1,18 +1,14 @@
 ﻿using AshborneGame._Core._Player;
-using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.ItemSystem;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
-using AshborneGame._Core.Data.BOCS.ObjectSystem;
 using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Globals.Constants;
-using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.SceneManagement;
-using System.Threading;
-using System.Runtime.InteropServices;
+using AshborneGame._Core.QuestManagement;
 
 namespace AshborneGame._Core.Game
 {
@@ -89,6 +85,7 @@ namespace AshborneGame._Core.Game
 
         private ((Location, Scene), (Location, Scene)) InitialiseStartingLocation(Player player)
         {
+            #region Ossaneth's Domain Locations
             // Location visit counts are now tracked via Location.VisitCount property directly.
             // Access from C#: location.VisitCount or gameState.GetLocationVisitCount("Locations.{slug}")
             // Access from Ink: getLocationVisits("location-slug") or incLocationVisits("location-slug")
@@ -321,6 +318,50 @@ namespace AshborneGame._Core.Game
 
             prologue.AddLocation(prologueLocation);
             GameContext.GameState.SetCounter(StateKeys.Counters.Player.CurrentSceneNo, 0);
+
+            #endregion
+
+            #region Quests
+
+            var quest = QuestFactory.CreateQuest(
+                "Escape Ossaneth's Domain",
+                "Find a way to escape the surreal realm of Ossaneth's Domain.",
+                onComplete: (gameState) =>
+                {
+                    IOService.Output.WriteNonDialogueLine("Quest Completed: You have escaped Ossaneth's Domain!");
+                },
+                onFail: (gameState) =>
+                {
+                    IOService.Output.WriteNonDialogueLine("Quest Failed: You remain trapped in Ossaneth's Domain.");
+                },
+                new QuestCriteria()
+                    .If((gameState) =>
+                    {
+                        // Completion criteria: Player has visited the Eye Platform after visiting other locations
+                        int eyePlatformVisits = gameState.GetLocationVisitCount("Locations.eye-platform");
+                        int hallOfMirrorsVisits = gameState.GetLocationVisitCount("Locations.hall-of-mirrors");
+                        int chamberOfCyclesVisits = gameState.GetLocationVisitCount("Locations.chamber-of-cycles");
+                        int templeOfTheBoundVisits = gameState.GetLocationVisitCount("Locations.temple-of-the-bound-one");
+
+                        return eyePlatformVisits > 0 &&
+                            (hallOfMirrorsVisits > 0 || chamberOfCyclesVisits > 0 || templeOfTheBoundVisits > 0);
+                    })
+                    .ThenProgressThisQuest(),
+                new QuestCriteria()
+                    .If((gameState) =>
+                    {
+                        // Failure criteria: Player has not visited the Eye Platform after visiting other locations
+                        int eyePlatformVisits = gameState.GetLocationVisitCount("Locations.eye-platform");
+                        int hallOfMirrorsVisits = gameState.GetLocationVisitCount("Locations.hall-of-mirrors");
+                        int chamberOfCyclesVisits = gameState.GetLocationVisitCount("Locations.chamber-of-cycles");
+                        int templeOfTheBoundVisits = gameState.GetLocationVisitCount("Locations.temple-of-the-bound-one");
+
+                        return eyePlatformVisits == 0 &&
+                            (hallOfMirrorsVisits > 0 || chamberOfCyclesVisits > 0 || templeOfTheBoundVisits > 0);
+                    })
+                    .ThenFailThisQuest());
+
+            #endregion
 
             return ((prologueLocation, prologue), (eyePlatform, OssanethsDomain));
         }

@@ -121,7 +121,7 @@ namespace AshborneGame.ConsolePort
             return Task.CompletedTask;
         }
 
-        public Task WriteDialogueLine(string message)
+        public Task WriteDialogueMarkerLine(string message)
         {
             return WriteDialogueLine(message, OutputConstants.DefaultTypeSpeed);
         }

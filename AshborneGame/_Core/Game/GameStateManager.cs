@@ -84,7 +84,7 @@ namespace AshborneGame._Core.Game
             {
                 if (quest.Status == QuestStatus.InProgress)
                 {
-                    quest.TickProgress(delta, this);
+                    quest.TickQuestTime(delta, this);
                     switch (quest.Status)
                     {
                         case QuestStatus.Completed:

@@ -174,7 +174,7 @@ namespace AshborneGame._Core.SceneManagement
                     {
                         _canContinue = true;
                         Console.WriteLine($"RunAsync encountered __END__ marker. Waiting for _hasPrintedDialogueEnd.");
-                        await IOService.Output.WriteDialogueLine(line);
+                        await IOService.Output.WriteDialogueMarkerLine(line);
                         while (!_hasPrintedDialogueEnd)
                         {
                             await Task.Delay(100);
@@ -185,7 +185,7 @@ namespace AshborneGame._Core.SceneManagement
                     await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Line='{line}'", ConsoleMessageTypes.INFO);
                     if (line.TrimEnd().EndsWith(OutputConstants.DialoguePauseMarker))
                     {
-                        await IOService.Output.WriteDialogueLine(line);
+                        await IOService.Output.WriteDialogueMarkerLine(line);
                         _canContinue = _story.canContinue;
                         continue;
                     }
@@ -257,7 +257,7 @@ namespace AshborneGame._Core.SceneManagement
                     await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Enqueued choices at {DateTime.Now}", ConsoleMessageTypes.INFO);
                     for (int i = 0; i < _story.currentChoices.Count; i++)
                     {
-                        await IOService.Output.WriteDialogueLine($"[{i + 1}] {_story.currentChoices[i].text}");
+                        await IOService.Output.WriteDialogueMarkerLine($"[{i + 1}] {_story.currentChoices[i].text}");
                     }
 
                     _externalChoiceAwaitCts = new CancellationTokenSource();
@@ -488,7 +488,7 @@ namespace AshborneGame._Core.SceneManagement
         public object ExternalPlayerWearingMask(string maskName) => _gameState.PlayerWearingMask(maskName);
         public object ExternalPlayerForceMask(string maskName)
         {
-            IOService.Output.WriteDialogueLine(OutputConstants.ForceMaskMarker + maskName);
+            IOService.Output.WriteDialogueMarkerLine(OutputConstants.ForceMaskMarker + maskName);
             return null;
         }
 
@@ -593,7 +593,7 @@ namespace AshborneGame._Core.SceneManagement
             }
             
             Console.WriteLine($"[DEBUG] ExternalAnimateBlur: Calling WriteDialogueLine with marker");
-            IOService.Output.WriteDialogueLine(blurMarker);
+            IOService.Output.WriteDialogueMarkerLine(blurMarker);
             Console.WriteLine($"[DEBUG] ExternalAnimateBlur: WriteDialogueLine completed successfully");
             
             return null;

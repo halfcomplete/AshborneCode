@@ -50,7 +50,7 @@ namespace AshborneGame.WebPort
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public async Task WriteDialogueLine(string message)
+        public async Task WriteDialogueMarkerLine(string message)
         {
             await _writeDialogueLineCallback(message);
         }
