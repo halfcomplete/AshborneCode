@@ -166,11 +166,8 @@ namespace AshborneGame._Core.Game.CommandHandling
                 {
                     GameContext.GameState.SetCounter(counterKey, 1);
                 }
-                GameEvent playerPrayedEvent = new GameEvent(EventNameConstants.Player.Actions.Prayed, new Dictionary<string, object>()
-                {
-                    {"location_group", "Ossaneth's Domain"}
-                });
-                EventBus.Call(playerPrayedEvent);
+                var playerPrayedEvent = new GameEvents.Player.PrayedEvent("Ossaneth's Domain");
+                EventBus.Publish(playerPrayedEvent);
             }
             else
             {

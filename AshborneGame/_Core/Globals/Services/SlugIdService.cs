@@ -2,6 +2,12 @@ namespace AshborneGame._Core.Globals.Services
 {
     public static class SlugIdService
     {
+        /// <summary>
+        /// When true, appends a unique GUID suffix to all generated slug IDs.
+        /// Set this to true in test setup to ensure unique IDs across test runs.
+        /// </summary>
+        public static bool IsTestMode { get; set; } = false;
+
         public static string GenerateSlugId(string name, string prefix)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -18,6 +24,13 @@ namespace AshborneGame._Core.Globals.Services
             
             // Remove consecutive hyphens
             slug = System.Text.RegularExpressions.Regex.Replace(slug, @"-+", "-").Trim('-');
+
+            // In test mode, append a unique suffix to avoid duplicate ID errors
+            if (IsTestMode)
+            {
+                var uniqueSuffix = Guid.NewGuid().ToString("N")[..8];
+                return $"{prefix}.{slug}-{uniqueSuffix}";
+            }
 
             return $"{prefix}.{slug}";
         }

@@ -17,17 +17,17 @@ namespace AshborneGame._Core.QuestManagement
             {
                 if (c.IsCompletionCriteria)
                 {
-                    if (c.CriteriaFunction == null || c.TimeBasedCriteriaFunction == null)
+                    if (c.CriteriaFunction == null && c.TimeBasedCriteriaFunction == null)
                     {
-                        throw new ArgumentException("Completion criteria must have a defined CriteriaFunction.");
+                        throw new ArgumentException("Completion QuestCriteria must have either a defined CriteriaFunction or TimeBasedCriteriaFunction.");
                     }
                     completionCriteriaList.Add(c);
                 }
                 else
                 {
-                    if (c.CriteriaFunction == null || c.TimeBasedCriteriaFunction == null)
+                    if (c.CriteriaFunction == null && c.TimeBasedCriteriaFunction == null)
                     {
-                        throw new ArgumentException("Failure criteria must have a defined CriteriaFunction.");
+                        throw new ArgumentException("Failure QuestCriteria must have either a defined CriteriaFunction or TimeBasedCriteriaFunction.");
                     }
                     failureCriteriaList.Add(c);
                 }

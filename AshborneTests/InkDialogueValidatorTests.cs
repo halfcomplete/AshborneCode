@@ -2,6 +2,7 @@ using AshborneTooling;
 
 namespace AshborneTests
 {
+    [Collection("AshborneTests")]
     public class InkDialogueValidatorTests : IDisposable
     {
         private enum FunctionType
@@ -32,7 +33,7 @@ namespace AshborneTests
         #region ValidateAllDialogues Tests
 
         [Fact]
-        public void ValidateAllDialogues_NonExistentDirectory_ReturnsIssue()
+        public void ValidateAllDialogues_ShouldReturnIssue_WhenDirectoryDoesNotExist()
         {
             // Arrange
             string nonExistentPath = Path.Combine(_testDirectory, "DoesNotExist");
@@ -46,7 +47,7 @@ namespace AshborneTests
         }
 
         [Fact]
-        public void ValidateAllDialogues_EmptyDirectory_ReturnsNoIssues()
+        public void ValidateAllDialogues_ShouldReturnNoIssues_WhenDirectoryIsEmpty()
         {
             // Arrange
             string emptyDir = Path.Combine(_testDirectory, "Empty");
@@ -60,7 +61,7 @@ namespace AshborneTests
         }
 
         [Fact]
-        public void ValidateAllDialogues_ValidDialogue_ReturnsNoIssues()
+        public void ValidateAllDialogues_ShouldReturnNoIssues_WhenDialogueIsValid()
         {
             // Arrange
             string testFile = Path.Combine(_testDirectory, "valid.json");
@@ -75,7 +76,7 @@ namespace AshborneTests
         }
 
         [Fact]
-        public void ValidateAllDialogues_MultipleFiles_AggregatesIssues()
+        public void ValidateAllDialogues_ShouldAggregateIssues_WhenMultipleFilesHaveProblems()
         {
             // Arrange
             string file1 = Path.Combine(_testDirectory, "file1.json");
@@ -91,7 +92,7 @@ namespace AshborneTests
         }
 
         [Fact]
-        public void ValidateAllDialogues_NestedDirectories_FindsAllFiles()
+        public void ValidateAllDialogues_ShouldFindAllFiles_WhenFilesAreInNestedDirectories()
         {
             // Arrange
             string subDir = Path.Combine(_testDirectory, "SubFolder");
@@ -112,7 +113,7 @@ namespace AshborneTests
         #region ValidateSingleFile Tests
 
         [Fact]
-        public void ValidateSingleFile_ReturnsNoIssues_WhenGivenValidJson()
+        public void ValidateSingleFile_ShouldReturnNoIssues_WhenJsonIsValid()
         {
             // Arrange
             string testFile = Path.Combine(_testDirectory, "single_valid.json");
@@ -127,7 +128,7 @@ namespace AshborneTests
         }
 
         [Fact]
-        public void ValidateSingleFile_ReturnsNoIssues_WhenGivenValidJsonWithMultipleFunctions()
+        public void ValidateSingleFile_ShouldReturnNoIssues_WhenJsonContainsMultipleValidFunctions()
         {
             // Arrange
             string testFile = Path.Combine(_testDirectory, "single_valid_full.json");
@@ -143,7 +144,7 @@ namespace AshborneTests
 
 
         [Fact]
-        public void ValidateSingleFile_ReturnsIssues_WhenGivenInvalidFunctionKeys()
+        public void ValidateSingleFile_ShouldReturnIssues_WhenFunctionKeysAreInvalid()
         {
             // Arrange
             string testFile = Path.Combine(_testDirectory, "all_functions.json");
@@ -165,7 +166,7 @@ namespace AshborneTests
         #region PrintResults Tests
 
         [Fact]
-        public void PrintResults_DoesntThrowException_WhenThereAreNoIssues()
+        public void PrintResults_ShouldNotThrowException_WhenNoIssuesExist()
         {
             // Arrange
             var issues = new List<InkDialogueValidator.ValidationIssue>();
@@ -176,7 +177,7 @@ namespace AshborneTests
         }
 
         [Fact]
-        public void PrintResults_ThrowsException_WhenThereAreIssues()
+        public void PrintResults_ShouldThrowException_WhenIssuesExist()
         {
             // Arrange
             var issues = new List<InkDialogueValidator.ValidationIssue>
