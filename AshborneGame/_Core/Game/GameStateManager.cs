@@ -68,7 +68,7 @@ namespace AshborneGame._Core.Game
                 {
                     if (trigger.CheckTrigger(_currentLocation, _realTimeInCurrentLocation))
                     {
-                        EventBus.Call(trigger.EventToRaise);
+                        EventBus.Publish(trigger.EventToRaise);
                     }
                 }
             }

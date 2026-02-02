@@ -337,8 +337,7 @@ namespace AshborneGame._Core.Game
                         gameState.SetFlag(InkStateKeyRegistry.ValidateAndGetFlagKey(StateKeys.Flags.Player.Actions.In.OssanethsDomain.OutroTriggered), true);
                         
                         // Publish event for the outro dialogue
-                        var outroEvent = new GameEvent(EventNameConstants.OssanethsDomain.OnOutroTriggered, new Dictionary<string, object>());
-                        EventBus.Call(outroEvent);
+                        EventBus.Publish(GameEventFactory.OssanethsDomain.CreateOssanethsDomainOutroTriggeredEvent());
                     }
                 },
                 onFail: null,
@@ -348,26 +347,14 @@ namespace AshborneGame._Core.Game
                         // Completion criteria: Player has visited the Eye Platform after visiting other locations
                         int eyePlatformVisits = gameState.GetLocationVisitCount("Locations.eye-platform");
                         int hallOfMirrorsVisits = gameState.GetLocationVisitCount("Locations.hall-of-mirrors");
-                        int chamberOfCyclesVisits = gameState.GetLocationVisitCount("Locations.chamber-of-cycles");
+                        // Commented out as chamber of cycles does not exist yet
+                        int chamberOfCyclesVisits = 1; //gameState.GetLocationVisitCount("Locations.chamber-of-cycles");
                         int templeOfTheBoundVisits = gameState.GetLocationVisitCount("Locations.temple-of-the-bound-one");
 
                         return eyePlatformVisits > 0 &&
                             (hallOfMirrorsVisits > 0 || chamberOfCyclesVisits > 0 || templeOfTheBoundVisits > 0);
                     })
-                    .ThenProgressThisQuest(),
-                new QuestCriteria()
-                    .If((gameState) =>
-                    {
-                        // Failure criteria: Player has not visited the Eye Platform after visiting other locations
-                        int eyePlatformVisits = gameState.GetLocationVisitCount("Locations.eye-platform");
-                        int hallOfMirrorsVisits = gameState.GetLocationVisitCount("Locations.hall-of-mirrors");
-                        int chamberOfCyclesVisits = gameState.GetLocationVisitCount("Locations.chamber-of-cycles");
-                        int templeOfTheBoundVisits = gameState.GetLocationVisitCount("Locations.temple-of-the-bound-one");
-
-                        return eyePlatformVisits == 0 &&
-                            (hallOfMirrorsVisits > 0 || chamberOfCyclesVisits > 0 || templeOfTheBoundVisits > 0);
-                    })
-                    .ThenFailThisQuest());
+                    .ThenProgressThisQuest());
 
             #endregion
 
