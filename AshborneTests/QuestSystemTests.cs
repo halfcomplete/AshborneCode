@@ -1,6 +1,7 @@
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Game.Events;
+using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.QuestManagement;
 
 namespace AshborneTests
@@ -36,7 +37,7 @@ namespace AshborneTests
                 "A test quest",
                 onComplete: _ => { },
                 onFail: null,
-                new QuestCriteria().If(_ => false).ThenComplete());
+                new QuestCriteria().If(_ => false).ThenProgressThisQuest());
 
             // Assert
             Assert.Equal(QuestStatus.InProgress, quest.Status);
@@ -51,7 +52,7 @@ namespace AshborneTests
                 "A test quest",
                 onComplete: _ => { },
                 onFail: null,
-                new QuestCriteria().If(_ => true).ThenComplete());
+                new QuestCriteria().If(_ => true).ThenProgressThisQuest());
 
             // Assert
             Assert.NotNull(quest.ID);
@@ -68,7 +69,7 @@ namespace AshborneTests
                 "My Quest Description",
                 onComplete: _ => { },
                 onFail: null,
-                new QuestCriteria().If(_ => true).ThenComplete());
+                new QuestCriteria().If(_ => true).ThenProgressThisQuest());
 
             // Assert
             Assert.Equal("My Quest Name", quest.Name);
@@ -91,7 +92,7 @@ namespace AshborneTests
                         criteriaEvaluated = true;
                         return true;
                     })
-                    .ThenComplete());
+                    .ThenProgressThisQuest());
 
             // Act
             quest.TickQuestTime(TimeSpan.FromSeconds(1), _gameState);
@@ -110,8 +111,8 @@ namespace AshborneTests
                 "Test failure",
                 onComplete: _ => { },
                 onFail: _ => { },
-                new QuestCriteria().If(_ => false).ThenComplete(),
-                new QuestCriteria().If(_ => true).ThenFail());
+                new QuestCriteria().If(_ => false).ThenProgressThisQuest(),
+                new QuestCriteria().If(_ => true).ThenFailThisQuest());
 
             // Act
             quest.TickQuestTime(TimeSpan.FromSeconds(1), _gameState);
@@ -130,7 +131,7 @@ namespace AshborneTests
                 "Test callback",
                 onComplete: _ => onCompleteCalled = true,
                 onFail: null,
-                new QuestCriteria().If(_ => true).ThenComplete());
+                new QuestCriteria().If(_ => true).ThenProgressThisQuest());
 
             // Act
             quest.TickQuestTime(TimeSpan.FromSeconds(1), _gameState);
@@ -149,8 +150,8 @@ namespace AshborneTests
                 "Test fail callback",
                 onComplete: _ => { },
                 onFail: _ => onFailCalled = true,
-                new QuestCriteria().If(_ => false).ThenComplete(),
-                new QuestCriteria().If(_ => true).ThenFail());
+                new QuestCriteria().If(_ => false).ThenProgressThisQuest(),
+                new QuestCriteria().If(_ => true).ThenFailThisQuest());
 
             // Act
             quest.TickQuestTime(TimeSpan.FromSeconds(1), _gameState);
@@ -175,7 +176,7 @@ namespace AshborneTests
                         evaluationCount++;
                         return true;
                     })
-                    .ThenComplete());
+                    .ThenProgressThisQuest());
 
             // Act
             quest.TickQuestTime(TimeSpan.FromSeconds(1), _gameState);
@@ -195,8 +196,8 @@ namespace AshborneTests
                 "Test priority",
                 onComplete: _ => { },
                 onFail: _ => { },
-                new QuestCriteria().If(_ => true).ThenComplete(),
-                new QuestCriteria().If(_ => true).ThenFail());
+                new QuestCriteria().If(_ => true).ThenProgressThisQuest(),
+                new QuestCriteria().If(_ => true).ThenFailThisQuest());
 
             // Act
             quest.TickQuestTime(TimeSpan.FromSeconds(1), _gameState);
@@ -215,7 +216,7 @@ namespace AshborneTests
             // Arrange
             var criteria = new QuestCriteria()
                 .If(_ => true)
-                .ThenComplete();
+                .ThenProgressThisQuest();
 
             // Act
             var result = criteria.Evaluate(_gameState, TimeSpan.Zero);
@@ -230,7 +231,7 @@ namespace AshborneTests
             // Arrange
             var criteria = new QuestCriteria()
                 .If(_ => false)
-                .ThenComplete();
+                .ThenProgressThisQuest();
 
             // Act
             var result = criteria.Evaluate(_gameState, TimeSpan.Zero);
@@ -245,7 +246,7 @@ namespace AshborneTests
             // Arrange
             var criteria = new QuestCriteria()
                 .IfNot(_ => false)
-                .ThenComplete();
+                .ThenProgressThisQuest();
 
             // Act
             var result = criteria.Evaluate(_gameState, TimeSpan.Zero);
@@ -260,7 +261,7 @@ namespace AshborneTests
             // Arrange
             var criteria = new QuestCriteria()
                 .IfNot(_ => true)
-                .ThenComplete();
+                .ThenProgressThisQuest();
 
             // Act
             var result = criteria.Evaluate(_gameState, TimeSpan.Zero);
@@ -275,9 +276,9 @@ namespace AshborneTests
             // Arrange
             var criteria = new QuestCriteria()
                 .If(_ => true)
-                .And(_ => true)
-                .And(_ => true)
-                .ThenComplete();
+                .AndIf(_ => true)
+                .AndIf(_ => true)
+                .ThenProgressThisQuest();
 
             // Act
             var result = criteria.Evaluate(_gameState, TimeSpan.Zero);
@@ -292,9 +293,9 @@ namespace AshborneTests
             // Arrange
             var criteria = new QuestCriteria()
                 .If(_ => true)
-                .And(_ => true)
-                .And(_ => false)
-                .ThenComplete();
+                .AndIf(_ => true)
+                .AndIf(_ => false)
+                .ThenProgressThisQuest();
 
             // Act
             var result = criteria.Evaluate(_gameState, TimeSpan.Zero);
@@ -309,9 +310,9 @@ namespace AshborneTests
             // Arrange
             var criteria = new QuestCriteria()
                 .If(_ => false)
-                .Or(_ => false)
-                .Or(_ => true)
-                .ThenComplete();
+                .OrIf(_ => false)
+                .OrIf(_ => true)
+                .ThenProgressThisQuest();
 
             // Act
             var result = criteria.Evaluate(_gameState, TimeSpan.Zero);
@@ -326,9 +327,9 @@ namespace AshborneTests
             // Arrange
             var criteria = new QuestCriteria()
                 .If(_ => false)
-                .Or(_ => false)
-                .Or(_ => false)
-                .ThenComplete();
+                .OrIf(_ => false)
+                .OrIf(_ => false)
+                .ThenProgressThisQuest();
 
             // Act
             var result = criteria.Evaluate(_gameState, TimeSpan.Zero);
@@ -338,24 +339,24 @@ namespace AshborneTests
         }
 
         [Fact]
-        public void QuestCriteria_ShouldBeCompletionCriteria_WhenThenCompleteIsCalled()
+        public void QuestCriteria_ShouldBeCompletionCriteria_WhenThenProgressThisQuestIsCalled()
         {
             // Arrange & Act
             var criteria = new QuestCriteria()
                 .If(_ => true)
-                .ThenComplete();
+                .ThenProgressThisQuest();
 
             // Assert
             Assert.True(criteria.IsCompletionCriteria);
         }
 
         [Fact]
-        public void QuestCriteria_ShouldBeFailureCriteria_WhenThenFailIsCalled()
+        public void QuestCriteria_ShouldBeFailureCriteria_WhenThenFailThisQuestIsCalled()
         {
             // Arrange & Act
             var criteria = new QuestCriteria()
                 .If(_ => true)
-                .ThenFail();
+                .ThenFailThisQuest();
 
             // Assert
             Assert.False(criteria.IsCompletionCriteria);
@@ -370,7 +371,7 @@ namespace AshborneTests
 
             var criteria = new QuestCriteria()
                 .If(gs => gs.TryGetFlag(flagKey, out var value) && value)
-                .ThenComplete();
+                .ThenProgressThisQuest();
 
             // Act
             var result = criteria.Evaluate(_gameState, TimeSpan.Zero);
@@ -385,7 +386,7 @@ namespace AshborneTests
             // Arrange
             var criteria = new QuestCriteria()
                 .IfTimeHasPassed(TimeSpan.FromSeconds(5))
-                .ThenComplete();
+                .ThenProgressThisQuest();
 
             // Act - tick for 3 seconds (should not complete)
             criteria.TickTimePassed(TimeSpan.FromSeconds(3));
@@ -406,7 +407,7 @@ namespace AshborneTests
             // Arrange
             var criteria = new QuestCriteria()
                 .IfTimeHasPassed(TimeSpan.FromSeconds(5))
-                .ThenComplete();
+                .ThenProgressThisQuest();
 
             criteria.TickTimePassed(TimeSpan.FromSeconds(10));
 
@@ -431,7 +432,7 @@ namespace AshborneTests
                 "Created by factory",
                 onComplete: _ => { },
                 onFail: null,
-                new QuestCriteria().If(_ => true).ThenComplete());
+                new QuestCriteria().If(_ => true).ThenProgressThisQuest());
 
             // Assert
             Assert.NotNull(quest);
@@ -447,7 +448,7 @@ namespace AshborneTests
                 "Should throw",
                 onComplete: _ => { },
                 onFail: null,
-                new QuestCriteria().ThenComplete()));
+                new QuestCriteria().ThenProgressThisQuest()));
         }
 
         [Fact]
@@ -462,8 +463,8 @@ namespace AshborneTests
                 "Multiple criteria",
                 onComplete: _ => { },
                 onFail: null,
-                new QuestCriteria().If(_ => { criteriaEvaluationCount++; return true; }).ThenComplete(),
-                new QuestCriteria().If(_ => { criteriaEvaluationCount++; return true; }).ThenComplete());
+                new QuestCriteria().If(_ => { criteriaEvaluationCount++; return true; }).ThenProgressThisQuest(),
+                new QuestCriteria().If(_ => { criteriaEvaluationCount++; return true; }).ThenProgressThisQuest());
 
             quest.TickQuestTime(TimeSpan.FromSeconds(1), _gameState);
 
@@ -483,8 +484,8 @@ namespace AshborneTests
                 "Test separation",
                 onComplete: _ => { },
                 onFail: _ => { },
-                new QuestCriteria().If(_ => { completionEvaluated = true; return false; }).ThenComplete(),
-                new QuestCriteria().If(_ => { failureEvaluated = true; return false; }).ThenFail());
+                new QuestCriteria().If(_ => { completionEvaluated = true; return false; }).ThenProgressThisQuest(),
+                new QuestCriteria().If(_ => { failureEvaluated = true; return false; }).ThenFailThisQuest());
 
             // Act
             quest.TickQuestTime(TimeSpan.FromSeconds(1), _gameState);
@@ -505,8 +506,8 @@ namespace AshborneTests
             // Arrange
             var criteria = new List<QuestCriteria>
             {
-                new QuestCriteria().If(_ => true).ThenComplete(),
-                new QuestCriteria().If(_ => true).ThenComplete()
+                new QuestCriteria().If(_ => true).ThenProgressThisQuest(),
+                new QuestCriteria().If(_ => true).ThenProgressThisQuest()
             };
             var tracker = new QuestProgressTracker(criteria);
 
@@ -523,8 +524,8 @@ namespace AshborneTests
             // Arrange
             var criteria = new List<QuestCriteria>
             {
-                new QuestCriteria().If(_ => true).ThenComplete(),
-                new QuestCriteria().If(_ => false).ThenComplete()
+                new QuestCriteria().If(_ => true).ThenProgressThisQuest(),
+                new QuestCriteria().If(_ => false).ThenProgressThisQuest()
             };
             var tracker = new QuestProgressTracker(criteria);
 
@@ -541,12 +542,12 @@ namespace AshborneTests
             // Arrange
             var completionCriteria = new List<QuestCriteria>
             {
-                new QuestCriteria().If(_ => false).ThenComplete()
+                new QuestCriteria().If(_ => false).ThenProgressThisQuest()
             };
             var failureCriteria = new List<QuestCriteria>
             {
-                new QuestCriteria().If(_ => false).ThenFail(),
-                new QuestCriteria().If(_ => true).ThenFail()
+                new QuestCriteria().If(_ => false).ThenFailThisQuest(),
+                new QuestCriteria().If(_ => true).ThenFailThisQuest()
             };
             var tracker = new QuestProgressTracker(completionCriteria, failureCriteria);
 
@@ -563,7 +564,7 @@ namespace AshborneTests
             // Arrange
             var criteria = new List<QuestCriteria>
             {
-                new QuestCriteria().If(_ => true).ThenComplete()
+                new QuestCriteria().If(_ => true).ThenProgressThisQuest()
             };
             var tracker = new QuestProgressTracker(criteria, null);
 
@@ -578,8 +579,8 @@ namespace AshborneTests
         public void QuestProgressTracker_ShouldTickAllCriteria_WhenTickCriteriaCalled()
         {
             // Arrange
-            var criteria1 = new QuestCriteria().IfTimeHasPassed(TimeSpan.FromSeconds(5)).ThenComplete();
-            var criteria2 = new QuestCriteria().IfTimeHasPassed(TimeSpan.FromSeconds(3)).ThenComplete();
+            var criteria1 = new QuestCriteria().IfTimeHasPassed(TimeSpan.FromSeconds(5)).ThenProgressThisQuest();
+            var criteria2 = new QuestCriteria().IfTimeHasPassed(TimeSpan.FromSeconds(3)).ThenProgressThisQuest();
             var tracker = new QuestProgressTracker(new List<QuestCriteria> { criteria1, criteria2 });
 
             // Act - tick for 4 seconds
@@ -642,7 +643,7 @@ namespace AshborneTests
                 "Publishes event on completion",
                 onComplete: _ => EventBus.Publish(new TestQuestCompletedEvent("quest-1", "Event Quest")),
                 onFail: null,
-                new QuestCriteria().If(_ => true).ThenComplete());
+                new QuestCriteria().If(_ => true).ThenProgressThisQuest());
 
             // Act
             quest.TickQuestTime(TimeSpan.FromSeconds(1), _gameState);
@@ -665,8 +666,8 @@ namespace AshborneTests
                 "Publishes event on failure",
                 onComplete: _ => { },
                 onFail: _ => EventBus.Publish(new TestQuestFailedEvent("quest-2", "Fail Event Quest")),
-                new QuestCriteria().If(_ => false).ThenComplete(),
-                new QuestCriteria().If(_ => true).ThenFail());
+                new QuestCriteria().If(_ => false).ThenProgressThisQuest(),
+                new QuestCriteria().If(_ => true).ThenFailThisQuest());
 
             // Act
             quest.TickQuestTime(TimeSpan.FromSeconds(1), _gameState);
@@ -696,7 +697,7 @@ namespace AshborneTests
                 onFail: null,
                 new QuestCriteria()
                     .If(gs => gs.TryGetFlag(flagKey, out var value) && value)
-                    .ThenComplete());
+                    .ThenProgressThisQuest());
 
             // Assert - quest should be in progress before event
             Assert.Equal(QuestStatus.InProgress, quest.Status);
@@ -729,7 +730,7 @@ namespace AshborneTests
                 onFail: null,
                 new QuestCriteria()
                     .If(gs => gs.TryGetFlag(flagKey, out var value) && value)
-                    .ThenComplete());
+                    .ThenProgressThisQuest());
 
             var quest2 = QuestFactory.CreateQuest(
                 "Quest 2",
@@ -738,7 +739,7 @@ namespace AshborneTests
                 onFail: null,
                 new QuestCriteria()
                     .If(gs => gs.TryGetFlag(flagKey, out var value) && value)
-                    .ThenComplete());
+                    .ThenProgressThisQuest());
 
             // Act
             EventBus.Publish(new TestTriggerEvent("shared trigger"));
@@ -763,7 +764,7 @@ namespace AshborneTests
                 "Added to GameStateManager",
                 onComplete: _ => EventBus.Publish(new TestQuestCompletedEvent("gs-quest", "GameState Quest")),
                 onFail: null,
-                new QuestCriteria().If(_ => true).ThenComplete());
+                new QuestCriteria().If(_ => true).ThenProgressThisQuest());
 
             _gameState.AddQuest(quest);
 
@@ -797,7 +798,7 @@ namespace AshborneTests
                     EventBus.Publish(new TestQuestCompletedEvent("async-quest", "Async Quest"));
                 },
                 onFail: null,
-                new QuestCriteria().If(_ => true).ThenComplete());
+                new QuestCriteria().If(_ => true).ThenProgressThisQuest());
 
             // Act
             quest.TickQuestTime(TimeSpan.FromSeconds(1), _gameState);
