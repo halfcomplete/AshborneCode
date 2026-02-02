@@ -14,6 +14,9 @@ namespace AshborneTests
             // This runs ONCE before ANY tests in this collection
             Console.WriteLine(">>> Running global test setup...");
 
+            // Enable test mode for SlugIdService to generate unique IDs
+            SlugIdService.IsTestMode = true;
+
             // Clear static registries to ensure test isolation
             LocationRegistry.Clear();
 
