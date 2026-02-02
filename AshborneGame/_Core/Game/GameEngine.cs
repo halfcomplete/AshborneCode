@@ -337,8 +337,7 @@ namespace AshborneGame._Core.Game
                         gameState.SetFlag(InkStateKeyRegistry.ValidateAndGetFlagKey(StateKeys.Flags.Player.Actions.In.OssanethsDomain.OutroTriggered), true);
                         
                         // Publish event for the outro dialogue
-                        var outroEvent = new GameEvent(EventNameConstants.OssanethsDomain.OnOutroTriggered, new Dictionary<string, object>());
-                        EventBus.Call(outroEvent);
+                        EventBus.Publish(new GameEvents.OssanethsDomain.OutroTriggeredEvent());
                     }
                 },
                 onFail: null,

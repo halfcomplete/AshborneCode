@@ -44,62 +44,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             name = MaskNameConstants.Ossaneth;
             var ossaneth = CreateMask(name, "The Unblinking Eye", out var interjectionBehaviour);
 
-            // Add various triggers and messages for Ossaneth
-            interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger
-            (
-                EventName: EventNameConstants.Player.Actions.Prayed,
-                EventCondition: evt => evt.Get<string>("location_group") == "Ossaneth's Domain",
-                StateCondition: state => state.TryGetCounter(StateKeys.Counters.Player.Prayers, out var times) && times == 1,
-                Message: "Pray without fear, child, for the Eye sees, and hears, all."
-            ));
+            // TODO: Add various triggers for Ossaneth
 
-            interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger
-            (
-                EventName: EventNameConstants.Player.Actions.Prayed,
-                EventCondition: evt => evt.Get<string>("location_group") == "Ossaneth's Domain",
-                StateCondition: state => state.TryGetCounter(StateKeys.Counters.Player.Prayers, out var times) && times == 2,
-                Message: "As I said, do not fear."
-            ));
-
-            interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger
-            (
-                EventName: EventNameConstants.Player.Actions.Prayed,
-                EventCondition: evt => evt.Get<string>("location_group") == "Ossaneth's Domain",
-                StateCondition: state => state.TryGetCounter(StateKeys.Counters.Player.Prayers, out var times) && times == 3,
-                Message: "Again? How many times must you pray..."
-            ));
-
-            interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger
-            (
-                EventName: EventNameConstants.Player.Actions.Prayed,
-                EventCondition: evt => evt.Get<string>("location_group") == "Ossaneth's Domain",
-                StateCondition: state => state.TryGetCounter(StateKeys.Counters.Player.Prayers, out var times) && times == 4,
-                Message: "Neither God nor I will answer to your prayers anymore.",
-                OneTime: true
-            ));
-
-            interjectionBehaviour.AddTrigger(new MaskInterjectionBehaviour.MaskInterjectionTrigger
-            (
-                EventName: "player.actions.waited_once_at_mirror",
-                EventCondition: evt => evt.Get<string>("location") == "mirror",
-                StateCondition: null,
-                Message: "You wait too long... are you hoping something will change?",
-                Effect: null,
-                OneTime: true
-            ));
-
-            GameContext.GameState.AddLocationTimeTrigger(new LocationTimeTrigger
-            (
-                locationName: "mirror",
-                duration: TimeSpan.FromSeconds(20),
-                eventToRaise: new GameEvent("player.actions.waited_once_at_mirror", new() {
-                    { "location", "mirror" }
-                }),
-                effect: null,
-                oneTime: true
-            ));
-
-            _ = interjectionBehaviour.Register();
+            interjectionBehaviour.Register();
 
             return ossaneth;
         }
