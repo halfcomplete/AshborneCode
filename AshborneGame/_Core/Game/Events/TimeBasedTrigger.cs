@@ -12,12 +12,12 @@ namespace AshborneGame._Core.Game.Events
     {
         public string LocationName { get; }
         public TimeSpan Duration { get; }
-        public GameEvent EventToRaise { get; }
+        public IGameEvent EventToRaise { get; }
         public bool OneTime { get; }
         public bool Triggered { get; private set; }
         public Action? Effect { get; }
 
-        public LocationTimeTrigger(string locationName, TimeSpan duration, GameEvent eventToRaise, Action? effect = null, bool oneTime = true)
+        public LocationTimeTrigger(string locationName, TimeSpan duration, IGameEvent eventToRaise, Action? effect = null, bool oneTime = true)
         {
             LocationName = locationName;
             Duration = duration;

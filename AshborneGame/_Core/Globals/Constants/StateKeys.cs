@@ -29,6 +29,7 @@ namespace AshborneGame._Core.Globals.Constants
                             public static readonly GameStateKey<bool> TalkedToBoundOneHelp = new("Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOneHelp");
                             public static readonly GameStateKey<bool> TalkedToBoundOneSelf = new("Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOneSelf");
                             public static readonly GameStateKey<bool> TalkedToBoundOnePast = new("Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOnePast");
+                            public static readonly GameStateKey<bool> OutroTriggered = new ("Flags.Player.Actions.In.OssanethsDomain.OutroTriggered");
                         }
                     }
                 }

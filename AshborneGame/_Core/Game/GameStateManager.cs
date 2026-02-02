@@ -6,10 +6,6 @@ using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.QuestManagement;
 using AshborneGame._Core.SceneManagement;
-using Ink.Runtime;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
-using System.Threading.Tasks;
 
 namespace AshborneGame._Core.Game
 {
@@ -397,56 +393,6 @@ namespace AshborneGame._Core.Game
                 }
                 // Change the player's scene
                 GameContext.Player.MoveTo(GameContext.Player.CurrentLocation.Scene);
-            }
-
-            // Check if this is a Dreamspace location and track it
-            CheckDreamspaceLocationProgress(location);
-        }
-
-        // TODO: Replace with more modular and scalable "quest" tracking system
-        private void CheckDreamspaceLocationProgress(Location location)
-        {
-            // Only track locations in Ossaneth's Domain (Dreamspace)
-            if (location.Scene?.DisplayName != "Ossaneth's Domain")
-                return;
-
-            // Skip Eye Platform as specified
-            if (location.Name.ReferenceName == "Eye Platform")
-                return;
-
-            // Set flag for this specific location being visited
-            string locationFlagKey = $"Flags.Player.Actions.In._Visited{location.Name.ReferenceName.Replace(" ", "")}";
-            SetFlag(InkStateKeyRegistry.ValidateAndGetFlagKey(locationFlagKey), true);
-
-            // Count visited Dreamspace locations (excluding Eye Platform)
-            int visitedCount = 0;
-            var dreamspaceLocations = new[] { "Hall of Mirrors", "Chamber of Cycles", "Temple of the Bound", "Throne Room" };
-            
-            foreach (var locName in dreamspaceLocations)
-            {
-                string flagKey = $"Flags.Player.Actions.In.OssanethsDomain_Visited{locName.Replace(" ", "")}";
-                if (TryGetFlag(InkStateKeyRegistry.ValidateAndGetFlagKey(flagKey), out bool visited) && visited)
-                {
-                    visitedCount++;
-                }
-            }
-
-            // Check if we've reached the threshold (2 locations excluding Eye Platform)
-            if (visitedCount >= 2)
-            {
-                // Check if we've already triggered the outro to avoid duplicates
-                if (!TryGetFlag(InkStateKeyRegistry.ValidateAndGetFlagKey("Flags.Player.Actions.In.OssanethsDomain_OutroTriggered"), out bool outroTriggered) || !outroTriggered)
-                {
-                    SetFlag(InkStateKeyRegistry.ValidateAndGetFlagKey("Flags.Player.Actions.In.OssanethsDomain_OutroTriggered"), true);
-                    
-                    // Publish event for the outro dialogue
-                    var outroEvent = new GameEvent(EventNameConstants.Ossaneth.Domain.OnOutroTriggered, new Dictionary<string, object>
-                    {
-                        { "visited_count", visitedCount },
-                        { "location_name", location.Name.ReferenceName }
-                    });
-                    EventBus.Call(outroEvent);
-                }
             }
         }
 

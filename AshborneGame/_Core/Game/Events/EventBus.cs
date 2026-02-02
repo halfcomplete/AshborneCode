@@ -1,35 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using AshborneGame._Core.Game.Events;
 
 namespace AshborneGame._Core.Game.Events
 {
     public static class EventBus
     {
-        private static readonly Dictionary<string, List<Action<GameEvent>>> subscribers = new();
+        private static readonly Dictionary<Type, List<Action<IGameEvent>>> subscribers = new();
 
-        public static void Subscribe(string eventName, Action<GameEvent> callback)
+        /// <summary>
+        /// Subscribes to a game event with a callback to be invoked when the event is called.
+        /// </summary>
+        /// <typeparam name="TEvent">The type of the game event to subscribe to.</typeparam>
+        /// <param name="callback">The callback to invoke when the event is called.</param>
+        public static EventSubscription Subscribe<TEvent>(Action<IGameEvent> callback) where TEvent : IGameEvent
         {
-            if (!subscribers.ContainsKey(eventName)) subscribers[eventName] = new List<Action<GameEvent>>();
-            subscribers[eventName].Add(callback);
+            if (!subscribers.ContainsKey(typeof(TEvent))) subscribers[typeof(TEvent)] = new List<Action<IGameEvent>>();
+            subscribers[typeof(TEvent)].Add(callback);
+            return new EventSubscription(typeof(TEvent), callback);
         }
 
-        public static void Unsubscribe(string eventName, Action<GameEvent> callback)
+        /// <summary>
+        /// Unsubscribes from a game event with the specified callback.
+        /// </summary>
+        /// <param name="subscription">The subscription to remove.</param>
+        public static void Unsubscribe(EventSubscription subscription)
         {
-            subscribers[eventName].Remove(callback);
-            if (subscribers[eventName].Count == 0) subscribers.Remove(eventName);
+            if (subscribers.TryGetValue(subscription.EventType, out var list))
+            {
+                list.Remove(subscription.Callback);
+
+                if (list.Count == 0)
+                    subscribers.Remove(subscription.EventType);
+            }
         }
 
-        public static void Call(GameEvent gameEvent)
+        /// <summary>
+        /// Publishes a game event to all subscribed handlers.
+        /// </summary>
+        /// <typeparam name="TEvent">The type of the game event to publish.</typeparam>
+        /// <param name="gameEvent">The game event instance to publish.</param>
+        public static void Publish<TEvent>(TEvent gameEvent) where TEvent : IGameEvent
         {
-            if (subscribers.TryGetValue(gameEvent.Name, out var handlers))
+            if (subscribers.TryGetValue(typeof(TEvent), out var handlers))
             {
                 foreach (var handler in handlers)
                 {
                     handler(gameEvent);
                 }
+            }
+
+            if (gameEvent.OneTime)
+            {
+                subscribers.Remove(typeof(TEvent));
             }
         }
 

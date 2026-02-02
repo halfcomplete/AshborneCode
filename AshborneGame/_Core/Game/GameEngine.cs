@@ -48,19 +48,23 @@ namespace AshborneGame._Core.Game
                 _dialogueRunning = false;
             };
             
-            // Subscribe to Ossaneth Domain visit count event
-            EventBus.Subscribe(EventNameConstants.Ossaneth.Domain.OnEyePlatformVisitCountEqualFour, OnOssanethsDomainVisitCountFour);
-            
             InitialiseGameWorld(player);
         }
 
-        private async void OnOssanethsDomainVisitCountFour(GameEvent evt)
+        /// <summary>
+        /// Starts a dialogue from a non-dialogue context.
+        /// </summary>
+        /// <param name="dialogueName">The filename of the dialogue to start, without extensions nor paths.</param>
+        public async Task<bool> TryStartDialogueFromNonDialogue(string dialogueName)
         {
-            // Start the outro dialogue (fire-and-forget previously; now log explicitly)
-            await IOService.Output.DisplayDebugMessage($"Event '{EventNameConstants.Ossaneth.Domain.OnEyePlatformVisitCountEqualFour}' received. Launching outro dialogue...", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.INFO);
-            Console.WriteLine($"[GameEngine] {EventNameConstants.Ossaneth.Domain.OnEyePlatformVisitCountEqualFour} received; starting outro dialogue");
-            // Intentionally not awaited because this is a sync event handler; dialogue service internally tracks running state.
-            await _dialogueService.StartDialogue("Act1_Scene1_Ossaneth_Domain_Outro");
+            if (_dialogueRunning)
+            {
+                await IOService.Output.DisplayDebugMessage("Cannot start a new dialogue while another dialogue is running.", Globals.Enums.ConsoleMessageTypes.WARNING);
+                return false;
+            }
+            await IOService.Output.DisplayDebugMessage($"{dialogueName} dialogue starting.", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.INFO);
+            await _dialogueService.StartDialogue(dialogueName);
+            return true;
         }
 
         public async void Start()
@@ -324,16 +328,20 @@ namespace AshborneGame._Core.Game
             #region Quests
 
             var quest = QuestFactory.CreateQuest(
-                "Escape Ossaneth's Domain",
-                "Find a way to escape the surreal realm of Ossaneth's Domain.",
+                "Explore Ossaneth's Domain",
+                "Explore and experience the surreal realm of Ossaneth's Domain.",
                 onComplete: (gameState) =>
                 {
-                    IOService.Output.WriteNonDialogueLine("Quest Completed: You have escaped Ossaneth's Domain!");
+                    if (!gameState.TryGetFlag(InkStateKeyRegistry.ValidateAndGetFlagKey(StateKeys.Flags.Player.Actions.In.OssanethsDomain.OutroTriggered), out bool outroTriggered) || !outroTriggered)
+                    {
+                        gameState.SetFlag(InkStateKeyRegistry.ValidateAndGetFlagKey(StateKeys.Flags.Player.Actions.In.OssanethsDomain.OutroTriggered), true);
+                        
+                        // Publish event for the outro dialogue
+                        var outroEvent = new GameEvent(EventNameConstants.OssanethsDomain.OnOutroTriggered, new Dictionary<string, object>());
+                        EventBus.Call(outroEvent);
+                    }
                 },
-                onFail: (gameState) =>
-                {
-                    IOService.Output.WriteNonDialogueLine("Quest Failed: You remain trapped in Ossaneth's Domain.");
-                },
+                onFail: null,
                 new QuestCriteria()
                     .If((gameState) =>
                     {
