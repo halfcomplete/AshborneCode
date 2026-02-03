@@ -443,7 +443,7 @@ namespace AshborneTests
         public void QuestFactory_ShouldThrowException_WhenCriteriaHasNoFunction()
         {
             // Arrange & Act & Assert
-            Assert.Throws<ArgumentException>(() => QuestFactory.CreateQuest(
+            Assert.Throws<InvalidOperationException>(() => QuestFactory.CreateQuest(
                 "Invalid Quest",
                 "Should throw",
                 onComplete: _ => { },

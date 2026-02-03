@@ -6,6 +6,8 @@ using AshborneGame._Core.Game;
 using Moq;
 using AshborneTests;
 
+namespace AshborneTests;
+
 [Collection("AshborneTests")]
 public class ConditionalDescriptionTests : IsolatedTestBase
 {
