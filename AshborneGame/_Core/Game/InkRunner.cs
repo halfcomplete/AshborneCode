@@ -7,11 +7,8 @@ using System.Reflection.Metadata.Ecma335;
 using AshborneGame._Core.Globals.Enums;
 using System.IO;
 using AshborneGame._Core.Globals.Constants;
-#if BLAZOR
-using AshborneWASM.Pages;
-#endif
 
-namespace AshborneGame._Core.SceneManagement
+namespace AshborneGame._Core.Game
 {
     /// <summary>
     /// Handles loading, running, and syncing Ink stories with the Ashborne engine.

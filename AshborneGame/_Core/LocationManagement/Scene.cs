@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace AshborneGame._Core.SceneManagement
+namespace AshborneGame._Core.LocationManagement
 {
     /// <summary>
     /// Groups Locations into a shared scene (e.g., "Tower of Awakening").

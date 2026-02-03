@@ -8,7 +8,7 @@ using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Interfaces;
 using System.Text;
 
-namespace AshborneGame._Core.SceneManagement
+namespace AshborneGame._Core.LocationManagement
 {
     /// <summary>
     /// Represents a sublocation within a location, focused on a specific object.

@@ -5,7 +5,7 @@ using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.QuestManagement;
-using AshborneGame._Core.SceneManagement;
+using AshborneGame._Core.LocationManagement;
 
 namespace AshborneGame._Core.Game
 {

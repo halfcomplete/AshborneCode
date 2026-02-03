@@ -9,7 +9,7 @@ using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 
-namespace AshborneGame._Core.SceneManagement
+namespace AshborneGame._Core.LocationManagement
 {
     /// <summary>
     /// Represents a location in the game world, supporting rich environmental storytelling and dynamic scene control.
@@ -124,7 +124,7 @@ namespace AshborneGame._Core.SceneManagement
         {
             if (Sublocations.Contains(sublocation))
                 Sublocations.Remove(sublocation);
-            if (GameContext.Player.CurrentSublocation == sublocation)
+            if (GameContext.Player.CurrentSublocation?.Equals(sublocation) == true)
             {
                 GameContext.Player.ForceMoveTo(this);
             }

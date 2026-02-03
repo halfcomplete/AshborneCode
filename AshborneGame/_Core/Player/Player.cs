@@ -8,7 +8,7 @@ using AshborneGame._Core.Game;
 using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
-using AshborneGame._Core.SceneManagement;
+using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Constants;

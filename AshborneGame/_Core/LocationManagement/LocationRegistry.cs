@@ -1,6 +1,6 @@
 using AshborneGame._Core.Globals.Interfaces;
 
-namespace AshborneGame._Core.SceneManagement
+namespace AshborneGame._Core.LocationManagement
 {
     /// <summary>
     /// Registry for managing and retrieving locations by their unique identifiers.
