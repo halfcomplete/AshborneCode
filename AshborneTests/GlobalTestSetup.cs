@@ -2,7 +2,7 @@
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
-using AshborneGame._Core.SceneManagement;
+using AshborneGame._Core.LocationManagement;
 using Moq;
 
 namespace AshborneTests

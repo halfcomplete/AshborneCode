@@ -1,5 +1,5 @@
 ﻿using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviourModules;
-using AshborneGame._Core.SceneManagement;
+using AshborneGame._Core.LocationManagement;
 
 namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 {

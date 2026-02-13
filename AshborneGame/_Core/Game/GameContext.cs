@@ -1,6 +1,5 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Globals.Services;
-using AshborneGame._Core.SceneManagement;
 
 namespace AshborneGame._Core.Game
 {

@@ -2,7 +2,7 @@
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
-using AshborneGame._Core.SceneManagement;
+using AshborneGame._Core.LocationManagement;
 
 namespace AshborneGame._Core.Game.CommandHandling.Commands
 {

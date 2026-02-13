@@ -1,10 +1,4 @@
 ﻿using AshborneGame._Core.Globals.Interfaces;
-using AshborneGame._Core.SceneManagement;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AshborneGame._Core.Game.Events
 {

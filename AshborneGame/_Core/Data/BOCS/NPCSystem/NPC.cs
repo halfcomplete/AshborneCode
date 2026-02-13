@@ -1,7 +1,7 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Services;
-using AshborneGame._Core.SceneManagement;
+using AshborneGame._Core.LocationManagement;
 using AshborneGame.WebPort;
 
 namespace AshborneGame._Core.Data.BOCS.NPCSystem
