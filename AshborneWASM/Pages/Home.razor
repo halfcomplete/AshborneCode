@@ -2,6 +2,7 @@
 @using AshborneGame._Core.LocationManagement;
 @using AshborneGame._Core.Globals.Constants
 @using AshborneGame._Core.Globals.Services
+@using AshborneGame._Core.Globals.Enums
 @using System.Diagnostics;
 @using System.Text;
 @using AshborneGame.WebPort
@@ -576,10 +577,10 @@
         async (type, msg) => Console.WriteLine($"[{type}]: {msg}")
         );
 #else
-        var outputHandler = new WebOutputHandler(
-            async line => EnqueueOutput(line),
-            async line => EnqueueOutput($"{OutputConstants.DefaultNonDialogueOutputSpeed / OutputConstants.TypeSpeedMultiplier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}")
-        );
+    var outputHandler = new WebOutputHandler(
+    async line => EnqueueOutput(line),
+    async line => EnqueueOutput($"{OutputConstants.DefaultNonDialogueOutputSpeed / OutputConstants.TypeSpeedMultiplier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}")
+    );
 #endif
 
         var inputHandler = new WebInputHandler(
@@ -691,6 +692,8 @@
         return dialogueOutputCompletionSource.Task;
     }
 
+    #region Process Output Queue
+
     private async Task ProcessOutputQueue()
     {
         isProcessingQueue = true;
@@ -702,15 +705,17 @@
         while (outputQueue.Count > 0)
         {
             var line = outputQueue.Dequeue();
+            if (line == null)
+            {
+                await IOService.Output.DisplayDebugMessage("Reached null line in output queue, skipping.", ConsoleMessageTypes.ERROR);
+            }
 #if DEBUG
             Console.WriteLine($"[DEBUG] ProcessOutputQueue: {line ?? "Line is null"}");
 #endif
+
             if (line.Contains(OutputConstants.DialogueEndMarker))
             {
-                Console.WriteLine($"[DEBUG] ProcessOutputQueue: Flushed output, ending dialogue at {DateTime.Now}");
-                pendingDialogueEnd = false;
-                GameContext.DialogueService?.DialogueComplete();
-                GameContext.InkRunner?.DialogueFinishedOutputting();
+                HandleDialogueEndMarker();
                 await InvokeAsync(StateHasChanged);
                 continue;
             }
@@ -718,8 +723,7 @@
             // Handle force player mask marker
             if (line.Trim().StartsWith(OutputConstants.ForceMaskMarker) && GameContext.GameState.Masks.ContainsKey(line.Substring(OutputConstants.ForceMaskMarker.Length)))
             {
-                Console.WriteLine($"[DEBUG] Detected force player mask marker in line: {line}. Forcing mask {line.Substring(OutputConstants.ForceMaskMarker.Length)}");
-                GameContext.GameState.ForcePlayerMask(line.Substring(OutputConstants.ForceMaskMarker.Length));
+                HandleForceMaskMarker(line);
                 await InvokeAsync(StateHasChanged);
                 continue;
             }
@@ -727,30 +731,18 @@
             // Handle blur animation marker: __ANIMATE_BLUR__targetOpacity__durationSecs__fadeBackDurationSecs__waitSecs
             if (line.Contains(OutputConstants.BlurAnimationMarker))
             {
-                Console.WriteLine("[DEBUG] Detected blur animation marker in line: " + line);
-                var match = OutputConstants.BlurAnimationRegex.Match(line);
-                if (match.Success && match.Groups.Count >= 5)
+                if (VerifyBlurAnimationMarker(line, out float targetOpacity, out float durationSecs, out float fadeBackDurationSecs, out float waitSecs))
                 {
-                    Console.WriteLine("[DEBUG] Blur animation regex matched successfully.");
-                    if (float.TryParse(match.Groups[1].Value, out float targetOpacity) &&
-                        float.TryParse(match.Groups[2].Value, out float durationSecs) &&
-                        float.TryParse(match.Groups[3].Value, out float fadeBackDurationSecs) &&
-                        float.TryParse(match.Groups[4].Value, out float waitSecs))
-                    {
-                        Console.WriteLine($"[DEBUG] Detected blur animation marker: targetOpacity={targetOpacity}, durationSecs={durationSecs}, fadeBackDurationSecs={fadeBackDurationSecs}, waitSecs={waitSecs}");
-                        await AnimateBlurOverlayAsync(targetOpacity, durationSecs, fadeBackDurationSecs, waitSecs);
-                        await InvokeAsync(StateHasChanged);
-                    }
+                    await AnimateBlurOverlayAsync(targetOpacity, durationSecs, fadeBackDurationSecs, waitSecs);
+                    await InvokeAsync(StateHasChanged);
+                    continue; // Do not add blur marker to output buffer
                 }
-                continue; // Do not add blur marker to output buffer
             }
 
             // Handle special pause marker: ms__PAUSE__
             if (line.TrimEnd().EndsWith(OutputConstants.DialoguePauseMarker))
             {
-                dialogueChoices.Clear();
-                var msStr = line.Substring(0, line.IndexOf(OutputConstants.DialoguePauseMarker));
-                if (int.TryParse(msStr, out int ms))
+                if (VerifyPauseMarker(line, out var ms))
                 {
                     await InvokeAsync(StateHasChanged);
                     await Task.Yield();
@@ -943,6 +935,73 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    private void HandleDialogueEndMarker()
+    {
+        IOService.Output.DisplayDebugMessage($"ProcessOutputQueue: Flushed output, ending dialogue at {DateTime.Now}");
+        pendingDialogueEnd = false;
+        GameContext.DialogueService?.DialogueComplete();
+        GameContext.InkRunner?.DialogueFinishedOutputting();
+    }
+
+    private void HandleForceMaskMarker(string line)
+    {
+        IOService.Output.DisplayDebugMessage($"[DEBUG] Detected force player mask marker in line: {line}. Forcing mask {line.Substring(OutputConstants.ForceMaskMarker.Length)}");
+        GameContext.GameState.ForcePlayerMask(line.Substring(OutputConstants.ForceMaskMarker.Length));
+    }
+
+    private bool VerifyBlurAnimationMarker(string line, out float targetOpacity, out float durationSecs, out float fadeBackDurationSecs, out float waitSecs)
+    {
+        targetOpacity = 0f;
+        durationSecs = 0f;
+        fadeBackDurationSecs = 0f;
+        waitSecs = 0f;
+        IOService.Output.DisplayDebugMessage("VerifyBlurAnimationMarker: Detected blur animation marker in line: " + line);
+        var match = OutputConstants.BlurAnimationRegex.Match(line);
+        if (!(match.Success && match.Groups.Count >= 5))
+        {
+            return false;
+        }
+        IOService.Output.DisplayDebugMessage("VerifyBlurAnimationMarker: Blur animation regex matched successfully.");
+        if (float.TryParse(match.Groups[1].Value, out targetOpacity) &&
+            float.TryParse(match.Groups[2].Value, out durationSecs) &&
+            float.TryParse(match.Groups[3].Value, out fadeBackDurationSecs) &&
+            float.TryParse(match.Groups[4].Value, out waitSecs))
+        {
+            IOService.Output.DisplayDebugMessage($"VerifyBlurAnimationMarker: Detected blur animation marker (targetOpacity={targetOpacity}, durationSecs={durationSecs}, fadeBackDurationSecs={fadeBackDurationSecs}, waitSecs={waitSecs})");
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Verifies the pause marker in a line and extracts the ms value.
+    /// </summary>
+    /// <remarks> 
+    /// The line should end with the pause marker, and the ms value should be at the start of the line (e.g. "500__PAUSE__").
+    /// Displays a debug message if we fail to parse the ms value.
+    /// </remarks>
+    /// <param name="line">The line to verify.</param>
+    /// <param name="ms">The parsed ms value.</param>
+    /// <returns>True if the line is a pause marker and the ms value was parsed successfully, otherwise false.</returns>
+    private bool VerifyPauseMarker(string line, out int ms)
+    {
+        dialogueChoices.Clear();
+        var msStr = line.Substring(0, line.IndexOf(OutputConstants.DialoguePauseMarker));
+        if (int.TryParse(msStr, out ms))
+        {
+            return true;
+        }
+        else
+        {
+            IOService.Output.DisplayDebugMessage($"VerifyPauseMarker failed to parse ms from the line: '{line}'");
+            return false;
+        }
+    }
+
+    #endregion
+
+    #region Handle Typewriter Effect
+
     private async Task HandleTypewriterEffect(string line)
     {
         Console.WriteLine($"[DEBUG] Handling typewriter effect for line: {line}");
@@ -954,21 +1013,10 @@
             GameContext.InkRunner?.DialogueFinishedOutputting();
             await InvokeAsync(StateHasChanged);
         }
-        // Parse ms value at the start of the line (e.g. "50__TS__...")
-        int ms = OutputConstants.DefaultTypeSpeed; // default
 
-        int msEnd = line.IndexOf(OutputConstants.TypewriterStartMarker);
-        if (msEnd > 0)
-        {
-            string msStr = line.Substring(0, msEnd);
-            if (!int.TryParse(msStr, out ms)) ms = OutputConstants.DefaultTypeSpeed;
-        }
-        Console.WriteLine($"[DEBUG] Typewriter effect with delay: {ms} ms");
-        int startIndex = line.IndexOf(OutputConstants.TypewriterStartMarker) + OutputConstants.TypewriterStartMarker.Length;
-        int endIndex = line.IndexOf(OutputConstants.TypewriterEndMarker);
-        string message = line.Substring(startIndex, endIndex - startIndex);
-        Console.WriteLine($"[DEBUG] Typewriter message: {message}");
-
+        int ms = ParseMsFromTypewriterStartMarker(line);
+        string message = ParseContentFromTypewriterMarkerPair(line);
+        
         // Process inline slow markers in the message BEFORE starting typewriter effect
         var (processedMessage, characterSpeeds) = ProcessInlineSlowMarkersWithSpeeds(message, ms);
 
@@ -1012,7 +1060,7 @@
         var existing = gameText ?? string.Empty;
         var typedBuilder = new StringBuilder();
         int globalCharIndex = 0;
-        
+
         // Batch DOM updates to reduce layout thrashing
         const int batchSize = 2; // Update UI every 2 characters for smoother performance
         int charsSinceLastUpdate = 0;
@@ -1087,6 +1135,47 @@
         isTypingDialogue = false;
         await InvokeAsync(StateHasChanged);
     }
+
+    /// <summary>
+    /// Parses the ms value from the start of a line with a typewriter marker. If parsing fails, returns the default type speed value.
+    /// </summary>
+    /// <remarks>Displays a debug message showing the parsed ms.</remarks>
+    /// <returns>The ms value parsed.</returns>
+    private int ParseMsFromTypewriterStartMarker(string line)
+    {
+        // Parse ms value at the start of the line (e.g. "50__TS__...")
+        int ms = OutputConstants.DefaultTypeSpeed; // default
+
+        int msEnd = line.IndexOf(OutputConstants.TypewriterStartMarker);
+        if (msEnd > 0)
+        {
+            string msStr = line.Substring(0, msEnd);
+            if (!int.TryParse(msStr, out ms)) ms = OutputConstants.DefaultTypeSpeed;
+        }
+        IOService.Output.DisplayDebugMessage($"Typewriter effect with delay: {ms} ms");
+        return ms;
+    }
+
+    /// <summary>
+    /// Parses the content between the two typewriter markers in a line.
+    /// </summary>
+    /// <param name="line">The line to parse the content for.</param>
+    /// <returns>The content of the line.</returns>
+    private string ParseContentFromTypewriterMarkerPair(string line)
+    {
+        int startIndex = line.IndexOf(OutputConstants.TypewriterStartMarker) + OutputConstants.TypewriterStartMarker.Length;
+        int endIndex = line.IndexOf(OutputConstants.TypewriterEndMarker);
+        if (startIndex == -1 || endIndex == -1)
+        {
+            // Markers not found, throw an invalid operation exception
+            throw new InvalidOperationException($"Typewriter markers not found in line: {line}");
+        }
+        string message = line.Substring(startIndex, endIndex - startIndex);
+        IOService.Output.DisplayDebugMessage($"Typewriter message: {message}");
+        return message;
+    }
+
+    #endregion
 
     private (string processedMessage, List<int> characterSpeeds) ProcessInlineSlowMarkersWithSpeeds(string message, int defaultMs)
     {
