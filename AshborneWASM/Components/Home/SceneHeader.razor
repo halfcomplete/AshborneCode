@@ -1,0 +1,12 @@
+<div class="scene-header">
+    @if (!string.IsNullOrWhiteSpace(HeaderText))
+    {
+        <span class="scene-header-text">
+            @HeaderText
+        </span>
+    }
+</div>
+
+@code {
+    [Parameter] public string? HeaderText { get; set; }
+}

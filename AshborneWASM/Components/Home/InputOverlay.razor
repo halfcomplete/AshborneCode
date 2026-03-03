@@ -1,0 +1,93 @@
+<div class="input-gif-overlay-container">
+    <div class="input-overlay-wrapper">
+        @if (ShowOssanethSigil)
+        {
+            @if (IsOssanethGifActive)
+            {
+                <img src="visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.gif" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+            }
+            else
+            {
+                <img src="visual/mask-sigils/ossaneth-blinking-eye-sigil/ossaneth-blinking-eye-sigil.png" class="input-overlay-gif @(ShouldGifFadeOut ? "fade-out" : "fade-in")" alt="Ossaneth Blinking Eye Sigil" />
+            }
+        }
+    </div>
+    @if (IsAwaitingPlayerInput)
+    {
+         <input value="@UserInput"
+             @oninput="HandleUserInputChange"
+             @onkeydown="OnKeyDown"
+             placeholder="@PlayerInputPrompt" autofocus />
+        <div><em>Type your response and press Enter.</em></div>
+    }
+    else if (IsInDialogue && DialogueChoices.Count > 0 && !IsTypingDialogue)
+    {
+        <div class="dialogue-choices" style="position: relative;">
+            @if (SilentTimerActive && SilentTimerSecondsLeft <= 10)
+            {
+                <div class="silent-timer">
+                    @SilentTimerSecondsLeft
+                </div>
+            }
+            <p>Choose an option:</p>
+            @for (int i = 0; i < DialogueChoices.Count; i++)
+            {
+                int choiceIndex = i; // Capture the index for the lambda
+                <button @onclick="() => OnSelectChoice.InvokeAsync(choiceIndex + 1)" class="choice-button">
+                    [@(choiceIndex + 1)] @DialogueChoices[i]
+                </button>
+            }
+        </div>
+    }
+    else if (!IsInDialogue)
+    {
+        @if (IsTypingDialogue)
+        {
+            <div class="dialogue-waiting">
+                <p>@WaitingText</p>
+            </div>
+        }
+        else
+        {
+            <div class="input-overlay-wrapper">
+                  <input value="@UserInput"
+                      @oninput="HandleUserInputChange"
+                      @onkeydown="OnKeyDown"
+                      placeholder="What will you do?" />
+            </div>
+            <div><em>Type your action and press Enter.</em></div>
+        }
+    }
+    else
+    {
+        <div class="dialogue-waiting">
+            <p>@ListeningText</p>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public bool ShowOssanethSigil { get; set; }
+    [Parameter] public bool IsOssanethGifActive { get; set; }
+    [Parameter] public bool ShouldGifFadeOut { get; set; }
+    [Parameter] public bool IsAwaitingPlayerInput { get; set; }
+    [Parameter] public string UserInput { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> UserInputChanged { get; set; }
+    [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
+    [Parameter] public string PlayerInputPrompt { get; set; } = string.Empty;
+    [Parameter] public bool IsInDialogue { get; set; }
+    [Parameter] public IReadOnlyList<string> DialogueChoices { get; set; } = Array.Empty<string>();
+    [Parameter] public bool IsTypingDialogue { get; set; }
+    [Parameter] public bool SilentTimerActive { get; set; }
+    [Parameter] public int SilentTimerSecondsLeft { get; set; }
+    [Parameter] public string WaitingText { get; set; } = string.Empty;
+    [Parameter] public string ListeningText { get; set; } = string.Empty;
+    [Parameter] public EventCallback<int> OnSelectChoice { get; set; }
+
+    private async Task HandleUserInputChange(ChangeEventArgs args)
+    {
+        var nextValue = args.Value?.ToString() ?? string.Empty;
+        UserInput = nextValue;
+        await UserInputChanged.InvokeAsync(nextValue);
+    }
+}

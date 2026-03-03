@@ -1,0 +1,10 @@
+<div class="title-screen @(IsFading ? "fade-out" : "") @(IsIntroTransitioning ? "fade-overlap" : "")">
+    <div class="title-logo">ASHBORNE</div>
+    <button class="begin-button" @onclick="OnBegin">Begin</button>
+</div>
+
+@code {
+    [Parameter] public bool IsFading { get; set; }
+    [Parameter] public bool IsIntroTransitioning { get; set; }
+    [Parameter] public EventCallback OnBegin { get; set; }
+}

@@ -1,0 +1,10 @@
+<div class="outro-screen @(IsOutroFadingIn ? "fade-in" : "")">
+    <div class="outro-wrapper">
+        <div class="outro-main-text @(IsOutroFadingIn ? "fade-in" : "fade-out")">ASHBORNE DEMO COMPLETE</div>
+        <div class="outro-sub-text @(IsOutroFadingIn ? "fade-in" : "fade-out")">Thank you for playing!</div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsOutroFadingIn { get; set; }
+}

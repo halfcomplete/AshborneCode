@@ -1,0 +1,10 @@
+<div class="intro-screen @(IntroFading ? "fade-out" : "fade-in")">
+    <div class="intro-text @(IntroTextFading ? "fade-out" : "fade-in") @(IsFinalPhase ? "final-phase" : "")">@IntroText</div>
+</div>
+
+@code {
+    [Parameter] public bool IntroFading { get; set; }
+    [Parameter] public bool IntroTextFading { get; set; }
+    [Parameter] public bool IsFinalPhase { get; set; }
+    [Parameter] public string IntroText { get; set; } = string.Empty;
+}
