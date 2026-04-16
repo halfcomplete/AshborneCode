@@ -459,206 +459,76 @@ public partial class Home : ComponentBase, IDisposable
         while (outputQueue.Count > 0)
         {
             var line = outputQueue.Dequeue();
-            if (line == null)
+            bool? flowControl = await ProcessOutputLine(line);
+            switch (flowControl)
             {
+                case false: continue;
+                case true: return;
+            }
+        }
+        isProcessingQueue = false;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private enum OutputLineType
+    {
+        Invalid,
+        Normal,
+        Typewriter,
+        DialogueChoice,
+        DialogueEnd,
+        ForceMask,
+        BlurAnimation,
+        DialoguePause,
+        NewLine,
+        Whitespace
+    }
+    
+    /// <summary>
+    /// Determines and returns the type of a given output line. All types are from the OutputLineType enum.
+    /// </summary>
+    private async Task<OutputLineType> DetermineOutputLineType(string line)
+    {
+        if (line == null) 
+            return OutputLineType.Invalid;
+
+        if (line.Contains(OutputConstants.DialogueEndMarker))
+            return OutputLineType.DialogueEnd;
+
+        if (line.Contains(OutputConstants.BlurAnimationMarker))
+            return OutputLineType.BlurAnimation;
+
+        if (line.TrimEnd().EndsWith(OutputConstants.DialoguePauseMarker))
+            return OutputLineType.DialoguePause;
+
+        if (line.Contains(OutputConstants.NewLineMarker))
+            return OutputLineType.NewLine;
+
+        if (line.Contains(OutputConstants.TypewriterStartMarker) && line.Contains(OutputConstants.TypewriterEndMarker))
+            return OutputLineType.Typewriter;
+        
+        if (line.Trim().StartsWith("[") && line.Contains("]") && line.Trim().Length > 2)
+            return OutputLineType.DialogueChoice;
+
+        if (!string.IsNullOrWhiteSpace(line))
+            return OutputLineType.Normal;
+        else
+            return OutputLineType.Whitespace;
+        
+        return OutputLineType.Normal;
+    }
+
+    private async Task<bool> ProcessOutputLine(string line)
+    {
+        OutputLineType lineType = DetermineOutputLineType(line).GetAwaiter().GetResult();
+
+        switch (lineType)
+        {
+            case OutputLineType.Invalid:
                 await IOService.Output.DisplayDebugMessage("Reached null line in output queue, skipping.", ConsoleMessageTypes.ERROR);
-            }
-#if DEBUG
-            Console.WriteLine($"[DEBUG] ProcessOutputQueue: {line ?? "Line is null"}");
-#endif
-
-            if (line.Contains(OutputConstants.DialogueEndMarker))
-            {
-                HandleDialogueEndMarker();
-                await InvokeAsync(StateHasChanged);
-                continue;
-            }
-
-            // Handle force player mask marker
-            if (line.Trim().StartsWith(OutputConstants.ForceMaskMarker) && GameContext.GameState.Masks.ContainsKey(line.Substring(OutputConstants.ForceMaskMarker.Length)))
-            {
-                HandleForceMaskMarker(line);
-                await InvokeAsync(StateHasChanged);
-                continue;
-            }
-
-            // Handle blur animation marker: __ANIMATE_BLUR__targetOpacity__durationSecs__fadeBackDurationSecs__waitSecs
-            if (line.Contains(OutputConstants.BlurAnimationMarker))
-            {
-                if (VerifyBlurAnimationMarker(line, out float targetOpacity, out float durationSecs, out float fadeBackDurationSecs, out float waitSecs))
-                {
-                    await AnimateBlurOverlayAsync(targetOpacity, durationSecs, fadeBackDurationSecs, waitSecs);
-                    await InvokeAsync(StateHasChanged);
-                    continue; // Do not add blur marker to output buffer
-                }
-            }
-
-            // Handle special pause marker: ms__PAUSE__
-            if (line.TrimEnd().EndsWith(OutputConstants.DialoguePauseMarker))
-            {
-                if (VerifyPauseMarker(line, out var ms))
-                {
-                    await InvokeAsync(StateHasChanged);
-                    await Task.Yield();
-#if DEBUG
-                    await Task.Delay(Convert.ToInt32(Math.Round(ms * OutputConstants.DefaultDebugTypeSpeedModifier)));
-#else
-                    await Task.Delay(ms);
-#endif
-                }
-                else
-                {
-                    await InvokeAsync(StateHasChanged);
-                    await Task.Yield();
-                    await Task.Delay(OutputConstants.DefaultPauseDuration);
-                }
-                continue; // Do not add pause marker to output buffer
-            }
-
-            // Handle new line marker
-            if (line.Contains(OutputConstants.NewLineMarker))
-            {
-                Console.WriteLine($"[DEBUG] Detected new line marker in line: {line}");
-                gameText += "<br>";
-                await InvokeAsync(StateHasChanged);
-                await AutoScrollToBottom();
-                await Task.Delay(OutputConstants.DefaultTypeSpeed * OutputConstants.NewLinePauseMultiplier);
-                continue; // Do not add new line marker to output buffer
-            }
-
-            // Handle typewriter effect
-            if (line.Contains(OutputConstants.TypewriterStartMarker) && line.Contains(OutputConstants.TypewriterEndMarker))
-            {
-                dialogueChoices.Clear();
-                // If the previous line indicated this line should be coloured, wrap any speech
-                // (quoted text) with the appropriate colour tag before rendering.
-                if (isNextLineColoured.coloured)
-                {
-                    try
-                    {
-                        line = OutputConstants.SpeechRegex.Replace(line, m => $"<c={isNextLineColoured.hexColour}>{m.Value}</c={isNextLineColoured.hexColour}>");
-                    }
-                    catch (Exception ex)
-                    {
-                        await IOService.Output.DisplayDebugMessage($"Error colouring speech: {ex.Message}", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.ERROR);
-                    }
-                    // Reset the flag after applying colouring
-                    isNextLineColoured = (false, "FFFFFF");
-                }
-                else
-                {
-                    // If not, then check if the contents of this line can indicate the speaker by seeing if any speaker's name is in the line itself.
-                    foreach (string speakerName in SpeakerColourPairs.SpeakerToColour.Keys)
-                    {
-                        if (line.Contains(speakerName) && line.Contains("\""))
-                        {
-                            try
-                            {
-                                line = OutputConstants.SpeechRegex.Replace(line, m => $"<c={SpeakerColourPairs.SpeakerToColour[speakerName]}>{m.Value}</c={SpeakerColourPairs.SpeakerToColour[speakerName]}>");
-                            }
-                            catch (Exception ex)
-                            {
-                                await IOService.Output.DisplayDebugMessage($"Error colouring speech: {ex.Message}", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.ERROR);
-                            }
-
-                            // For safety
-                            isNextLineColoured = (false, "FFFFFF");
-                        }
-                    }
-                }
-                await HandleTypewriterEffect(line);
-
-                continue;
-            }
-
-            // Dialogue choice line
-            if (line.Trim().StartsWith("[") && line.Contains("]") && line.Trim().Length > 2)
-            {
-                int bracketEnd = line.IndexOf("]");
-
-                // Check if this is a proper dialogue choice line
-                if (bracketEnd > 0 && int.TryParse(line.Substring(1, bracketEnd - 1), out int choiceNumber))
-                {
-                    await IOService.Output.DisplayDebugMessage($"[DEBUG] Detected dialogue choice in line: {line}");
-                    string choiceText = line.Substring(bracketEnd + 1).Trim();
-                    if (!string.IsNullOrWhiteSpace(choiceText))
-                    {
-                        dialogueChoices.Add(choiceText);
-                        await InvokeAsync(StateHasChanged);
-                        await AutoScrollToBottom();
-                    }
-
-                    if (GameContext.InkRunner != null && GameContext.InkRunner.Story != null &&
-                        GameContext.InkRunner.Story.currentChoices != null && choiceNumber > 0 &&
-                        choiceNumber == GameContext.InkRunner.Story.currentChoices.Count)
-                    {
-                        // We are currently processing the last choice, so start the silent timer
-                        choiceText = string.Empty;
-                        await IOService.Output.DisplayDebugMessage("Silent path is set and wait > 0, starting silent timer UI.");
-                        StartSilentTimerUI(GameContext.InkRunner.SilentPathWait);
-                        await IOService.Output.DisplayDebugMessage("Silent path is set and wait > 0, starting silent timer UI.");
-                        Task<int> playerInputTask = IOService.Input.GetChoiceInputAsync(choiceNumber);
-                        Task silentTimerTask;
-                        CancellationTokenSource? silentCts = null;
-                        // removed unused silentPathTriggered
-                        if (!string.IsNullOrWhiteSpace(GameContext.InkRunner.CurrentSilentPath) && GameContext.InkRunner.SilentPathWait > 0)
-                        {
-                            silentCts = new CancellationTokenSource();
-                            silentTimerTask = Task.Delay(GameContext.InkRunner.SilentPathWait, silentCts.Token);
-                            await IOService.Output.DisplayDebugMessage($"Silent Timer Task set to delay for {GameContext.InkRunner.SilentPathWait} ms at {DateTime.Now}.");
-                        }
-                        else
-                        {
-                            silentTimerTask = Task.Delay(-1);
-                            await IOService.Output.DisplayDebugMessage($"Silent Timer Task set to delay for infinite ms at {DateTime.Now}.");
-                        }
-
-                        var completed = await Task.WhenAny(playerInputTask, silentTimerTask);
-                        GameContext.InkRunner.CancelExternalChoiceAwait();
-                        StopSilentTimerUI();
-                        if (completed == playerInputTask)
-                        {
-                            await IOService.Output.DisplayDebugMessage($"Player made a choice.");
-                            // Player made a choice
-                            silentCts?.Cancel();
-                            await IOService.Output.DisplayDebugMessage($"silentCts cancelled.");
-                            await GameContext.InkRunner.StopSilentTimer();
-                            await IOService.Output.DisplayDebugMessage($"Silent Timer stopped.");
-                            await GameContext.InkRunner.ResetSilentPath();
-                            await IOService.Output.DisplayDebugMessage($"Silent Path reset.");
-                            int choice = await playerInputTask;
-                            await IOService.Output.DisplayDebugMessage($"[DEBUG] Home.razor: Choice {choice} selected at {DateTime.Now}");
-                            if (GameContext.InkRunner.Story.currentChoices.Count > 0 && choice > 0 && choice <= GameContext.InkRunner.Story.currentChoices.Count)
-                            {
-                                GameContext.InkRunner.Story.ChooseChoiceIndex(choice - 1);
-                            }
-                            else
-                            {
-                                await IOService.Output.DisplayDebugMessage("[DEBUG] InkRunner: Invalid choice or story finished after choice selection. Skipping.");
-                                return;
-                            }
-                        }
-                        else if (completed == silentTimerTask && !string.IsNullOrWhiteSpace(GameContext.InkRunner.CurrentSilentPath))
-                        {
-                            // Silent timer finished first: jump to silent path in same loop
-                            await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Silent timer triggered, jumping to silent path {GameContext.InkRunner.CurrentSilentPath} at {DateTime.Now}");
-                            GameContext.InkRunner.Story.ChoosePathString(GameContext.InkRunner.CurrentSilentPath);
-                            await GameContext.InkRunner.ResetSilentPath();
-                        }
-                        await InvokeAsync(StateHasChanged);
-                        await AutoScrollToBottom();
-                        continue;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-            }
-
-            // Normal line - render markup (colours/italics) and append an HTML line break
-            if (!string.IsNullOrWhiteSpace(line))
-            {
+                return false;
+            case OutputLineType.Normal:
                 // If the previous line indicated this line should be coloured, wrap any speech
                 // (quoted text) with the appropriate colour tag before rendering.
                 if (isNextLineColoured.coloured)
@@ -676,17 +546,164 @@ public partial class Home : ComponentBase, IDisposable
                 }
 
                 gameText += RenderGameText(line) + "<br />";
-            }
-            else
-            {
+                return false;
+            case OutputLineType.Typewriter:
+                dialogueChoices.Clear();
+                await HandleSpeakerColouring(line);
+                await HandleTypewriterEffect(line);
+
+                return false;
+            case OutputLineType.DialogueChoice:
+                int bracketEnd = line.IndexOf("]");
+
+                // Check if this is a proper dialogue choice line
+                if (bracketEnd > 0 && int.TryParse(line.Substring(1, bracketEnd - 1), out int choiceNumber))
+                {
+                    return await HandleDialogueChoiceLine(line, bracketEnd, choiceNumber);
+                }
+                else
+                {
+                    IOService.Output.DisplayDebugMessage($"Failed to validate supposed dialogue choice line: '{line}'");
+                    return false;
+                }
+            case OutputLineType.DialogueEnd:
+                HandleDialogueEndMarker();
+                await InvokeAsync(StateHasChanged);
+                return false; // Do not add dialogue end marker to output buffer
+            case OutputLineType.ForceMask:
+                HandleForceMaskMarker(line);
+                await InvokeAsync(StateHasChanged);
+                return false; // Do not add force mask marker to output buffer
+            case OutputLineType.BlurAnimation:
+                if (VerifyBlurAnimationMarker(line, out float targetOpacity, out float durationSecs, out float fadeBackDurationSecs, out float waitSecs))
+                {
+                    await AnimateBlurOverlayAsync(targetOpacity, durationSecs, fadeBackDurationSecs, waitSecs);
+                    await InvokeAsync(StateHasChanged);
+                    return false; // Do not add blur marker to output buffer
+                }
+                else
+                {
+                    await IOService.Output.DisplayDebugMessage($"Failed to parse blur animation marker in line: {line}", ConsoleMessageTypes.ERROR);
+                    return false; // Do not add malformed blur marker to output buffer
+                }
+            case OutputLineType.DialoguePause:
+                if (VerifyPauseMarker(line, out var ms))
+                {
+                    await InvokeAsync(StateHasChanged);
+                    await Task.Yield();
+    #if DEBUG
+                    await Task.Delay(Convert.ToInt32(Math.Round(ms * OutputConstants.DefaultDebugTypeSpeedModifier)));
+    #else
+                        await Task.Delay(ms);
+    #endif
+                }
+                else
+                {
+                    await InvokeAsync(StateHasChanged);
+                    await Task.Yield();
+                    await Task.Delay(OutputConstants.DefaultPauseDuration);
+                }
+                return false; // Do not add pause marker to output buffer
+            case OutputLineType.NewLine:
+                IOService.Output.DisplayDebugMessage($"Detected new line marker in line: {line}");
+                gameText += "<br>";
+                await InvokeAsync(StateHasChanged);
+                await AutoScrollToBottom();
+                await Task.Delay(OutputConstants.DefaultTypeSpeed * OutputConstants.NewLinePauseMultiplier);
+                return false; // Do not add new line marker to output buffer
+            case OutputLineType.Whitespace:
                 gameText += "<br />";
-            }
+                return false;
+        }
+        await InvokeAsync(StateHasChanged);
+        await AutoScrollToBottom();
+        return false;
+    }
+
+    private async Task<bool> HandleDialogueChoiceLine(string line, int bracketEnd, int choiceNumber)
+    {
+        await IOService.Output.DisplayDebugMessage($"[DEBUG] Detected dialogue choice in line: {line}");
+        string choiceText = line.Substring(bracketEnd + 1).Trim();
+        if (!string.IsNullOrWhiteSpace(choiceText))
+        {
+            dialogueChoices.Add(choiceText);
             await InvokeAsync(StateHasChanged);
             await AutoScrollToBottom();
         }
-        isProcessingQueue = false;
 
+        if (IsDialogueChoiceValid(choiceNumber))
+        {
+            return false;
+        }
+
+        // We are currently processing the last choice, so start the silent timer
+        choiceText = string.Empty;
+        await IOService.Output.DisplayDebugMessage("Silent path is set and wait > 0, starting silent timer UI.");
+        StartSilentTimerUI(GameContext.InkRunner.SilentPathWait);
+        await IOService.Output.DisplayDebugMessage("Silent path is set and wait > 0, starting silent timer UI.");
+        Task<int> playerInputTask = IOService.Input.GetChoiceInputAsync(choiceNumber);
+        Task silentTimerTask;
+        CancellationTokenSource? silentCts = null;
+        // removed unused silentPathTriggered
+        if (!string.IsNullOrWhiteSpace(GameContext.InkRunner.CurrentSilentPath) && GameContext.InkRunner.SilentPathWait > 0)
+        {
+            silentCts = new CancellationTokenSource();
+            silentTimerTask = Task.Delay(GameContext.InkRunner.SilentPathWait, silentCts.Token);
+            await IOService.Output.DisplayDebugMessage($"Silent Timer Task set to delay for {GameContext.InkRunner.SilentPathWait} ms at {DateTime.Now}.");
+        }
+        else
+        {
+            silentTimerTask = Task.Delay(-1);
+            await IOService.Output.DisplayDebugMessage($"Silent Timer Task set to delay for infinite ms at {DateTime.Now}.");
+        }
+
+        var completed = await Task.WhenAny(playerInputTask, silentTimerTask);
+        GameContext.InkRunner.CancelExternalChoiceAwait();
+        StopSilentTimerUI();
+        if (completed == playerInputTask)
+        {
+            await IOService.Output.DisplayDebugMessage($"Player made a choice.");
+            // Player made a choice
+            silentCts?.Cancel();
+            await IOService.Output.DisplayDebugMessage($"silentCts cancelled.");
+            await GameContext.InkRunner.StopSilentTimer();
+            await IOService.Output.DisplayDebugMessage($"Silent Timer stopped.");
+            await GameContext.InkRunner.ResetSilentPath();
+            await IOService.Output.DisplayDebugMessage($"Silent Path reset.");
+            int choice = await playerInputTask;
+            await IOService.Output.DisplayDebugMessage($"[DEBUG] Home.razor: Choice {choice} selected at {DateTime.Now}");
+            if (GameContext.InkRunner.Story.currentChoices.Count > 0 && choice > 0 && choice <= GameContext.InkRunner.Story.currentChoices.Count)
+            {
+                GameContext.InkRunner.Story.ChooseChoiceIndex(choice - 1);
+            }
+            else
+            {
+                await IOService.Output.DisplayDebugMessage("[DEBUG] InkRunner: Invalid choice or story finished after choice selection. Skipping.");
+                return true;
+            }
+        }
+        else if (completed == silentTimerTask && !string.IsNullOrWhiteSpace(GameContext.InkRunner.CurrentSilentPath))
+        {
+            // Silent timer finished first: jump to silent path in same loop
+            await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Silent timer triggered, jumping to silent path {GameContext.InkRunner.CurrentSilentPath} at {DateTime.Now}");
+            GameContext.InkRunner.Story.ChoosePathString(GameContext.InkRunner.CurrentSilentPath);
+            await GameContext.InkRunner.ResetSilentPath();
+        }
         await InvokeAsync(StateHasChanged);
+        await AutoScrollToBottom();
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if the given choiceNumber is equal to the number of choices, i.e. it is the last one.
+    /// </summary>
+    /// <returns>
+    /// True if the given choiceNumber is the last one.
+    /// Else, false if InkRunner is null, if InkRunner.Story is null, if InkRunner.Story.currentChoices is null, if choiceNumber is less than 1
+    /// </returns>
+    private static bool IsCurrentDialogueChoiceLastOne(int choiceNumber)
+    {
+        return choiceNumber == GameContext.InkRunner.Story.currentChoices.Count
     }
 
     private void HandleDialogueEndMarker()
@@ -758,15 +775,7 @@ public partial class Home : ComponentBase, IDisposable
 
     private async Task HandleTypewriterEffect(string line)
     {
-        Console.WriteLine($"[DEBUG] Handling typewriter effect for line: {line}");
-        if (line.Contains(OutputConstants.DialogueEndMarker))
-        {
-            Console.WriteLine($"[DEBUG] HandleTypewriterEffect: Flushed output, ending dialogue at {DateTime.Now}");
-            pendingDialogueEnd = false;
-            GameContext.DialogueService?.DialogueComplete();
-            GameContext.InkRunner?.DialogueFinishedOutputting();
-            await InvokeAsync(StateHasChanged);
-        }
+        await IOService.Output.DisplayDebugMessage($"Handling typewriter effect for line: {line}");
 
         int ms = ParseMsFromTypewriterStartMarker(line);
         string message = ParseContentFromTypewriterMarkerPair(line);
@@ -775,7 +784,7 @@ public partial class Home : ComponentBase, IDisposable
         var (processedMessage, characterSpeeds) = ProcessInlineSlowMarkersWithSpeeds(message, ms);
 
         isTypingDialogue = true;
-        Console.WriteLine($"[DEBUG] isTypingDialogue set to true for message: {message}");
+        await IOService.Output.DisplayDebugMessage($"isTypingDialogue set to true for message: {message}");
 
         // Convert processed message into HTML (handles italic, colour and SFX tags and converts \n to <br />)
         string htmlMessage = RenderGameText(processedMessage);
@@ -888,6 +897,47 @@ public partial class Home : ComponentBase, IDisposable
         Console.WriteLine($"[DEBUG] Finished typing dialogue: {message}");
         isTypingDialogue = false;
         await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleSpeakerColouring(string line)
+    {
+        // If the previous line indicated this line should be coloured, wrap any speech
+        // (quoted text) with the appropriate colour tag before rendering.
+        if (isNextLineColoured.coloured)
+        {
+            try
+            {
+                line = OutputConstants.SpeechRegex.Replace(line, m => $"<c={isNextLineColoured.hexColour}>{m.Value}</c={isNextLineColoured.hexColour}>");
+            }
+            catch (Exception ex)
+            {
+                await IOService.Output.DisplayDebugMessage($"Error colouring speech: {ex.Message}", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.ERROR);
+            }
+            // Reset the flag after applying colouring
+            isNextLineColoured = (false, "FFFFFF");
+        }
+        else
+        {
+            // If not, then check if the contents of this line can indicate the speaker by seeing if any speaker's name is in the line itself.
+            foreach (string speakerName in SpeakerColourPairs.SpeakerToColour.Keys)
+            {
+                if (line.Contains(speakerName) && line.Contains("\""))
+                {
+                    try
+                    {
+                        line = OutputConstants.SpeechRegex.Replace(line, m => $"<c={SpeakerColourPairs.SpeakerToColour[speakerName]}>{m.Value}</c={SpeakerColourPairs.SpeakerToColour[speakerName]}>");
+                    }
+                    catch (Exception ex)
+                    {
+                        await IOService.Output.DisplayDebugMessage($"Error colouring speech: {ex.Message}", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.ERROR);
+                    }
+
+                    // For safety
+                    isNextLineColoured = (false, "FFFFFF");
+                }
+            }
+        }
+        await Task.CompletedTask;
     }
 
     /// <summary>
@@ -1059,7 +1109,7 @@ public partial class Home : ComponentBase, IDisposable
         return input;
     }
 
-    private async Task HandleInput(KeyboardEventArgs e)
+    public async Task HandleInput(KeyboardEventArgs e)
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(userInput))
         {
@@ -1231,6 +1281,7 @@ public partial class Home : ComponentBase, IDisposable
         ossanethSigilTimer?.Dispose();
         listeningTimer?.Dispose();
         waitingTimer?.Dispose();
+        silentTimer?.Dispose();
     }
 
     private static string ParseSpeakerTags(string input)
