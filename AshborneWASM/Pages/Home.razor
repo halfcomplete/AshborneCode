@@ -2,43 +2,43 @@
 
 <div class="main-container game-bg-black">
     <div class="game-content">
-        <SceneHeader HeaderText="SceneHeaderText" />
+        <SceneHeader HeaderText="@SceneHeaderText" />
         <div class="game-screen">
-            <GameOutput GameText="gameText" />
-            <InputOverlay ShowOssanethSigil="ShowOssanethSigil"
-                          IsOssanethGifActive="isOssanethGifActive"
-                          ShouldGifFadeOut="ShouldGifFadeOut"
-                          IsAwaitingPlayerInput="isAwaitingPlayerInput"
-                          UserInput="userInput"
+            <GameOutput GameText="@gameText" />
+            <InputOverlay ShowOssanethSigil="@ShowOssanethSigil"
+                          IsOssanethGifActive="@isOssanethGifActive"
+                          ShouldGifFadeOut="@ShouldGifFadeOut"
+                          IsAwaitingPlayerInput="@isAwaitingPlayerInput"
+                          UserInput="@userInput"
                           UserInputChanged="@(value => userInput = value)"
-                          OnKeyDown="HandleInput"
-                          PlayerInputPrompt="playerInputPrompt"
-                          IsInDialogue="isInDialogue"
-                          DialogueChoices="dialogueChoices"
-                          IsTypingDialogue="isTypingDialogue"
-                          SilentTimerActive="silentTimerActive"
-                          SilentTimerSecondsLeft="silentTimerSecondsLeft"
-                          WaitingText="waitingText"
-                          ListeningText="listeningText"
-                          OnSelectChoice="SelectDialogueChoice" />
+                          OnKeyDown="@HandleInput"
+                          PlayerInputPrompt="@playerInputPrompt"
+                          IsInDialogue="@isInDialogue"
+                          DialogueChoices="@dialogueChoices"
+                          IsTypingDialogue="@isTypingDialogue"
+                          SilentTimerActive="@silentTimerActive"
+                          SilentTimerSecondsLeft="@silentTimerSecondsLeft"
+                          WaitingText="@waitingText"
+                          ListeningText="@listeningText"
+                          OnSelectChoice="@SelectDialogueChoice" />
         </div>
     </div>
     @if (!hasIntroStarted || isFading)
     {
-        <TitleScreen IsFading="isFading"
-                     IsIntroTransitioning="isIntroTransitioning"
-                     OnBegin="BeginGame" />
+        <TitleScreen IsFading="@isFading"
+                     IsIntroTransitioning="@isIntroTransitioning"
+                     OnBegin="@BeginGame" />
     }
     @if (introPhase > 0 || isIntroTransitioning)
     {
-        <IntroScreen IntroFading="introFading"
-                     IntroTextFading="introTextFading"
-                     IsFinalPhase="isFinalPhase"
-                     IntroText="introText" />
+        <IntroScreen IntroFading="@introFading"
+                     IntroTextFading="@introTextFading"
+                     IsFinalPhase="@isFinalPhase"
+                     IntroText="@introText" />
     }
     @if (isOutroActive)
     {
-        <OutroScreen IsOutroFadingIn="isOutroFadingIn" />
+        <OutroScreen IsOutroFadingIn="@isOutroFadingIn" />
     }
     @if (blurOverlayEnabled)
     {

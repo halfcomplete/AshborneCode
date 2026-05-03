@@ -567,7 +567,7 @@ public partial class Home : ComponentBase, IDisposable
                     return false;
                 }
             case OutputLineType.DialogueEnd:
-                HandleDialogueEndMarker();
+                EndDialogue();
                 await InvokeAsync(StateHasChanged);
                 return false; // Do not add dialogue end marker to output buffer
             case OutputLineType.ForceMask:
@@ -631,7 +631,8 @@ public partial class Home : ComponentBase, IDisposable
             await AutoScrollToBottom();
         }
 
-        if (IsDialogueChoiceValid(choiceNumber))
+        // If this is not the last choice, we can return early without starting the silent timer logic
+        if (!IsCurrentDialogueChoiceLastOne(choiceNumber))
         {
             return false;
         }
@@ -698,15 +699,25 @@ public partial class Home : ComponentBase, IDisposable
     /// Checks if the given choiceNumber is equal to the number of choices, i.e. it is the last one.
     /// </summary>
     /// <returns>
-    /// True if the given choiceNumber is the last one.
-    /// Else, false if InkRunner is null, if InkRunner.Story is null, if InkRunner.Story.currentChoices is null, if choiceNumber is less than 1
+    /// True if the given choiceNumber is the last one, else returns False.
     /// </returns>
+    /// <exception cref="InvalidOperationException">Thrown when Story or currentChoices is null.</exception>
     private static bool IsCurrentDialogueChoiceLastOne(int choiceNumber)
     {
-        return choiceNumber == GameContext.InkRunner.Story.currentChoices.Count
+        if (GameContext.InkRunner.Story is null || GameContext.InkRunner.Story.currentChoices == null)
+        {
+            throw new InvalidOperationException("Story or currentChoices is null.");
+        }
+        return choiceNumber == GameContext.InkRunner.Story.currentChoices.Count;
     }
 
-    private void HandleDialogueEndMarker()
+    /// <summary>
+    /// Handles the completion of dialogue output and performs necessary cleanup actions.
+    /// </summary>
+    /// <remarks>This method is called when the dialogue reaches a dialogue end marker, indicating the end of the dialogue file. It
+    /// notifies relevant services that the dialogue has ended and resets internal state to prepare for subsequent
+    /// dialogue interactions.</remarks>
+    private void EndDialogue()
     {
         IOService.Output.DisplayDebugMessage($"ProcessOutputQueue: Flushed output, ending dialogue at {DateTime.Now}");
         pendingDialogueEnd = false;
@@ -714,12 +725,25 @@ public partial class Home : ComponentBase, IDisposable
         GameContext.InkRunner?.DialogueFinishedOutputting();
     }
 
+    /// <summary>
+    /// Handles the force player mask marker in a line by forcing the mask onto the player.
+    /// </summary>
+    /// <param name="line">The line containing the force mask marker.</param>
     private void HandleForceMaskMarker(string line)
     {
         IOService.Output.DisplayDebugMessage($"[DEBUG] Detected force player mask marker in line: {line}. Forcing mask {line.Substring(OutputConstants.ForceMaskMarker.Length)}");
         GameContext.GameState.ForcePlayerMask(line.Substring(OutputConstants.ForceMaskMarker.Length));
     }
 
+    /// <summary>
+    /// Checks if a line contains the blur animation marker, and if so extracts the parameters for the animation.
+    /// </summary>
+    /// <param name="line">The line to check for the blur animation marker.</param>
+    /// <param name="targetOpacity">The target opacity for the blur animation.</param>
+    /// <param name="durationSecs">The duration of the blur animation in seconds.</param>
+    /// <param name="fadeBackDurationSecs">The duration for the fade-back effect in seconds.</param>
+    /// <param name="waitSecs">The duration to wait before starting the blur animation in seconds.</param>
+    /// <returns>True if the line contains a valid blur animation marker and the parameters were successfully extracted, otherwise false.</returns>
     private bool VerifyBlurAnimationMarker(string line, out float targetOpacity, out float durationSecs, out float fadeBackDurationSecs, out float waitSecs)
     {
         targetOpacity = 0f;
@@ -773,6 +797,19 @@ public partial class Home : ComponentBase, IDisposable
 
     #region Handle Typewriter Effect
 
+    /// <summary>
+    /// Types a line with a typewriter effect, processing any inline slow markers and applying speaker colouring if necessary.
+    /// </summary>
+    /// <remarks>
+    /// The line is expected to contain typewriter start and end markers, which are used to extract the content to be typed and the base typing speed.
+    /// 
+    /// The method handles inline slow markers by adjusting the typing speed for specific characters as needed.
+    /// 
+    /// It also ensures that the UI is updated appropriately during the typing process, including auto-scrolling to 
+    /// the bottom of the dialogue container as new text is added.
+    /// </remarks>
+    /// <param name="line">The line to type with the typewriter effect.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     private async Task HandleTypewriterEffect(string line)
     {
         await IOService.Output.DisplayDebugMessage($"Handling typewriter effect for line: {line}");
@@ -792,33 +829,24 @@ public partial class Home : ComponentBase, IDisposable
 
         // Tokenize HTML into tags and text chunks. Tags (e.g. <span ...>, <br />) are inserted immediately
         // and text chunks are typed character-by-character.
-        List<(string text, bool isTag)> tokens = new List<(string, bool)>();
-        int p = 0;
-        while (p < htmlMessage.Length)
-        {
-            if (htmlMessage[p] == '<')
-            {
-                int gt = htmlMessage.IndexOf('>', p);
-                if (gt == -1)
-                {
-                    // malformed tag — treat rest as text
-                    tokens.Add((htmlMessage.Substring(p), false));
-                    break;
-                }
-                var tag = htmlMessage.Substring(p, gt - p + 1);
-                tokens.Add((tag, true));
-                p = gt + 1;
-            }
-            else
-            {
-                int lt = htmlMessage.IndexOf('<', p);
-                if (lt == -1) lt = htmlMessage.Length;
-                var txt = htmlMessage.Substring(p, lt - p);
-                tokens.Add((txt, false));
-                p = lt;
-            }
-        }
+        List<(string text, bool isTag)> tokens = TokeniseHTML(htmlMessage);
+        (string existing, StringBuilder typedBuilder) = await TypeCharacters(ms, characterSpeeds, tokens);
 
+        // Commit typed content to the main gameText buffer
+        var finalSeparator = string.Empty;
+        if (!string.IsNullOrEmpty(existing) && !existing.EndsWith("<br />"))
+            finalSeparator = "<br />";
+        gameText = string.IsNullOrEmpty(existing)
+            ? typedBuilder.ToString()
+            : existing + finalSeparator + typedBuilder.ToString();
+
+        Console.WriteLine($"[DEBUG] Finished typing dialogue: {message}");
+        isTypingDialogue = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task<(string existing, StringBuilder typedBuilder)> TypeCharacters(int ms, List<int>? characterSpeeds, List<(string text, bool isTag)> tokens)
+    {
         // Prepare typing across tokens
         var existing = gameText ?? string.Empty;
         var typedBuilder = new StringBuilder();
@@ -886,17 +914,39 @@ public partial class Home : ComponentBase, IDisposable
             }
         }
 
-        // Commit typed content to the main gameText buffer
-        var finalSeparator = string.Empty;
-        if (!string.IsNullOrEmpty(existing) && !existing.EndsWith("<br />"))
-            finalSeparator = "<br />";
-        gameText = string.IsNullOrEmpty(existing)
-            ? typedBuilder.ToString()
-            : existing + finalSeparator + typedBuilder.ToString();
+        return (existing, typedBuilder);
+    }
 
-        Console.WriteLine($"[DEBUG] Finished typing dialogue: {message}");
-        isTypingDialogue = false;
-        await InvokeAsync(StateHasChanged);
+    private static List<(string text, bool isTag)> TokeniseHTML(string htmlMessage)
+    {
+        List<(string text, bool isTag)> tokens = new List<(string, bool)>();
+        int p = 0;
+        while (p < htmlMessage.Length)
+        {
+            if (htmlMessage[p] == '<')
+            {
+                int gt = htmlMessage.IndexOf('>', p);
+                if (gt == -1)
+                {
+                    // malformed tag — treat rest as text
+                    tokens.Add((htmlMessage.Substring(p), false));
+                    break;
+                }
+                var tag = htmlMessage.Substring(p, gt - p + 1);
+                tokens.Add((tag, true));
+                p = gt + 1;
+            }
+            else
+            {
+                int lt = htmlMessage.IndexOf('<', p);
+                if (lt == -1) lt = htmlMessage.Length;
+                var txt = htmlMessage.Substring(p, lt - p);
+                tokens.Add((txt, false));
+                p = lt;
+            }
+        }
+
+        return tokens;
     }
 
     private async Task HandleSpeakerColouring(string line)
