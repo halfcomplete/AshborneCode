@@ -1,4 +1,5 @@
 ﻿using AshborneGame._Core._Player;
+using AshborneGame._Core.EmotionSystem;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
@@ -26,6 +27,8 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
         public string? Greeting { get; }
 
         public string? DialogueFileName { get; init; }
+
+        public EmotionCollection Emotions { get; private set; } = new EmotionCollection();
 
         public NPC(string name, string? greeting, string? dialogueFileName = null)
         {
@@ -90,6 +93,10 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
             else if (Greeting != null)
             {
                 await IOService.Output.Write($"{Name}: {Greeting}");
+            }
+            else
+            {
+                await IOService.Output.Write($"{Name} has nothing to say.");
             }
         }
     }

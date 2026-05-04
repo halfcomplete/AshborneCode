@@ -17,7 +17,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
     /// - Consumables: Can be used and stacked. Examples: potions, scrolls, materials
     /// - Keys: Special items used for unlocking. Examples: rusty keys, skeleton keys
     /// </remarks>
-    public class Item : BOCSGameObject
+    public sealed class Item : BOCSGameObject
     {
         /// <summary>
         /// Gets the name of the object. This is used for identification and display.

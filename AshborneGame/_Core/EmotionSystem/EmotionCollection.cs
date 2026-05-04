@@ -3,10 +3,18 @@ using AshborneGame._Core.Globals.Enums;
 
 namespace AshborneGame._Core.EmotionSystem
 {
+    /// <summary>
+    /// Represents a collection of emotions for a character, allowing for tracking and manipulation of the intensity of each emotion type. 
+    /// Each emotion is represented by an EmotionTracker, which maintains the current intensity of that emotion. 
+    /// The collection provides methods to get, set, and change the intensity of specific emotions.
+    /// </summary>
     public class EmotionCollection
     {
         private Dictionary<EmotionTypes, EmotionTracker> _emotionTrackers;
 
+        /// <summary>
+        /// Initialises a collection of emotions with all defined EmotionTypes, each starting with an intensity of 0.
+        /// </summary>
         public EmotionCollection()
         {
             _emotionTrackers = CreateDictionaryOfEmotions();

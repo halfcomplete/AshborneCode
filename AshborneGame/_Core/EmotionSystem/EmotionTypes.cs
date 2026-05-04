@@ -4,6 +4,17 @@ namespace AshborneGame._Core.Globals.Enums
     /// <summary>
     /// Defines the primary human emotion types used for character states and interactions.
     /// </summary>
+    /// <remarks>
+    /// These are not meant to describe "feelings" towards specific objects or people, but rather the core emotional states that characters experience
+    /// moment-to-moment. Later, the EmotionSystem can be expanded to track specific feelings towards objects, people, or events by associating these core emotions with specific targets.
+    /// Emotions can be combined to create more complex emotional states, and their intensities can vary to reflect different levels of emotional response.
+    /// <br>For example:</br>
+    /// <list type="bullet">
+    /// <item>Surprise + Happiness = Excitement</item>
+    /// <item>Surprise + Fear = Shock</item>
+    /// <item>Contempt + Disgust = Disdain</item>
+    /// </list>
+    /// </remarks>
     public enum EmotionTypes
     {
         /// <summary>
