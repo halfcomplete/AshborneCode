@@ -20,7 +20,7 @@ namespace AshborneGame._Core.EmotionSystem
         /// update relationship states dynamically during gameplay.</remarks>
         public Dictionary<string, Attitude> Relationships = new Dictionary<string, Attitude>();
 
-        public EmotionCollection EmotionalState { get; private set; } = new EmotionCollection();
+        public EmotionProfile EmotionalState { get; private set; } = new EmotionProfile();
         
         public PsychologicalState() { }
     }

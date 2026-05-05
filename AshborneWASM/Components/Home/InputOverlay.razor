@@ -33,8 +33,20 @@
             @for (int i = 0; i < DialogueChoices.Count; i++)
             {
                 int choiceIndex = i; // Capture the index for the lambda
-                <button @onclick="() => OnSelectChoice.InvokeAsync(choiceIndex + 1)" class="choice-button">
-                    [@(choiceIndex + 1)] @DialogueChoices[i]
+                bool isEnabled = true;
+                string reason = "";
+                string displayTxt = DialogueChoices[i];
+                
+                var parts = displayTxt.Split('|', 4);
+                if (parts.Length == 4)
+                {
+                    isEnabled = parts[1] == "[ENABLED]";
+                    reason = parts[2].Trim('[', ']');
+                    displayTxt = parts[3];
+                }
+
+                <button @onclick="() => OnSelectChoice.InvokeAsync(choiceIndex + 1)" class="choice-button" disabled="@(!isEnabled)" title="@reason">
+                    [@(choiceIndex + 1)] @displayTxt
                 </button>
             }
         </div>

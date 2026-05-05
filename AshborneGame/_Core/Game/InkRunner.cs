@@ -254,7 +254,54 @@ namespace AshborneGame._Core.Game
                     await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Enqueued choices at {DateTime.Now}", ConsoleMessageTypes.INFO);
                     for (int i = 0; i < _story.currentChoices.Count; i++)
                     {
-                        await IOService.Output.WriteDialogueMarkerLine($"[{i + 1}] {_story.currentChoices[i].text}");
+                        var choice = _story.currentChoices[i];
+                        bool isEnabled = true;
+                        string reason = "";
+
+                        if (choice.tags != null)
+                        {
+                            foreach (var tag in choice.tags)
+                            {
+                                if (tag.StartsWith("emotion:", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    var parts = tag.Substring(8);
+                                    bool isLessThan = parts.Contains("<");
+                                    bool isGreaterThan = parts.Contains(">");
+                                    
+                                    if (isLessThan || isGreaterThan)
+                                    {
+                                        char op = isLessThan ? '<' : '>';
+                                        var emotionParts = parts.Split(op);
+                                        if (emotionParts.Length == 2 && 
+                                            Enum.TryParse<EmotionTypes>(emotionParts[0], true, out var eType) && 
+                                            int.TryParse(emotionParts[1], out int targetVal))
+                                        {
+                                            int currentVal = _player.EmotionProfile.GetCurrentEmotion(eType, _gameState.TotalInGameHours);
+                                            
+                                            if (isLessThan && currentVal >= targetVal)
+                                            {
+                                                isEnabled = false;
+                                                reason = $"You are too {EmotionToAdjective.GetEmotionDescriptor(eType)} to do this.";
+                                            }
+                                            else if (isGreaterThan && currentVal <= targetVal)
+                                            {
+                                                isEnabled = false;
+                                                reason = $"You aren't {EmotionToAdjective.GetEmotionDescriptor(eType)} enough to do this.";
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (isEnabled)
+                        {
+                            await IOService.Output.WriteDialogueMarkerLine($"[{i + 1}] |[ENABLED]|[]|{choice.text}");
+                        }
+                        else
+                        {
+                            await IOService.Output.WriteDialogueMarkerLine($"[{i + 1}] |[DISABLED]|[{reason}]|{choice.text}");
+                        }
                     }
 
                     _externalChoiceAwaitCts = new CancellationTokenSource();
@@ -331,6 +378,10 @@ namespace AshborneGame._Core.Game
             // --- Location Visit Counts ---
             _story.BindExternalFunction("getLocationVisits", (string locationId) => ExternalGetLocationVisits(locationId));
             _story.BindExternalFunction("incLocationVisits", (string locationId) => ExternalIncLocationVisits(locationId));
+
+            // --- In-Game Time & Emotions ---
+            _story.BindExternalFunction("advance_time", (int hours) => ExternalAdvanceTime(hours));
+            _story.BindExternalFunction("add_emotion", (string emotionType, int amount, int intensity) => ExternalAddEmotion(emotionType, amount, intensity));
 
             // --- Silent Path ---
             _story.BindExternalFunction("setSilentPath", (string silentPath, int silentMs) => ExternalSetSilentPath(silentPath, silentMs));
@@ -508,6 +559,28 @@ namespace AshborneGame._Core.Game
             _currentSilentPath = (silentPath, silentMs);
             return null;
         }
+
+        #region In-Game Time & Emotions
+        private object ExternalAdvanceTime(int hours)
+        {
+            _gameState.AdvanceTime(hours);
+            return null;
+        }
+
+        private object ExternalAddEmotion(string emotionTypeStr, int amount, int intensity)
+        {
+            if (Enum.TryParse<EmotionTypes>(emotionTypeStr, true, out var type))
+            {
+                var mod = new EmotionSystem.EmotionModifier(type, amount, intensity, _gameState.TotalInGameHours);
+                _player.EmotionProfile.AddModifier(mod);
+            }
+            else
+            {
+                IOService.Output.DisplayDebugMessage($"[Ink] Invalid emotion type '{emotionTypeStr}'.", ConsoleMessageTypes.ERROR).GetAwaiter().GetResult();
+            }
+            return null;
+        }
+        #endregion
 
         /// <summary>
         /// Gets the visit count for a location by its slug-based ID.

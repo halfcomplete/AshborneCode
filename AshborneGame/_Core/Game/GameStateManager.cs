@@ -35,6 +35,76 @@ namespace AshborneGame._Core.Game
         private Task? _tickTask;
         private bool _tickRunning = false;
 
+        #region In-Game Time Tracking
+        /// <summary>
+        /// Total in-game hours passed since the start of the game.
+        /// Defaults to 6 (Dawn of Day 1).
+        /// </summary>
+        public int TotalInGameHours { get; private set; } = 6;
+
+        public Globals.Enums.TimeOfDay CurrentTimeOfDay => CalculateTimeOfDay(TotalInGameHours);
+
+        /// <summary>
+        /// Advances in-game time by a discrete number of hours.
+        /// </summary>
+        public void AdvanceTime(int hoursToAdd)
+        {
+            if (hoursToAdd > 0)
+            {
+                TotalInGameHours += hoursToAdd;
+                IOService.Output.DisplayDebugMessage($"[Time] Advanced {hoursToAdd} hours. Current time: {CurrentTimeOfDay} (Hour of Day: {TotalInGameHours % 24})", Globals.Enums.ConsoleMessageTypes.INFO);
+            }
+        }
+
+        /// <summary>
+        /// Advances time to the next occurrence of the specified TimeOfDay.
+        /// </summary>
+        public void AdvanceToTimeOfDay(Globals.Enums.TimeOfDay targetTime)
+        {
+            int currentHourOfDay = TotalInGameHours % 24;
+            int targetHour = GetHourForTimeOfDay(targetTime);
+
+            int hoursToAdd = targetHour - currentHourOfDay;
+            if (hoursToAdd <= 0)
+            {
+                hoursToAdd += 24; // Move to the next day's occurrence
+            }
+
+            AdvanceTime(hoursToAdd);
+        }
+
+        private Globals.Enums.TimeOfDay CalculateTimeOfDay(int totalHours)
+        {
+            int hourOfDay = totalHours % 24;
+
+            return hourOfDay switch
+            {
+                >= 5 and < 8 => Globals.Enums.TimeOfDay.Dawn,
+                >= 8 and < 12 => Globals.Enums.TimeOfDay.Morning,
+                >= 12 and < 14 => Globals.Enums.TimeOfDay.Midday,
+                >= 14 and < 18 => Globals.Enums.TimeOfDay.Afternoon,
+                >= 18 and < 20 => Globals.Enums.TimeOfDay.Dusk,
+                >= 20 and < 24 => Globals.Enums.TimeOfDay.Night,
+                _ => Globals.Enums.TimeOfDay.Midnight // 0 to 4
+            };
+        }
+
+        private int GetHourForTimeOfDay(Globals.Enums.TimeOfDay time)
+        {
+            return time switch
+            {
+                Globals.Enums.TimeOfDay.Dawn => 6,
+                Globals.Enums.TimeOfDay.Morning => 9,
+                Globals.Enums.TimeOfDay.Midday => 12,
+                Globals.Enums.TimeOfDay.Afternoon => 15,
+                Globals.Enums.TimeOfDay.Dusk => 18,
+                Globals.Enums.TimeOfDay.Night => 21,
+                Globals.Enums.TimeOfDay.Midnight => 0,
+                _ => 6
+            };
+        }
+        #endregion
+
         public GameStateManager(Player player)
         {
             _player = player;

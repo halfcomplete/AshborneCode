@@ -19,8 +19,10 @@ namespace AshborneGame._Core._Player
     /// <summary>
     /// Represents a player in the game.
     /// </summary>
-    public class Player
+    public class Player : IEmotionalEntity
     {
+        public EmotionSystem.EmotionProfile EmotionProfile { get; } = new EmotionSystem.EmotionProfile();
+
         public Scene CurrentScene { get; private set; }
 
         /// <summary>
