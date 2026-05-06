@@ -5,10 +5,11 @@ using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame.WebPort;
+using System.Security.Cryptography.X509Certificates;
 
 namespace AshborneGame._Core.Data.BOCS.NPCSystem
 {
-    public class NPC : BOCSGameObject, IEmotionalEntity
+    public class NPC : BOCSGameObject, ISentientEntity
     {
         /// <summary>
         /// The name of the NPC. This is used for identification and display.
@@ -29,7 +30,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
 
         public string? DialogueFileName { get; init; }
 
-        public EmotionProfile EmotionProfile { get; } = new EmotionProfile();
+        public PsychologicalState PsychologicalState { get; } = new PsychologicalState();
 
         public NPC(string name, string? greeting, string? dialogueFileName = null)
         {

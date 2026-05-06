@@ -62,5 +62,7 @@ namespace AshborneGame._Core.EmotionSystem
             Envy = envy;
             Curiosity = curiosity;
         }
+
+        
     }
 }

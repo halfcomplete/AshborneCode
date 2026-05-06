@@ -23,5 +23,20 @@ namespace AshborneGame._Core.EmotionSystem
         public EmotionProfile EmotionalState { get; private set; } = new EmotionProfile();
         
         public PsychologicalState() { }
+
+        public void AddRelationship(string entityId, Attitude attitude)
+        {
+            Relationships[entityId] = attitude;
+        }
+
+        public void RemoveRelationship(string entityId)
+        {
+            Relationships.Remove(entityId);
+        }
+
+        public bool TryGetRelationship(string entityId, out Attitude? attitude)
+        {
+            return Relationships.TryGetValue(entityId, out attitude);
+        }
     }
 }
