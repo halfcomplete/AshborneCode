@@ -15,7 +15,7 @@ namespace AshborneGame._Core.EmotionSystem
 
         /// <summary>
         /// Retrieves the evaluated emotion intensity for a specific type, 
-        /// clamped between 0 and 100, factoring in time decay.
+        /// clamped between -100 and 100, factoring in time decay.
         /// </summary>
         public int GetCurrentEmotion(EmotionTypes type, int currentTotalHours)
         {
@@ -27,7 +27,7 @@ namespace AshborneGame._Core.EmotionSystem
                 totalAmount += mod.GetCurrentAmount(currentTotalHours);
             }
 
-            return Math.Clamp(totalAmount, 0, 100);
+            return Math.Clamp(totalAmount, -100, 100);
         }
 
         private void CleanUpDepleted(int currentTotalHours)
