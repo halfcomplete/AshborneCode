@@ -2,6 +2,9 @@ using AshborneGame._Core.Globals.Enums;
 
 namespace AshborneGame._Core.EmotionSystem
 {
+    /// <summary>
+    /// A class representing a single modifier to an emotion, which has a type, an initial amount (positive or negative), an intensity that controls how quickly it decays over time, and the in-game hour when it was applied. The current value of the modifier can be calculated lazily based on the time elapsed since it was applied, allowing for dynamic changes in emotion intensity as time passes.
+    /// </summary>
     public class EmotionModifier
     {
         public EmotionTypes Type { get; private set; }

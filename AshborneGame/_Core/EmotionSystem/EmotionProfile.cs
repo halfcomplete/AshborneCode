@@ -4,6 +4,15 @@ using System.Linq;
 
 namespace AshborneGame._Core.EmotionSystem
 {
+    /// <summary>
+    /// Represents a profile that manages the dynamic emotional state of a character by tracking and evaluating active
+    /// emotion modifiers over time.
+    /// </summary>
+    /// <remarks>The EmotionProfile class allows for the addition and evaluation of emotion modifiers, each of
+    /// which can influence the intensity of a specific emotion type. The overall emotional state is determined by
+    /// aggregating the effects of all active modifiers, with intensities clamped to a defined range. Modifiers are
+    /// automatically removed when they are depleted, ensuring that the emotional state reflects only current
+    /// influences.</remarks>
     public class EmotionProfile
     {
         /// <summary>
