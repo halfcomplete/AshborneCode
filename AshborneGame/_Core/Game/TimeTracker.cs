@@ -17,7 +17,6 @@ namespace AshborneGame._Core.Game
         private bool _tickRunning;
         private CancellationTokenSource _tickCancellation;
         private Task _tickTask;
-        private DateTime _lastTickTime;
 
         private Location? _currentLocation;
         private double _secondsSinceLastHourAdvance = 0;
@@ -26,7 +25,9 @@ namespace AshborneGame._Core.Game
         private int _totalTicksInCurrentLocation;
         private Dictionary<Location, int> _locationDurations = new Dictionary<Location, int>();
         private List<LocationTimeTrigger> _locationTimeTriggers = new();
-        private int _tickInterval;
+
+        // Default to 1000ms per tick
+        private int _tickInterval = 1000;
         private readonly int _ticksRequiredToAdvanceHour = 60; // 60 ticks = 1 in-game hour; if tick interval is 1 second, then 1 in-game hour = 1 real minute
 
         private readonly QuestTracker _questTracker;
@@ -108,32 +109,29 @@ namespace AshborneGame._Core.Game
 
         public void Tick()
         {
-            var now = DateTime.UtcNow;
-            var delta = now - _lastTickTime;
-            _lastTickTime = now;
+            // For simplicity, we assume each tick represents 1 second of real time.
+            // TODO: To support variable tick intervals, pass the actual time elapsed since the last tick as a parameter and use that instead of a fixed value.
+            var secondsSinceLastTick = 1;
 
-            
-            TickLocationTimeTracking(delta);
+            _secondsSinceLastHourAdvance += secondsSinceLastTick;
 
-            _questTracker.TickQuestTimeTracking(delta);
+            // Check if the seconds since the last hour advance are enough to advance in-game time by at least one hour
+            int hoursPassed = (int)Math.Floor((double)_secondsSinceLastHourAdvance / (double)(_ticksRequiredToAdvanceHour * (_tickInterval/1000f)));
+
+            AdvanceTime(hoursPassed);
+
+            TickLocationTimeTracking(hoursPassed);
+            _questTracker.TickQuestTimeTracking(hoursPassed);
         }
 
-        private void TickLocationTimeTracking(TimeSpan delta)
+        private void TickLocationTimeTracking(int hoursPassed)
         {
             // Ensure the player stayed in the same location during this tick
             if (GameContext.Player.CurrentLocation == _currentLocation)
             {
-                var secondsSinceLastTick = delta.TotalSeconds;
-
-                _secondsSinceLastHourAdvance += secondsSinceLastTick;
-
-                // Check if the seconds since the last hour advance are enough to advance in-game time by at least one hour
-                int hoursPassed = (int)Math.Floor(_secondsSinceLastHourAdvance / (_ticksRequiredToAdvanceHour * _tickInterval));
-
                 // If enough time has passed to advance at least one hour, do so and reset the counter
                 if (hoursPassed > 0)
                 {
-                    AdvanceTime(hoursPassed);
                     _totalTicksInCurrentLocation += hoursPassed * _ticksRequiredToAdvanceHour; // Increment total ticks in location based on hours passed
                     _secondsSinceLastHourAdvance = 0; // Reset the counter after advancing time
 

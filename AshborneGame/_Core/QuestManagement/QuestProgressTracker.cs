@@ -21,34 +21,34 @@ namespace AshborneGame._Core.QuestManagement
         /// <summary>
         /// Determines if the quest is complete based on the completion criteria.
         /// </summary>
-        /// <param name="delta">The time elapsed since the last tick.</param>
+        /// <param name="hoursPassed">The time elapsed since the last tick.</param>
         /// <param name="gameStateManager">The current game state manager.</param>
         /// <returns>True if the quest is complete; otherwise, false.</returns>
-        public bool IsQuestComplete(TimeSpan delta, GameStateManager gameStateManager)
+        public bool IsQuestComplete(int hoursPassed, GameStateManager gameStateManager)
         {
-            return _completionCriteria.All(c => c.Evaluate(gameStateManager, delta));
+            return _completionCriteria.All(c => c.Evaluate(gameStateManager, hoursPassed));
         }
-        
+
         /// <summary>
         /// Determines if the quest has failed based on the failure criteria.
         /// </summary>
-        /// <param name="delta">The time elapsed since the last tick.</param>
+        /// <param name="hoursPassed">The time elapsed since the last tick.</param>
         /// <param name="gameStateManager">The current game state manager.</param>
         /// <returns>True if the quest has failed; otherwise, false.</returns>
-        public bool IsQuestFailed(TimeSpan delta, GameStateManager gameStateManager)
+        public bool IsQuestFailed(int hoursPassed, GameStateManager gameStateManager)
         {
-            return _failureCriteria?.Any(c => c.Evaluate(gameStateManager, delta)) ?? false;
+            return _failureCriteria?.Any(c => c.Evaluate(gameStateManager, hoursPassed)) ?? false;
         }
 
         /// <summary>
         /// Ticks the criteria, updating any time-based conditions.
         /// </summary>
-        /// <param name="delta">The time elapsed since the last tick.</param>
+        /// <param name="hoursPassed">The time elapsed since the last tick.</param>
         /// <param name="gameStateManager">The current game state manager.</param>
-        public void TickCriteria(TimeSpan delta, GameStateManager gameStateManager)
+        public void TickCriteria(int hoursPassed, GameStateManager gameStateManager)
         {
-            _completionCriteria.ForEach(c => c.TickTimePassed(delta));
-            _failureCriteria?.ForEach(c => c.TickTimePassed(delta));
+            _completionCriteria.ForEach(c => c.TickTimePassed(hoursPassed));
+            _failureCriteria?.ForEach(c => c.TickTimePassed(hoursPassed));
         }
     }
 }

@@ -37,23 +37,23 @@ namespace AshborneGame._Core.QuestManagement
         /// </summary>
         /// <param name="delta">The time elapsed since the last tick.</param>
         /// <param name="state">The current game state manager.</param>
-        public void TickQuestTime(TimeSpan delta, GameStateManager state)
+        public void TickQuestTime(int hoursPassed, GameStateManager state)
         {
-            _questProgress.TickCriteria(delta, state);
+            _questProgress.TickCriteria(hoursPassed, state);
 
             if (Status != QuestStatus.InProgress)
             {
                 return;
             }
 
-            if (_questProgress.IsQuestFailed(delta, state))
+            if (_questProgress.IsQuestFailed(hoursPassed, state))
             {
                 Status = QuestStatus.Failed;
                 _onFail?.Invoke(state);
                 return;
             }
 
-            if (_questProgress.IsQuestComplete(delta, state))
+            if (_questProgress.IsQuestComplete(hoursPassed, state))
             {
                 Status = QuestStatus.Completed;
                 _onComplete?.Invoke(state);

@@ -17,13 +17,13 @@ namespace AshborneGame._Core.Game
             _quests.Add(quest);
         }
 
-        public void TickQuestTimeTracking(TimeSpan delta)
+        public void TickQuestTimeTracking(int hoursPassed)
         {
             foreach (var quest in _quests)
             {
                 if (quest.Status == QuestStatus.InProgress)
                 {
-                    quest.TickQuestTime(delta, GameContext.GameState);
+                    quest.TickQuestTime(hoursPassed, GameContext.GameState);
                     switch (quest.Status)
                     {
                         case QuestStatus.Completed:

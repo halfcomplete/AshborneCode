@@ -12,7 +12,7 @@ namespace AshborneGame._Core.QuestManagement
     public class QuestCriteria
     {
         public Func<GameStateManager, bool> CriteriaFunction { get; private set; }
-        public Func<TimeSpan, bool>? TimeBasedCriteriaFunction { get; private set; }
+        public Func<int, bool>? TimeBasedCriteriaFunction { get; private set; }
 
         // The current criteria being built. This is used internally during the building process before defining whether it's a completion or failure criteria.
         public Func<GameStateManager, bool>? WipCriteria { get; private set; } = null;
@@ -22,7 +22,7 @@ namespace AshborneGame._Core.QuestManagement
 
         public bool IsCompletionCriteria { get; private set; } = true;
 
-        private TimeSpan _timePassed = TimeSpan.Zero;
+        private int _hoursPassed = 0;
 
         private enum ClauseTypes
         {
@@ -35,17 +35,24 @@ namespace AshborneGame._Core.QuestManagement
         public bool OneTime { get; private set; }
         private bool _started;
 
-        public bool Evaluate(GameStateManager gameStateManager, TimeSpan delta)
+        /// <summary>
+        /// Evaluates the criteria against the provided GameStateManager and hours passed.
+        /// </summary>
+        /// <param name="gameStateManager">The game state manager to evaluate the criteria against.</param>
+        /// <param name="hoursPassed">The number of hours that have passed.</param>
+        /// <returns>True if the criteria is met; otherwise, false.</returns>
+        /// <exception cref="UnreachableException">Raised when the criteria evaluation reaches an unreachable code path, which should never happen..</exception>
+        public bool Evaluate(GameStateManager gameStateManager, int hoursPassed)
         {
             if (CriteriaFunction != null && CriteriaFunction.Invoke(gameStateManager))
             {
                 if (TimeBasedCriteriaFunction == null)
                     return true;
-                else if (TimeBasedCriteriaFunction.Invoke(delta))
+                else if (TimeBasedCriteriaFunction.Invoke(hoursPassed))
                     return true;
             }
 
-            if (TimeBasedCriteriaFunction != null && TimeBasedCriteriaFunction.Invoke(delta))
+            if (TimeBasedCriteriaFunction != null && TimeBasedCriteriaFunction.Invoke(hoursPassed))
             {
                 if (CriteriaFunction == null)
                     return true;
@@ -58,12 +65,12 @@ namespace AshborneGame._Core.QuestManagement
 
         public void ResetTimePassed()
         {
-            _timePassed = TimeSpan.Zero;
+            _hoursPassed = 0;
         }
 
-        public void TickTimePassed(TimeSpan delta)
+        public void TickTimePassed(int delta)
         {
-            _timePassed += delta;
+            _hoursPassed += delta;
         }
 
         #region Builder Methods
@@ -81,11 +88,11 @@ namespace AshborneGame._Core.QuestManagement
         /// <summary>
         /// Starts the criteria with a time-passed check.
         /// </summary>
-        /// <param name="timeSpan"></param>
+        /// <param name="hours">The number of hours that must have passed.</param>
         /// <returns></returns>
-        public QuestCriteria IfTimeHasPassed(TimeSpan timeSpan)
+        public QuestCriteria IfTimeHasPassed(int hours)
         {
-            return If(g => _timePassed >= timeSpan);
+            return If(g => _hoursPassed >= hours);
         }
 
         /// <summary>
@@ -113,11 +120,11 @@ namespace AshborneGame._Core.QuestManagement
         /// <summary>
         /// Combines the current criteria with a time-passed check using logical AND.
         /// </summary>
-        /// <param name="timeSpan"></param>
+        /// <param name="hours">The number of hours that must have passed.</param>
         /// <returns></returns>
-        public QuestCriteria AndIfTimeHasPassed(TimeSpan timeSpan)
+        public QuestCriteria AndIfTimeHasPassed(int hours)
         {
-            return AndIf(g => _timePassed >= timeSpan);
+            return AndIf(g => _hoursPassed >= hours);
         }
 
         /// <summary>
