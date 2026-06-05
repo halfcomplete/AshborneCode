@@ -24,7 +24,8 @@ namespace AshborneTests
             GameStateManager gameStateManager = new GameStateManager(player);
             AppEnvironment app = new AppEnvironment();
             InkRunner inkRunner = new Mock<InkRunner>(gameStateManager, player, app).Object;
-            GameContext.Initialise(player, gameStateManager, new Mock<DialogueService>(inkRunner).Object, inkRunner, new Mock<GameEngine>(new Mock<IInputHandler>().Object, new Mock<IOutputHandler>().Object, app).Object);
+            QuestTracker questTracker = new QuestTracker();
+            GameContext.Initialise(player, gameStateManager, new Mock<DialogueService>(inkRunner).Object, inkRunner, new Mock<GameEngine>(new Mock<IInputHandler>().Object, new Mock<IOutputHandler>().Object, app).Object, new Mock<TimeTracker>(questTracker).Object);
         }
     }
 

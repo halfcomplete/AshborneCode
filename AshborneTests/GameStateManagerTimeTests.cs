@@ -11,38 +11,38 @@ namespace AshborneTests
     [Collection("AshborneTests")]
     public class GameStateManagerTimeTests
     {
-        private GameStateManager CreateManager()
+        private TimeTracker CreateTimeTracker()
         {
-            var player = new Player();
-            return new GameStateManager(player);
+            var questTracker = new QuestTracker();
+            return new TimeTracker(questTracker);
         }
 
         [Fact]
         public void AdvanceTime_ShouldIncreaseTotalInGameHours()
         {
             // Arrange
-            var manager = CreateManager();
-            int initialHours = manager.TotalInGameHours; // Usually 6 by default
+            var timeTracker = CreateTimeTracker();
+            int initialHours = timeTracker.TotalInGameHours; // Usually 6 by default
 
             // Act
-            manager.AdvanceTime(5);
+            timeTracker.AdvanceTime(5);
 
             // Assert
-            Assert.Equal(initialHours + 5, manager.TotalInGameHours);
+            Assert.Equal(initialHours + 5, timeTracker.TotalInGameHours);
         }
         
         [Fact]
         public void AdvanceTime_ShouldNotDecreaseHours_WhenGivenNegativeValue()
         {
             // Arrange
-            var manager = CreateManager();
-            int initialHours = manager.TotalInGameHours;
+            var timeTracker = CreateTimeTracker();
+            int initialHours = timeTracker.TotalInGameHours;
 
             // Act
-            manager.AdvanceTime(-3);
+            timeTracker.AdvanceTime(-3);
 
             // Assert
-            Assert.Equal(initialHours, manager.TotalInGameHours);
+            Assert.Equal(initialHours, timeTracker.TotalInGameHours);
         }
 
         [Theory]
@@ -63,17 +63,17 @@ namespace AshborneTests
         public void CurrentTimeOfDay_ShouldReturnCorrectEnum_ForGivenHour(int hourOfDay, TimeOfDay expectedTime)
         {
             // Arrange
-            var manager = CreateManager();
+            var timeTracker = CreateTimeTracker();
             
             // Fast-forward to a clean slate starting at hour 0 (Midnight of a new day)
-            int hoursToMidnight = 24 - (manager.TotalInGameHours % 24);
-            manager.AdvanceTime(hoursToMidnight);
+            int hoursToMidnight = 24 - (timeTracker.TotalInGameHours % 24);
+            timeTracker.AdvanceTime(hoursToMidnight);
             
             // Advance to target hour
-            manager.AdvanceTime(hourOfDay);
+            timeTracker.AdvanceTime(hourOfDay);
 
             // Act
-            var actualTime = manager.CurrentTimeOfDay;
+            var actualTime = timeTracker.CurrentTimeOfDay;
 
             // Assert
             Assert.Equal(expectedTime, actualTime);
@@ -83,50 +83,50 @@ namespace AshborneTests
         public void AdvanceToTimeOfDay_ShouldJumpToNextOccurrence()
         {
             // Arrange
-            var manager = CreateManager();
+            var timeTracker = CreateTimeTracker();
             // Start at Dawn (Hour 6)
-            int startingHours = manager.TotalInGameHours;
+            int startingHours = timeTracker.TotalInGameHours;
             
             // Act: Advance to Dusk (Hour 18)
-            manager.AdvanceToTimeOfDay(TimeOfDay.Dusk);
+            timeTracker.AdvanceToTimeOfDay(TimeOfDay.Dusk);
 
             // Assert
-            Assert.Equal(TimeOfDay.Dusk, manager.CurrentTimeOfDay);
-            Assert.Equal(startingHours + 12, manager.TotalInGameHours); // 6 + 12 = 18
+            Assert.Equal(TimeOfDay.Dusk, timeTracker.CurrentTimeOfDay);
+            Assert.Equal(startingHours + 12, timeTracker.TotalInGameHours); // 6 + 12 = 18
         }
         
         [Fact]
         public void AdvanceToTimeOfDay_ShouldJumpToNextDay_IfTargetTimeIsEarlierInDay()
         {
             // Arrange
-            var manager = CreateManager();
+            var timeTracker = CreateTimeTracker();
             
             // Set time to Night (Hour 21)
-            manager.AdvanceToTimeOfDay(TimeOfDay.Night);
-            int nightHours = manager.TotalInGameHours;
+            timeTracker.AdvanceToTimeOfDay(TimeOfDay.Night);
+            int nightHours = timeTracker.TotalInGameHours;
 
             // Act: Advance to Morning (Hour 9)
-            manager.AdvanceToTimeOfDay(TimeOfDay.Morning);
+            timeTracker.AdvanceToTimeOfDay(TimeOfDay.Morning);
 
             // Assert
-            Assert.Equal(TimeOfDay.Morning, manager.CurrentTimeOfDay);
+            Assert.Equal(TimeOfDay.Morning, timeTracker.CurrentTimeOfDay);
             
             // Since it was hour 21, leaping to hour 9 of the NEXT day takes 12 hours (21 + 3 hours to midnight + 9 hours to Morning)
-            Assert.Equal(nightHours + 12, manager.TotalInGameHours); 
+            Assert.Equal(nightHours + 12, timeTracker.TotalInGameHours); 
         }
 
         [Fact]
         public void TotalInGameHours_ShouldPersistCorrectly_OverManyDays()
         {
             // Arrange
-            var manager = CreateManager();
+            var timeTracker = CreateTimeTracker();
             
             // Act - simulate waiting 3 full days plus 5 hours
-            manager.AdvanceTime((24 * 3) + 5);
+            timeTracker.AdvanceTime((24 * 3) + 5);
             
             // Assert
-            Assert.Equal(6 + 77, manager.TotalInGameHours); // Start 6 + 77 = 83.
-            Assert.Equal(TimeOfDay.Morning, manager.CurrentTimeOfDay); // 83 % 24 = 11 (Morning)
+            Assert.Equal(6 + 77, timeTracker.TotalInGameHours); // Start 6 + 77 = 83.
+            Assert.Equal(TimeOfDay.Morning, timeTracker.CurrentTimeOfDay); // 83 % 24 = 11 (Morning)
         }
     }
 }

@@ -7,17 +7,19 @@ namespace AshborneGame._Core.Game
     {
         public static Player Player { get; private set; }
         public static GameStateManager GameState { get; private set; }
+        public static TimeTracker TimeTracker { get; private set; }
         public static DialogueService DialogueService { get; private set; }
         public static InkRunner InkRunner { get; private set; }
         public static GameEngine GameEngine { get; private set; }
         public static Random Random { get; } = new Random();
 
-        public static void Initialise(Player player, GameStateManager gameState, DialogueService dialogueRunner, InkRunner inkRunner, GameEngine gameEngine)
+        public static void Initialise(Player player, GameStateManager gameState, DialogueService dialogueRunner, InkRunner inkRunner, GameEngine gameEngine, TimeTracker timeTracker)
         {
             Player = player;
             GameState = gameState;
             DialogueService = dialogueRunner;
             InkRunner = inkRunner;
+            TimeTracker = timeTracker;
             GameEngine = gameEngine;
         }
     }

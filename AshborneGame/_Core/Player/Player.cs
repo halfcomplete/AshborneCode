@@ -13,6 +13,7 @@ using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Constants;
 using System.Net.Mail;
+using AshborneGame._Core.EmotionSystem;
 
 namespace AshborneGame._Core._Player
 {
@@ -21,7 +22,7 @@ namespace AshborneGame._Core._Player
     /// </summary>
     public class Player : ISentientEntity
     {
-        public EmotionSystem.EmotionProfile EmotionProfile { get; } = new EmotionSystem.EmotionProfile();
+        public PsychologicalState PsychologicalState { get; } = new PsychologicalState();
 
         public Scene CurrentScene { get; private set; }
 

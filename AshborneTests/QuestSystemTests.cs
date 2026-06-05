@@ -602,6 +602,8 @@ namespace AshborneTests
     {
         private readonly Player _player;
         private readonly GameStateManager _gameState;
+        private readonly QuestTracker _questTracker;
+        private readonly TimeTracker _timeTracker = new TimeTracker(new QuestTracker());
 
         /// <summary>
         /// Event raised when a quest is completed.
@@ -623,6 +625,7 @@ namespace AshborneTests
             EventBus.Clear();
             _player = new Player();
             _gameState = new GameStateManager(_player);
+            _questTracker = new QuestTracker();
         }
 
         public void Dispose()
@@ -766,10 +769,10 @@ namespace AshborneTests
                 onFail: null,
                 new QuestCriteria().If(_ => true).ThenProgressThisQuest());
 
-            _gameState.AddQuest(quest);
+            _questTracker.AddQuest(quest);
 
             // Act - simulate a tick
-            _gameState.Tick();
+            _timeTracker.Tick();
 
             // Assert
             Assert.True(eventReceived);

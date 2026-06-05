@@ -33,8 +33,9 @@ namespace AshborneGame._Core.Game
             gameState.SetCounter(StateKeys.Counters.Player.CurrentActNo, 1);
             var inkRunner = new InkRunner(gameState, player, appEnvironment);
             _dialogueService = new DialogueService(inkRunner);
-
-            GameContext.Initialise(player, gameState, _dialogueService, inkRunner, this);
+            var questTracker = new QuestTracker();
+            var timeTracker = new TimeTracker(questTracker);
+            GameContext.Initialise(player, gameState, _dialogueService, inkRunner, this, timeTracker);
             gameState.InitialiseMasks(MaskInitialiser.InitialiseMasks());
 
             ((Location startingLocation, Scene startingLocationGroup), (_firstLocation, _firstScene)) = InitialiseStartingLocation(player);
@@ -77,7 +78,7 @@ namespace AshborneGame._Core.Game
             _isRunning = true;
             
             // Initialise the game state
-            GameContext.GameState.StartTickLoop();
+            GameContext.TimeTracker.StartTickLoop();
 
             await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_{_startingSceneSection}");
 
@@ -385,7 +386,7 @@ namespace AshborneGame._Core.Game
 
             await IOService.Output.WriteNonDialogueLine(player.CurrentLocation.GetDescription(player, gameState));
 
-            gameState.StartTickLoop();
+            GameContext.TimeTracker.StartTickLoop();
             _isRunning = true;
             while (_isRunning)
             {
@@ -420,7 +421,7 @@ namespace AshborneGame._Core.Game
                     isValidCommand = await CommandManager.TryExecute(action, args2, player);
                 }
             }
-            await gameState.StopTickLoop();
+            await GameContext.TimeTracker.StopTickLoop();
         }
 
         public async void ReceiveCommand(string input)

@@ -1,5 +1,6 @@
 ﻿using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Globals.Constants;
+using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.QuestManagement;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace AshborneGame._Core.Game
 {
-    public sealed class TimeTracker
+    public class TimeTracker
     {
         private bool _tickRunning;
         private CancellationTokenSource _tickCancellation;
@@ -23,15 +24,23 @@ namespace AshborneGame._Core.Game
         private int _ticksInCurrentLocation;
         // Tracks the total number of ticks spent in the current location, starting from when the player last entered it.
         private int _totalTicksInCurrentLocation;
+        private Dictionary<Location, int> _locationDurations = new Dictionary<Location, int>();
         private List<LocationTimeTrigger> _locationTimeTriggers = new();
         private int _tickInterval;
         private readonly int _ticksRequiredToAdvanceHour = 60; // 60 ticks = 1 in-game hour; if tick interval is 1 second, then 1 in-game hour = 1 real minute
+
+        private readonly QuestTracker _questTracker;
 
         /// <summary>
         /// Total in-game hours passed since the start of the game.
         /// Defaults to 6 (Dawn of Day 1).
         /// </summary>
         public int TotalInGameHours { get; private set; } = 6;
+
+        public TimeTracker(QuestTracker questTracker)
+        {
+            _questTracker = questTracker;
+        }
 
         public Globals.Enums.TimeOfDay CurrentTimeOfDay => CalculateTimeOfDay(TotalInGameHours);
 
@@ -97,7 +106,7 @@ namespace AshborneGame._Core.Game
 
         #region Ticking
 
-        private void Tick()
+        public void Tick()
         {
             var now = DateTime.UtcNow;
             var delta = now - _lastTickTime;
@@ -106,7 +115,7 @@ namespace AshborneGame._Core.Game
             
             TickLocationTimeTracking(delta);
 
-            TickQuestTimeTracking(delta);
+            _questTracker.TickQuestTimeTracking(delta);
         }
 
         private void TickLocationTimeTracking(TimeSpan delta)
@@ -121,6 +130,7 @@ namespace AshborneGame._Core.Game
                 // Check if the seconds since the last hour advance are enough to advance in-game time by at least one hour
                 int hoursPassed = (int)Math.Floor(_secondsSinceLastHourAdvance / (_ticksRequiredToAdvanceHour * _tickInterval));
 
+                // If enough time has passed to advance at least one hour, do so and reset the counter
                 if (hoursPassed > 0)
                 {
                     AdvanceTime(hoursPassed);
@@ -139,25 +149,7 @@ namespace AshborneGame._Core.Game
             }
         }
 
-        private void TickQuestTimeTracking(TimeSpan delta)
-        {
-            foreach (var quest in _quests)
-            {
-                if (quest.Status == QuestStatus.InProgress)
-                {
-                    quest.TickQuestTime(delta, this);
-                    switch (quest.Status)
-                    {
-                        case QuestStatus.Completed:
-                            IOService.Output.DisplayDebugMessage($"[GameStateManager] Quest Completed: {quest.Name} (ID: {quest.ID})", Globals.Enums.ConsoleMessageTypes.INFO);
-                            break;
-                        case QuestStatus.Failed:
-                            IOService.Output.DisplayDebugMessage($"[GameStateManager] Quest Failed: {quest.Name} (ID: {quest.ID})", Globals.Enums.ConsoleMessageTypes.WARNING);
-                            break;
-                    }
-                }
-            }
-        }
+        
 
         /// <summary>
         /// Begins the tick loop; every tickIntervalMs milliseconds, the Tick() method will be called to update time tracking and trigger checks.
@@ -213,59 +205,20 @@ namespace AshborneGame._Core.Game
         #endregion Tick
 
         #region Location Time Tracking
-        public TimeSpan GetLiveTimeInCurrentLocation()
-        {
-            return _realTimeInCurrentLocation;
-        }
-
         public void OnPlayerEnterLocation(Location location)
         {
             if (_currentLocation != null)
             {
                 if (!_locationDurations.ContainsKey(_currentLocation))
-                    _locationDurations[_currentLocation] = TimeSpan.Zero;
+                    _locationDurations[_currentLocation] = _ticksInCurrentLocation;
 
-                _locationDurations[_currentLocation] += _realTimeInCurrentLocation;
+                _locationDurations[_currentLocation] += _ticksInCurrentLocation;
             }
 
             _currentLocation = location;
-            _locationEnteredTime = DateTime.UtcNow;
-            _realTimeInCurrentLocation = TimeSpan.Zero;
 
             if (!_locationDurations.ContainsKey(_currentLocation))
-                _locationDurations[_currentLocation] = TimeSpan.Zero;
-
-            if (GameContext.Player == null)
-            {
-                throw new InvalidOperationException("GameContext.Player is null. Cannot set current location.");
-            }
-
-            if (location == null)
-            {
-                throw new ArgumentNullException(nameof(location), "Location cannot be null.");
-            }
-
-            if (GameContext.Player.CurrentScene == null)
-            {
-                throw new InvalidOperationException("GameContext.Player.CurrentScene is null. Cannot set current location.");
-            }
-
-            if (GameContext.Player.CurrentScene.Locations == null)
-            {
-                throw new InvalidOperationException("GameContext.Player.CurrentScene.Locations is null. Cannot set current location.");
-            }
-
-            if (!GameContext.Player.CurrentScene.Locations.Contains(_currentLocation))
-            {
-                // We've moved to a new scene
-                // Increment the scene number
-                if (!TryDecrementCounter(StateKeys.Counters.Player.CurrentSceneNo))
-                {
-                    SetCounter(StateKeys.Counters.Player.CurrentSceneNo, 0);
-                }
-                // Change the player's scene
-                GameContext.Player.MoveTo(GameContext.Player.CurrentLocation.Scene);
-            }
+                _locationDurations[_currentLocation] = 0;
         }
 
         public Location? CurrentLocation => _currentLocation;

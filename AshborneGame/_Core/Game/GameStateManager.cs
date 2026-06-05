@@ -21,11 +21,11 @@ namespace AshborneGame._Core.Game
         public Dictionary<string, object> Variables { get; private set; } = new();
         public Dictionary<string, Item> Masks { get; private set; } = new();
 
-        public TimeTracker TimeTracker { get; private set; } = new();
+        public TimeTracker TimeTracker { get; private set; }
 
         private Player _player;
 
-        private List<Quest> _quests = [];
+        private List<Quest> _quests = new List<Quest>();
 
         public GameStateManager(Player player)
         {
@@ -228,16 +228,44 @@ namespace AshborneGame._Core.Game
 
         #endregion
 
-        #region Quests
 
-        public void AddQuest(Quest quest)
+        public void OnPlayerEnterLocation(Location location)
         {
-            _quests.Add(quest);
+            GameContext.TimeTracker.OnPlayerEnterLocation(location);
+
+            if (GameContext.Player == null)
+            {
+                throw new InvalidOperationException("GameContext.Player is null. Cannot set current location.");
+            }
+
+            if (location == null)
+            {
+                throw new ArgumentNullException(nameof(location), "Location cannot be null.");
+            }
+
+            if (GameContext.Player.CurrentScene == null)
+            {
+                throw new InvalidOperationException("GameContext.Player.CurrentScene is null. Cannot set current location.");
+            }
+
+            if (GameContext.Player.CurrentScene.Locations == null)
+            {
+                throw new InvalidOperationException("GameContext.Player.CurrentScene.Locations is null. Cannot set current location.");
+            }
+
+            if (!GameContext.Player.CurrentScene.Locations.Contains(location))
+            {
+                // We've moved to a new scene
+                // Increment the scene number
+                if (!TryDecrementCounter(StateKeys.Counters.Player.CurrentSceneNo))
+                {
+                    SetCounter(StateKeys.Counters.Player.CurrentSceneNo, 0);
+                }
+                // Change the player's scene
+                GameContext.Player.MoveTo(GameContext.Player.CurrentLocation.Scene);
+            }
         }
 
-        #endregion
-
-        
 
         #region Location Visit Tracking
         /// <summary>

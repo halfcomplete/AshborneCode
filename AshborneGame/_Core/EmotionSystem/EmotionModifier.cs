@@ -9,10 +9,10 @@ namespace AshborneGame._Core.EmotionSystem
     {
         public EmotionTypes Type { get; private set; }
         public int InitialAmount { get; private set; }
-        
+
         /// <summary>
         /// Controls duration. Higher intensity = slower decay. 
-        /// E.g., an arbitrary high value like 9999 means effectively permanent.
+        /// E.g., an arbitrary high value like 9999 means effectively permanent, while a value of 1 means it decays very quickly. Must be at least 0.
         /// </summary>
         public int Intensity { get; private set; }
         
@@ -21,6 +21,13 @@ namespace AshborneGame._Core.EmotionSystem
         /// </summary>
         public int StartHour { get; private set; }
 
+        /// <summary>
+        /// Creates a new modifier for a particular emotion.
+        /// </summary>
+        /// <param name="type">The emotion that this modifier affects.</param>
+        /// <param name="initialAmount">The initial amount of the modifier.</param>
+        /// <param name="intensity">The intensity of the modifier, controlling decay rate. The higher this is, the slower the decay. Must be at least 0.</param>
+        /// <param name="startHour">The in-game hour when the modifier was applied.</param>
         public EmotionModifier(EmotionTypes type, int initialAmount, int intensity, int startHour)
         {
             Type = type;
@@ -31,6 +38,9 @@ namespace AshborneGame._Core.EmotionSystem
 
         /// <summary>
         /// Lazily calculates the current value of this emotion modifier based on the time elapsed.
+        /// The way the modifier decays over time is determined by its intensity. The higher the intensity, the slower it decays.
+        /// <br>The formula is: <code>amountDecayed = hoursElapsed / Intensity</code></br>
+        /// Note: the formula uses integer division, meaning any fractional part is discarded and will only affect the value later.
         /// </summary>
         public int GetCurrentAmount(int currentTotalHours)
         {
