@@ -5,6 +5,10 @@ using System.Runtime.CompilerServices;
 
 namespace AshborneGame._Core.Data.BOCS;
 
+/// <summary>
+/// An abstract class representing any object in the game using the BOCS architecture.
+/// Contains attributes and methods that allow for tracking and modification of Behaviours on this object.
+/// </summary>
 public abstract class BOCSGameObject
 {
     /// <summary>
@@ -17,11 +21,29 @@ public abstract class BOCSGameObject
     /// </summary>
     public string ID { get; init; } = Guid.NewGuid().ToString();
 
+    /// <summary>
+    /// Represents the Behaviours attached to this BOCSGameObject.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The key is a specific behaviour module type, and the value is a List containing all the behaviours that implement that module.
+    /// </para>
+    /// Note that a behaviour attached to this BOCSGameObject may implement multiple modules, and thus would be referenced in multiple key-value pairs.
+    /// </remarks>
     public Dictionary<Type, List<object>> Behaviours { get; private set; } = new();
 
     #region Behaviours
+    /// <summary>
+    /// Adds a given Behaviour to this BOCSGameObject.
+    /// </summary>
+    /// <param name="type">The main module type the Behaviour implements. Used as the key in the key-value pair when adding this Behaviour to the Behaviours dictonary.</param>
+    /// <param name="behaviour">The Behaviour to be added.</param>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="InvalidOperationException"></exception>
     public async void AddBehaviour(Type type, object behaviour)
     {
+        // Throw if null
         if (type == null || behaviour == null)
             throw new ArgumentNullException();
 
@@ -35,7 +57,7 @@ public abstract class BOCSGameObject
         if (type == typeof(IActOnEquip) && !Behaviours.ContainsKey(typeof(IEquippable)))
             throw new InvalidOperationException($"Cannot add IActOnEquip without IEquippable. {Name} must be equippable before it can act on equip.");
 
-        // Initialize the list if it doesn't exist
+        // Initialise the list if it doesn't exist
         if (!Behaviours.ContainsKey(type))
         {
             Behaviours[type] = new List<object>();
@@ -49,20 +71,42 @@ public abstract class BOCSGameObject
             await IOService.Output.DisplayDebugMessage($"{Name} is now usable.", ConsoleMessageTypes.ERROR);
         }
 
+#if DEBUG
+        // Debug messages
         await IOService.Output.DisplayDebugMessage($"Added behaviour of type {type.FullName} to {Name}.", ConsoleMessageTypes.INFO);
         await IOService.Output.DisplayDebugMessage($"All registered behaviours for {Name}: {string.Join(", ", Behaviours.Keys.Select(t => t.Name))}", ConsoleMessageTypes.INFO);
         foreach (var b in Behaviours)
         {
             await IOService.Output.DisplayDebugMessage($"- {b.GetType().Name}: {string.Join(", ", b)}", ConsoleMessageTypes.INFO);
         }
+#endif
     }
 
+    /// <summary>
+    /// Removes all Behaviours assigned to the key given.
+    /// </summary>
+    /// <remarks>
+    /// Note that this does not fully remove any Behaviours who are registered with more than one module (key) in the Dictionary.
+    /// </remarks>
+    /// <typeparam name="T">The module type (key) that will be removed.</typeparam>
     public void RemoveBehaviour<T>() where T : class => Behaviours.Remove(typeof(T));
 
+    /// <summary>
+    /// Tries to retrieve the first Behaviour registered in this BOCSGameObject that implements the given module.
+    /// </summary>
+    /// <typeparam name="T">The module type (key) that will be retrieved.</typeparam>
+    /// <returns>
+    /// An asynchronous Task where the first value is whether the retrieval was successful, and the second value is the Behaviour retrieved.
+    /// If the operation was unsuccessful, T is null.
+    /// </returns>
     public async Task<(bool, T)> TryGetBehaviour<T>() where T : class
     {
+#if DEBUG
+        // Debug messages
         await IOService.Output.DisplayDebugMessage($"Attempting to get behaviour of type {typeof(T).FullName} from {Name}.", ConsoleMessageTypes.INFO);
         await IOService.Output.DisplayDebugMessage($"{Name} has Behaviours:", ConsoleMessageTypes.INFO);
+        
+        // Loop over each module and each Behaviour implementing that module and print it
         foreach (var kvp in Behaviours)
         {
             foreach (var b in kvp.Value)
@@ -70,17 +114,26 @@ public abstract class BOCSGameObject
                 await IOService.Output.DisplayDebugMessage($"- {kvp.Key.Name}: {b.GetType().FullName}", ConsoleMessageTypes.INFO);
             }
         }
+#endif
+        // Check if the given module T exists in Behaviours
         if (Behaviours.TryGetValue(typeof(T), out var behaviours) && behaviours.Count > 0 && behaviours[0] is T castedBehaviour)
         {
+            // If it does, return the first Behaviour in the list
             await IOService.Output.DisplayDebugMessage($"Successfully retrieved behaviour of type {typeof(T).FullName} from {Name}", ConsoleMessageTypes.INFO);
             return (true, castedBehaviour);
         }
+        // If not, return false and null
         await IOService.Output.DisplayDebugMessage($"Failed to retrieve behaviour of type {typeof(T).Name} from {Name}.", ConsoleMessageTypes.INFO);
         return (false, null!);
     }
 
     public bool HasBehaviours<T>() where T : class => Behaviours.ContainsKey(typeof(T)) && Behaviours[typeof(T)].Count > 0;
 
+    /// <summary>
+    /// Retrieves all Behaviours implementing the given module.
+    /// </summary>
+    /// <typeparam name="T">The module to retrieve.</typeparam>
+    /// <returns>An IEnumerable containing a reference to all the Behaviours implementing the module T.</returns>
     public IEnumerable<T> GetAllBehaviours<T>() where T : class
     {
         if (Behaviours.TryGetValue(typeof(T), out var behaviours))
