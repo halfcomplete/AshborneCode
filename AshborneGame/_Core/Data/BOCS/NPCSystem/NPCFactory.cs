@@ -4,6 +4,9 @@ using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
 
 namespace AshborneGame._Core.Data.BOCS.NPCSystem
 {
+    /// <summary>
+    /// A static class with public methods to create and return NPCs from preset "templates".
+    /// </summary>
     public static class NPCFactory
     {
         /// <summary>
@@ -77,6 +80,13 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
             return npc;
         }
 
+        /// <summary>
+        /// Creates a dummy NPC which the player can't talk to, but can hit.
+        /// </summary>
+        /// <param name="name">The name of the dummy.</param>
+        /// <param name="description">A short description of the dummy.</param>
+        /// <param name="maxHealth">The maximum health of the dummy.</param>
+        /// <returns></returns>
         public static NPC CreateDummy(string name, string description, int maxHealth)
         {
             var dummy = new NPC(name, description);
