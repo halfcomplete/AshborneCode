@@ -64,7 +64,16 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
             return npc;
         }
 
-        public static NPC CreateTradeableNPC(string name, string description, string greeting, string selfDescription)
+        /// <summary>
+        /// Instantiates a new NPC that has an inventory and can trade with the player. By default doesn't have a dialogue file, but one can be added.
+        /// </summary>
+        /// <param name="name">The name of the NPC.</param>
+        /// <param name="description">A short description of the NPC.</param>
+        /// <param name="greeting">The NPC's default greeting.</param>
+        /// <param name="dialogueFileName">The file name of the NPC's dialogue. Null by default.</param>
+        /// <returns>An NPC object.</returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static NPC CreateTradeableNPC(string name, string description, string greeting, string? dialogueFileName = null)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -75,7 +84,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
                 throw new ArgumentException("Description cannot be null or empty.", nameof(description));
             }
 
-            NPC npc = new NPC(name, description, greeting, selfDescription);
+            NPC npc = new NPC(name, description, greeting, dialogueFileName);
             npc.AddBehaviour(typeof(IHasInventory), new TradeableNPCBehaviour());
             return npc;
         }
