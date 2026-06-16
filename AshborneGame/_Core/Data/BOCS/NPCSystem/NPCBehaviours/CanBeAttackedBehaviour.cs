@@ -5,6 +5,10 @@ using AshborneGame._Core.Globals.Services;
 
 namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
 {
+    /// <summary>
+    /// An NPC-specific Behaviour that allows the NPC to be attacked/damaged by the player or another hostile entity.
+    /// <para>This Behaviour notifies other Behaviours that respond to attacks through its public <c>Attack(int)</c> method.</para>
+    /// </summary>
     public class CanBeAttackedBehaviour : ICanBeAttacked, IAwareOfParentObject
     {
         public BOCSGameObject ParentObject { get; set; }
@@ -17,6 +21,12 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
             ParentObject = parentObject;
         }
 
+        /// <summary>
+        /// Reduces the health of the NPC by <c>damage</c> points. If <c>Health</c> is below 1, the NPC dies.
+        /// </summary>
+        /// <remarks>
+        /// Additionally notifies all of the parent objects' Behaviours that implement the <c>IActOnAttacked</c> module.
+        /// </remarks>
         public async void Attacked(float damage)
         {
             Health -= damage;
