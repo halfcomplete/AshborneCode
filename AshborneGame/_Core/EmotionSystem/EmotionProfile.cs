@@ -5,8 +5,7 @@ using System.Linq;
 namespace AshborneGame._Core.EmotionSystem
 {
     /// <summary>
-    /// Represents a profile that manages the dynamic emotional state of a character by tracking and evaluating active
-    /// emotion modifiers over time.
+    /// Manages the dynamic emotional state of a character over time by tracking modifiers. Note that it tracks EVERY modifier acting on a single character, not just for one emotion.
     /// </summary>
     /// <remarks>The EmotionProfile class allows for the addition and evaluation of emotion modifiers, each of
     /// which can influence the intensity of a specific emotion type. The overall emotional state is determined by

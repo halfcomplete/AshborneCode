@@ -14,6 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="_Core\EmotionSystem\EmotionProfile.cs~RF22516c3c.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="_Core\Data\Dialogue\Act1\Scene1\Act1_Scene1_Intro_Dialogue.json" />
     <Content Include="_Core\Data\Dialogue\Act1\Scene1\Act1_Scene1_Ossaneth_Domain_Intro.json" />
     <Content Include="_Core\Data\Dialogue\Act1\Scene1\Act1_Scene1_Prisoner_Dialogue.json" />
