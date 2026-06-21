@@ -19,7 +19,7 @@ public abstract class BOCSGameObject
     /// <summary>
     /// Gets the unique identifier of the object.
     /// </summary>
-    public string ID { get; init; } = Guid.NewGuid().ToString();
+    public Guid ID { get; private set; } = Guid.NewGuid();
 
     /// <summary>
     /// Represents the Behaviours attached to this BOCSGameObject.
@@ -31,6 +31,11 @@ public abstract class BOCSGameObject
     /// Note that a behaviour attached to this BOCSGameObject may implement multiple modules, and thus would be referenced in multiple key-value pairs.
     /// </remarks>
     public Dictionary<Type, List<object>> Behaviours { get; private set; } = new();
+
+    public void OverrideGuid(Guid guid)
+    {
+        ID = guid;
+    }
 
     #region Behaviours
     /// <summary>
