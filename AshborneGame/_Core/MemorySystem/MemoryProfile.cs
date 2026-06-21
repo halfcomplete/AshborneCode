@@ -1,5 +1,8 @@
-﻿using System;
+﻿using AshborneGame._Core.EmotionSystem;
+using AshborneGame._Core.Globals.Enums;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,7 +23,12 @@ namespace AshborneGame._Core.MemorySystem
             _memories = new();
         }
 
-        public void AddMemory(Memory memory)
+        /// <summary>
+        /// Adds a new memory to this MemoryProfile and reinforces existing similar memories.
+        /// </summary>
+        /// <param name="memory">The memory to be added.</param>
+        /// <param name="totalInGameHours">The current total in-game hours. Used to determine memory similarity.</param>
+        public void AddMemory(Memory memory, int totalInGameHours)
         {
             // Loop over each existing memory and check how similar it is to the newly added memory
             // Then reinforce that memory based on that similarity
@@ -33,7 +41,7 @@ namespace AshborneGame._Core.MemorySystem
             {
                 Memory existingMemory = _memories[i];
 
-                float similarity = CalculateSimilarity(memory, existingMemory);
+                float similarity = CalculateSimilarity(memory, existingMemory, totalInGameHours);
 
                 (memory, _memories[i]) = ReinforceMemories(memory, existingMemory, CalculateStrengthReinforcement(similarity));
             }
@@ -71,11 +79,11 @@ namespace AshborneGame._Core.MemorySystem
         /// <br>Emotional similarity has a weighting of 0.1</br>
         /// </remarks>
         /// <returns>A float between 0 and 1, where 0 means maximally dissimilar and 1 means maximally similar (identical).</returns>
-        private static float CalculateSimilarity(Memory memory1, Memory memory2)
+        private static float CalculateSimilarity(Memory memory1, Memory memory2, int totalInGameHours)
         {
             float cSim = CalculateCauseSimilarity(memory1, memory2);
             float tSim = CalculateTagSimilarity(memory1, memory2);
-            float eSim = CalculateEmotionalSimilarity(memory1, memory2);
+            float eSim = CalculateEmotionalSimilarity(memory1, memory2, totalInGameHours);
 
             float similarity = (cSim * 0.5f) + (tSim * 0.4f) + (eSim * 0.1f);
 
@@ -130,15 +138,42 @@ namespace AshborneGame._Core.MemorySystem
         /// <summary>
         /// Calculates the similarity between two memory's EmotionModifiers.
         /// </summary>
-        /// <returns>A float between -1 and 1, where -1 means drastically different and 1 means the two are the exact same.</returns>
-        private static float CalculateEmotionalSimilarity(Memory memory1, Memory memory2)
+        /// <returns>A float between 0 and 1, where 0 means maximally dissimilar and 1 means maximally similar (identical).</returns>
+        private static float CalculateEmotionalSimilarity(Memory memory1, Memory memory2, int totalInGameHours)
         {
             float similarity = 0;
 
-            var emotions1 = memory1.EmotionModifiers;
-            var emotions2 = memory2.EmotionModifiers;
+            var emotions1 = new List<EmotionModifier>(memory1.EmotionModifiers);
+            var emotions2 = new List<EmotionModifier>(memory2.EmotionModifiers);
 
-            
+            HashSet<EmotionTypes> uniqueEmotions = new();
+
+            foreach (var mod1 in emotions1)
+            {
+                uniqueEmotions.Add(mod1.Type);
+                EmotionModifier? mod2 = emotions2.FirstOrDefault(m => m.Type == mod1.Type);
+
+                // If there is an emotion modifier shared by both memory1 and memory2
+                if (mod2 != null)
+                {
+                    similarity += 1 - Math.Abs(mod1.GetCurrentAmount(totalInGameHours) - mod2.GetCurrentAmount(totalInGameHours));
+                }
+            }
+
+            foreach (var mod2 in emotions2)
+            {
+                uniqueEmotions.Add(mod2.Type);
+                EmotionModifier? mod1 = emotions2.FirstOrDefault(m => m.Type == mod2.Type);
+
+                // If there is an emotion modifier shared by both memory1 and memory2
+                // This SHOULD always be false after the first round of checks but just in case
+                if (mod1 != null)
+                {
+                    throw new UnreachableException($"MemoryProfile: discovered emotion modifier affecting {mod1.Type} in memory2.");
+                }
+            }
+
+            similarity /= (float)uniqueEmotions.Count();
 
             return similarity;
         }
