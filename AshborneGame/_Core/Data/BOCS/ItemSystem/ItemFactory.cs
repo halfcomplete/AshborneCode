@@ -44,7 +44,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             return AddBaseBehaviours(item);
         }
 
-        public static Item CreateKey(string name, string description, string useDescription, List<string> unlockableObjectIDs)
+        public static Item CreateKey(string name, string description, string useDescription, List<Guid> unlockableObjectIDs)
         {
             var item = new Item(name, description, useDescription, 1, ItemTypes.Key, ItemQualities.None);
             item.AddBehaviour(typeof(IUsable), new UsableBehaviour(item));
