@@ -21,7 +21,7 @@ namespace AshborneGame._Core.MemorySystem
         /// </summary>
         public NPC Owner { get; init; }
 
-        private float _intensity;
+        private double _intensity;
 
         /// <summary>
         /// How significant this Memory is to the NPC. Rarely changes.
@@ -43,7 +43,7 @@ namespace AshborneGame._Core.MemorySystem
         /// </para>
         /// Constrained from 0 (the NPC regards the memory as completely unimportant) to 1 (the Memory is very, very important/significant to the NPC).
         /// </remarks>
-        public float Intensity
+        public double Intensity
         {
             get => _intensity;
             set
@@ -52,7 +52,7 @@ namespace AshborneGame._Core.MemorySystem
             }
         }
 
-        private float _strength;
+        private double _strength;
 
         /// <summary>
         /// How strongly the NPC remembers this Memory. Decays over time depending on the Intensity but may be reinforced.
@@ -61,7 +61,7 @@ namespace AshborneGame._Core.MemorySystem
         /// Differs from Intensity as it essentially simulates the NPC's tendency to forget memories over time.
         /// Constrained from 0 (the NPC has forgotten the Memory) to 1 (the Memory is fresh in the NPC's mind).
         /// </remarks>
-        public float Strength 
+        public double Strength 
         { 
             get => _strength; 
             set
@@ -70,6 +70,8 @@ namespace AshborneGame._Core.MemorySystem
             }
         }
 
+        public bool IsActive { get => Strength > 0.15f; }
+
         /// <summary>
         /// How much this Memory actually influences the NPC's decision making. Higher values means this Memory has greater influence.
         /// </summary>
@@ -77,7 +79,7 @@ namespace AshborneGame._Core.MemorySystem
         /// Influence is higher the more recently this Memory was created or reinforced.
         /// Influence is also higher the more Intense this Memory is (i.e., the more important this Memory is to the NPC).
         /// </remarks>
-        public float Influence { get => Intensity * Strength; }
+        public double Influence { get => Intensity * Strength; }
 
         /// <summary>
         /// The cause of this Memory/what created the Memory. Usually a GameEvent.
@@ -101,7 +103,7 @@ namespace AshborneGame._Core.MemorySystem
         /// </summary>
         public int HourLastReinforcedAt { get; private set; }
 
-        public Memory(NPC owner, float intensity, ICanCauseMemories cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTags> tags, int hourCreatedAt, int hourLastReinforcedAt)
+        public Memory(NPC owner, double intensity, ICanCauseMemories cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTags> tags, int hourCreatedAt, int hourLastReinforcedAt)
         {
             ID = Guid.NewGuid().ToString();
             Owner = owner;
@@ -114,9 +116,9 @@ namespace AshborneGame._Core.MemorySystem
             HourLastReinforcedAt = hourLastReinforcedAt;
         }
 
-        public static float GetStrengthFloorBasedOnIntensity(float intensity)
+        public static double GetStrengthFloorBasedOnIntensity(double intensity)
         {
-            return (float)Math.Min(1.0, Math.Max(0.0, Math.Pow(intensity, 3.0)/2.0));
+            return (double)Math.Min(1.0, Math.Max(0.0, Math.Pow(intensity, 3.0)/2.0));
         }
 
         public void Reinforce(int currentTotalInGameHours)

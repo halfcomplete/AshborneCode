@@ -23,6 +23,8 @@ namespace AshborneGame._Core.MemorySystem
             _memories = new();
         }
 
+        #region Adding and Reinforcing Memories
+
         /// <summary>
         /// Adds a new memory to this MemoryProfile and reinforces existing similar memories.
         /// </summary>
@@ -41,7 +43,7 @@ namespace AshborneGame._Core.MemorySystem
             {
                 Memory existingMemory = _memories[i];
 
-                float similarity = CalculateSimilarity(memory, existingMemory, totalInGameHours);
+                double similarity = CalculateSimilarity(memory, existingMemory, totalInGameHours);
 
                 (memory, _memories[i]) = ReinforceMemories(memory, existingMemory, CalculateStrengthReinforcement(similarity));
             }
@@ -51,13 +53,13 @@ namespace AshborneGame._Core.MemorySystem
         /// <summary>
         /// Calculates the amount that two memories with a certain similarity should increase their strengths by.
         /// </summary>
-        private static float CalculateStrengthReinforcement(float similarity)
+        private static double CalculateStrengthReinforcement(double similarity)
         {
-            float strengthReinforcement = 0;
+            double strengthReinforcement = 0;
 
             if (similarity > 0.3f)
             {
-                strengthReinforcement += (float)Math.Pow(similarity - 0.3f, 2);
+                strengthReinforcement += (double)Math.Pow(similarity - 0.3f, 2);
             }
 
             return strengthReinforcement;
@@ -67,12 +69,14 @@ namespace AshborneGame._Core.MemorySystem
         /// Reinforces the strength of two memories given the amount of reinforce each by.
         /// </summary>
         /// <returns>A tuple (Memory, Memory) where the first item is the new memory and the second item is the existing memory.</returns>
-        private static (Memory, Memory) ReinforceMemories(Memory memory, Memory existingMemory, float strengthReinforcement)
+        private static (Memory, Memory) ReinforceMemories(Memory memory, Memory existingMemory, double strengthReinforcement)
         {
             memory.Strength += strengthReinforcement;
             existingMemory.Strength += strengthReinforcement;
             return (memory, existingMemory);
         }
+
+        #endregion Adding and Reinforcing Memories
 
         #region Similarity Calculations
 
@@ -84,14 +88,14 @@ namespace AshborneGame._Core.MemorySystem
         /// <br>Tag similarity has a weighting of 0.3</br>
         /// <br>Emotional similarity has a weighting of 0.1</br>
         /// </remarks>
-        /// <returns>A float between 0 and 1, where 0 means maximally dissimilar and 1 means maximally similar (identical).</returns>
-        private static float CalculateSimilarity(Memory memory1, Memory memory2, int totalInGameHours)
+        /// <returns>A double between 0 and 1, where 0 means maximally dissimilar and 1 means maximally similar (identical).</returns>
+        private static double CalculateSimilarity(Memory memory1, Memory memory2, int totalInGameHours)
         {
-            float cSim = CalculateCauseSimilarity(memory1, memory2);
-            float tSim = CalculateTagSimilarity(memory1, memory2);
-            float eSim = CalculateEmotionalSimilarity(memory1, memory2, totalInGameHours);
+            double cSim = CalculateCauseSimilarity(memory1, memory2);
+            double tSim = CalculateTagSimilarity(memory1, memory2);
+            double eSim = CalculateEmotionalSimilarity(memory1, memory2, totalInGameHours);
 
-            float similarity = (cSim * 0.5f) + (tSim * 0.4f) + (eSim * 0.1f);
+            double similarity = (cSim * 0.5f) + (tSim * 0.4f) + (eSim * 0.1f);
 
             return similarity;
         }
@@ -99,10 +103,10 @@ namespace AshborneGame._Core.MemorySystem
         /// <summary>
         /// Calculates the similarity between two memories' causes.
         /// </summary>
-        /// <returns>A float between 0 and 1, where 0 means maximally dissimilar and 1 means maximally similar (identical).</returns>
-        private static float CalculateCauseSimilarity(Memory memory1, Memory memory2)
+        /// <returns>A double between 0 and 1, where 0 means maximally dissimilar and 1 means maximally similar (identical).</returns>
+        private static double CalculateCauseSimilarity(Memory memory1, Memory memory2)
         {
-            float similarity = 0;
+            double similarity = 0;
 
             var cause1 = memory1.Cause;
             var cause2 = memory2.Cause;
@@ -122,8 +126,8 @@ namespace AshborneGame._Core.MemorySystem
         /// <summary>
         /// Calculates the similarity between two memories' tags.
         /// </summary>
-        /// <returns>A float between 0 and 1, where 0 means maximally dissimilar and 1 means maximally similar (identical).</returns>
-        private static float CalculateTagSimilarity(Memory memory1, Memory memory2)
+        /// <returns>A double between 0 and 1, where 0 means maximally dissimilar and 1 means maximally similar (identical).</returns>
+        private static double CalculateTagSimilarity(Memory memory1, Memory memory2)
         {
             var tags1 = memory1.Tags;
             var tags2 = memory2.Tags;
@@ -134,7 +138,7 @@ namespace AshborneGame._Core.MemorySystem
             var union = tags1.Union(tags2);
             int unionCount = union.Count();
 
-            float similarity = (float)commonCount / (float)unionCount;
+            double similarity = (double)commonCount / (double)unionCount;
 
             return similarity;
         }
@@ -142,10 +146,10 @@ namespace AshborneGame._Core.MemorySystem
         /// <summary>
         /// Calculates the similarity between two memory's EmotionModifiers.
         /// </summary>
-        /// <returns>A float between 0 and 1, where 0 means maximally dissimilar and 1 means maximally similar (identical).</returns>
-        private static float CalculateEmotionalSimilarity(Memory memory1, Memory memory2, int totalInGameHours)
+        /// <returns>A double between 0 and 1, where 0 means maximally dissimilar and 1 means maximally similar (identical).</returns>
+        private static double CalculateEmotionalSimilarity(Memory memory1, Memory memory2, int totalInGameHours)
         {
-            float similarity = 0;
+            double similarity = 0;
 
             var emotions1 = new List<EmotionModifier>(memory1.EmotionModifiers);
             var emotions2 = new List<EmotionModifier>(memory2.EmotionModifiers);
@@ -177,11 +181,45 @@ namespace AshborneGame._Core.MemorySystem
                 }
             }
 
-            similarity /= (float)uniqueEmotions.Count();
+            similarity /= (double)uniqueEmotions.Count();
 
             return similarity;
         }
 
         #endregion Similarity Calculations
+
+        #region API
+
+        public List<Memory> GetMemories() => _memories;
+
+        public List<Memory> GetActiveMemories() => _memories.Where(m => m.IsActive).ToList();
+
+        public List<Memory> GetMemoriesByCause(ICanCauseMemories cause) => _memories.Where(m => m.Cause == cause).ToList();
+
+        public List<Memory> GetMemoriesByCauseCategory(ICanCauseMemories cause) => _memories.Where(m => m.Cause.Category == cause.Category).ToList();
+
+        public List<Memory> GetMemoriesByTag(MemoryTags tag) => _memories.Where(m => m.Tags.Contains(tag)).ToList();
+
+        public List<Memory> GetMemoriesOrderedByStrength() => _memories.OrderByDescending(m => m.Strength).ToList();
+
+        public bool RemembersEvent(ICanCauseMemories cause) => _memories.Any(m => m.Cause == cause);
+
+        #endregion API
+
+        #region Memory Decay
+
+        public void TickMemoryDecay
+
+        /// <summary>
+        /// Calculates how much a memory's Strength should reduce by, given the memory's Intensity and the number of hours passed.
+        /// </summary>
+        /// <returns>A double representing how much the Strength should decrease by</returns>
+        public static double CalculateStrengthDecay(double intensity, int hoursPassed)
+        {
+            double decayPerHour = (0.4 - 0.399) * Math.Pow(intensity, 0.5);
+            return hoursPassed * decayPerHour;
+        }
+
+        #endregion Memory Decay
     }
 }
