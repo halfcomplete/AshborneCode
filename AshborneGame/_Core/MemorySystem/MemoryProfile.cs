@@ -51,7 +51,7 @@ namespace AshborneGame._Core.MemorySystem
         /// <summary>
         /// Calculates the amount that two memories with a certain similarity should increase their strengths by.
         /// </summary>
-        private float CalculateStrengthReinforcement(float similarity)
+        private static float CalculateStrengthReinforcement(float similarity)
         {
             float strengthReinforcement = 0;
 
@@ -63,12 +63,18 @@ namespace AshborneGame._Core.MemorySystem
             return strengthReinforcement;
         }
 
-        private (Memory, Memory) ReinforceMemories(Memory memory, Memory existingMemory, float strengthReinforcement)
+        /// <summary>
+        /// Reinforces the strength of two memories given the amount of reinforce each by.
+        /// </summary>
+        /// <returns>A tuple (Memory, Memory) where the first item is the new memory and the second item is the existing memory.</returns>
+        private static (Memory, Memory) ReinforceMemories(Memory memory, Memory existingMemory, float strengthReinforcement)
         {
             memory.Strength += strengthReinforcement;
             existingMemory.Strength += strengthReinforcement;
             return (memory, existingMemory);
         }
+
+        #region Similarity Calculations
 
         /// <summary>
         /// Calculates the similarity between two memories.
@@ -119,8 +125,6 @@ namespace AshborneGame._Core.MemorySystem
         /// <returns>A float between 0 and 1, where 0 means maximally dissimilar and 1 means maximally similar (identical).</returns>
         private static float CalculateTagSimilarity(Memory memory1, Memory memory2)
         {
-            float similarity = 0;
-
             var tags1 = memory1.Tags;
             var tags2 = memory2.Tags;
 
@@ -130,7 +134,7 @@ namespace AshborneGame._Core.MemorySystem
             var union = tags1.Union(tags2);
             int unionCount = union.Count();
 
-            similarity = (float)commonCount / (float)unionCount;
+            float similarity = (float)commonCount / (float)unionCount;
 
             return similarity;
         }
@@ -177,5 +181,7 @@ namespace AshborneGame._Core.MemorySystem
 
             return similarity;
         }
+
+        #endregion Similarity Calculations
     }
 }
