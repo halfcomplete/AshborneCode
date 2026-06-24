@@ -15,8 +15,16 @@
     }
 
     /// <summary>
+    /// Marker interface for all game events that are able to create Memories in NPCs.
+    /// </summary>
+    public interface IMemorableGameEvent : IGameEvent
+    {
+
+    }
+
+    /// <summary>
     /// Strongly-typed marker interface for events with a specific payload type.
-    /// Use this when you want compile-time enforcement of event data types.
+    /// Use this when compile-time enforcement of event data types is wanted.
     /// </summary>
     /// <typeparam name="TSelf">The event type itself (CRTP pattern for type safety).</typeparam>
     public interface IGameEvent<TSelf> : IGameEvent where TSelf : IGameEvent<TSelf>

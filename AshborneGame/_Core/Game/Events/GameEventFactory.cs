@@ -1,3 +1,7 @@
+using AshborneGame._Core.Data.BOCS.ItemSystem;
+using AshborneGame._Core.Data.BOCS.NPCSystem;
+using AshborneGame._Core.LocationManagement;
+
 namespace AshborneGame._Core.Game.Events
 {
     /// <summary>
@@ -78,6 +82,14 @@ namespace AshborneGame._Core.Game.Events
             /// </summary>
             /// <param name="MaskName">The name of the mask equipped.</param>
             public sealed record MaskEquippedEvent(string MaskName) : IGameEvent;
+
+            /// <summary>
+            /// Test event. Raised when the player steals an item from an NPC.
+            /// </summary>
+            /// <param name="victim">The NPC affected.</param>
+            /// <param name="item">The item stolen.</param>
+            /// <param name="location">The location where the item was stolen.</param>
+            public sealed record StoleItemEvent(NPC victim, Item item, Location location) : IMemorableGameEvent;
         }
 
         /// <summary>
@@ -165,20 +177,6 @@ namespace AshborneGame._Core.Game.Events
             /// </summary>
             /// <param name="HoursPassed">Hours elapsed since last tick.</param>
             public sealed record TickEvent(int HoursPassed) : IGameEvent;
-        }
-    }
-
-    /// <summary>
-    /// Legacy factory class - use <see cref="GameEvents"/> instead.
-    /// </summary>
-    [Obsolete("Use GameEvents nested classes directly. E.g., new GameEvents.OssanethsDomain.OutroTriggeredEvent()")]
-    public static class GameEventFactory
-    {
-        public static class OssanethsDomain
-        {
-            [Obsolete("Use new GameEvents.OssanethsDomain.OutroTriggeredEvent() instead.")]
-            public static GameEvents.OssanethsDomain.OutroTriggeredEvent CreateOssanethsDomainOutroTriggeredEvent() 
-                => new GameEvents.OssanethsDomain.OutroTriggeredEvent();
         }
     }
 }

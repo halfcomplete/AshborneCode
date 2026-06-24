@@ -19,6 +19,8 @@ namespace AshborneGame._Core.MemorySystem
             _memories = memories;
 
             EventBus.Subscribe<GameEvents.System.TickEvent>(e => TickMemoryDecay(e.HoursPassed));
+
+            EventBus.Subscribe<IMemorableGameEvent>(e => ReceiveMemorableEvent(e));
         }
 
         public MemoryProfile()
@@ -27,6 +29,20 @@ namespace AshborneGame._Core.MemorySystem
         }
 
         #region Adding and Reinforcing Memories
+
+        public void ReceiveMemorableEvent(IMemorableGameEvent gameEvent)
+        {
+            // figure out whether the NPC can actually receive this event (same location, etc)
+            // then interpret the event using new thing called EventDefinition:
+            //  - memory archetypes
+            //  - base intensity
+            // event definition describes what the event represents, how serious it generally is and what kinds of emotions it tends to create
+            // then the npc should evaluate the event definition to create a memory
+            // factors include personality, current emotions and attitudes, and existing memories
+            // then generate emotion modifiers
+
+            //finally create memory and add it
+        }
 
         /// <summary>
         /// Adds a new memory to this MemoryProfile and reinforces existing similar memories.
