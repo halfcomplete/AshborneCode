@@ -231,8 +231,6 @@ namespace AshborneGame._Core.MemorySystem
             }
         }
 
-
-
         /// <summary>
         /// Calculates how much a memory's Strength should reduce by, given the memory's Intensity and the number of hours passed.
         /// </summary>
@@ -244,5 +242,20 @@ namespace AshborneGame._Core.MemorySystem
         }
 
         #endregion Memory Decay
+
+        #region Emotion Modifier Calculations
+
+        public static List<EmotionModifier> CalculateInitialEmotionalModifiers(Memory memory)
+        {
+            List<MemoryTags> tags = new List<MemoryTags>(memory.Tags);
+
+            List<EmotionModifier> emotionModifiers = new();
+
+            
+            
+            return emotionModifiers;
+        }
+
+        #endregion Emotion Modifier Calculations
     }
 }
