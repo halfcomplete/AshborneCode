@@ -120,6 +120,8 @@ namespace AshborneGame._Core.Game
 
             AdvanceTime(hoursPassed);
 
+            EventBus.Publish(new GameEvents.System.TickEvent(hoursPassed));
+
             TickLocationTimeTracking(hoursPassed);
             _questTracker.TickQuestTimeTracking(hoursPassed);
         }

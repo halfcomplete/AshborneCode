@@ -163,8 +163,8 @@ namespace AshborneGame._Core.Game.Events
             /// <summary>
             /// Raised when a game tick occurs.
             /// </summary>
-            /// <param name="DeltaTime">Time elapsed since last tick.</param>
-            public sealed record TickEvent(TimeSpan DeltaTime) : IGameEvent;
+            /// <param name="HoursPassed">Hours elapsed since last tick.</param>
+            public sealed record TickEvent(int HoursPassed) : IGameEvent;
         }
     }
 

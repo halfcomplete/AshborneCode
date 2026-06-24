@@ -1,4 +1,5 @@
 ﻿using AshborneGame._Core.EmotionSystem;
+using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Globals.Enums;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,8 @@ namespace AshborneGame._Core.MemorySystem
         public MemoryProfile(List<Memory> memories)
         {
             _memories = memories;
+
+            EventBus.Subscribe<GameEvents.System.TickEvent>(e => TickMemoryDecay(e.HoursPassed));
         }
 
         public MemoryProfile()
@@ -208,7 +211,27 @@ namespace AshborneGame._Core.MemorySystem
 
         #region Memory Decay
 
-        public void TickMemoryDecay
+        /// <summary>
+        /// Ticks this MemoryProfile's memories so that their strength decays.
+        /// </summary>
+        /// <param name="hoursPassed">The number of hours passed since the last tick.</param>
+        public void TickMemoryDecay(int hoursPassed)
+        {
+            // Decay the strength of every memory in this memory profile
+            foreach (Memory mem in _memories)
+            {
+                double strengthDecay = CalculateStrengthDecay(mem.Intensity, hoursPassed);
+
+                mem.Strength -= strengthDecay;
+
+                if (mem.Strength < 0.00001)
+                {
+                    _memories.Remove(mem);
+                }
+            }
+        }
+
+
 
         /// <summary>
         /// Calculates how much a memory's Strength should reduce by, given the memory's Intensity and the number of hours passed.
