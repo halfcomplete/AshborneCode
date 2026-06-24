@@ -18,7 +18,7 @@ namespace AshborneTests
         {
             // Arrange
             // Type = Fear, Amount = 0.5, Intensity = 2, StartHour = 10
-            var modifier = new EmotionModifier(EmotionTypes.Fear, 0.5f, 2, 10);
+            var modifier = new EmotionModifier(EmotionType.Fear, 0.5f, 2, 10);
 
 // Act & Assert
             // At hour 10 (0 elapsed) => amountDecayed = 0 => 0.5
@@ -35,13 +35,13 @@ namespace AshborneTests
         public void GetCurrentAmount_ShouldNotDecayBelowZero_WhenPositiveOrNegative()
         {
             // Arrange (Positive)
-            var positiveMod = new EmotionModifier(EmotionTypes.Happiness, 0.10f, 1, 10);
+            var positiveMod = new EmotionModifier(EmotionType.Happiness, 0.10f, 1, 10);
 
             // Expected to hit 0 at hour 21 (11 elapsed / intensity 1 = 11 decay -> 0.11)
             Assert.Equal(0f, positiveMod.GetCurrentAmount(21), 3);
 
             // Arrange (Negative)
-            var negativeMod = new EmotionModifier(EmotionTypes.Sadness, -0.10f, 1, 10);
+            var negativeMod = new EmotionModifier(EmotionType.Sadness, -0.10f, 1, 10);
 
             // Expected to hit 0 at hour 21
             Assert.Equal(0f, negativeMod.GetCurrentAmount(21), 3);
@@ -51,7 +51,7 @@ namespace AshborneTests
         public void IsDepleted_ShouldReturnTrue_WhenValueReachesZero()
         {
             // Arrange
-            var modifier = new EmotionModifier(EmotionTypes.Anger, 0.05f, 2, 10);
+            var modifier = new EmotionModifier(EmotionType.Anger, 0.05f, 2, 10);
 
             // Act & Assert
             Assert.False(modifier.IsDepleted(10)); // Current 0.05
@@ -71,18 +71,18 @@ namespace AshborneTests
             var profile = new EmotionProfile();
 
             // StartHour = 5.
-            profile.AddModifier(new EmotionModifier(EmotionTypes.Fear, initialAmount: 0.20f, intensity: 2, startHour: 5));
-            profile.AddModifier(new EmotionModifier(EmotionTypes.Fear, initialAmount: 0.30f, intensity: 1, startHour: 5));
-            profile.AddModifier(new EmotionModifier(EmotionTypes.Happiness, initialAmount: 0.50f, intensity: 1, startHour: 5)); // Different type
+            profile.AddModifier(new EmotionModifier(EmotionType.Fear, initialAmount: 0.20f, intensity: 2, startHour: 5));
+            profile.AddModifier(new EmotionModifier(EmotionType.Fear, initialAmount: 0.30f, intensity: 1, startHour: 5));
+            profile.AddModifier(new EmotionModifier(EmotionType.Happiness, initialAmount: 0.50f, intensity: 1, startHour: 5)); // Different type
 
             // Act - Evaluate at Hour 7
             // Mod 1: 0.20 - 0.01 = 0.19
             // Mod 2: 0.30 - 0.02 = 0.28
             // Total Fear = 0.19 + 0.28 = 0.47
-            float fearResult = profile.GetCurrentEmotion(EmotionTypes.Fear, 7);
+            float fearResult = profile.GetCurrentEmotion(EmotionType.Fear, 7);
 
             // Total Happiness: 0.50 - 0.02 = 0.48
-            float happyResult = profile.GetCurrentEmotion(EmotionTypes.Happiness, 7);
+            float happyResult = profile.GetCurrentEmotion(EmotionType.Happiness, 7);
 
             // Assert
             Assert.Equal(0.47f, fearResult, 3);
@@ -96,11 +96,11 @@ namespace AshborneTests
             var profile = new EmotionProfile();
 
             // Total = 1.5
-            profile.AddModifier(new EmotionModifier(EmotionTypes.Disgust, 0.80f, 999, 1));
-            profile.AddModifier(new EmotionModifier(EmotionTypes.Disgust, 0.70f, 999, 1));
+            profile.AddModifier(new EmotionModifier(EmotionType.Disgust, 0.80f, 999, 1));
+            profile.AddModifier(new EmotionModifier(EmotionType.Disgust, 0.70f, 999, 1));
 
             // Act
-            float result = profile.GetCurrentEmotion(EmotionTypes.Disgust, 1);
+            float result = profile.GetCurrentEmotion(EmotionType.Disgust, 1);
 
             // Assert
             Assert.Equal(1f, result, 3);
@@ -113,10 +113,10 @@ namespace AshborneTests
             var profile = new EmotionProfile();
 
             // Total = -0.10
-            profile.AddModifier(new EmotionModifier(EmotionTypes.Sadness, -0.10f, 999, 1));
+            profile.AddModifier(new EmotionModifier(EmotionType.Sadness, -0.10f, 999, 1));
 
             // Act
-            float result = profile.GetCurrentEmotion(EmotionTypes.Sadness, 1);
+            float result = profile.GetCurrentEmotion(EmotionType.Sadness, 1);
 
             // Assert
             Assert.Equal(0f, result, 3);
@@ -130,10 +130,10 @@ namespace AshborneTests
 
             // Initial Amount = 0.05, Intensity = 1, StartHour = 1
             // Will be depleted by Hour 6
-            profile.AddModifier(new EmotionModifier(EmotionTypes.Surprise, 0.05f, 1, 1));
+            profile.AddModifier(new EmotionModifier(EmotionType.Surprise, 0.05f, 1, 1));
 
             // Act: Evaluate at hour 10 (guaranteed depleted)
-            float result = profile.GetCurrentEmotion(EmotionTypes.Surprise, 10);
+            float result = profile.GetCurrentEmotion(EmotionType.Surprise, 10);
 
             // Assert
             Assert.Equal(0f, result, 3);
@@ -141,8 +141,8 @@ namespace AshborneTests
             // Add a new modifier to check if old ones were cleaned out
             // If they weren't cleaned out, this might mess up counts if the old ones had weird boundaries, 
             // but GetCurrentEmotion implicitly removes them via CleanUpDepleted().
-            profile.AddModifier(new EmotionModifier(EmotionTypes.Surprise, 0.10f, 1, 10));
-            float newResult = profile.GetCurrentEmotion(EmotionTypes.Surprise, 10);
+            profile.AddModifier(new EmotionModifier(EmotionType.Surprise, 0.10f, 1, 10));
+            float newResult = profile.GetCurrentEmotion(EmotionType.Surprise, 10);
 
             Assert.Equal(0.10f, newResult, 3);
         }

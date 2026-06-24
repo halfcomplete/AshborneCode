@@ -15,7 +15,7 @@ namespace AshborneGame._Core.Globals.Enums
     /// <item>Contempt + Disgust = Disdain</item>
     /// </list>
     /// </remarks>
-    public enum EmotionTypes
+    public enum EmotionType
     {
         /// <summary>
         /// An emotional state involving feelings of hostility, frustration, and antagonism, often triggered when boundaries are violated.

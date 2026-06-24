@@ -7,10 +7,22 @@ using System.Threading.Tasks;
 namespace AshborneGame._Core.MemorySystem
 {
     /// <summary>
-    /// Types of tags that a Memory may have. Used for similarity and contradiction checks.
+    /// An enum for the different emotional archetypes that a Memory may have. Used for similarity checks and calculating the emotional impact of a Memory.
     /// </summary>
+    /// <remarks>
+    /// Archetypes also define emotional tendencies.
+    /// </remarks>
     public enum MemoryTags
     {
-
+        Kindness,
+        Betrayal,
+        Theft,
+        Violence,
+        Sacrifice,
+        Generosity,
+        Protection,
+        Humiliation,
+        Deception,
+        Curiosity
     }
 }

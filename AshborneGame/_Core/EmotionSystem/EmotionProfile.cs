@@ -29,7 +29,7 @@ namespace AshborneGame._Core.EmotionSystem
         /// Retrieves the evaluated emotion intensity for a specific type, 
         /// clamped between 0.0 and 1.0, factoring in time decay.
         /// </summary>
-        public float GetCurrentEmotion(EmotionTypes type, int currentTotalHours)
+        public float GetCurrentEmotion(EmotionType type, int currentTotalHours)
         {
             CleanUpDepleted(currentTotalHours);
 

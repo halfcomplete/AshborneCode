@@ -157,7 +157,7 @@ namespace AshborneGame._Core.MemorySystem
             var emotions1 = new List<EmotionModifier>(memory1.EmotionModifiers);
             var emotions2 = new List<EmotionModifier>(memory2.EmotionModifiers);
 
-            HashSet<EmotionTypes> uniqueEmotions = new();
+            HashSet<EmotionType> uniqueEmotions = new();
 
             foreach (var mod1 in emotions1)
             {
@@ -167,7 +167,7 @@ namespace AshborneGame._Core.MemorySystem
                 // If there is an emotion modifier shared by both memory1 and memory2
                 if (mod2 != null)
                 {
-                    similarity += 1 - Math.Abs(mod1.GetCurrentAmount(totalInGameHours) - mod2.GetCurrentAmount(totalInGameHours));
+                    similarity += 1 - Math.Abs(mod1.InitialAmount - mod2.InitialAmount);
                 }
             }
 
@@ -245,14 +245,20 @@ namespace AshborneGame._Core.MemorySystem
 
         #region Emotion Modifier Calculations
 
-        public static List<EmotionModifier> CalculateInitialEmotionalModifiers(Memory memory)
+        public static List<EmotionModifier> CalculateInitialEmotionalModifiers(Memory memory, int currentHour)
         {
-            List<MemoryTags> tags = new List<MemoryTags>(memory.Tags);
+            List<MemoryTags> tags = new(memory.Tags);
 
             List<EmotionModifier> emotionModifiers = new();
 
-            
-            
+            foreach (var tag in tags)
+            {
+                foreach (var mod in MemoryTagDefinitions.Definitions[tag])
+                {
+                    emotionModifiers.Add(new EmotionModifier(mod.Key, mod.Value, currentHour));
+                }
+            }
+
             return emotionModifiers;
         }
 

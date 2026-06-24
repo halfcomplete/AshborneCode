@@ -273,7 +273,7 @@ namespace AshborneGame._Core.Game
                                         char op = isLessThan ? '<' : '>';
                                         var emotionParts = parts.Split(op);
                                         if (emotionParts.Length == 2 && 
-                                            Enum.TryParse<EmotionTypes>(emotionParts[0], true, out var eType) && 
+                                            Enum.TryParse<EmotionType>(emotionParts[0], true, out var eType) && 
                                             int.TryParse(emotionParts[1], out int targetVal))
                                         {
                                             float currentVal = _player.PsychologicalState.EmotionalState.GetCurrentEmotion(eType, _gameState.TimeTracker.TotalInGameHours);
@@ -569,7 +569,7 @@ namespace AshborneGame._Core.Game
 
         private object ExternalAddEmotion(string emotionTypeStr, int amount, int intensity)
         {
-            if (Enum.TryParse<EmotionTypes>(emotionTypeStr, true, out var type))
+            if (Enum.TryParse<EmotionType>(emotionTypeStr, true, out var type))
             {
                 var mod = new EmotionSystem.EmotionModifier(type, amount, intensity, _gameState.TimeTracker.TotalInGameHours);
                 _player.PsychologicalState.EmotionalState.AddModifier(mod);
