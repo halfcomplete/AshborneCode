@@ -9,19 +9,19 @@ namespace AshborneGame._Core.MemorySystem
 {
     public static class MemoryTagDefinitions
     {
-        public static Dictionary<MemoryTags, Dictionary<EmotionType, double>> Definitions = new()
+        public static Dictionary<MemoryTag, Dictionary<EmotionType, double>> Definitions = new()
         {
-            { MemoryTags.Betrayal, new() 
+            { MemoryTag.Betrayal, new() 
             {
                 {EmotionType.Surprise, 0.4},
                 {EmotionType.Anger, 0.8},
             }},
-            { MemoryTags.Generosity, new() 
+            { MemoryTag.Generosity, new() 
             {
                 {EmotionType.Happiness, 0.6},
                 {EmotionType.Surprise, 0.2},
             }},
-            { MemoryTags.Sacrifice, new() 
+            { MemoryTag.Sacrifice, new() 
             {
                 {EmotionType.Happiness, 0.7},
                 {EmotionType.Surprise, 0.4},

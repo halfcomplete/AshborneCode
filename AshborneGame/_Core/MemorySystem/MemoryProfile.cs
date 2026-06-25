@@ -12,44 +12,71 @@ namespace AshborneGame._Core.MemorySystem
 {
     public class MemoryProfile
     {
+        private Guid _ownerID;
         private List<Memory> _memories;
 
-        public MemoryProfile(List<Memory> memories)
+        public MemoryProfile(Guid ownerID, List<Memory> memories)
         {
+            _ownerID = ownerID;
             _memories = memories;
 
             EventBus.Subscribe<GameEvents.System.TickEvent>(e => TickMemoryDecay(e.HoursPassed));
-
             EventBus.Subscribe<IMemorableGameEvent>(e => ReceiveMemorableEvent(e));
         }
 
-        public MemoryProfile()
+        public MemoryProfile(Guid ownerID) : this(ownerID, new List<Memory>()) { }
+
+        #region Receiving Memories
+
+        /// <summary>
+        /// Passes in a MemorableGameEvent that this MemoryProfile processes to either discard (can't be perceived) or stored.
+        /// </summary>
+        /// <remarks>
+        /// The callback when an IMemorableGameEvent is published by the EventBus.
+        /// </remarks>
+        /// <param name="e">The IMemorableGameEvent to pass in.</param>
+        public void ReceiveMemorableEvent(IMemorableGameEvent e)
         {
-            _memories = new();
+            if (!e.Witnesses.Contains(_ownerID))
+            {
+                return;
+            }
+
+            MemoryDefinition def = e.MemoryDefinition;
+
+            List<EmotionModifier> modifiers = ParseMemoryDefinition(def, e.CurrentTotalHours);
+            
+            Memory newMemory = new(_ownerID, def.BaseIntensity, e, modifiers, def.Tags, e.CurrentTotalHours, e.CurrentTotalHours);
+
+            
         }
+
+        private static List<EmotionModifier> ParseMemoryDefinition(MemoryDefinition def, int currentTotalHours)
+        {
+            List<EmotionModifier> mods = new();
+
+            foreach (var tag in def.Tags)
+            {
+                var tagDefinitions = MemoryTagDefinitions.Definitions[tag];
+
+                foreach (var kvp in tagDefinitions)
+                {
+                    mods.Add(new EmotionModifier(kvp.Key, kvp.Value, currentTotalHours));
+                }
+            }
+
+            return mods;
+        }
+
+        #endregion Receiving Memories
 
         #region Adding and Reinforcing Memories
-
-        public void ReceiveMemorableEvent(IMemorableGameEvent gameEvent)
-        {
-            // figure out whether the NPC can actually receive this event (same location, etc)
-            // then interpret the event using new thing called EventDefinition:
-            //  - memory archetypes
-            //  - base intensity
-            // event definition describes what the event represents, how serious it generally is and what kinds of emotions it tends to create
-            // then the npc should evaluate the event definition to create a memory
-            // factors include personality, current emotions and attitudes, and existing memories
-            // then generate emotion modifiers
-
-            //finally create memory and add it
-        }
 
         /// <summary>
         /// Adds a new memory to this MemoryProfile and reinforces existing similar memories.
         /// </summary>
         /// <param name="memory">The memory to be added.</param>
-        /// <param name="totalInGameHours">The current total in-game hours. Used to determine memory similarity.</param>
-        public void AddMemory(Memory memory, int totalInGameHours)
+        public void AddMemory(Memory memory)
         {
             // Loop over each existing memory and check how similar it is to the newly added memory
             // Then reinforce that memory based on that similarity
@@ -62,7 +89,7 @@ namespace AshborneGame._Core.MemorySystem
             {
                 Memory existingMemory = _memories[i];
 
-                double similarity = CalculateSimilarity(memory, existingMemory, totalInGameHours);
+                double similarity = CalculateSimilarity(memory, existingMemory);
 
                 (memory, _memories[i]) = ReinforceMemories(memory, existingMemory, CalculateStrengthReinforcement(similarity));
             }
@@ -108,11 +135,11 @@ namespace AshborneGame._Core.MemorySystem
         /// <br>Emotional similarity has a weighting of 0.1</br>
         /// </remarks>
         /// <returns>A double between 0 and 1, where 0 means maximally dissimilar and 1 means maximally similar (identical).</returns>
-        private static double CalculateSimilarity(Memory memory1, Memory memory2, int totalInGameHours)
+        private static double CalculateSimilarity(Memory memory1, Memory memory2)
         {
             double cSim = CalculateCauseSimilarity(memory1, memory2);
             double tSim = CalculateTagSimilarity(memory1, memory2);
-            double eSim = CalculateEmotionalSimilarity(memory1, memory2, totalInGameHours);
+            double eSim = CalculateEmotionalSimilarity(memory1, memory2);
 
             double similarity = (cSim * 0.5f) + (tSim * 0.4f) + (eSim * 0.1f);
 
@@ -133,10 +160,6 @@ namespace AshborneGame._Core.MemorySystem
             if (cause1 == cause2)
             {
                 similarity = 1;
-            }
-            else if (cause1.Category == cause2.Category)
-            {
-                similarity = 0.65f;
             }
 
             return similarity;
@@ -166,7 +189,7 @@ namespace AshborneGame._Core.MemorySystem
         /// Calculates the similarity between two memory's EmotionModifiers.
         /// </summary>
         /// <returns>A double between 0 and 1, where 0 means maximally dissimilar and 1 means maximally similar (identical).</returns>
-        private static double CalculateEmotionalSimilarity(Memory memory1, Memory memory2, int totalInGameHours)
+        private static double CalculateEmotionalSimilarity(Memory memory1, Memory memory2)
         {
             double similarity = 0;
 
@@ -213,15 +236,13 @@ namespace AshborneGame._Core.MemorySystem
 
         public List<Memory> GetActiveMemories() => _memories.Where(m => m.IsActive).ToList();
 
-        public List<Memory> GetMemoriesByCause(ICanCauseMemories cause) => _memories.Where(m => m.Cause == cause).ToList();
+        public List<Memory> GetMemoriesByCause(IMemorableGameEvent cause) => _memories.Where(m => m.Cause == cause).ToList();
 
-        public List<Memory> GetMemoriesByCauseCategory(ICanCauseMemories cause) => _memories.Where(m => m.Cause.Category == cause.Category).ToList();
-
-        public List<Memory> GetMemoriesByTag(MemoryTags tag) => _memories.Where(m => m.Tags.Contains(tag)).ToList();
+        public List<Memory> GetMemoriesByTag(MemoryTag tag) => _memories.Where(m => m.Tags.Contains(tag)).ToList();
 
         public List<Memory> GetMemoriesOrderedByStrength() => _memories.OrderByDescending(m => m.Strength).ToList();
 
-        public bool RemembersEvent(ICanCauseMemories cause) => _memories.Any(m => m.Cause == cause);
+        public bool RemembersEvent(IMemorableGameEvent cause) => _memories.Any(m => m.Cause == cause);
 
         #endregion API
 
@@ -263,7 +284,7 @@ namespace AshborneGame._Core.MemorySystem
 
         public static List<EmotionModifier> CalculateInitialEmotionalModifiers(Memory memory, int currentHour)
         {
-            List<MemoryTags> tags = new(memory.Tags);
+            List<MemoryTag> tags = new(memory.Tags);
 
             List<EmotionModifier> emotionModifiers = new();
 

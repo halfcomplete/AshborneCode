@@ -12,7 +12,7 @@ namespace AshborneGame._Core.MemorySystem
     /// <remarks>
     /// Archetypes also define emotional tendencies.
     /// </remarks>
-    public enum MemoryTags
+    public enum MemoryTag
     {
         Kindness,
         Betrayal,

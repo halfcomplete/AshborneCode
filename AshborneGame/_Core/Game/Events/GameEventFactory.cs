@@ -1,6 +1,8 @@
+using System.Data.SqlTypes;
 using AshborneGame._Core.Data.BOCS.ItemSystem;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.LocationManagement;
+using AshborneGame._Core.MemorySystem;
 
 namespace AshborneGame._Core.Game.Events
 {
@@ -36,7 +38,7 @@ namespace AshborneGame._Core.Game.Events
             /// Raised when the outro sequence of Ossaneth's Domain is triggered.
             /// This is a one-time event - all subscribers are removed after first publish.
             /// </summary>
-            public sealed record OutroTriggeredEvent() : IGameEvent
+            public sealed record OutroTriggeredEvent(int CurrentTotalHours) : IGameEvent
             {
                 public bool OneTime => true;
             }
@@ -46,7 +48,7 @@ namespace AshborneGame._Core.Game.Events
             /// </summary>
             /// <param name="LocationName">The name of the location.</param>
             /// <param name="VisitCount">The current visit count.</param>
-            public sealed record EyePlatformVisitThresholdEvent(string LocationName, int VisitCount) : IGameEvent
+            public sealed record EyePlatformVisitThresholdEvent(int CurrentTotalHours, string LocationName, int VisitCount) : IGameEvent
             {
                 public bool OneTime => true;
             }
@@ -61,27 +63,27 @@ namespace AshborneGame._Core.Game.Events
             /// Raised when the player prays at a location.
             /// </summary>
             /// <param name="LocationGroup">The location group where the player prayed.</param>
-            public sealed record PrayedEvent(string LocationGroup) : IGameEvent;
+            public sealed record PrayedEvent(int CurrentTotalHours, string LocationGroup) : IGameEvent;
 
             /// <summary>
             /// Raised when the player moves to a new location.
             /// </summary>
             /// <param name="FromLocation">The location the player moved from (null if initial spawn).</param>
             /// <param name="ToLocation">The location the player moved to.</param>
-            public sealed record MovedEvent(string? FromLocation, string ToLocation) : IGameEvent;
+            public sealed record MovedEvent(int CurrentTotalHours, string? FromLocation, string ToLocation) : IGameEvent;
 
             /// <summary>
             /// Raised when the player picks up an item.
             /// </summary>
             /// <param name="ItemName">The name of the item picked up.</param>
             /// <param name="ItemId">The unique ID of the item.</param>
-            public sealed record ItemPickedUpEvent(string ItemName, string ItemId) : IGameEvent;
+            public sealed record ItemPickedUpEvent(int CurrentTotalHours, string ItemName, string ItemId) : IGameEvent;
 
             /// <summary>
             /// Raised when the player equips a mask.
             /// </summary>
             /// <param name="MaskName">The name of the mask equipped.</param>
-            public sealed record MaskEquippedEvent(string MaskName) : IGameEvent;
+            public sealed record MaskEquippedEvent(int CurrentTotalHours, string MaskName) : IGameEvent;
 
             /// <summary>
             /// Test event. Raised when the player steals an item from an NPC.
@@ -89,7 +91,11 @@ namespace AshborneGame._Core.Game.Events
             /// <param name="victim">The NPC affected.</param>
             /// <param name="item">The item stolen.</param>
             /// <param name="location">The location where the item was stolen.</param>
-            public sealed record StoleItemEvent(NPC victim, Item item, Location location) : IMemorableGameEvent;
+            public sealed record StoleItemEvent(int CurrentTotalHours, NPC victim, Item item, List<Guid> Witnesses) : IMemorableGameEvent
+            {
+                public MemoryDefinition MemoryDefinition { get; } = new(0.4, [MemoryTag.Theft, MemoryTag.Betrayal, MemoryTag.Deception]);
+            }
+
         }
 
         /// <summary>
@@ -102,14 +108,14 @@ namespace AshborneGame._Core.Game.Events
             /// </summary>
             /// <param name="QuestId">The unique ID of the quest.</param>
             /// <param name="QuestName">The display name of the quest.</param>
-            public sealed record StartedEvent(string QuestId, string QuestName) : IGameEvent;
+            public sealed record StartedEvent(int CurrentTotalHours, string QuestId, string QuestName) : IGameEvent;
 
             /// <summary>
             /// Raised when a quest is completed successfully.
             /// </summary>
             /// <param name="QuestId">The unique ID of the quest.</param>
             /// <param name="QuestName">The display name of the quest.</param>
-            public sealed record CompletedEvent(string QuestId, string QuestName) : IGameEvent;
+            public sealed record CompletedEvent(int CurrentTotalHours, string QuestId, string QuestName) : IGameEvent;
 
             /// <summary>
             /// Raised when a quest fails.
@@ -117,7 +123,7 @@ namespace AshborneGame._Core.Game.Events
             /// <param name="QuestId">The unique ID of the quest.</param>
             /// <param name="QuestName">The display name of the quest.</param>
             /// <param name="Reason">The reason for failure.</param>
-            public sealed record FailedEvent(string QuestId, string QuestName, string? Reason = null) : IGameEvent;
+            public sealed record FailedEvent(int CurrentTotalHours, string QuestId, string QuestName, string? Reason = null) : IGameEvent;
 
             /// <summary>
             /// Raised when a quest objective is updated.
@@ -126,7 +132,7 @@ namespace AshborneGame._Core.Game.Events
             /// <param name="ObjectiveId">The objective ID that was updated.</param>
             /// <param name="Progress">Current progress value.</param>
             /// <param name="Target">Target value for completion.</param>
-            public sealed record ObjectiveUpdatedEvent(string QuestId, string ObjectiveId, int Progress, int Target) : IGameEvent;
+            public sealed record ObjectiveUpdatedEvent(int CurrentTotalHours, string QuestId, string ObjectiveId, int Progress, int Target) : IGameEvent;
         }
 
         /// <summary>
@@ -138,13 +144,13 @@ namespace AshborneGame._Core.Game.Events
             /// Raised when a dialogue sequence starts.
             /// </summary>
             /// <param name="DialogueName">The name/identifier of the dialogue.</param>
-            public sealed record StartedEvent(string DialogueName) : IGameEvent;
+            public sealed record StartedEvent(int CurrentTotalHours, string DialogueName) : IGameEvent;
 
             /// <summary>
             /// Raised when a dialogue sequence ends.
             /// </summary>
             /// <param name="DialogueName">The name/identifier of the dialogue.</param>
-            public sealed record EndedEvent(string DialogueName) : IGameEvent;
+            public sealed record EndedEvent(int CurrentTotalHours, string DialogueName) : IGameEvent;
 
             /// <summary>
             /// Raised when the player makes a choice in dialogue.
@@ -152,7 +158,7 @@ namespace AshborneGame._Core.Game.Events
             /// <param name="DialogueName">The dialogue containing the choice.</param>
             /// <param name="ChoiceIndex">The index of the choice made.</param>
             /// <param name="ChoiceText">The text of the choice made.</param>
-            public sealed record ChoiceMadeEvent(string DialogueName, int ChoiceIndex, string ChoiceText) : IGameEvent;
+            public sealed record ChoiceMadeEvent(int CurrentTotalHours, string DialogueName, int ChoiceIndex, string ChoiceText) : IGameEvent;
         }
 
         /// <summary>
@@ -164,19 +170,19 @@ namespace AshborneGame._Core.Game.Events
             /// Raised when the game is saved.
             /// </summary>
             /// <param name="SlotName">The save slot name.</param>
-            public sealed record GameSavedEvent(string SlotName) : IGameEvent;
+            public sealed record GameSavedEvent(int CurrentTotalHours, string SlotName) : IGameEvent;
 
             /// <summary>
             /// Raised when the game is loaded.
             /// </summary>
             /// <param name="SlotName">The save slot name.</param>
-            public sealed record GameLoadedEvent(string SlotName) : IGameEvent;
+            public sealed record GameLoadedEvent(int CurrentTotalHours, string SlotName) : IGameEvent;
 
             /// <summary>
             /// Raised when a game tick occurs.
             /// </summary>
             /// <param name="HoursPassed">Hours elapsed since last tick.</param>
-            public sealed record TickEvent(int HoursPassed) : IGameEvent;
+            public sealed record TickEvent(int CurrentTotalHours, int HoursPassed) : IGameEvent;
         }
     }
 }

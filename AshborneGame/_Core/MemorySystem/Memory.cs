@@ -1,6 +1,7 @@
 ﻿using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.EmotionSystem;
 using AshborneGame._Core.Game;
+using AshborneGame._Core.Game.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace AshborneGame._Core.MemorySystem
         /// <summary>
         /// The NPC that owns this Memory.
         /// </summary>
-        public NPC Owner { get; init; }
+        public Guid Owner { get; init; }
 
         private double _intensity;
 
@@ -82,16 +83,16 @@ namespace AshborneGame._Core.MemorySystem
         public double Influence { get => Intensity * Strength; }
 
         /// <summary>
-        /// The cause of this Memory/what created the Memory. Usually a GameEvent.
+        /// The cause of this Memory/what created the Memory.
         /// </summary>
-        public ICanCauseMemories Cause { get; init; }
+        public IMemorableGameEvent Cause { get; init; }
 
         /// <summary>
         /// The EmotionModifiers associated with this Memory; how this Memory affects the NPC's emotions.
         /// </summary>
         public List<EmotionModifier> EmotionModifiers { get; private set; }
 
-        public HashSet<MemoryTags> Tags { get; init; }
+        public HashSet<MemoryTag> Tags { get; init; }
 
         /// <summary>
         /// The total in-game hours when this Memory was created.
@@ -103,7 +104,7 @@ namespace AshborneGame._Core.MemorySystem
         /// </summary>
         public int HourLastReinforcedAt { get; private set; }
 
-        public Memory(NPC owner, double intensity, ICanCauseMemories cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTags> tags, int hourCreatedAt, int hourLastReinforcedAt)
+        public Memory(Guid owner, double intensity, IMemorableGameEvent cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
         {
             ID = Guid.NewGuid().ToString();
             Owner = owner;

@@ -42,7 +42,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
         /// <summary>
         /// Represents the psychological state of this NPC. Encompasses emotions, feelings and relationships.
         /// </summary>
-        public PsychologicalState PsychologicalState { get; } = new PsychologicalState();
+        public PsychologicalState PsychologicalState { get; }
 
         public NPC(string name, string? greeting, string? dialogueFileName = null)
         {
@@ -51,6 +51,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
             Synonyms = new List<string>();
             Greeting = greeting;
             DialogueFileName = dialogueFileName;
+            PsychologicalState = new(ID);
         }
 
         public NPC(string name, string description, string? greeting, string? dialogueFileName = null)
@@ -60,6 +61,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
             Synonyms = new List<string>();
             Greeting = greeting;
             DialogueFileName = dialogueFileName;
+            PsychologicalState = new(ID);
         }
 
         /// <summary>
@@ -78,6 +80,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
             Synonyms = synonyms ?? new List<string>();
             Greeting = greeting;
             DialogueFileName = dialogueFileName;
+            PsychologicalState = new(ID);
         }
 
         /// <summary>

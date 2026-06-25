@@ -1,4 +1,6 @@
-﻿namespace AshborneGame._Core.Game.Events
+﻿using AshborneGame._Core.MemorySystem;
+
+namespace AshborneGame._Core.Game.Events
 {
     /// <summary>
     /// Marker interface for all game events. All events must implement this interface
@@ -6,6 +8,7 @@
     /// </summary>
     public interface IGameEvent
     {
+        public int CurrentTotalHours { get; }
         /// <summary>
         /// If true, all subscribers are removed after the event is published once.
         /// The event can still be published again, but no handlers will receive it
@@ -19,7 +22,9 @@
     /// </summary>
     public interface IMemorableGameEvent : IGameEvent
     {
-
+        public MemoryDefinition MemoryDefinition { get; }
+        public List<Guid> Witnesses { get; }
+        
     }
 
     /// <summary>

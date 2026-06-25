@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AshborneGame._Core.MemorySystem;
 
 namespace AshborneGame._Core.EmotionSystem
 {
@@ -11,6 +12,8 @@ namespace AshborneGame._Core.EmotionSystem
     /// </summary>
     public sealed class PsychologicalState
     {
+        private readonly Guid _ownerID;
+
         /// <summary>
         /// Represents the mapping of character or entity identifiers to their corresponding attitudes in the
         /// relationship system.
@@ -23,9 +26,15 @@ namespace AshborneGame._Core.EmotionSystem
         /// <summary>
         /// Represents the character's current emotional state, which is influenced by various emotion modifiers that can be added or removed over time. The emotional state is evaluated lazily, meaning that the intensity of each emotion type is calculated on demand based on the active modifiers and their decay over time. This allows for a dynamic and evolving emotional profile that can change in response to in-game events and interactions.
         /// </summary>
-        public EmotionProfile EmotionalState { get; private set; } = new EmotionProfile();
+        public EmotionProfile EmotionalState { get; init; } = new EmotionProfile();
+
+        public MemoryProfile Memory { get; init; }
         
-        public PsychologicalState() { }
+        public PsychologicalState(Guid ownerID)
+        {
+            _ownerID = ownerID;
+            Memory = new(_ownerID);
+        }
 
         /// <summary>
         /// Adds a relationship to this psychological state. If a relationship with the same entityId already exists, it will be updated with the new attitude. This method allows for dynamic management of relationships, enabling characters to form new connections or modify existing ones based on in-game interactions and events.
