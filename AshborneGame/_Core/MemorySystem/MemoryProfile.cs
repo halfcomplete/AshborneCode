@@ -13,18 +13,20 @@ namespace AshborneGame._Core.MemorySystem
     public class MemoryProfile
     {
         private Guid _ownerID;
+        private PersonalityProfile _personality;
         private List<Memory> _memories;
 
-        public MemoryProfile(Guid ownerID, List<Memory> memories)
+        public MemoryProfile(Guid ownerID, PersonalityProfile personality, List<Memory> memories)
         {
             _ownerID = ownerID;
+            _personality = personality;
             _memories = memories;
 
             EventBus.Subscribe<GameEvents.System.TickEvent>(e => TickMemoryDecay(e.HoursPassed));
             EventBus.Subscribe<IMemorableGameEvent>(e => ReceiveMemorableEvent(e));
         }
 
-        public MemoryProfile(Guid ownerID) : this(ownerID, new List<Memory>()) { }
+        public MemoryProfile(Guid ownerID, PersonalityProfile personality) : this(ownerID, personality, new List<Memory>()) { }
 
         #region Receiving Memories
 
@@ -44,28 +46,15 @@ namespace AshborneGame._Core.MemorySystem
 
             MemoryDefinition def = e.MemoryDefinition;
 
-            List<EmotionModifier> modifiers = ParseMemoryDefinition(def, e.CurrentTotalHours);
+            List<EmotionModifier> initialModifiers = ParseInitialEmotionModifiers(def, e.CurrentTotalHours);
+            double initialIntensity = def.BaseIntensity;
+
+            List<EmotionModifier> newModifiers = CalculateActualEmotionModifiers(initialModifiers);
+            double newIntensity = CalculateActualIntensity(initialIntensity);
             
-            Memory newMemory = new(_ownerID, def.BaseIntensity, e, modifiers, def.Tags, e.CurrentTotalHours, e.CurrentTotalHours);
+            Memory newMemory = new(_ownerID, def.BaseIntensity, e, newModifiers, def.Tags, e.CurrentTotalHours, e.CurrentTotalHours);
 
-            
-        }
-
-        private static List<EmotionModifier> ParseMemoryDefinition(MemoryDefinition def, int currentTotalHours)
-        {
-            List<EmotionModifier> mods = new();
-
-            foreach (var tag in def.Tags)
-            {
-                var tagDefinitions = MemoryTagDefinitions.Definitions[tag];
-
-                foreach (var kvp in tagDefinitions)
-                {
-                    mods.Add(new EmotionModifier(kvp.Key, kvp.Value, currentTotalHours));
-                }
-            }
-
-            return mods;
+            AddMemory(newMemory);
         }
 
         #endregion Receiving Memories
@@ -280,25 +269,62 @@ namespace AshborneGame._Core.MemorySystem
 
         #endregion Memory Decay
 
-        #region Emotion Modifier Calculations
+        #region Initial Memory Calculations
 
-        public static List<EmotionModifier> CalculateInitialEmotionalModifiers(Memory memory, int currentHour)
+        private static List<EmotionModifier> ParseInitialEmotionModifiers(MemoryDefinition def, int currentTotalHours)
         {
-            List<MemoryTag> tags = new(memory.Tags);
+            List<EmotionModifier> mods = new();
 
-            List<EmotionModifier> emotionModifiers = new();
-
-            foreach (var tag in tags)
+            foreach (var tag in def.Tags)
             {
-                foreach (var mod in MemoryTagDefinitions.Definitions[tag])
+                var tagDefinitions = MemoryTagDefinitions.Definitions[tag];
+
+                foreach (var kvp in tagDefinitions)
                 {
-                    emotionModifiers.Add(new EmotionModifier(mod.Key, mod.Value, currentHour));
+                    mods.Add(new EmotionModifier(kvp.Key, kvp.Value, currentTotalHours));
                 }
             }
 
-            return emotionModifiers;
+            return mods;
         }
 
-        #endregion Emotion Modifier Calculations
+        private List<EmotionModifier> CalculateActualEmotionModifiers(List<EmotionModifier> mods)
+        {
+            List<EmotionModifier> newModifiers = new();
+            foreach (EmotionModifier mod in mods)
+            {
+                EmotionType emotion = mod.Type;
+                double actualAmount = mod.InitialAmount;
+
+                // Calculate new emotion from Curiousity personality definition
+                if (PersonalityTraitDefinitions.CuriosityDef.TryGetValue(emotion, out double multiplier))
+                {
+                    actualAmount *= multiplier * _personality.Curiosity;
+                }
+
+                // Calculate new emotion from Compassion personality definition
+                if (PersonalityTraitDefinitions.CompassionDef.TryGetValue(emotion, out multiplier))
+                {
+                    actualAmount *= multiplier * _personality.Compassion;
+                }
+
+                // Calculate new emotion from Compassion personality definition
+                if (PersonalityTraitDefinitions.AggressionDef.TryGetValue(emotion, out multiplier))
+                {
+                    actualAmount *= multiplier * _personality.Aggression;
+                }
+
+                newModifiers.Add(new EmotionModifier(emotion, actualAmount, mod.StartHour));
+            }
+
+            return newModifiers;
+        }
+
+        private double CalculateActualIntensity(double initialIntensity)
+        {
+            return initialIntensity;
+        }
+
+        #endregion Initial Memory Calculations
     }
 }

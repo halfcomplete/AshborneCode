@@ -28,12 +28,14 @@ namespace AshborneGame._Core.EmotionSystem
         /// </summary>
         public EmotionProfile EmotionalState { get; init; } = new EmotionProfile();
 
-        public MemoryProfile Memory { get; init; }
+        public MemoryProfile MemoryProfile { get; init; }
+
+        public PersonalityProfile Personality { get; init; } = new();
         
         public PsychologicalState(Guid ownerID)
         {
             _ownerID = ownerID;
-            Memory = new(_ownerID);
+            MemoryProfile = new(_ownerID, Personality);
         }
 
         /// <summary>
