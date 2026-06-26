@@ -95,7 +95,6 @@ namespace AshborneGame._Core.Game.Events
             {
                 public MemoryDefinition MemoryDefinition { get; } = new(0.4, [MemoryTag.Theft, MemoryTag.Betrayal, MemoryTag.Deception]);
             }
-
         }
 
         /// <summary>

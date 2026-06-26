@@ -46,10 +46,10 @@ namespace AshborneGame._Core.MemorySystem
 
             MemoryDefinition def = e.MemoryDefinition;
 
-            List<EmotionModifier> initialModifiers = ParseInitialEmotionModifiers(def, e.CurrentTotalHours);
+            List<EmotionModifier> initialModifiers = GetInitialEmotionModifiers(def.Tags, e.CurrentTotalHours);
             double initialIntensity = def.BaseIntensity;
 
-            List<EmotionModifier> newModifiers = CalculateActualEmotionModifiers(initialModifiers);
+            List<EmotionModifier> newModifiers = CalculateEmotionModifiersUsingPersonality(initialModifiers);
             double newIntensity = CalculateActualIntensity(initialIntensity);
             
             Memory newMemory = new(_ownerID, def.BaseIntensity, e, newModifiers, def.Tags, e.CurrentTotalHours, e.CurrentTotalHours);
@@ -271,11 +271,17 @@ namespace AshborneGame._Core.MemorySystem
 
         #region Initial Memory Calculations
 
-        private static List<EmotionModifier> ParseInitialEmotionModifiers(MemoryDefinition def, int currentTotalHours)
+        /// <summary>
+        /// Takes a Hashset of MemoryTags and returns the base EmotionModifiers that the given MemoryTags define.
+        /// </summary>
+        /// <param name="tags">The MemoryTags to parse and interpret.</param>
+        /// <param name="currentTotalHours">The current total hours of the game.</param>
+        /// <returns></returns>
+        private static List<EmotionModifier> GetInitialEmotionModifiers(HashSet<MemoryTag> tags, int currentTotalHours)
         {
             List<EmotionModifier> mods = new();
 
-            foreach (var tag in def.Tags)
+            foreach (var tag in tags)
             {
                 var tagDefinitions = MemoryTagDefinitions.Definitions[tag];
 
@@ -288,9 +294,15 @@ namespace AshborneGame._Core.MemorySystem
             return mods;
         }
 
-        private List<EmotionModifier> CalculateActualEmotionModifiers(List<EmotionModifier> mods)
+        /// <summary>
+        /// Takes a list of EmotionModifiers and uses the NPC's PersonalityProfile to change them.
+        /// </summary>
+        /// <returns>A list of EmotionModifiers representing how this NPC reacts to this Memory based on their unique PersonalityProfile.</returns>
+        private List<EmotionModifier> CalculateEmotionModifiersUsingPersonality(List<EmotionModifier> mods)
         {
             List<EmotionModifier> newModifiers = new();
+
+            // Loop over each EmotionModifier in the given mods List
             foreach (EmotionModifier mod in mods)
             {
                 EmotionType emotion = mod.Type;
@@ -322,7 +334,13 @@ namespace AshborneGame._Core.MemorySystem
 
         private double CalculateActualIntensity(double initialIntensity)
         {
+            
             return initialIntensity;
+        }
+
+        private List<EmotionModifier> CalculateEmotionalModifiersUsingAttitude(List<EmotionModifier> mods)
+        {
+            return mods;
         }
 
         #endregion Initial Memory Calculations

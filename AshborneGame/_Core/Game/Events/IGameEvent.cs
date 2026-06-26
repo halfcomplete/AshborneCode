@@ -20,6 +20,10 @@ namespace AshborneGame._Core.Game.Events
     /// <summary>
     /// Marker interface for all game events that are able to create Memories in NPCs.
     /// </summary>
+    /// <remarks>
+    /// Note that when defining new IMemorableGameEvent record types, the MemoryDefinition must be specified as a default value.
+    /// On the other hand, Witnesses and other data specific to that particular GameEvent are to be passed in.
+    /// </remarks>
     public interface IMemorableGameEvent : IGameEvent
     {
         public MemoryDefinition MemoryDefinition { get; }
