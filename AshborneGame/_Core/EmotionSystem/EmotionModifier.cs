@@ -3,29 +3,22 @@ using AshborneGame._Core.Globals.Enums;
 namespace AshborneGame._Core.EmotionSystem
 {
     /// <summary>
-    /// A class representing a single modifier to an emotion, which has a type, an initial amount (positive or negative), an intensity that controls how quickly it decays over time, and the in-game hour when it was applied. The current value of the modifier can be calculated lazily based on the time elapsed since it was applied, allowing for dynamic changes in emotion intensity as time passes.
+    /// A record representing a single modifier to an emotion, which has a type, an initial amount (positive or negative), and the in-game hour when it was applied.
     /// </summary>
-    public class EmotionModifier
+    public record EmotionModifier
     {
         public EmotionType Type { get; private set; }
         public double InitialAmount { get; private set; }
-        
-        /// <summary>
-        /// The in-game total hour when this modifier was applied.
-        /// </summary>
-        public int StartHour { get; private set; }
 
         /// <summary>
         /// Creates a new modifier for a particular emotion.
         /// </summary>
         /// <param name="type">The emotion that this modifier affects.</param>
-        /// <param name="initialAmount">The initial amount of the modifier.</param>
-        /// <param name="startHour">The in-game hour when the modifier was applied.</param>
-        public EmotionModifier(EmotionType type, double initialAmount, int startHour)
+        /// <param name="initialAmount">The initial amount of the modifier. Can be any value, just the final emotional value that the NPC calculates will be clamped from -1 to 1.</param>
+        public EmotionModifier(EmotionType type, double initialAmount)
         {
             Type = type;
-            InitialAmount = Math.Clamp(initialAmount, -1, 1);
-            StartHour = startHour;
+            InitialAmount = initialAmount;
         }
     }
 }

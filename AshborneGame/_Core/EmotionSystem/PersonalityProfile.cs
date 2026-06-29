@@ -8,8 +8,22 @@ namespace AshborneGame._Core.EmotionSystem
     /// </summary>
     public class PersonalityProfile
     {
-        public double Curiosity { get; private set; }
-        public double Compassion { get; private set; }
-        public double Aggression { get; private set; }
+        /// <summary>
+        /// A dictionary where the Key is a PersonalityTrait and the value is a double from 0 to 1 tracking how much of this personality trait is in this NPC.
+        /// </summary>
+        public Dictionary<PersonalityTrait, double> PersonalityTraits { get; } = [];
+        
+        public PersonalityProfile(Dictionary<PersonalityTrait, double> personalityTraits)
+        {
+            PersonalityTraits = personalityTraits;
+        }
+
+        public PersonalityProfile()
+        {
+            foreach (var trait in Enum.GetValues<PersonalityTrait>())
+            {
+                PersonalityTraits.Add(trait, 0.0);
+            }
+        }
     }
 }

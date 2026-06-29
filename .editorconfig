@@ -1,0 +1,8 @@
+root = true
+
+[*.cs]
+# Enforce braces for all control blocks (prevents empty statements on a single line)
+csharp_prefer_braces = true:warning
+
+# IDE0070: Use an empty block instead of empty statement
+dotnet_diagnostic.IDE0070.severity = warning

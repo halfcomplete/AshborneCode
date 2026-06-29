@@ -1,6 +1,7 @@
 ﻿using AshborneGame._Core.EmotionSystem;
 using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Globals.Enums;
+using AshborneGame._Core.MemorySystem.MemoryTags;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -39,6 +40,22 @@ namespace AshborneGame._Core.MemorySystem
         /// <param name="e">The IMemorableGameEvent to pass in.</param>
         public void ReceiveMemorableEvent(IMemorableGameEvent e)
         {
+            /*
+            How it works:
+                - Check if this NPC is in the Witnesses list
+                    - If not, then return early
+                - Get the MemoryDefinition of this event
+                - Iterate through each MemoryTag on the MemoryDefinition
+                - Parse the initial emotion modifiers and store them in a dictionary where the key is the emotion modifier and the value is its accumulator
+                - Then, for each MemoryTag:
+                    - Get its PersonalityReactions
+                    - For each PersonalityReaction:
+                        - For each initial emotion modifier whose type is the type of this PersonalityReaction, multiply the accumulator's multiplier by the mult given
+                        - If there are no initial emotion modifiers that modify that emotion, create a new emotion modifier with a blank accumulator and an initial value of the add
+                - After all tags have been processed, apply each accumulator to each emotion modifier once. Add first then multiply.
+                - Once that's done, then combine all like EmotionModifiers
+                - Finally, create the Memory and add it
+            */
             if (!e.Witnesses.Contains(_ownerID))
             {
                 return;
@@ -46,15 +63,149 @@ namespace AshborneGame._Core.MemorySystem
 
             MemoryDefinition def = e.MemoryDefinition;
 
-            List<EmotionModifier> initialModifiers = GetInitialEmotionModifiers(def.Tags, e.CurrentTotalHours);
+            Dictionary<EmotionModifier, EmotionAccumulator> initialModifiers = GetInitialEmotionModifiers(def.Tags, e.CurrentTotalHours);
             double initialIntensity = def.BaseIntensity;
 
-            List<EmotionModifier> newModifiers = CalculateEmotionModifiersUsingPersonality(initialModifiers);
+            Dictionary<EmotionModifier, EmotionAccumulator> newModifiers = ApplyPersonalityReactionsToEmotionModifiers(def, initialModifiers);
+
+            List<EmotionModifier> accumulatedModifiers = ApplyAccumulatorsToEmotionModifiers(newModifiers);
+
+            List<EmotionModifier> finalModifiers = CombineLikeEmotionModifiers(accumulatedModifiers);
             double newIntensity = CalculateActualIntensity(initialIntensity);
-            
-            Memory newMemory = new(_ownerID, def.BaseIntensity, e, newModifiers, def.Tags, e.CurrentTotalHours, e.CurrentTotalHours);
+
+            Memory newMemory = new(_ownerID, newIntensity, e, finalModifiers, def.Tags, e.CurrentTotalHours, e.CurrentTotalHours);
 
             AddMemory(newMemory);
+        }
+
+        /// <summary>
+        /// Takes a list of EmotionModifiers and combines ones with the same emotion type.
+        /// </summary>
+        /// <returns>A list of EmotionModifiers where each one has a unique emotion type.</returns>
+        private static List<EmotionModifier> CombineLikeEmotionModifiers(List<EmotionModifier> modifiers)
+        {
+            List<EmotionModifier> combinedModifiers = [];
+
+            // sort by emotion type
+            // then iterate through and combine like emotion types
+            var sorted = modifiers.OrderBy(m => m.Type).ToList();
+
+            EmotionType currentEmotion = sorted.Count > 0 ? sorted[0].Type : EmotionType.Anger;
+            double currentAmount = 0;
+
+            foreach (EmotionModifier mod in sorted)
+            {
+                // if this is a new emotion type that we've encountered
+                if (mod.Type != currentEmotion)
+                {
+                    combinedModifiers.Add(new(currentEmotion, currentAmount));
+                    currentAmount = 0;
+                }
+
+                currentEmotion = mod.Type;
+                currentAmount += mod.InitialAmount;
+            }
+
+            combinedModifiers.Add(new(currentEmotion, currentAmount));
+
+            return combinedModifiers;
+        }
+
+        /// <summary>
+        /// Applies the changes that an EmotionModifier's associated EmotionAccumulator defines.
+        /// </summary>
+        /// <returns>A list of EmotionModifiers with their associated EmotionAccumulators applied.</returns>
+        private static List<EmotionModifier> ApplyAccumulatorsToEmotionModifiers(Dictionary<EmotionModifier, EmotionAccumulator> modifiers)
+        {
+            List<EmotionModifier> newModifiers = [];
+
+            foreach (var kvp in modifiers)
+            {
+                var newMod = ApplyAccumulatorToEmotionModifier(kvp.Key, kvp.Value);
+                newModifiers.Add(newMod);
+            }
+
+            return newModifiers;
+        }
+
+        /// <summary>
+        /// Applies the changes that a single EmotionModifier's associated EmotionAccumulator defines.
+        /// </summary>
+        /// <param name="mod">The EmotionModifier to apply the changes to.</param>
+        /// <param name="accumulator">The EmotionAccumulator to get the changes from.</param>
+        /// <returns>A single EmotionModifier with its EmotionAccumulator applied.</returns>
+        private static EmotionModifier ApplyAccumulatorToEmotionModifier(EmotionModifier mod, EmotionAccumulator accumulator)
+        {
+            double newInitialAmount = (mod.InitialAmount + accumulator.TotalAdd);
+
+            if (accumulator.TotalMult >= 0)
+            {
+                newInitialAmount *= accumulator.TotalMult;
+            }
+            else
+            {
+                newInitialAmount /= accumulator.TotalMult;
+            }
+
+            return new(mod.Type, newInitialAmount);
+        }
+        
+        // TODO: Make the applied personality reactions scale based on how much of that personality trait the NPC has
+        private Dictionary<EmotionModifier, EmotionAccumulator> ApplyPersonalityReactionsToEmotionModifiers(MemoryDefinition def, Dictionary<EmotionModifier, EmotionAccumulator> initialModifiers)
+        {
+            // Loop over each MemoryTag in the given MemoryDefinition
+            foreach (MemoryTag tag in def.Tags)
+            {
+                // Get the reactions from each personality trait that this MemoryTag defines
+                Dictionary<PersonalityTrait, List<PersonalityReaction>> PersonalityReactions = MemoryTagDefinitions.Definitions[tag].Definition.PersonalityModifiers;
+
+                // Loop over each personality trait in PersonalityReactions
+                // personalityTrait is an enumeration (either Curiosity, Compassion or Aggression)
+                foreach (var (personalityTrait, personalityReactions) in PersonalityReactions)
+                {
+                    // Loop over every reaction in this MemoryTag's personalityTrait's personalityReactions
+                    // Each 'reaction' contains the emotion that is affected and a mult and add value
+                    foreach (PersonalityReaction reaction in personalityReactions)
+                    {
+                        // Track whether this reaction affects an emotion that is already in the given initialModifiers
+                        bool seen = false;
+
+                        // For every EmotionModifier and EmotionAccumulator in the given initialModifieres, 
+                        // check if the modified emotion is the same as this reaction's emotion.
+                        foreach (var (modifier, accumulator) in initialModifiers)
+                        {
+                            if (modifier.Type == reaction.emotion)
+                            {
+                                // If both this reaction and the current emotion modifier being checked modify the same emotion,
+                                // then add to the associated EmotionAccumulator's TotalMult and mark seen as true.
+                                accumulator.TotalMult = CalculateEmotionAccumulatorTotalMult(accumulator.TotalMult, _personality.PersonalityTraits[personalityTrait], reaction.mult);
+                                seen = true;
+                            }
+                        }
+
+                        // If there were no initial emotion modifiers that modify reaction.emotion then add a new EmotionModifier
+                        if (!seen)
+                        {
+                            EmotionModifier modifier = new(reaction.emotion, reaction.add * _personality.PersonalityTraits[personalityTrait]);
+                            initialModifiers.Add(modifier, new EmotionAccumulator());
+                        }
+                    }
+                }
+            }
+
+            return initialModifiers;
+        }
+        
+        /// <summary>
+        /// Answers the question: "Given the current TotalMult of an EmotionAccumulator, the influence
+        /// a certain PersonalityTrait has on this NPC, and the multiplier that the PersonalityReaction has, what should the new TotalMult be?"
+        /// </summary>
+        /// <remarks>
+        /// Assumes that the given personalityTraitInfluence is of the correct PersonalityTrait.
+        /// </remarks>
+        private static double CalculateEmotionAccumulatorTotalMult(double currentTotalMult, double personalityTraitInfluence, double reactionMult)
+        {
+            return currentTotalMult * (1 + personalityTraitInfluence * Math.Abs(reactionMult-1));
         }
 
         #endregion Receiving Memories
@@ -277,64 +428,26 @@ namespace AshborneGame._Core.MemorySystem
         /// <param name="tags">The MemoryTags to parse and interpret.</param>
         /// <param name="currentTotalHours">The current total hours of the game.</param>
         /// <returns></returns>
-        private static List<EmotionModifier> GetInitialEmotionModifiers(HashSet<MemoryTag> tags, int currentTotalHours)
+        private static Dictionary<EmotionModifier, EmotionAccumulator> GetInitialEmotionModifiers(HashSet<MemoryTag> tags, int currentTotalHours)
         {
-            List<EmotionModifier> mods = new();
+            Dictionary<EmotionModifier, EmotionAccumulator> mods = new();
 
-            foreach (var tag in tags)
+            foreach (MemoryTag tag in tags)
             {
-                var tagDefinitions = MemoryTagDefinitions.Definitions[tag];
+                MemoryTagDefinition tagDefinition = MemoryTagDefinitions.Definitions[tag].Definition;
 
-                foreach (var kvp in tagDefinitions)
+                foreach (var baseMod in tagDefinition.BaseEmotionalModifiers)
                 {
-                    mods.Add(new EmotionModifier(kvp.Key, kvp.Value, currentTotalHours));
+                    mods[new EmotionModifier(baseMod.Key, baseMod.Value)] = new EmotionAccumulator();
                 }
             }
 
             return mods;
         }
-
-        /// <summary>
-        /// Takes a list of EmotionModifiers and uses the NPC's PersonalityProfile to change them.
-        /// </summary>
-        /// <returns>A list of EmotionModifiers representing how this NPC reacts to this Memory based on their unique PersonalityProfile.</returns>
-        private List<EmotionModifier> CalculateEmotionModifiersUsingPersonality(List<EmotionModifier> mods)
-        {
-            List<EmotionModifier> newModifiers = new();
-
-            // Loop over each EmotionModifier in the given mods List
-            foreach (EmotionModifier mod in mods)
-            {
-                EmotionType emotion = mod.Type;
-                double actualAmount = mod.InitialAmount;
-
-                // Calculate new emotion from Curiousity personality definition
-                if (PersonalityTraitDefinitions.CuriosityDef.TryGetValue(emotion, out double multiplier))
-                {
-                    actualAmount *= multiplier * _personality.Curiosity;
-                }
-
-                // Calculate new emotion from Compassion personality definition
-                if (PersonalityTraitDefinitions.CompassionDef.TryGetValue(emotion, out multiplier))
-                {
-                    actualAmount *= multiplier * _personality.Compassion;
-                }
-
-                // Calculate new emotion from Compassion personality definition
-                if (PersonalityTraitDefinitions.AggressionDef.TryGetValue(emotion, out multiplier))
-                {
-                    actualAmount *= multiplier * _personality.Aggression;
-                }
-
-                newModifiers.Add(new EmotionModifier(emotion, actualAmount, mod.StartHour));
-            }
-
-            return newModifiers;
-        }
-
+        
         private double CalculateActualIntensity(double initialIntensity)
         {
-            
+
             return initialIntensity;
         }
 

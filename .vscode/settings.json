@@ -1,4 +1,4 @@
 {
     "workbench.colorTheme": "Ayu Mirage",
-    "dotnet-test-explorer.testProjectPath": "**/AshborneTests.csproj"
+    "dotnet-test-explorer.testProjectPath": "**/AshborneTests.csproj",
 }
