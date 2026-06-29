@@ -91,19 +91,25 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
         public bool MatchesName(string targetName)
         {
             if (string.IsNullOrWhiteSpace(targetName))
+            {
                 return false;
+            }
 
             string normalizedTarget = targetName.ToLowerInvariant().Trim();
             
             // Check against the main name
             if (Name.ToLowerInvariant().Contains(normalizedTarget))
+            {
                 return true;
-            
+            }
+
             // Check against synonyms
             foreach (string synonym in Synonyms)
             {
                 if (synonym.ToLowerInvariant().Contains(normalizedTarget))
+                {
                     return true;
+                }
             }
             
             return false;

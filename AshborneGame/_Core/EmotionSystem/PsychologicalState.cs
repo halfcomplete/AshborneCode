@@ -23,11 +23,6 @@ namespace AshborneGame._Core.EmotionSystem
         /// update relationship states dynamically during gameplay.</remarks>
         public Dictionary<string, Attitude> Relationships = new Dictionary<string, Attitude>();
 
-        /// <summary>
-        /// Represents the character's current emotional state, which is influenced by various emotion modifiers that can be added or removed over time. The emotional state is evaluated lazily, meaning that the intensity of each emotion type is calculated on demand based on the active modifiers and their decay over time. This allows for a dynamic and evolving emotional profile that can change in response to in-game events and interactions.
-        /// </summary>
-        public EmotionProfile EmotionalState { get; init; } = new EmotionProfile();
-
         public MemoryProfile MemoryProfile { get; init; }
 
         public PersonalityProfile Personality { get; init; } = new();
