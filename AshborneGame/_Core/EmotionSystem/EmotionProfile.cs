@@ -1,4 +1,5 @@
 using AshborneGame._Core.Globals.Enums;
+using AshborneGame._Core.MemorySystem;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,6 +21,13 @@ namespace AshborneGame._Core.EmotionSystem
         /// </summary>
         private List<EmotionModifier> _modifiers = new List<EmotionModifier>();
 
+        private MemoryProfile _memoryProfile;
+
+        public EmotionProfile(MemoryProfile memoryProfile)
+        {
+            _memoryProfile = memoryProfile;
+        }
+
         public void AddModifier(EmotionModifier modifier)
         {
             _modifiers.Add(modifier);
@@ -27,24 +35,11 @@ namespace AshborneGame._Core.EmotionSystem
 
         /// <summary>
         /// Retrieves the evaluated emotion intensity for a specific type, 
-        /// clamped between 0.0 and 1.0, factoring in time decay.
+        /// clamped between 0.0 and 1.0.
         /// </summary>
-        public float GetCurrentEmotion(EmotionType type, int currentTotalHours)
+        public double GetCurrentEmotion(EmotionType type)
         {
-            CleanUpDepleted(currentTotalHours);
-
-            float totalAmount = 0f;
-            foreach (var mod in _modifiers.Where(m => m.Type == type))
-            {
-                totalAmount += mod.GetCurrentAmount(currentTotalHours);
-            }
-
-            return Math.Clamp(totalAmount, 0f, 1f);
-        }
-
-        private void CleanUpDepleted(int currentTotalHours)
-        {
-            _modifiers.RemoveAll(m => m.IsDepleted(currentTotalHours));
+            return Math.Clamp(_memoryProfile.GetTotalEmotionIntensity(type), 0.0, 1.0);
         }
     }
 }

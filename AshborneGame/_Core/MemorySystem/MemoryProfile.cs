@@ -150,7 +150,6 @@ namespace AshborneGame._Core.MemorySystem
             return new(mod.Type, newInitialAmount);
         }
         
-        // TODO: Make the applied personality reactions scale based on how much of that personality trait the NPC has
         private Dictionary<EmotionModifier, EmotionAccumulator> ApplyPersonalityReactionsToEmotionModifiers(MemoryDefinition def, Dictionary<EmotionModifier, EmotionAccumulator> initialModifiers)
         {
             // Loop over each MemoryTag in the given MemoryDefinition
@@ -233,6 +232,7 @@ namespace AshborneGame._Core.MemorySystem
 
                 (memory, _memories[i]) = ReinforceMemories(memory, existingMemory, CalculateStrengthReinforcement(similarity));
             }
+
             _memories.Add(memory);
         }
 
@@ -381,6 +381,30 @@ namespace AshborneGame._Core.MemorySystem
         public List<Memory> GetMemoriesByTag(MemoryTag tag) => _memories.Where(m => m.Tags.Contains(tag)).ToList();
 
         public List<Memory> GetMemoriesOrderedByStrength() => _memories.OrderByDescending(m => m.Strength).ToList();
+
+        /// <summary>
+        /// Recursively iterates through every EmotionModifier in every Memory and sums up their modifications
+        /// to calculate the total intensity this NPC is experiencing of a particular emotion at this time.
+        /// </summary>
+        /// <returns>An unclamped double representing the intensity of the given emotion that this NPC is experiencing.</returns>
+        public double GetTotalEmotionIntensity(EmotionType emotionType)
+        {
+            double total = 0;
+
+            foreach (Memory memory in _memories)
+            {
+                List<EmotionModifier> emotionModifiers = memory.EmotionModifiers;
+
+                var targetMods = emotionModifiers.Where(m => m.Type == emotionType).ToList();
+
+                foreach (EmotionModifier modifier in targetMods)
+                {
+                    total += modifier.InitialAmount * memory.Influence;
+                }
+            }
+
+            return total;
+        }
 
         public bool RemembersEvent(IMemorableGameEvent cause) => _memories.Any(m => m.Cause == cause);
 
