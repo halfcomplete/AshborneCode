@@ -1,5 +1,5 @@
 ﻿using AshborneGame._Core.Data.BOCS.NPCSystem;
-using AshborneGame._Core.EmotionSystem;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Game.Events;
 using System;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AshborneGame._Core.MemorySystem
+namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 {
     public class Memory
     {

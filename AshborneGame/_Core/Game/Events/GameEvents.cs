@@ -2,7 +2,7 @@ using System.Data.SqlTypes;
 using AshborneGame._Core.Data.BOCS.ItemSystem;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.LocationManagement;
-using AshborneGame._Core.MemorySystem;
+using AshborneGame._Core.CognitiveSystem;
 
 namespace AshborneGame._Core.Game.Events
 {

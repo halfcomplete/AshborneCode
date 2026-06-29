@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AshborneGame._Core.Globals.Enums;
 
-namespace AshborneGame._Core.EmotionSystem
+namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
 {
     /// <summary>
     /// Represents the effect on a single emotion that a certain personality trait may have.

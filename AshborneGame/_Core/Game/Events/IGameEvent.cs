@@ -1,4 +1,4 @@
-﻿using AshborneGame._Core.MemorySystem;
+﻿using AshborneGame._Core.CognitiveSystem;
 
 namespace AshborneGame._Core.Game.Events
 {

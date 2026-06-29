@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AshborneGame._Core.MemorySystem
+namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 {
     /// <summary>
     /// Distinct tags that describe the concepts represented by a Memory. They answer "What is this Memory about?"

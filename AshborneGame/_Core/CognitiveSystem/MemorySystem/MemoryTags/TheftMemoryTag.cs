@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AshborneGame._Core.EmotionSystem;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.Globals.Enums;
 
-namespace AshborneGame._Core.MemorySystem.MemoryTags
+namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
 {
     public class TheftMemoryTag : IMemoryTag
     {

@@ -1,5 +1,5 @@
 ﻿
-namespace AshborneGame._Core.Globals.Enums
+namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
 {
     /// <summary>
     /// Defines the primary human emotion types used for character states and interactions.

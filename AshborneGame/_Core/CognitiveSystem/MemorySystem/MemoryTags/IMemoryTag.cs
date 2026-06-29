@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AshborneGame._Core.MemorySystem.MemoryTags
+namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
 {
     public interface IMemoryTag
     {

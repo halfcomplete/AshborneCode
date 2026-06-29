@@ -1,15 +1,9 @@
-﻿using AshborneGame._Core.EmotionSystem;
+﻿using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.Game.Events;
-using AshborneGame._Core.Globals.Enums;
-using AshborneGame._Core.MemorySystem.MemoryTags;
-using System;
-using System.Collections.Generic;
+using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace AshborneGame._Core.MemorySystem
+namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 {
     public class MemoryProfile
     {

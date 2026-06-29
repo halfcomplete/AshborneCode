@@ -1,11 +1,8 @@
 ﻿using AshborneGame._Core._Player;
-using AshborneGame._Core.EmotionSystem;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Services;
-using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.Globals.Interfaces;
-using AshborneGame.WebPort;
-using System.Security.Cryptography.X509Certificates;
 
 namespace AshborneGame._Core.Data.BOCS.NPCSystem
 {
