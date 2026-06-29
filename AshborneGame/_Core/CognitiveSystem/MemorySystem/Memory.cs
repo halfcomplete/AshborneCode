@@ -15,7 +15,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// <summary>
         /// A unique ID for the Memory.
         /// </summary>
-        public string ID { get; init; }
+        public Guid ID { get; init; }
 
         /// <summary>
         /// The NPC that owns this Memory.
@@ -106,7 +106,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
         public Memory(Guid owner, double intensity, IMemorableGameEvent cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
         {
-            ID = Guid.NewGuid().ToString();
+            ID = Guid.NewGuid();
             Owner = owner;
             Intensity = intensity;
             Strength = 1.0f;
