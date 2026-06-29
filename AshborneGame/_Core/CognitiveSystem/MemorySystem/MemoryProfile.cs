@@ -9,19 +9,21 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
     {
         private Guid _ownerID;
         private PersonalityProfile _personality;
+        private Dictionary<Guid, Attitude> _relationships;
         private List<Memory> _memories;
 
-        public MemoryProfile(Guid ownerID, PersonalityProfile personality, List<Memory> memories)
+        public MemoryProfile(Guid ownerID, PersonalityProfile personality, Dictionary<Guid, Attitude> relationships, List<Memory> memories)
         {
             _ownerID = ownerID;
             _personality = personality;
+            _relationships = relationships;
             _memories = memories;
 
             EventBus.Subscribe<GameEvents.System.TickEvent>(e => TickMemoryDecay(e.HoursPassed));
             EventBus.Subscribe<IMemorableGameEvent>(e => ReceiveMemorableEvent(e));
         }
 
-        public MemoryProfile(Guid ownerID, PersonalityProfile personality) : this(ownerID, personality, new List<Memory>()) { }
+        public MemoryProfile(Guid ownerID, PersonalityProfile personality, Dictionary<Guid, Attitude> relationships) : this(ownerID, personality, relationships, new List<Memory>()) { }
 
         #region Receiving Memories
 
@@ -61,6 +63,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             double initialIntensity = def.BaseIntensity;
 
             Dictionary<EmotionModifier, EmotionAccumulator> newModifiers = ApplyPersonalityReactionsToEmotionModifiers(def, initialModifiers);
+            newModifiers = ApplyAttitudeToEmotionalModifiers(def, newModifiers);
 
             List<EmotionModifier> accumulatedModifiers = ApplyAccumulatorsToEmotionModifiers(newModifiers);
 
@@ -465,11 +468,10 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         
         private double CalculateActualIntensity(double initialIntensity)
         {
-
             return initialIntensity;
         }
 
-        private List<EmotionModifier> CalculateEmotionalModifiersUsingAttitude(List<EmotionModifier> mods)
+        private Dictionary<EmotionModifier, EmotionAccumulator> ApplyAttitudeToEmotionalModifiers(MemoryDefinition def, Dictionary<EmotionModifier, EmotionAccumulator> mods)
         {
             return mods;
         }
