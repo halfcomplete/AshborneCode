@@ -13,7 +13,7 @@ using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Constants;
 using System.Net.Mail;
-using AshborneGame._Core.EmotionSystem;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 
 namespace AshborneGame._Core._Player
 {
@@ -22,7 +22,9 @@ namespace AshborneGame._Core._Player
     /// </summary>
     public class Player : ISentientEntity
     {
-        public PsychologicalState PsychologicalState { get; } = new PsychologicalState();
+        private Guid ID = new Guid();
+
+        public PsychologicalState PsychologicalState { get; }
 
         public Scene CurrentScene { get; private set; }
 
@@ -86,6 +88,7 @@ namespace AshborneGame._Core._Player
             CurrentScene = new Scene("test location group", "Test Location Group");
             CurrentScene.AddLocation(CurrentLocation);
             Inventory = new Inventory();
+            PsychologicalState = new(ID);
 		}
 
 		/// <summary>
@@ -159,7 +162,7 @@ namespace AshborneGame._Core._Player
             Console.WriteLine($"[MoveTo] Location={newLocation.Name.DisplayName} Scene={(newLocation.Scene?.DisplayName ?? "<null>")} VisitCount={CurrentLocation.VisitCount} sceneMatch={sceneMatch} nameMatch={nameMatch} visitMatch={visitMatch}", ConsoleMessageTypes.INFO);
             if (sceneMatch && nameMatch && visitMatch)
             {
-                var evt = new GameEvents.OssanethsDomain.EyePlatformVisitThresholdEvent(newLocation.Name.ReferenceName, CurrentLocation.VisitCount);
+                var evt = new GameEvents.OssanethsDomain.EyePlatformVisitThresholdEvent(GameContext.TimeTracker.TotalInGameHours, newLocation.Name.ReferenceName, CurrentLocation.VisitCount);
                 EventBus.Publish(evt);
                 await IOService.Output.DisplayDebugMessage($"[MoveTo] Fired EyePlatformVisitThresholdEvent", ConsoleMessageTypes.INFO);
             }

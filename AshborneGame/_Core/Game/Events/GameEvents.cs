@@ -3,6 +3,7 @@ using AshborneGame._Core.Data.BOCS.ItemSystem;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.CognitiveSystem;
+using AshborneGame._Core.CognitiveSystem.MemorySystem;
 
 namespace AshborneGame._Core.Game.Events
 {
@@ -91,10 +92,18 @@ namespace AshborneGame._Core.Game.Events
             /// <param name="victim">The NPC affected.</param>
             /// <param name="item">The item stolen.</param>
             /// <param name="location">The location where the item was stolen.</param>
-            public sealed record StoleItemEvent(int CurrentTotalHours, NPC victim, Item item, List<Guid> Witnesses) : IMemorableGameEvent
+            public sealed record StoleItemEvent(int CurrentTotalHours, NPC victim, Item item, List<MemoryParticipant> Participants) : IMemorableGameEvent
             {
                 public MemoryDefinition MemoryDefinition { get; } = new(0.4, [MemoryTag.Theft, MemoryTag.Betrayal, MemoryTag.Deception]);
             }
+        }
+
+        /// <summary>
+        /// Events related to memory influence and strengthening.
+        /// </summary>
+        public static class Memory
+        {
+            public sealed record StrengthenedEvent(int CurrentTotalHours, Guid OwnerId, IMemorableGameEvent Cause, double StrengthDelta) : IGameEvent;
         }
 
         /// <summary>

@@ -21,6 +21,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
             EventBus.Subscribe<GameEvents.System.TickEvent>(e => TickMemoryDecay(e.HoursPassed));
             EventBus.Subscribe<IMemorableGameEvent>(e => ReceiveMemorableEvent(e));
+            EventBus.Subscribe<GameEvents.Memory.StrengthenedEvent>(e => ReceiveMemoryStrengthenedEvent(e));
         }
 
         public MemoryProfile(Guid ownerID, PersonalityProfile personality, Dictionary<Guid, Attitude> relationships) : this(ownerID, personality, relationships, new List<Memory>()) { }
@@ -36,23 +37,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// <param name="e">The IMemorableGameEvent to pass in.</param>
         public void ReceiveMemorableEvent(IMemorableGameEvent e)
         {
-            /*
-            How it works:
-                - Check if this NPC is in the Witnesses list
-                    - If not, then return early
-                - Get the MemoryDefinition of this event
-                - Iterate through each MemoryTag on the MemoryDefinition
-                - Parse the initial emotion modifiers and store them in a dictionary where the key is the emotion modifier and the value is its accumulator
-                - Then, for each MemoryTag:
-                    - Get its PersonalityReactions
-                    - For each PersonalityReaction:
-                        - For each initial emotion modifier whose type is the type of this PersonalityReaction, multiply the accumulator's multiplier by the mult given
-                        - If there are no initial emotion modifiers that modify that emotion, create a new emotion modifier with a blank accumulator and an initial value of the add
-                - After all tags have been processed, apply each accumulator to each emotion modifier once. Add first then multiply.
-                - Once that's done, then combine all like EmotionModifiers
-                - Finally, create the Memory and add it
-            */
-            if (!e.Witnesses.Contains(_ownerID))
+            if (!ShouldReceiveMemorableEvent(e))
             {
                 return;
             }
@@ -60,19 +45,38 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             MemoryDefinition def = e.MemoryDefinition;
 
             Dictionary<EmotionModifier, EmotionAccumulator> initialModifiers = GetInitialEmotionModifiers(def.Tags, e.CurrentTotalHours);
-            double initialIntensity = def.BaseIntensity;
+            double initialIntensity = CalculateActualIntensity(def.BaseIntensity, e);
 
             Dictionary<EmotionModifier, EmotionAccumulator> newModifiers = ApplyPersonalityReactionsToEmotionModifiers(def, initialModifiers);
-            newModifiers = ApplyAttitudeToEmotionalModifiers(def, newModifiers);
+            newModifiers = ApplyAttitudeToEmotionalModifiers(e, newModifiers);
 
             List<EmotionModifier> accumulatedModifiers = ApplyAccumulatorsToEmotionModifiers(newModifiers);
 
             List<EmotionModifier> finalModifiers = CombineLikeEmotionModifiers(accumulatedModifiers);
-            double newIntensity = CalculateActualIntensity(initialIntensity);
+            double newIntensity = initialIntensity;
 
             Memory newMemory = new(_ownerID, newIntensity, e, finalModifiers, def.Tags, e.CurrentTotalHours, e.CurrentTotalHours);
 
             AddMemory(newMemory);
+            ApplyMemoryInfluenceToRelationships(newMemory);
+        }
+
+        public void StrengthenMemory(IMemorableGameEvent cause, double strengthDelta, int currentTotalHours)
+        {
+            EventBus.Publish(new GameEvents.Memory.StrengthenedEvent(currentTotalHours, _ownerID, cause, strengthDelta));
+        }
+
+        private void ReceiveMemoryStrengthenedEvent(GameEvents.Memory.StrengthenedEvent e)
+        {
+            if (e.OwnerId != _ownerID)
+            {
+                return;
+            }
+
+            foreach (Memory memory in _memories.Where(m => m.Cause == e.Cause))
+            {
+                memory.Strength += e.StrengthDelta;
+            }
         }
 
         /// <summary>
@@ -416,7 +420,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         public void TickMemoryDecay(int hoursPassed)
         {
             // Decay the strength of every memory in this memory profile
-            foreach (Memory mem in _memories)
+            foreach (Memory mem in _memories.ToList())
             {
                 double strengthDecay = CalculateStrengthDecay(mem.Intensity, hoursPassed);
 
@@ -466,14 +470,150 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             return mods;
         }
         
-        private double CalculateActualIntensity(double initialIntensity)
+        private bool ShouldReceiveMemorableEvent(IMemorableGameEvent e)
         {
-            return initialIntensity;
+            return e.Participants.Any(participant => participant.EntityId == _ownerID);
         }
 
-        private Dictionary<EmotionModifier, EmotionAccumulator> ApplyAttitudeToEmotionalModifiers(MemoryDefinition def, Dictionary<EmotionModifier, EmotionAccumulator> mods)
+        private double CalculateActualIntensity(double baseIntensity, IMemorableGameEvent e)
         {
+            double intensity = baseIntensity;
+
+            double personalityBias = GetPersonalityIntensityBias(e);
+            intensity += personalityBias;
+
+            foreach (MemoryParticipant participant in e.Participants)
+            {
+                if (!_relationships.TryGetValue(participant.EntityId, out Attitude? attitude) || attitude is null)
+                {
+                    continue;
+                }
+
+                double relationshipWeight = GetParticipantIntensityWeight(participant.Roles);
+                intensity += GetAttitudeIntensityImpact(attitude) * relationshipWeight;
+            }
+
+            return Math.Clamp(intensity, 0, 1);
+        }
+
+        private double GetPersonalityIntensityBias(IMemorableGameEvent e)
+        {
+            double bias = 0;
+
+            foreach (MemoryTag tag in e.MemoryDefinition.Tags)
+            {
+                if (!MemoryTagDefinitions.Definitions.TryGetValue(tag, out IMemoryTag? tagDefinition) || tagDefinition is null)
+                {
+                    continue;
+                }
+
+                foreach (var (trait, reactions) in tagDefinition.Definition.PersonalityModifiers)
+                {
+                    double traitStrength = _personality.PersonalityTraits.TryGetValue(trait, out double value) ? value : 0;
+                    double reactionBias = reactions.Sum(reaction => (reaction.mult - 1) + reaction.add);
+                    bias += traitStrength * reactionBias * 0.1;
+                }
+            }
+
+            return bias;
+        }
+
+        private Dictionary<EmotionModifier, EmotionAccumulator> ApplyAttitudeToEmotionalModifiers(IMemorableGameEvent e, Dictionary<EmotionModifier, EmotionAccumulator> mods)
+        {
+            foreach (MemoryParticipant participant in e.Participants)
+            {
+                if (!_relationships.TryGetValue(participant.EntityId, out Attitude? attitude) || attitude is null)
+                {
+                    continue;
+                }
+
+                double participantBias = GetAttitudeEmotionBias(attitude) * GetParticipantEmotionWeight(participant.Roles);
+
+                foreach (var mod in mods)
+                {
+                    mod.Value.TotalAdd += participantBias;
+                }
+            }
+
             return mods;
+        }
+
+        private static double GetParticipantIntensityWeight(List<MemoryRole> roles)
+        {
+            double weight = 0;
+
+            foreach (MemoryRole role in roles)
+            {
+                weight += role switch
+                {
+                    MemoryRole.Actor => 0.35,
+                    MemoryRole.Target => 0.25,
+                    MemoryRole.Victim => 0.45,
+                    MemoryRole.Beneficiary => 0.2,
+                    MemoryRole.Witness => 0.1,
+                    _ => 0
+                };
+            }
+
+            return Math.Clamp(weight, 0, 1);
+        }
+
+        private static double GetParticipantEmotionWeight(List<MemoryRole> roles)
+        {
+            double weight = 0;
+
+            foreach (MemoryRole role in roles)
+            {
+                weight += role switch
+                {
+                    MemoryRole.Actor => 0.3,
+                    MemoryRole.Target => 0.25,
+                    MemoryRole.Victim => 0.4,
+                    MemoryRole.Beneficiary => 0.2,
+                    MemoryRole.Witness => 0.1,
+                    _ => 0
+                };
+            }
+
+            return Math.Clamp(weight, 0, 1);
+        }
+
+        private static double GetAttitudeIntensityImpact(Attitude attitude)
+        {
+            return ((-attitude.Affection) * 0.3) + ((-attitude.Trust) * 0.25) + ((-attitude.Respect) * 0.15) + (attitude.Fear * 0.2) + ((-attitude.Dominance) * 0.1);
+        }
+
+        private static double GetAttitudeEmotionBias(Attitude attitude)
+        {
+            return ((-attitude.Affection) * 0.15) + ((-attitude.Trust) * 0.2) + ((-attitude.Respect) * 0.1) + (attitude.Fear * 0.2) + ((-attitude.Dominance) * 0.05);
+        }
+
+        private void ApplyMemoryInfluenceToRelationships(Memory memory)
+        {
+            foreach (MemoryParticipant participant in memory.Cause.Participants)
+            {
+                if (participant.EntityId == _ownerID)
+                {
+                    continue;
+                }
+
+                if (!_relationships.TryGetValue(participant.EntityId, out Attitude? attitude) || attitude is null)
+                {
+                    continue;
+                }
+
+                double influence = memory.Influence * GetParticipantIntensityWeight(participant.Roles) * 0.05;
+                if (participant.Roles.Contains(MemoryRole.Victim) || participant.Roles.Contains(MemoryRole.Target))
+                {
+                    attitude.Affection -= influence;
+                    attitude.Trust -= influence * 0.75;
+                }
+                else if (participant.Roles.Contains(MemoryRole.Beneficiary))
+                {
+                    attitude.Affection += influence;
+                    attitude.Trust += influence * 0.5;
+                }
+            }
         }
 
         #endregion Initial Memory Calculations

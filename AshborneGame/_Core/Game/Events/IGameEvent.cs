@@ -1,7 +1,19 @@
 ﻿using AshborneGame._Core.CognitiveSystem;
+using AshborneGame._Core.CognitiveSystem.MemorySystem;
 
 namespace AshborneGame._Core.Game.Events
 {
+    public enum MemoryRole
+    {
+        Actor,
+        Target,
+        Victim,
+        Beneficiary,
+        Witness
+    }
+
+    public sealed record MemoryParticipant(Guid EntityId, List<MemoryRole> Roles);
+
     /// <summary>
     /// Marker interface for all game events. All events must implement this interface
     /// to be publishable and subscribable through the EventBus.
@@ -22,12 +34,12 @@ namespace AshborneGame._Core.Game.Events
     /// </summary>
     /// <remarks>
     /// Note that when defining new IMemorableGameEvent record types, the MemoryDefinition must be specified as a default value.
-    /// On the other hand, Witnesses and other data specific to that particular GameEvent are to be passed in.
+    /// On the other hand, Participants and other data specific to that particular GameEvent are to be passed in.
     /// </remarks>
     public interface IMemorableGameEvent : IGameEvent
     {
         public MemoryDefinition MemoryDefinition { get; }
-        public List<Guid> Witnesses { get; }
+        public List<MemoryParticipant> Participants { get; }
         
     }
 
