@@ -87,7 +87,7 @@ namespace AshborneTests
                 null!,
                 [
                     new MemoryParticipant(ownerId, [MemoryRole.Witness]),
-                    new MemoryParticipant(targetId, [MemoryRole.Victim])
+                    new MemoryParticipant(targetId, [MemoryRole.Target])
                 ]);
 
             profile.ReceiveMemorableEvent(cause);

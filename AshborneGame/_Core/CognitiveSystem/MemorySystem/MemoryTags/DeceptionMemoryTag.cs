@@ -38,6 +38,48 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
                         new PersonalityReaction(EmotionType.Disgust, 1.3, 0.4),
                         new PersonalityReaction(EmotionType.Sadness, 1.1, 0.3),
                     ]},
+                },
+                new Dictionary<AttitudeType, List<AttitudeRoleIntensityRule>>
+                {
+                    {
+                        AttitudeType.Trusts,
+                        [
+                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.5),
+                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: 0.3)
+                        ]
+                    },
+                    {
+                        AttitudeType.Distrusts,
+                        [
+                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: -0.25),
+                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: 0.1)
+                        ]
+                    },
+                    {
+                        AttitudeType.Loves,
+                        [
+                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: 0.4),
+                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.2)
+                        ]
+                    },
+                    {
+                        AttitudeType.Hates,
+                        [
+                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: -0.2)
+                        ]
+                    },
+                    {
+                        AttitudeType.Respects,
+                        [
+                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.2)
+                        ]
+                    },
+                    {
+                        AttitudeType.Disrespects,
+                        [
+                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: -0.15)
+                        ]
+                    }
                 }
             );
     }

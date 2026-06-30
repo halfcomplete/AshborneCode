@@ -4,7 +4,6 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
     {
         Actor,
         Target,
-        Victim,
         Beneficiary,
         Witness
     }

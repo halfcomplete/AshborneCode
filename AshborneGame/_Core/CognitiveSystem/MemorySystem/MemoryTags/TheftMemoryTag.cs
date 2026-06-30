@@ -47,10 +47,48 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
                 },
                 new Dictionary<AttitudeType, List<AttitudeRoleIntensityRule>>
                 {
-                    {AttitudeType.Loves,
-                    [
-                        new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: +0.3),
-                    ]},
+                    {
+                        AttitudeType.Loves,
+                        [
+                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.3),
+                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: 0.3)
+                        ]
+                    },
+                    {
+                        AttitudeType.Hates,
+                        [
+                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.25),
+                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: -0.2)
+                        ]
+                    },
+                    {
+                        AttitudeType.Respects,
+                        [
+                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.25),
+                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: 0.15)
+                        ]
+                    },
+                    {
+                        AttitudeType.Disrespects,
+                        [
+                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: -0.15),
+                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: -0.3),
+                        ]
+                    },
+                    {
+                        AttitudeType.Trusts,
+                        [
+                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.2),
+                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: 0.3),
+                        ]
+                    },
+                    {
+                        AttitudeType.Distrusts,
+                        [
+                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.25),
+                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: -0.25),
+                        ]
+                    }
                 }
             );
     }

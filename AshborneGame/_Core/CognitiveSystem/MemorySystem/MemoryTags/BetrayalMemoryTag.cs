@@ -37,6 +37,43 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
                         new PersonalityReaction(EmotionType.Sadness, 1.2, 0.3),
                         new PersonalityReaction(EmotionType.Surprise, 1.4, 0.3),
                     ]},
+                },
+                new Dictionary<AttitudeType, List<AttitudeRoleIntensityRule>>
+                {
+                    {
+                        AttitudeType.Trusts,
+                        [
+                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: 0.6),
+                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.4)
+                        ]
+                    },
+                    {
+                        AttitudeType.Distrusts,
+                        [
+                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: -0.2),
+                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.1)
+                        ]
+                    },
+                    {
+                        AttitudeType.Loves,
+                        [
+                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: 0.5),
+                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.3)
+                        ]
+                    },
+                    {
+                        AttitudeType.Hates,
+                        [
+                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: -0.15),
+                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.1)
+                        ]
+                    },
+                    {
+                        AttitudeType.Respects,
+                        [
+                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.25)
+                        ]
+                    }
                 }
             );
     }

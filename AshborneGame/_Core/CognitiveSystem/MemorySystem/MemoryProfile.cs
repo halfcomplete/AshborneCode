@@ -548,8 +548,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                 weight += role switch
                 {
                     MemoryRole.Actor => 0.35,
-                    MemoryRole.Target => 0.25,
-                    MemoryRole.Victim => 0.45,
+                    MemoryRole.Target => 0.45,
                     MemoryRole.Beneficiary => 0.2,
                     MemoryRole.Witness => 0.1,
                     _ => 0
@@ -568,8 +567,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                 weight += role switch
                 {
                     MemoryRole.Actor => 0.3,
-                    MemoryRole.Target => 0.25,
-                    MemoryRole.Victim => 0.4,
+                    MemoryRole.Target => 0.45,
                     MemoryRole.Beneficiary => 0.2,
                     MemoryRole.Witness => 0.1,
                     _ => 0
@@ -605,7 +603,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                 }
 
                 double influence = memory.Influence * GetParticipantIntensityWeight(participant.Roles) * 0.05;
-                if (participant.Roles.Contains(MemoryRole.Victim) || participant.Roles.Contains(MemoryRole.Target))
+                if (participant.Roles.Contains(MemoryRole.Target))
                 {
                     attitude.Affection -= influence;
                     attitude.Trust -= influence * 0.75;
