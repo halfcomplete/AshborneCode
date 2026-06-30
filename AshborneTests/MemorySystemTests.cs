@@ -86,14 +86,14 @@ namespace AshborneTests
                 null!,
                 null!,
                 [
-                    new MemoryParticipant(ownerId, [MemoryRole.Witness]),
+                    new MemoryParticipant(ownerId, [MemoryRole.Actor]),
                     new MemoryParticipant(targetId, [MemoryRole.Target])
                 ]);
 
             profile.ReceiveMemorableEvent(cause);
 
             Assert.Single(profile.GetMemories());
-            Assert.True(profile.GetMemories().Single().Intensity > 0.4);
+            Assert.True(profile.GetMemories().Single().Intensity < 0.4);
         }
 
         private static IMemorableGameEvent CreateMemorableCause(Guid ownerId)

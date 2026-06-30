@@ -519,7 +519,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                             if (relationships.TryGetValue(participant.EntityId, out var attitude))
                             {
                                 // for each attitude type, check if the given attitude actually aligns with that attitude type
-                                double alignment = GetAttitudeAlignmentWithAttitudeType(attitude, attitudeType);
+                                double alignment = Math.Abs(GetAttitudeAlignmentWithAttitudeType(attitude, attitudeType));
                                 intensityImpact += rule.Weight * alignment;
                             }
                         }
@@ -606,7 +606,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                             {
                                 // now we've figured out that this participant, we have a relationship with them
                                 // figure out if the rule says anything about our relationship type
-                                double alignment = GetAttitudeAlignmentWithAttitudeType(attitude, attitudeType);
+                                double alignment = Math.Abs(GetAttitudeAlignmentWithAttitudeType(attitude, attitudeType));
 
                                 // if the rule modifies emotion modifiers with this relationship type
                                 if (alignment > 0)
