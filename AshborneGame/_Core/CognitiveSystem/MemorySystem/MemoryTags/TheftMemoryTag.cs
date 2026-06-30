@@ -22,27 +22,27 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
                     {EmotionType.Happiness, -0.4},
                 }, 
                 // The personality reactions of each personality trait in relation to this memory tag
-                new Dictionary<PersonalityTrait, List<PersonalityReaction>>
+                new Dictionary<PersonalityTrait, List<EmotionReaction>>
                 {
                     {PersonalityTrait.Aggression,
                     [
-                        new PersonalityReaction(EmotionType.Anger, 1.3, 0.8),
-                        new PersonalityReaction(EmotionType.Contempt, 1.3, 0.4),
+                        new EmotionReaction(EmotionType.Anger, 1.3, 0.8),
+                        new EmotionReaction(EmotionType.Contempt, 1.3, 0.4),
                     ]},
                     {PersonalityTrait.Compassion,
                     [
-                        new PersonalityReaction(EmotionType.Sadness, 1.5, 0.4),
-                        new PersonalityReaction(EmotionType.Anger, 0.8, 0.2),
-                        new PersonalityReaction(EmotionType.Contempt, 0.7, 0.2),
-                        new PersonalityReaction(EmotionType.Disgust, 0.6, 0.2),
-                        new PersonalityReaction(EmotionType.Surprise, 1.3, 0.23),
+                        new EmotionReaction(EmotionType.Sadness, 1.5, 0.4),
+                        new EmotionReaction(EmotionType.Anger, 0.8, 0.2),
+                        new EmotionReaction(EmotionType.Contempt, 0.7, 0.2),
+                        new EmotionReaction(EmotionType.Disgust, 0.6, 0.2),
+                        new EmotionReaction(EmotionType.Surprise, 1.3, 0.23),
                     ]},
                     {PersonalityTrait.Curiosity,
                     [
-                        new PersonalityReaction(EmotionType.Sadness, 1.5, 0.3),
-                        new PersonalityReaction(EmotionType.Surprise, 1.5, 0.4),
-                        new PersonalityReaction(EmotionType.Contempt, 0.8, 0.2),
-                        new PersonalityReaction(EmotionType.Anger, 0.8, 0.2),
+                        new EmotionReaction(EmotionType.Sadness, 1.5, 0.3),
+                        new EmotionReaction(EmotionType.Surprise, 1.5, 0.4),
+                        new EmotionReaction(EmotionType.Contempt, 0.8, 0.2),
+                        new EmotionReaction(EmotionType.Anger, 0.8, 0.2),
                     ]},
                 },
                 new Dictionary<AttitudeType, List<AttitudeRoleIntensityRule>>

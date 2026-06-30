@@ -20,22 +20,22 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
                     {EmotionType.Happiness, -0.5},
                 }, 
                 // Personality reactions
-                new Dictionary<PersonalityTrait, List<PersonalityReaction>>
+                new Dictionary<PersonalityTrait, List<EmotionReaction>>
                 {
                     {PersonalityTrait.Compassion,
                     [
-                        new PersonalityReaction(EmotionType.Sadness, 1.6, 0.5),
-                        new PersonalityReaction(EmotionType.Anger, 0.9, 0.2),
+                        new EmotionReaction(EmotionType.Sadness, 1.6, 0.5),
+                        new EmotionReaction(EmotionType.Anger, 0.9, 0.2),
                     ]},
                     {PersonalityTrait.Aggression,
                     [
-                        new PersonalityReaction(EmotionType.Anger, 1.4, 0.9),
-                        new PersonalityReaction(EmotionType.Contempt, 1.2, 0.5),
+                        new EmotionReaction(EmotionType.Anger, 1.4, 0.9),
+                        new EmotionReaction(EmotionType.Contempt, 1.2, 0.5),
                     ]},
                     {PersonalityTrait.Curiosity,
                     [
-                        new PersonalityReaction(EmotionType.Sadness, 1.2, 0.3),
-                        new PersonalityReaction(EmotionType.Surprise, 1.4, 0.3),
+                        new EmotionReaction(EmotionType.Sadness, 1.2, 0.3),
+                        new EmotionReaction(EmotionType.Surprise, 1.4, 0.3),
                     ]},
                 },
                 new Dictionary<AttitudeType, List<AttitudeRoleIntensityRule>>

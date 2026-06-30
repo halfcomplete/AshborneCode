@@ -48,7 +48,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             double intensity = CalculateActualIntensity(def.BaseIntensity, e);
 
             Dictionary<EmotionModifier, EmotionAccumulator> newModifiers = ApplyPersonalityReactionsToEmotionModifiers(def, initialModifiers);
-            newModifiers = ApplyAttitudeToEmotionalModifiers(e, newModifiers);
+            newModifiers = ApplyAttitudeToEmotionalModifiers(e, _relationships, newModifiers);
 
             List<EmotionModifier> accumulatedModifiers = ApplyAccumulatorsToEmotionModifiers(newModifiers);
 
@@ -157,7 +157,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             foreach (MemoryTag tag in def.Tags)
             {
                 // Get the reactions from each personality trait that this MemoryTag defines
-                Dictionary<PersonalityTrait, List<PersonalityReaction>> PersonalityReactions = MemoryTagDefinitions.Definitions[tag].Definition.PersonalityEmotionModifiers;
+                Dictionary<PersonalityTrait, List<EmotionReaction>> PersonalityReactions = MemoryTagDefinitions.Definitions[tag].Definition.PersonalityEmotionModifiers;
 
                 // Loop over each personality trait in PersonalityReactions
                 // personalityTrait is an enumeration (either Curiosity, Compassion or Aggression)
@@ -165,7 +165,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                 {
                     // Loop over every reaction in this MemoryTag's personalityTrait's personalityReactions
                     // Each 'reaction' contains the emotion that is affected and a mult and add value
-                    foreach (PersonalityReaction reaction in personalityReactions)
+                    foreach (EmotionReaction reaction in personalityReactions)
                     {
                         // Track whether this reaction affects an emotion that is already in the given initialModifiers
                         bool seen = false;
@@ -574,20 +574,60 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             return impact;
         }
 
-        private Dictionary<EmotionModifier, EmotionAccumulator> ApplyAttitudeToEmotionalModifiers(IMemorableGameEvent e, Dictionary<EmotionModifier, EmotionAccumulator> mods)
+        /// <summary>
+        /// Takes a game event, the NPC's relationships and the current emotional modifiers of a memory and returns a Dictionary of the previous emotion modifiers and the updated emotion accumulators.
+        /// </summary>
+        private static Dictionary<EmotionModifier, EmotionAccumulator> ApplyAttitudeToEmotionalModifiers(IMemorableGameEvent e, Dictionary<Guid, Attitude> relationships, Dictionary<EmotionModifier, EmotionAccumulator> mods)
         {
-            foreach (MemoryParticipant participant in e.Participants)
+            // Loops over each memory tag in the memory definition
+            // Gets the memory tag's AttitudeEmotionModifiers
+            // Get all MemoryParticipants in the event where this NPC's attitude towards them
+            // is a key in the memory tag's AttitudeEmotionModifiers
+            // Get the alignment with the attitude type
+
+            foreach (MemoryTag tag in e.MemoryDefinition.Tags)
             {
-                if (!_relationships.TryGetValue(participant.EntityId, out Attitude? attitude) || attitude is null)
-                {
-                    continue;
-                }
+                var attitudeEmotionModifiers = MemoryTagDefinitions.Definitions[tag].Definition.AttitudeEmotionModifiers;
 
-                double participantBias = GetAttitudeEmotionBias(attitude) * GetParticipantEmotionWeight(participant.Roles);
-
-                foreach (var mod in mods)
+                foreach (var (attitudeType, attitudeRoleEmotionRules) in attitudeEmotionModifiers)
                 {
-                    mod.Value.TotalAdd += participantBias;
+                    foreach (AttitudeRoleEmotionRule rule in attitudeRoleEmotionRules)
+                    {
+                        // figure out who in the list of participants satisfies the rule's memory role
+                        List<MemoryParticipant> targetParticipants = e.Participants.Where(p => p.Roles.Contains(rule.Role)).ToList();
+                        
+                        // loop over each participant who is affected by that rule
+                        // (e.g, loop over every participant who was a Target)
+                        // figure out, for each participant, if we have a relationship with them
+                        // if so, then figure out how the emotion accumulators should be impacted based on that relationship and what the rule says
+                        foreach (MemoryParticipant participant in targetParticipants)
+                        {
+                            if (relationships.TryGetValue(participant.EntityId, out var attitude))
+                            {
+                                // now we've figured out that this participant, we have a relationship with them
+                                // figure out if the rule says anything about our relationship type
+                                double alignment = GetAttitudeAlignmentWithAttitudeType(attitude, attitudeType);
+
+                                // if the rule modifies emotion modifiers with this relationship type
+                                if (alignment > 0)
+                                {
+                                    EmotionReaction reaction = rule.Reaction;
+
+                                    var targetMods = mods.Where(m => m.Key.Type == reaction.emotion);
+
+                                    foreach (var (emotionMod, emotionAccumulator) in targetMods)
+                                    {
+                                        emotionAccumulator.TotalMult = CalculateEmotionAccumulatorTotalMult(emotionAccumulator.TotalMult, alignment, reaction.mult);
+                                    }
+
+                                    if (targetMods.Count() == 0)
+                                    {
+                                        mods.Add(new(reaction.emotion, reaction.add * alignment), new());
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
 

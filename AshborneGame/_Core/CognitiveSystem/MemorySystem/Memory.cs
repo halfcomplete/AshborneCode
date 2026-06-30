@@ -115,7 +115,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             ID = Guid.NewGuid();
             Owner = owner;
             Intensity = intensity;
-            Strength = 1.0f;
+            Strength = strength;
             Cause = cause;
             EmotionModifiers = emotionModifiers;
             Tags = tags;
