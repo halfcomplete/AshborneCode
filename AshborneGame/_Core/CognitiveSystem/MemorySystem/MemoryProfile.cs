@@ -66,6 +66,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             EventBus.Publish(new GameEvents.Memory.StrengthenedEvent(currentTotalHours, _ownerID, cause, strengthDelta));
         }
 
+        // TODO: Do we really need events for all this? Why not direct calling?
         private void ReceiveMemoryStrengthenedEvent(GameEvents.Memory.StrengthenedEvent e)
         {
             if (e.OwnerId != _ownerID)
@@ -588,6 +589,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             return ((-attitude.Affection) * 0.15) + ((-attitude.Trust) * 0.2) + ((-attitude.Respect) * 0.1) + (attitude.Fear * 0.2) + ((-attitude.Dominance) * 0.05);
         }
 
+        // TODO: fix, attitude of victim TO owner should be changing, not other way round
         private void ApplyMemoryInfluenceToRelationships(Memory memory)
         {
             foreach (MemoryParticipant participant in memory.Cause.Participants)

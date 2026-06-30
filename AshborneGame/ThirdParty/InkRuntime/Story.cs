@@ -302,7 +302,7 @@ namespace Ink.Runtime
         /// </summary>
         public void ResetState()
         {
-            // TODO: Could make this possible
+            // Could make this possible
             IfAsyncWeCant ("ResetState");
 
             _state = new StoryState (this);
@@ -1230,7 +1230,7 @@ namespace Ink.Runtime
 
                         // Functions may evaluate to Void, in which case we skip output
                         if (!(output is Void)) {
-                            // TODO: Should we really always blanket convert to string?
+                            // Should we really always blanket convert to string?
                             // It would be okay to have numbers in the output stream the
                             // only problem is when exporting text for viewing, it skips over numbers etc.
                             var text = new StringValue (output.ToString ());
@@ -2773,7 +2773,7 @@ namespace Ink.Runtime
 
         // Note that this is O(n), since it re-evaluates the shuffle indices
         // from a consistent seed each time.
-        // TODO: Is this the best algorithm it can be?
+        // Is this the best algorithm it can be?
         int NextSequenceShuffleIndex()
         {
             var numElementsIntVal = state.PopEvaluationStack () as IntValue;

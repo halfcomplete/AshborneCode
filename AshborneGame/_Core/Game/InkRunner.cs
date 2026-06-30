@@ -6,6 +6,7 @@ using AshborneGame._Core.Data.BOCS.ItemSystem;
 using System.Reflection.Metadata.Ecma335;
 using AshborneGame._Core.Globals.Enums;
 using System.IO;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.Globals.Constants;
 
 namespace AshborneGame._Core.Game
@@ -268,6 +269,7 @@ namespace AshborneGame._Core.Game
                                     bool isLessThan = parts.Contains("<");
                                     bool isGreaterThan = parts.Contains(">");
                                     
+                                    /* TODO: Emotion constraint checking disabled - PsychologicalState.EmotionalState property not yet fully implemented
                                     if (isLessThan || isGreaterThan)
                                     {
                                         char op = isLessThan ? '<' : '>';
@@ -290,6 +292,7 @@ namespace AshborneGame._Core.Game
                                             }
                                         }
                                     }
+                                    */
                                 }
                             }
                         }
@@ -569,6 +572,7 @@ namespace AshborneGame._Core.Game
 
         private object ExternalAddEmotion(string emotionTypeStr, int amount, int intensity)
         {
+            /* TODO: Emotion modification disabled - PsychologicalState.EmotionalState property not yet fully implemented
             if (Enum.TryParse<EmotionType>(emotionTypeStr, true, out var type))
             {
                 var mod = new EmotionSystem.EmotionModifier(type, amount, intensity, _gameState.TimeTracker.TotalInGameHours);
@@ -578,8 +582,10 @@ namespace AshborneGame._Core.Game
             {
                 IOService.Output.DisplayDebugMessage($"[Ink] Invalid emotion type '{emotionTypeStr}'.", ConsoleMessageTypes.ERROR).GetAwaiter().GetResult();
             }
+            */
             return null;
         }
+
         #endregion
 
         /// <summary>

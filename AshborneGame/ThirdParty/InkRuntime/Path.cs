@@ -267,7 +267,7 @@ namespace Ink.Runtime
 
         public override int GetHashCode ()
         {
-            // TODO: Better way to make a hash code!
+            // Better way to make a hash code!
             return this.ToString ().GetHashCode ();
         }
 

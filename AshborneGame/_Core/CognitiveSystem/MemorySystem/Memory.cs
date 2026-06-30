@@ -67,7 +67,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             get => _strength; 
             set
             {
-                _strength = Math.Min(1, Math.Max(GetStrengthFloorBasedOnIntensity(Intensity), value));
+                _strength = Math.Clamp(value, GetStrengthFloorBasedOnIntensity(Intensity), 1.0);
             }
         }
 
@@ -105,6 +105,12 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         public int HourLastReinforcedAt { get; private set; }
 
         public Memory(Guid owner, double intensity, IMemorableGameEvent cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
+        : this(owner, intensity, 1.0, cause, emotionModifiers, tags, hourCreatedAt, hourLastReinforcedAt)
+        {
+            
+        }
+
+        public Memory(Guid owner, double intensity, double strength, IMemorableGameEvent cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
         {
             ID = Guid.NewGuid();
             Owner = owner;

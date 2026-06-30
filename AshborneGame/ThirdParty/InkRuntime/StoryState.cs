@@ -192,7 +192,7 @@ namespace Ink.Runtime
 			}
 		}
 
-        // TODO: Consider removing currentErrors / currentWarnings altogether
+        // Consider removing currentErrors / currentWarnings altogether
         // and relying on client error handler code immediately handling StoryExceptions etc
         // Or is there a specific reason we need to collect potentially multiple
         // errors before throwing/exiting?

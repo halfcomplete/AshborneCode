@@ -11,6 +11,8 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
             new Dictionary<MemoryTag, IMemoryTag> 
             {
                 [MemoryTag.Theft] = new TheftMemoryTag(),
+                [MemoryTag.Betrayal] = new BetrayalMemoryTag(),
+                [MemoryTag.Deception] = new DeceptionMemoryTag(),
             };
     }
 }

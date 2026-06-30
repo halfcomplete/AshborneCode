@@ -166,7 +166,7 @@ namespace AshborneGame._Core.Game.CommandHandling
                 {
                     GameContext.GameState.SetCounter(counterKey, 1);
                 }
-                var playerPrayedEvent = new GameEvents.Player.PrayedEvent("Ossaneth's Domain");
+                var playerPrayedEvent = new GameEvents.Player.PrayedEvent(GameContext.TimeTracker.TotalInGameHours, "Ossaneth's Domain");
                 EventBus.Publish(playerPrayedEvent);
             }
             else

@@ -608,17 +608,17 @@ namespace AshborneTests
         /// <summary>
         /// Event raised when a quest is completed.
         /// </summary>
-        private sealed record TestQuestCompletedEvent(string QuestId, string QuestName) : IGameEvent;
+        private sealed record TestQuestCompletedEvent(int CurrentTotalHours, string QuestId, string QuestName) : IGameEvent;
 
         /// <summary>
         /// Event raised when a quest fails.
         /// </summary>
-        private sealed record TestQuestFailedEvent(string QuestId, string QuestName) : IGameEvent;
+        private sealed record TestQuestFailedEvent(int CurrentTotalHours, string QuestId, string QuestName) : IGameEvent;
 
         /// <summary>
         /// Event that triggers quest completion.
         /// </summary>
-        private sealed record TestTriggerEvent(string TriggerData) : IGameEvent;
+        private sealed record TestTriggerEvent(int CurrentTotalHours, string TriggerData) : IGameEvent;
 
         public EventQuestIntegrationTests()
         {
@@ -644,7 +644,7 @@ namespace AshborneTests
             var quest = QuestFactory.CreateQuest(
                 "Event Quest",
                 "Publishes event on completion",
-                onComplete: _ => EventBus.Publish(new TestQuestCompletedEvent("quest-1", "Event Quest")),
+                onComplete: _ => EventBus.Publish(new TestQuestCompletedEvent(0, "quest-1", "Event Quest")),
                 onFail: null,
                 new QuestCriteria().If(_ => true).ThenProgressThisQuest());
 
@@ -668,7 +668,7 @@ namespace AshborneTests
                 "Fail Event Quest",
                 "Publishes event on failure",
                 onComplete: _ => { },
-                onFail: _ => EventBus.Publish(new TestQuestFailedEvent("quest-2", "Fail Event Quest")),
+                onFail: _ => EventBus.Publish(new TestQuestFailedEvent(0, "quest-2", "Fail Event Quest")),
                 new QuestCriteria().If(_ => false).ThenProgressThisQuest(),
                 new QuestCriteria().If(_ => true).ThenFailThisQuest());
 
@@ -708,7 +708,7 @@ namespace AshborneTests
             Assert.Equal(QuestStatus.InProgress, quest.Status);
 
             // Act - publish the trigger event
-            EventBus.Publish(new TestTriggerEvent("trigger!"));
+            EventBus.Publish(new TestTriggerEvent(0, "trigger!"));
 
             // Now tick the quest
             quest.TickQuestTime(1, _gameState);
@@ -745,7 +745,7 @@ namespace AshborneTests
                     .ThenProgressThisQuest());
 
             // Act
-            EventBus.Publish(new TestTriggerEvent("shared trigger"));
+            EventBus.Publish(new TestTriggerEvent(0, "shared trigger"));
             quest1.TickQuestTime(1, _gameState);
             quest2.TickQuestTime(1, _gameState);
 
@@ -765,7 +765,7 @@ namespace AshborneTests
             var quest = QuestFactory.CreateQuest(
                 "GameState Quest",
                 "Added to GameStateManager",
-                onComplete: _ => EventBus.Publish(new TestQuestCompletedEvent("gs-quest", "GameState Quest")),
+                onComplete: _ => EventBus.Publish(new TestQuestCompletedEvent(0, "gs-quest", "GameState Quest")),
                 onFail: null,
                 new QuestCriteria().If(_ => true).ThenProgressThisQuest());
 
@@ -799,7 +799,7 @@ namespace AshborneTests
                 onComplete: _ =>
                 {
                     questCompleted = true;
-                    EventBus.Publish(new TestQuestCompletedEvent("async-quest", "Async Quest"));
+                    EventBus.Publish(new TestQuestCompletedEvent(0, "async-quest", "Async Quest"));
                 },
                 onFail: null,
                 new QuestCriteria().If(_ => true).ThenProgressThisQuest());

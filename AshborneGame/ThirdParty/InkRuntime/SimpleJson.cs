@@ -477,7 +477,7 @@ namespace Ink.Runtime
             {
                 StartNewObject(container: false);
 
-                // TODO: Find an heap-allocation-free way to do this please!
+                // Find an heap-allocation-free way to do this please!
                 // _writer.Write(formatStr, obj (the float)) requires boxing
                 // Following implementation seems to work ok but requires creating temporary garbage string.
                 string floatStr = f.ToString(System.Globalization.CultureInfo.InvariantCulture);

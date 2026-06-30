@@ -27,12 +27,12 @@ namespace AshborneTests
         /// <summary>
         /// A simple test event with a message payload.
         /// </summary>
-        private sealed record TestEvent(string Message) : IGameEvent;
+        private sealed record TestEvent(int CurrentTotalHours, string Message) : IGameEvent;
 
         /// <summary>
         /// A one-time event that should remove all subscribers after publishing.
         /// </summary>
-        private sealed record OneTimeTestEvent(string Message) : IGameEvent
+        private sealed record OneTimeTestEvent(int CurrentTotalHours, string Message) : IGameEvent
         {
             public bool OneTime => true;
         }
@@ -40,12 +40,12 @@ namespace AshborneTests
         /// <summary>
         /// Another event type to test type isolation.
         /// </summary>
-        private sealed record OtherTestEvent(int Value) : IGameEvent;
+        private sealed record OtherTestEvent(int CurrentTotalHours, int Value) : IGameEvent;
 
         /// <summary>
         /// An event with no payload.
         /// </summary>
-        private sealed record EmptyTestEvent() : IGameEvent;
+        private sealed record EmptyTestEvent(int CurrentTotalHours) : IGameEvent;
 
         #endregion
 
@@ -116,7 +116,7 @@ namespace AshborneTests
             EventBus.Subscribe<TestEvent>(e => receivedMessage = e.Message);
 
             // Act
-            EventBus.Publish(new TestEvent("Hello, World!"));
+            EventBus.Publish(new TestEvent(0, "Hello, World!"));
 
             // Assert
             Assert.Equal("Hello, World!", receivedMessage);
@@ -132,7 +132,7 @@ namespace AshborneTests
             EventBus.Subscribe<TestEvent>(e => callCount++);
 
             // Act
-            EventBus.Publish(new TestEvent("Test"));
+            EventBus.Publish(new TestEvent(0, "Test"));
 
             // Assert
             Assert.Equal(3, callCount);
@@ -148,7 +148,7 @@ namespace AshborneTests
             EventBus.Subscribe<OtherTestEvent>(e => otherEventCalled = true);
 
             // Act
-            EventBus.Publish(new OtherTestEvent(42));
+            EventBus.Publish(new OtherTestEvent(0, 42));
 
             // Assert
             Assert.False(testEventCalled);
@@ -163,7 +163,7 @@ namespace AshborneTests
             EventBus.Subscribe<TestEvent>(e => receivedEvent = e);
 
             // Act
-            var publishedEvent = new TestEvent("Test Message");
+            var publishedEvent = new TestEvent(0, "Test Message");
             EventBus.Publish(publishedEvent);
 
             // Assert
@@ -176,7 +176,7 @@ namespace AshborneTests
         public void Publish_ShouldDoNothing_WhenNoSubscribersExist()
         {
             // Arrange & Act & Assert (no exception should be thrown)
-            var exception = Record.Exception(() => EventBus.Publish(new TestEvent("No subscribers")));
+            var exception = Record.Exception(() => EventBus.Publish(new TestEvent(0, "No subscribers")));
             Assert.Null(exception);
         }
 
@@ -197,7 +197,7 @@ namespace AshborneTests
             EventBus.Subscribe<TestEvent>(e => handlersCalled.Add(3));
 
             // Act
-            EventBus.Publish(new TestEvent("Test"));
+            EventBus.Publish(new TestEvent(0, "Test"));
 
             // Assert - handlers 1 and 3 should still be called despite handler 2 throwing
             Assert.Contains(1, handlersCalled);
@@ -220,7 +220,7 @@ namespace AshborneTests
             });
 
             // Act
-            await EventBus.PublishAsync(new TestEvent("Async Test"));
+            await EventBus.PublishAsync(new TestEvent(0, "Async Test"));
 
             // Assert
             Assert.Equal("Async Test", receivedMessage);
@@ -240,7 +240,7 @@ namespace AshborneTests
             });
 
             // Act
-            await EventBus.PublishAsync(new TestEvent("Mixed Test"));
+            await EventBus.PublishAsync(new TestEvent(0, "Mixed Test"));
 
             // Assert
             Assert.True(syncCalled);
@@ -264,7 +264,7 @@ namespace AshborneTests
             });
 
             // Act
-            await EventBus.PublishAsync(new TestEvent("Await Test"));
+            await EventBus.PublishAsync(new TestEvent(0, "Await Test"));
 
             // Assert - both should complete (order may vary based on sequential execution)
             Assert.Equal(2, completionOrder.Count);
@@ -283,8 +283,8 @@ namespace AshborneTests
             EventBus.Subscribe<OneTimeTestEvent>(e => callCount++);
 
             // Act
-            EventBus.Publish(new OneTimeTestEvent("First"));
-            EventBus.Publish(new OneTimeTestEvent("Second"));
+            EventBus.Publish(new OneTimeTestEvent(0, "First"));
+            EventBus.Publish(new OneTimeTestEvent(0, "Second"));
 
             // Assert - only the first publish should invoke handlers
             Assert.Equal(2, callCount); // 2 handlers called once each
@@ -300,7 +300,7 @@ namespace AshborneTests
             EventBus.Subscribe<OneTimeTestEvent>(e => messages.Add("Handler2: " + e.Message));
 
             // Act
-            EventBus.Publish(new OneTimeTestEvent("OneTime"));
+            EventBus.Publish(new OneTimeTestEvent(0, "OneTime"));
 
             // Assert
             Assert.Equal(2, messages.Count);
@@ -321,7 +321,7 @@ namespace AshborneTests
 
             // Act
             token.Dispose();
-            EventBus.Publish(new TestEvent("After dispose"));
+            EventBus.Publish(new TestEvent(0, "After dispose"));
 
             // Assert
             Assert.Equal(0, callCount);
@@ -353,7 +353,7 @@ namespace AshborneTests
 
             // Act
             token1.Dispose();
-            EventBus.Publish(new TestEvent("Test"));
+            EventBus.Publish(new TestEvent(0, "Test"));
 
             // Assert
             Assert.Equal(1, callCount); // Only token2's handler should be called
@@ -369,9 +369,9 @@ namespace AshborneTests
             // Act
             using (var token = EventBus.Subscribe<TestEvent>(e => callCount++))
             {
-                EventBus.Publish(new TestEvent("Inside scope"));
+                EventBus.Publish(new TestEvent(0, "Inside scope"));
             }
-            EventBus.Publish(new TestEvent("Outside scope"));
+            EventBus.Publish(new TestEvent(0, "Outside scope"));
 
             // Assert
             Assert.Equal(1, callCount);
@@ -393,8 +393,8 @@ namespace AshborneTests
 
             // Act
             composite.Dispose();
-            EventBus.Publish(new TestEvent("Test"));
-            EventBus.Publish(new OtherTestEvent(42));
+            EventBus.Publish(new TestEvent(0, "Test"));
+            EventBus.Publish(new OtherTestEvent(0, 42));
 
             // Assert
             Assert.Equal(0, callCount);
@@ -488,7 +488,7 @@ namespace AshborneTests
             EventBus.Subscribe<TestEvent>(e => received = true);
 
             // Act
-            new TestEvent("Extension Test").Publish();
+            new TestEvent(0, "Extension Test").Publish();
 
             // Assert
             Assert.True(received);
@@ -506,7 +506,7 @@ namespace AshborneTests
             });
 
             // Act
-            await new TestEvent("Async Extension Test").PublishAsync();
+            await new TestEvent(0, "Async Extension Test").PublishAsync();
 
             // Assert
             Assert.True(received);
@@ -551,7 +551,7 @@ namespace AshborneTests
             // Act - publish concurrently from multiple threads
             for (int i = 0; i < 100; i++)
             {
-                tasks.Add(Task.Run(() => EventBus.Publish(new TestEvent($"Message {i}"))));
+                tasks.Add(Task.Run(() => EventBus.Publish(new TestEvent(0, $"Message {i}"))));
             }
 
             await Task.WhenAll(tasks);

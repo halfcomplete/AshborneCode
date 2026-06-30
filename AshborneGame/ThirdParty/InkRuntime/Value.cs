@@ -284,7 +284,7 @@ namespace Ink.Runtime
         }
     }
 
-    // TODO: Think: Erm, I get that this contains a string, but should
+    // Think: Erm, I get that this contains a string, but should
     // we really derive from Value<string>? That seems a bit misleading to me.
     public class VariablePointerValue : Value<string>
     {

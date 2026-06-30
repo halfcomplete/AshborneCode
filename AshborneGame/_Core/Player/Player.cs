@@ -103,6 +103,7 @@ namespace AshborneGame._Core._Player
             CurrentScene = new Scene("test location group", "Test Location Group");
             CurrentScene.AddLocation(CurrentLocation);
             Inventory = new Inventory();
+            PsychologicalState = new(ID);
         }
 
         public Player(string name)
@@ -119,6 +120,7 @@ namespace AshborneGame._Core._Player
             CurrentScene = new Scene("Placeholder", "Placeholder");
             CurrentScene.AddLocation(CurrentLocation);
             Inventory = new Inventory();
+            PsychologicalState = new(ID);
         }
 
         /// <summary>
@@ -134,6 +136,7 @@ namespace AshborneGame._Core._Player
             CurrentScene = new Scene("test location group", "Test Location Group");
             CurrentScene.AddLocation(CurrentLocation);
             Inventory = new Inventory();
+            PsychologicalState = new(ID);
         }
 
         /// <summary>
@@ -227,7 +230,10 @@ namespace AshborneGame._Core._Player
             // Setup move sets visit count to 1 (first visit)
             CurrentLocation.VisitCount = 1;
 
-            if (displayDescription) await IOService.Output.WriteNonDialogueLine(CurrentLocation.GetDescription(GameContext.Player, GameContext.GameState));
+            if (displayDescription)
+            {
+                await IOService.Output.WriteNonDialogueLine(CurrentLocation.GetDescription(GameContext.Player, GameContext.GameState));
+            }
 
             // In Blazor, don't write the scene header to the console
             // Instead, the scene header is displayed in the UI

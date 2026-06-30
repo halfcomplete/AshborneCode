@@ -7,7 +7,7 @@ namespace Ink.Runtime
     /// <summary>
     /// Base class for all ink runtime content.
     /// </summary>
-    public /* TODO: abstract */ class Object
+    public /* abstract */ class Object
 	{
         /// <summary>
         /// Runtime.Objects can be included in the main Story as a hierarchy.
@@ -38,7 +38,7 @@ namespace Ink.Runtime
             }
         }
 
-        // TODO: Come up with some clever solution for not having
+        // Come up with some clever solution for not having
         // to have debug metadata on the object itself, perhaps
         // for serialisation purposes at least.
         DebugMetadata _debugMetadata;

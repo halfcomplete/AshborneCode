@@ -361,7 +361,7 @@ namespace Ink.Runtime
                 AddFloatBinaryOp(Subtract, (x, y) => x - y);
                 AddFloatBinaryOp(Multiply, (x, y) => x * y);
                 AddFloatBinaryOp(Divide,   (x, y) => x / y);
-                AddFloatBinaryOp(Mod,      (x, y) => x % y); // TODO: Is this the operation we want for floats?
+                AddFloatBinaryOp(Mod,      (x, y) => x % y); // Is this the operation we want for floats?
                 AddFloatUnaryOp (Negate,   x => -x); 
 
                 AddFloatBinaryOp(Equal,    (x, y) => x == y);
