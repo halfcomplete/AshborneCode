@@ -483,18 +483,76 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             double personalityBias = GetPersonalityIntensityBias(e);
             intensity += personalityBias;
 
-            foreach (MemoryParticipant participant in e.Participants)
-            {
-                if (!_relationships.TryGetValue(participant.EntityId, out Attitude? attitude) || attitude is null)
-                {
-                    continue;
-                }
+            intensity += GetAttitudeIntensityImpact(_relationships, e.MemoryDefinition.Tags, e.Participants);
 
-                double relationshipWeight = GetParticipantIntensityWeight(participant.Roles);
-                intensity += GetAttitudeIntensityImpact(attitude) * relationshipWeight;
+            return Math.Clamp(intensity, 0.0, 1.0);
+        }
+
+        /// <summary>
+        /// Takes the Relationships an NPC has, the Tags a Memory has, and the Participants in that Memory, 
+        /// and returns how much the Memory's intensity should change based on those inputs.
+        /// </summary>
+        /// <remarks>
+        /// For example, if the NPC has a hostile relationship with someone else, and that person is a Victim of 
+        /// their house burning down, then the intensity of the Memory (how significant that is to the NPC) would 
+        /// decrease as they don't care.
+        /// </remarks>
+        private static double GetAttitudeIntensityImpact(Dictionary<Guid, Attitude> relationships, HashSet<MemoryTag> tags, List<MemoryParticipant> participants)
+        {
+            double intensityImpact = 0.0;
+
+            foreach (MemoryTag tag in tags)
+            {
+                var attitudeIntensityModifiers = MemoryTagDefinitions.Definitions[tag].Definition.AttitudeIntensityModifiers;
+
+                foreach ((AttitudeType attitudeType, List<AttitudeRoleIntensityRule> intensityRules) in attitudeIntensityModifiers)
+                {
+                    foreach (AttitudeRoleIntensityRule rule in intensityRules)
+                    {
+                        // for each rule, find out who in the participants list is affected by that rule
+                        List<MemoryParticipant> targetParticipants = participants.Where(p => p.Roles.Contains(rule.Role)).ToList();
+
+                        // loop over each participant who is affected by that rule
+                        // (e.g, loop over every participant who was a Target)
+                        // figure out, for each participant, if we have a relationship with them
+                        // if so, then figure out how our intensity should be impacted based on that relationship and what the rule says
+                        foreach (MemoryParticipant participant in targetParticipants)
+                        {
+                            if (relationships.TryGetValue(participant.EntityId, out var attitude))
+                            {
+                                // for each attitude type, check if the given attitude actually aligns with that attitude type
+                                double alignment = GetAttitudeAlignmentWithAttitudeType(attitude, attitudeType);
+                                intensityImpact += rule.Weight * alignment;
+                            }
+                        }
+                    }
+                }
             }
 
-            return Math.Clamp(intensity, 0, 1);
+            return intensityImpact;
+        }
+
+        private static double GetAttitudeAlignmentWithAttitudeType(Attitude attitude, AttitudeType attitudeType)
+        {
+            return attitudeType switch
+            {
+                AttitudeType.Loves => Math.Max(0, attitude.Affection),
+                AttitudeType.Hates => Math.Min(0, attitude.Affection),
+
+                AttitudeType.Trusts => Math.Max(0, attitude.Trust),
+                AttitudeType.Distrusts => Math.Min(0, attitude.Trust),
+
+                AttitudeType.Respects => Math.Max(0, attitude.Respect),
+                AttitudeType.Disrespects => Math.Min(0, attitude.Respect),
+
+                AttitudeType.Fears => Math.Max(0, attitude.Fear),
+                AttitudeType.DoesNotFear => Math.Min(0, attitude.Fear),
+
+                AttitudeType.Dominates => Math.Max(0, attitude.Dominance),
+                AttitudeType.Submits => Math.Min(0, attitude.Dominance),
+
+                _ => throw new ArgumentOutOfRangeException(nameof(attitudeType), $"Unhandled attitude: {attitudeType}")
+            };
         }
 
         private double GetPersonalityIntensityBias(IMemorableGameEvent e)
@@ -575,11 +633,6 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             }
 
             return Math.Clamp(weight, 0, 1);
-        }
-
-        private static double GetAttitudeIntensityImpact(Attitude attitude)
-        {
-            return ((-attitude.Affection) * 0.3) + ((-attitude.Trust) * 0.25) + ((-attitude.Respect) * 0.15) + (attitude.Fear * 0.2) + ((-attitude.Dominance) * 0.1);
         }
 
         private static double GetAttitudeEmotionBias(Attitude attitude)
