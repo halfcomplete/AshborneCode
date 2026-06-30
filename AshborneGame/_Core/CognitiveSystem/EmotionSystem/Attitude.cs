@@ -29,11 +29,11 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
 
         // How much the character fears the other character. -1 = confidence/security, 0 = neutral, 1 = extreme fear.
         private double _fear = 0;
-        public double Fear { get => _fear; set => _fear = Math.Clamp(value, 1, 1); }
+        public double Fear { get => _fear; set => _fear = Math.Clamp(value, -1, 1); }
 
         // How dominant the character feels in relation to the other character. -1 = submissive, 0 = neutral, 1 = dominant.
         private double _dominance = 0;
-        public double Dominance { get => _dominance; set => _dominance = Math.Clamp(value, -1f, 1f); }
+        public double Dominance { get => _dominance; set => _dominance = Math.Clamp(value, -1, 1); }
 
         public Attitude() { }
 

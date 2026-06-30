@@ -33,8 +33,8 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
                     [
                         new PersonalityReaction(EmotionType.Sadness, 1.5, 0.4),
                         new PersonalityReaction(EmotionType.Anger, 0.8, 0.2),
-                        new PersonalityReaction(EmotionType.Contempt, 0.7, 0),
-                        new PersonalityReaction(EmotionType.Disgust, 0.6, 0),
+                        new PersonalityReaction(EmotionType.Contempt, 0.7, 0.2),
+                        new PersonalityReaction(EmotionType.Disgust, 0.6, 0.2),
                         new PersonalityReaction(EmotionType.Surprise, 1.3, 0.23),
                     ]},
                     {PersonalityTrait.Curiosity,
@@ -42,6 +42,14 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
                         new PersonalityReaction(EmotionType.Sadness, 1.5, 0.3),
                         new PersonalityReaction(EmotionType.Surprise, 1.5, 0.4),
                         new PersonalityReaction(EmotionType.Contempt, 0.8, 0.2),
+                        new PersonalityReaction(EmotionType.Anger, 0.8, 0.2),
+                    ]},
+                },
+                new Dictionary<AttitudeType, List<AttitudeRoleIntensityRule>>
+                {
+                    {AttitudeType.Loves,
+                    [
+                        new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: +0.3),
                     ]},
                 }
             );

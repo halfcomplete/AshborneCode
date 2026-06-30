@@ -3,15 +3,6 @@ using AshborneGame._Core.CognitiveSystem.MemorySystem;
 
 namespace AshborneGame._Core.Game.Events
 {
-    public enum MemoryRole
-    {
-        Actor,
-        Target,
-        Victim,
-        Beneficiary,
-        Witness
-    }
-
     public sealed record MemoryParticipant(Guid EntityId, List<MemoryRole> Roles);
 
     /// <summary>
