@@ -45,7 +45,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             MemoryDefinition def = e.MemoryDefinition;
 
             Dictionary<EmotionModifier, EmotionAccumulator> initialModifiers = GetInitialEmotionModifiers(def.Tags, e.CurrentTotalHours);
-            double initialIntensity = CalculateActualIntensity(def.BaseIntensity, e);
+            double intensity = CalculateActualIntensity(def.BaseIntensity, e);
 
             Dictionary<EmotionModifier, EmotionAccumulator> newModifiers = ApplyPersonalityReactionsToEmotionModifiers(def, initialModifiers);
             newModifiers = ApplyAttitudeToEmotionalModifiers(e, newModifiers);
@@ -53,9 +53,8 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             List<EmotionModifier> accumulatedModifiers = ApplyAccumulatorsToEmotionModifiers(newModifiers);
 
             List<EmotionModifier> finalModifiers = CombineLikeEmotionModifiers(accumulatedModifiers);
-            double newIntensity = initialIntensity;
 
-            Memory newMemory = new(_ownerID, newIntensity, e, finalModifiers, def.Tags, e.CurrentTotalHours, e.CurrentTotalHours);
+            Memory newMemory = new(_ownerID, intensity, e, finalModifiers, def.Tags, e.CurrentTotalHours, e.CurrentTotalHours);
 
             AddMemory(newMemory);
             ApplyMemoryInfluenceToRelationships(newMemory);
@@ -158,7 +157,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             foreach (MemoryTag tag in def.Tags)
             {
                 // Get the reactions from each personality trait that this MemoryTag defines
-                Dictionary<PersonalityTrait, List<PersonalityReaction>> PersonalityReactions = MemoryTagDefinitions.Definitions[tag].Definition.PersonalityModifiers;
+                Dictionary<PersonalityTrait, List<PersonalityReaction>> PersonalityReactions = MemoryTagDefinitions.Definitions[tag].Definition.PersonalityEmotionModifiers;
 
                 // Loop over each personality trait in PersonalityReactions
                 // personalityTrait is an enumeration (either Curiosity, Compassion or Aggression)
@@ -480,8 +479,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         {
             double intensity = baseIntensity;
 
-            double personalityBias = GetPersonalityIntensityBias(e);
-            intensity += personalityBias;
+            intensity += GetPersonalityIntensityImpact(_personality, e.MemoryDefinition.Tags);
 
             intensity += GetAttitudeIntensityImpact(_relationships, e.MemoryDefinition.Tags, e.Participants);
 
@@ -555,26 +553,25 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             };
         }
 
-        private double GetPersonalityIntensityBias(IMemorableGameEvent e)
+        /// <summary>
+        /// Takes the personality an NPC has and the Memory tags of a memory and returns
+        /// how much the Memory's intensity for this NPC should change because of the NPC's personality.
+        /// </summary>
+        private double GetPersonalityIntensityImpact(PersonalityProfile personality, HashSet<MemoryTag> tags)
         {
-            double bias = 0;
+            double impact = 0;
 
-            foreach (MemoryTag tag in e.MemoryDefinition.Tags)
+            foreach (MemoryTag tag in tags)
             {
-                if (!MemoryTagDefinitions.Definitions.TryGetValue(tag, out IMemoryTag? tagDefinition) || tagDefinition is null)
-                {
-                    continue;
-                }
+                MemoryTagDefinition tagDef = MemoryTagDefinitions.Definitions[tag].Definition;
 
-                foreach (var (trait, reactions) in tagDefinition.Definition.PersonalityModifiers)
+                foreach (var (personalityTrait, intensityMod) in tagDef.PersonalityIntensityModifiers)
                 {
-                    double traitStrength = _personality.PersonalityTraits.TryGetValue(trait, out double value) ? value : 0;
-                    double reactionBias = reactions.Sum(reaction => (reaction.mult - 1) + reaction.add);
-                    bias += traitStrength * reactionBias * 0.1;
+                    impact += intensityMod * personality.PersonalityTraits[personalityTrait];
                 }
             }
 
-            return bias;
+            return impact;
         }
 
         private Dictionary<EmotionModifier, EmotionAccumulator> ApplyAttitudeToEmotionalModifiers(IMemorableGameEvent e, Dictionary<EmotionModifier, EmotionAccumulator> mods)
