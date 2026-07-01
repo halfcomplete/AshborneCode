@@ -102,14 +102,6 @@ namespace AshborneGame._Core.Game.Events
         }
 
         /// <summary>
-        /// Events related to memory influence and strengthening.
-        /// </summary>
-        public static class Memory
-        {
-            public sealed record StrengthenedEvent(int CurrentTotalHours, Guid OwnerId, IMemorySource Cause, double StrengthDelta) : IGameEvent;
-        }
-
-        /// <summary>
         /// Events related to quests.
         /// </summary>
         public static class Quest
