@@ -361,11 +361,11 @@ namespace AshborneGame._Core.Game
             _story.BindExternalFunction("hasLabel", (string key) => ExternalHasLabel(key));
             _story.BindExternalFunction("removeLabel", (string key) => ExternalRemoveLabel(key));
 
-            // --- Variables (not previously bound) ---
+            // --- Variables ---
             _story.BindExternalFunction("setVar", (string key, string value) => ExternalSetVar(key, value));
             _story.BindExternalFunction("getVar", (string key) => ExternalGetVar(key));
 
-            // --- Inventory (not previously bound) ---
+            // --- Inventory ---
             _story.BindExternalFunction("playerHas", (string itemName) => ExternalPlayerHas(itemName));
 
             // --- Masks ---
@@ -573,6 +573,8 @@ namespace AshborneGame._Core.Game
         private object ExternalAddEmotion(string emotionTypeStr, int amount, int intensity)
         {
             /* TODO: Emotion modification disabled - PsychologicalState.EmotionalState property not yet fully implemented
+            // TODO: Fix this function AND also add "synthetic memories" to the memory system: memories that are temporary and only serve to create temporary emotions within
+            //       the player or NPC (for example feelings of fear from a dark cave)
             if (Enum.TryParse<EmotionType>(emotionTypeStr, true, out var type))
             {
                 var mod = new EmotionSystem.EmotionModifier(type, amount, intensity, _gameState.TimeTracker.TotalInGameHours);
