@@ -9,6 +9,7 @@ using AshborneGame._Core.Globals.Enums;
 using System.IO;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.Globals.Constants;
+using AshborneGame._Core.Game.Events;
 
 namespace AshborneGame._Core.Game
 {
@@ -385,8 +386,13 @@ namespace AshborneGame._Core.Game
 
             // --- In-Game Time & Emotions ---
             _story.BindExternalFunction("advance_time", (int hours) => ExternalAdvanceTime(hours));
-            _story.BindExternalFunction("add_emotion", (string emotionType, int amount, int intensity) => ExternalAddEmotion(emotionType, amount, intensity));
             _story.BindExternalFunction("add_synthetic_memory", (string sourceLabel, string tagsCsv, float baseIntensity) => ExternalAddSyntheticMemory(sourceLabel, tagsCsv, baseIntensity));
+
+            // --- Game Events ---
+            _story.BindExternalFunction("eventBegin", (string eventName) => ExternalEventBegin(eventName));
+            _story.BindExternalFunction("eventAddParticipant", (string id, string memRoles) => ExternalEventAddParticipant(id, memRoles));
+            _story.BindExternalFunction("eventAddData", (string dataName, string dataValue) => ExternalEventAddData(dataName, dataValue));
+            _story.BindExternalFunction("eventCommit", ExternalEventCommit);
 
             // --- Silent Path ---
             _story.BindExternalFunction("setSilentPath", (string silentPath, int silentMs) => ExternalSetSilentPath(silentPath, silentMs));
@@ -568,25 +574,13 @@ namespace AshborneGame._Core.Game
         #region In-Game Time & Emotions
         private object ExternalAdvanceTime(int hours)
         {
-            _gameState.TimeTracker.AdvanceTime(hours);
-            return null;
-        }
+            // TODO: Make this more efficient
 
-        private object ExternalAddEmotion(string emotionTypeStr, int amount, int intensity)
-        {
-            /* TODO: Emotion modification disabled - PsychologicalState.EmotionalState property not yet fully implemented
-            // TODO: Fix this function AND also add "synthetic memories" to the memory system: memories that are temporary and only serve to create temporary emotions within
-            //       the player or NPC (for example feelings of fear from a dark cave)
-            if (Enum.TryParse<EmotionType>(emotionTypeStr, true, out var type))
+            for (int h = 0; h < hours; h++)
             {
-                var mod = new EmotionSystem.EmotionModifier(type, amount, intensity, _gameState.TimeTracker.TotalInGameHours);
-                _player.PsychologicalState.EmotionalState.AddModifier(mod);
+                _gameState.TimeTracker.Tick();
             }
-            else
-            {
-                IOService.Output.DisplayDebugMessage($"[Ink] Invalid emotion type '{emotionTypeStr}'.", ConsoleMessageTypes.ERROR).GetAwaiter().GetResult();
-            }
-            */
+            
             return null;
         }
 
@@ -617,6 +611,56 @@ namespace AshborneGame._Core.Game
             }
 
             return tags;
+        }
+
+        private static object ExternalEventBegin(string eventName)
+        {
+            ExternalEventBuilder.BeginNew(eventName);
+            return null;
+        }
+
+        private static object ExternalEventAddParticipant(string participantID, string memoryRoles)
+        {
+            var memRoles = ParseMemoryRoles(memoryRoles);
+
+            if (memRoles.Count() == 0)
+            {
+                throw new ArgumentException($"[InkRunner] memoryRoles passed when attempting to a new participant to the event builder is invalid: '{memoryRoles}'");
+            }
+
+            ExternalEventBuilder.AddParticipant(participantID, memRoles);
+            return null;
+        }
+
+        private static List<MemoryRole> ParseMemoryRoles(string memoryRolesString)
+        {
+            List<MemoryRole> memoryRoles = new();
+
+            foreach (string roleText in memoryRolesString.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                if (Enum.TryParse<MemoryRole>(roleText, true, out MemoryRole role))
+                {
+                    memoryRoles.Add(role);
+                }
+            }
+
+            return memoryRoles;
+        }
+
+        private static object ExternalEventAddData(string dataName, string dataValue)
+        {
+            ExternalEventBuilder.AddData(dataName, dataValue);
+
+            return null;
+        }
+
+        private static object ExternalEventCommit()
+        {
+            ExternalEventBuilder.Commit();
+
+            ExternalEventBuilder.Clear();
+
+            return null;
         }
 
         #endregion
