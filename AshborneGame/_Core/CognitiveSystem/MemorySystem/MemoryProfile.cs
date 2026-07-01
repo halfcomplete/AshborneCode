@@ -79,6 +79,16 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             }
         }
 
+        public void StrengthenMemories(MemoryQuery query, double amount)
+        {
+            List<Memory> targetMemories = _memories.Where(m => m.Matches(query)).ToList();
+
+            foreach (var memory in targetMemories)
+            {
+                memory.Strength += amount;
+            }
+        }
+
         /// <summary>
         /// Takes a list of EmotionModifiers and combines ones with the same emotion type.
         /// </summary>

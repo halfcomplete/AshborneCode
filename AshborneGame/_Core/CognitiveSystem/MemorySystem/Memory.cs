@@ -136,5 +136,16 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         public int GetAgeInHours(int currentTotalInGameHours) => currentTotalInGameHours - HourCreatedAt;
 
         public int GetHoursSinceLastReinforce(int currentTotalInGameHours) => currentTotalInGameHours - HourLastReinforcedAt;
+        
+        public bool Matches(MemoryQuery query)
+        {
+            if (query.Tags != null && !query.Tags.IsSubsetOf(Tags))
+            {
+                return false;
+            }
+
+
+            return Tags.IsSupersetOf(query.Tags ?? new());
+        }
     }
 }
