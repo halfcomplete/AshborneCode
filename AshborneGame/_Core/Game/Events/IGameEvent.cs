@@ -31,7 +31,7 @@ namespace AshborneGame._Core.Game.Events
     {
         public MemoryDefinition MemoryDefinition { get; }
         public List<MemoryParticipant> Participants { get; }
-        
+        public Guid LocationID { get; }
     }
 
     /// <summary>

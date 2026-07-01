@@ -144,8 +144,39 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                 return false;
             }
 
+            if (query.Participants != null)
+            {
+                foreach (var (id, memoryRoles) in query.Participants)
+                {
+                    var targetParticipants = Cause.Participants.Where(p => p.EntityId == id);
+                    if (targetParticipants.Count() == 0)
+                    {
+                        return false;
+                    }
 
-            return Tags.IsSupersetOf(query.Tags ?? new());
+                    if (memoryRoles != null)
+                    {
+                        foreach (var participant in targetParticipants)
+                        {
+                            // If not every role in memoryRoles is found in the actual participant's Roles
+                            if (!memoryRoles.All(r => participant.Roles.Contains(r)))
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (query.Locations != null)
+            {
+                if (!query.Locations.Contains(Cause.LocationID))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

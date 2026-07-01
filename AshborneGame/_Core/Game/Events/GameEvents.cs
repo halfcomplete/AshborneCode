@@ -92,9 +92,12 @@ namespace AshborneGame._Core.Game.Events
             /// <param name="victim">The NPC affected.</param>
             /// <param name="item">The item stolen.</param>
             /// <param name="location">The location where the item was stolen.</param>
-            public sealed record StoleItemEvent(int CurrentTotalHours, NPC victim, Item item, List<MemoryParticipant> Participants) : IMemorableGameEvent
+            public sealed record StoleItemEvent(int CurrentTotalHours, NPC victim, Item item, List<MemoryParticipant> Participants, Location location) : IMemorableGameEvent
             {
                 public MemoryDefinition MemoryDefinition { get; } = new(0.4, [MemoryTag.Theft]);
+
+                // TODO: Change Location ID's to be handled with a Guid object rather than a string
+                public Guid LocationID { get; } = Guid.NewGuid();
             }
         }
 
