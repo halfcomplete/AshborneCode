@@ -37,30 +37,48 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// <param name="e">The IMemorableGameEvent to pass in.</param>
         public void ReceiveMemorableEvent(IMemorableGameEvent e)
         {
-            if (!ShouldReceiveMemorableEvent(e))
+            ReceiveMemorySource(e);
+        }
+
+        /// <summary>
+        /// Creates a memory without requiring a concrete IMemorableGameEvent.
+        /// </summary>
+        public Memory? ReceiveSyntheticMemory(string sourceLabel, MemoryDefinition memoryDefinition, int currentTotalHours, Guid locationID, List<MemoryParticipant>? participants = null)
+        {
+            List<MemoryParticipant> sourceParticipants = participants ?? [new MemoryParticipant(_ownerID, [MemoryRole.Actor])];
+            SyntheticMemorySource source = new(currentTotalHours, memoryDefinition, sourceParticipants, locationID, sourceLabel);
+
+            return ReceiveMemorySource(source);
+        }
+
+        public Memory? ReceiveMemorySource(IMemorySource source)
+        {
+            if (!ShouldReceiveMemorySource(source))
             {
-                return;
+                return null;
             }
 
-            MemoryDefinition def = e.MemoryDefinition;
+            MemoryDefinition def = source.MemoryDefinition;
 
-            Dictionary<EmotionModifier, EmotionAccumulator> initialModifiers = GetInitialEmotionModifiers(def.Tags, e.CurrentTotalHours);
-            double intensity = CalculateActualIntensity(def.BaseIntensity, e);
+            Dictionary<EmotionModifier, EmotionAccumulator> initialModifiers = GetInitialEmotionModifiers(def.Tags, source.CurrentTotalHours);
+            double intensity = CalculateActualIntensity(def.BaseIntensity, source);
 
             Dictionary<EmotionModifier, EmotionAccumulator> newModifiers = ApplyPersonalityReactionsToEmotionModifiers(def, initialModifiers);
-            newModifiers = ApplyAttitudeToEmotionalModifiers(e, _relationships, newModifiers);
+            newModifiers = ApplyAttitudeToEmotionalModifiers(source, _relationships, newModifiers);
 
             List<EmotionModifier> accumulatedModifiers = ApplyAccumulatorsToEmotionModifiers(newModifiers);
 
             List<EmotionModifier> finalModifiers = CombineLikeEmotionModifiers(accumulatedModifiers);
 
-            Memory newMemory = new(_ownerID, intensity, e, finalModifiers, def.Tags, e.CurrentTotalHours, e.CurrentTotalHours);
+            Memory newMemory = new(_ownerID, intensity, source, finalModifiers, def.Tags, source.CurrentTotalHours, source.CurrentTotalHours);
 
             AddMemory(newMemory);
             ApplyMemoryInfluenceToRelationships(newMemory);
+
+            return newMemory;
         }
 
-        public void StrengthenMemory(IMemorableGameEvent cause, double strengthDelta, int currentTotalHours)
+        public void StrengthenMemory(IMemorySource cause, double strengthDelta, int currentTotalHours)
         {
             EventBus.Publish(new GameEvents.Memory.StrengthenedEvent(currentTotalHours, _ownerID, cause, strengthDelta));
         }
@@ -387,7 +405,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
         public List<Memory> GetActiveMemories() => _memories.Where(m => m.IsActive).ToList();
 
-        public List<Memory> GetMemoriesByCause(IMemorableGameEvent cause) => _memories.Where(m => m.Cause == cause).ToList();
+        public List<Memory> GetMemoriesByCause(IMemorySource cause) => _memories.Where(m => m.Cause == cause).ToList();
 
         public List<Memory> GetMemoriesByTag(MemoryTag tag) => _memories.Where(m => m.Tags.Contains(tag)).ToList();
 
@@ -417,7 +435,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             return total;
         }
 
-        public bool RemembersEvent(IMemorableGameEvent cause) => _memories.Any(m => m.Cause == cause);
+        public bool RemembersEvent(IMemorySource cause) => _memories.Any(m => m.Cause == cause);
 
         #endregion API
 
@@ -480,18 +498,18 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             return mods;
         }
         
-        private bool ShouldReceiveMemorableEvent(IMemorableGameEvent e)
+        private bool ShouldReceiveMemorySource(IMemorySource source)
         {
-            return e.Participants.Any(participant => participant.EntityId == _ownerID);
+            return source.Participants.Any(participant => participant.EntityId == _ownerID);
         }
 
-        private double CalculateActualIntensity(double baseIntensity, IMemorableGameEvent e)
+        private double CalculateActualIntensity(double baseIntensity, IMemorySource source)
         {
             double intensity = baseIntensity;
 
-            intensity += GetPersonalityIntensityImpact(_personality, e.MemoryDefinition.Tags);
+            intensity += GetPersonalityIntensityImpact(_personality, source.MemoryDefinition.Tags);
 
-            intensity += GetAttitudeIntensityImpact(_relationships, e.MemoryDefinition.Tags, e.Participants);
+            intensity += GetAttitudeIntensityImpact(_relationships, source.MemoryDefinition.Tags, source.Participants);
 
             return Math.Clamp(intensity, 0.0, 1.0);
         }
@@ -587,7 +605,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// <summary>
         /// Takes a game event, the NPC's relationships and the current emotional modifiers of a memory and returns a Dictionary of the previous emotion modifiers and the updated emotion accumulators.
         /// </summary>
-        private static Dictionary<EmotionModifier, EmotionAccumulator> ApplyAttitudeToEmotionalModifiers(IMemorableGameEvent e, Dictionary<Guid, Attitude> relationships, Dictionary<EmotionModifier, EmotionAccumulator> mods)
+        private static Dictionary<EmotionModifier, EmotionAccumulator> ApplyAttitudeToEmotionalModifiers(IMemorySource source, Dictionary<Guid, Attitude> relationships, Dictionary<EmotionModifier, EmotionAccumulator> mods)
         {
             // Loops over each memory tag in the memory definition
             // Gets the memory tag's AttitudeEmotionModifiers
@@ -595,7 +613,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             // is a key in the memory tag's AttitudeEmotionModifiers
             // Get the alignment with the attitude type
 
-            foreach (MemoryTag tag in e.MemoryDefinition.Tags)
+            foreach (MemoryTag tag in source.MemoryDefinition.Tags)
             {
                 var attitudeEmotionModifiers = MemoryTagDefinitions.Definitions[tag].Definition.AttitudeEmotionModifiers;
 
@@ -604,7 +622,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                     foreach (AttitudeRoleEmotionRule rule in attitudeRoleEmotionRules)
                     {
                         // figure out who in the list of participants satisfies the rule's memory role
-                        List<MemoryParticipant> targetParticipants = e.Participants.Where(p => p.Roles.Contains(rule.Role)).ToList();
+                        List<MemoryParticipant> targetParticipants = source.Participants.Where(p => p.Roles.Contains(rule.Role)).ToList();
                         
                         // loop over each participant who is affected by that rule
                         // (e.g, loop over every participant who was a Target)

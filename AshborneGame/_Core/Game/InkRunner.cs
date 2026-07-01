@@ -3,6 +3,7 @@ using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem;
+using AshborneGame._Core.CognitiveSystem.MemorySystem;
 using System.Reflection.Metadata.Ecma335;
 using AshborneGame._Core.Globals.Enums;
 using System.IO;
@@ -385,6 +386,7 @@ namespace AshborneGame._Core.Game
             // --- In-Game Time & Emotions ---
             _story.BindExternalFunction("advance_time", (int hours) => ExternalAdvanceTime(hours));
             _story.BindExternalFunction("add_emotion", (string emotionType, int amount, int intensity) => ExternalAddEmotion(emotionType, amount, intensity));
+            _story.BindExternalFunction("add_synthetic_memory", (string sourceLabel, string tagsCsv, float baseIntensity) => ExternalAddSyntheticMemory(sourceLabel, tagsCsv, baseIntensity));
 
             // --- Silent Path ---
             _story.BindExternalFunction("setSilentPath", (string silentPath, int silentMs) => ExternalSetSilentPath(silentPath, silentMs));
@@ -586,6 +588,35 @@ namespace AshborneGame._Core.Game
             }
             */
             return null;
+        }
+
+        private object ExternalAddSyntheticMemory(string sourceLabel, string tagsCsv, float baseIntensity)
+        {
+            HashSet<MemoryTag> tags = ParseMemoryTags(tagsCsv);
+            MemoryDefinition memoryDefinition = new(baseIntensity, tags);
+
+            GameContext.Player.PsychologicalState.MemoryProfile.ReceiveSyntheticMemory(
+                sourceLabel,
+                memoryDefinition,
+                _gameState.TimeTracker.TotalInGameHours,
+                Guid.Empty);
+
+            return null;
+        }
+
+        private static HashSet<MemoryTag> ParseMemoryTags(string tagsCsv)
+        {
+            HashSet<MemoryTag> tags = new();
+
+            foreach (string tagText in tagsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                if (Enum.TryParse<MemoryTag>(tagText, true, out MemoryTag tag))
+                {
+                    tags.Add(tag);
+                }
+            }
+
+            return tags;
         }
 
         #endregion

@@ -29,7 +29,8 @@ namespace AshborneTests
                 10,
                 null!,
                 null!,
-                [new MemoryParticipant(witnessId, [MemoryRole.Actor])]);
+                [new MemoryParticipant(witnessId, [MemoryRole.Actor])],
+                null!);
 
             profile.ReceiveMemorableEvent(cause);
 
@@ -46,11 +47,49 @@ namespace AshborneTests
                 10,
                 null!,
                 null!,
-                [new MemoryParticipant(ownerId, [MemoryRole.Actor])]);
+                [new MemoryParticipant(ownerId, [MemoryRole.Actor])],
+                null!);
 
             profile.ReceiveMemorableEvent(cause);
 
             Assert.Single(profile.GetMemories());
+        }
+
+        [Fact]
+        public void ReceiveSyntheticMemory_ShouldCreateMemory_ForOwnerByDefault()
+        {
+            var ownerId = Guid.NewGuid();
+            var profile = new MemoryProfile(ownerId, new PersonalityProfile(), new Dictionary<Guid, Attitude>());
+
+            var memory = profile.ReceiveSyntheticMemory(
+                "ink:nightmare",
+                new MemoryDefinition(0.35, [MemoryTag.Betrayal]),
+                12,
+                Guid.Empty);
+
+            Assert.NotNull(memory);
+            Assert.Single(profile.GetMemories());
+            Assert.Equal(memory, profile.GetMemories().Single());
+        }
+
+        [Fact]
+        public void ReceiveMemorySource_ShouldStoreSyntheticCause_ForLookup()
+        {
+            var ownerId = Guid.NewGuid();
+            var profile = new MemoryProfile(ownerId, new PersonalityProfile(), new Dictionary<Guid, Attitude>());
+
+            var syntheticCause = new SyntheticMemorySource(
+                14,
+                new MemoryDefinition(0.2, [MemoryTag.Theft]),
+                [new MemoryParticipant(ownerId, [MemoryRole.Actor])],
+                Guid.Empty,
+                "ink:conversation");
+
+            profile.ReceiveMemorySource(syntheticCause);
+
+            Assert.Single(profile.GetMemoriesByCause(syntheticCause));
+            Assert.True(profile.RemembersEvent(syntheticCause));
+            Assert.IsType<SyntheticMemorySource>(profile.GetMemories().Single().Cause);
         }
 
         // TODO: Fix this later when we decide how exactly memory strengthening should work
@@ -88,7 +127,8 @@ namespace AshborneTests
                 [
                     new MemoryParticipant(ownerId, [MemoryRole.Actor]),
                     new MemoryParticipant(targetId, [MemoryRole.Target])
-                ]);
+                ],
+                null!);
 
             profile.ReceiveMemorableEvent(cause);
 
@@ -102,7 +142,8 @@ namespace AshborneTests
                 10,
                 null!,
                 null!,
-                [new MemoryParticipant(ownerId, [MemoryRole.Witness])]);
+                [new MemoryParticipant(ownerId, [MemoryRole.Witness])],
+                null!);
         }
     }
 }

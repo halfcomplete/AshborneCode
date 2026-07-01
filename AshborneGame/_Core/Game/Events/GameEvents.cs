@@ -106,7 +106,7 @@ namespace AshborneGame._Core.Game.Events
         /// </summary>
         public static class Memory
         {
-            public sealed record StrengthenedEvent(int CurrentTotalHours, Guid OwnerId, IMemorableGameEvent Cause, double StrengthDelta) : IGameEvent;
+            public sealed record StrengthenedEvent(int CurrentTotalHours, Guid OwnerId, IMemorySource Cause, double StrengthDelta) : IGameEvent;
         }
 
         /// <summary>

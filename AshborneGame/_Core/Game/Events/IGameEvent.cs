@@ -27,11 +27,8 @@ namespace AshborneGame._Core.Game.Events
     /// Note that when defining new IMemorableGameEvent record types, the MemoryDefinition must be specified as a default value.
     /// On the other hand, Participants and other data specific to that particular GameEvent are to be passed in.
     /// </remarks>
-    public interface IMemorableGameEvent : IGameEvent
+    public interface IMemorableGameEvent : IMemorySource, IGameEvent
     {
-        public MemoryDefinition MemoryDefinition { get; }
-        public List<MemoryParticipant> Participants { get; }
-        public Guid LocationID { get; }
     }
 
     /// <summary>

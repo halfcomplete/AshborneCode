@@ -85,7 +85,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// <summary>
         /// The cause of this Memory/what created the Memory.
         /// </summary>
-        public IMemorableGameEvent Cause { get; init; }
+        public IMemorySource Cause { get; init; }
 
         /// <summary>
         /// The EmotionModifiers associated with this Memory; how this Memory affects the NPC's emotions.
@@ -104,13 +104,13 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// </summary>
         public int HourLastReinforcedAt { get; private set; }
 
-        public Memory(Guid owner, double intensity, IMemorableGameEvent cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
+        public Memory(Guid owner, double intensity, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
         : this(owner, intensity, 1.0, cause, emotionModifiers, tags, hourCreatedAt, hourLastReinforcedAt)
         {
             
         }
 
-        public Memory(Guid owner, double intensity, double strength, IMemorableGameEvent cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
+        public Memory(Guid owner, double intensity, double strength, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
         {
             ID = Guid.NewGuid();
             Owner = owner;
