@@ -661,30 +661,6 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             return Math.Clamp(weight, 0, 1);
         }
 
-        private static double GetParticipantEmotionWeight(List<MemoryRole> roles)
-        {
-            double weight = 0;
-
-            foreach (MemoryRole role in roles)
-            {
-                weight += role switch
-                {
-                    MemoryRole.Actor => 0.3,
-                    MemoryRole.Target => 0.45,
-                    MemoryRole.Beneficiary => 0.2,
-                    MemoryRole.Witness => 0.1,
-                    _ => 0
-                };
-            }
-
-            return Math.Clamp(weight, 0, 1);
-        }
-
-        private static double GetAttitudeEmotionBias(Attitude attitude)
-        {
-            return ((-attitude.Affection) * 0.15) + ((-attitude.Trust) * 0.2) + ((-attitude.Respect) * 0.1) + (attitude.Fear * 0.2) + ((-attitude.Dominance) * 0.05);
-        }
-
         // TODO: fix attitude of victim TO owner should be changing, not other way round
         private void ApplyMemoryInfluenceToRelationships(Memory memory)
         {
