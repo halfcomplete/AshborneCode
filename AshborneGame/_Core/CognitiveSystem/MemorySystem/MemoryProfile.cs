@@ -21,7 +21,6 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
             EventBus.Subscribe<GameEvents.System.TickEvent>(e => TickMemoryDecay(e.HoursPassed));
             EventBus.Subscribe<IMemorableGameEvent>(e => ReceiveMemorableEvent(e));
-            EventBus.Subscribe<GameEvents.Memory.StrengthenedEvent>(e => ReceiveMemoryStrengthenedEvent(e));
         }
 
         public MemoryProfile(Guid ownerID, PersonalityProfile personality, Dictionary<Guid, Attitude> relationships) : this(ownerID, personality, relationships, new List<Memory>()) { }
@@ -81,20 +80,6 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         public void StrengthenMemory(IMemorySource cause, double strengthDelta, int currentTotalHours)
         {
             EventBus.Publish(new GameEvents.Memory.StrengthenedEvent(currentTotalHours, _ownerID, cause, strengthDelta));
-        }
-
-        // TODO: Do we really need events for all this? Why not direct calling?
-        private void ReceiveMemoryStrengthenedEvent(GameEvents.Memory.StrengthenedEvent e)
-        {
-            if (e.OwnerId != _ownerID)
-            {
-                return;
-            }
-
-            foreach (Memory memory in _memories.Where(m => m.Cause == e.Cause))
-            {
-                memory.Strength += e.StrengthDelta;
-            }
         }
 
         public void StrengthenMemories(MemoryQuery query, double amount)
