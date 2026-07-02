@@ -1,4 +1,5 @@
 ﻿using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
+using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
 using System.Runtime.CompilerServices;
@@ -16,10 +17,9 @@ public abstract class BOCSGameObject
     /// </summary>
     public abstract string Name { get; }
 
-    /// <summary>
-    /// Gets the unique identifier of the object.
-    /// </summary>
-    public Guid ID { get; private set; } = Guid.NewGuid();
+    public InstanceID InstanceID { get; }
+
+    public DefinitionID DefinitionID { get; }
 
     /// <summary>
     /// Represents the Behaviours attached to this BOCSGameObject.
