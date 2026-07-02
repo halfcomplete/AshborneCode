@@ -1,9 +1,9 @@
-using AshborneGame._Core.Globals.Enums;
+using AshborneGame._Core.CognitiveSystem.MemorySystem;
 
 namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
 {
     /// <summary>
-    /// A record representing a single modifier to an emotion, which has a type, an initial amount (positive or negative), and the in-game hour when it was applied.
+    /// A record representing a single modifier to an emotion, which has a type and an initial amount (positive or negative).
     /// </summary>
     public record EmotionModifier
     {
