@@ -78,7 +78,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             return newMemory;
         }
 
-        private Dictionary<EmotionModifier, EmotionAccumulator> ExpandEmotionPotentialsIntoEmotionModifiers(List<MemoryParticipant> participants, Dictionary<EmotionPotential, EmotionAccumulator> newPotentials)
+        private static Dictionary<EmotionModifier, EmotionAccumulator> ExpandEmotionPotentialsIntoEmotionModifiers(List<MemoryParticipant> participants, Dictionary<EmotionPotential, EmotionAccumulator> newPotentials)
         {
             Dictionary<EmotionModifier, EmotionAccumulator> modifiers = new();
 

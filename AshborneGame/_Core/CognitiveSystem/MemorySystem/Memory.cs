@@ -105,10 +105,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         public int HourLastReinforcedAt { get; private set; }
 
         public Memory(Guid owner, double intensity, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
-        : this(owner, intensity, 1.0, cause, emotionModifiers, tags, hourCreatedAt, hourLastReinforcedAt)
-        {
-            
-        }
+        : this(owner, intensity, 1.0, cause, emotionModifiers, tags, hourCreatedAt, hourLastReinforcedAt) { }
 
         public Memory(Guid owner, double intensity, double strength, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
         {
@@ -117,10 +114,15 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             Intensity = intensity;
             Strength = strength;
             Cause = cause;
-            EmotionModifiers = emotionModifiers;
+            EmotionModifiers = UpdateEmotionModifierParentMemory(emotionModifiers);
             Tags = tags;
             HourCreatedAt = hourCreatedAt;
             HourLastReinforcedAt = hourLastReinforcedAt;
+        }
+
+        private List<EmotionModifier> UpdateEmotionModifierParentMemory(List<EmotionModifier> emotionModifiers)
+        {
+            return emotionModifiers.Select(m => m with { ParentMemory = this }).ToList();
         }
 
         public static double GetStrengthFloorBasedOnIntensity(double intensity)
