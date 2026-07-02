@@ -59,13 +59,14 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
             MemoryDefinition def = source.MemoryDefinition;
 
-            Dictionary<EmotionModifier, EmotionAccumulator> initialModifiers = GetInitialEmotionModifiers(def.Tags, source.CurrentTotalHours);
+            Dictionary<EmotionPotential, EmotionAccumulator> initialPotentials = GetInitialEmotionPotentials(def.Tags);
             double intensity = CalculateActualIntensity(def.BaseIntensity, source);
 
-            Dictionary<EmotionModifier, EmotionAccumulator> newModifiers = ApplyPersonalityReactionsToEmotionModifiers(def, initialModifiers);
-            newModifiers = ApplyAttitudeToEmotionalModifiers(source, _relationships, newModifiers);
+            Dictionary<EmotionPotential, EmotionAccumulator> newPotentials = ApplyPersonalityReactionsToEmotionModifiers(def, initialPotentials);
+            Dictionary<EmotionModifier, EmotionAccumulator> emotionModifiers = ExpandEmotionPotentialsIntoEmotionModifiers(source.Participants, newPotentials);
+            emotionModifiers = ApplyAttitudeToEmotionalModifiers(source, _relationships, emotionModifiers);
 
-            List<EmotionModifier> accumulatedModifiers = ApplyAccumulatorsToEmotionModifiers(newModifiers);
+            List<EmotionModifier> accumulatedModifiers = ApplyAccumulatorsToEmotionModifiers(emotionModifiers);
 
             List<EmotionModifier> finalModifiers = CombineLikeEmotionModifiers(accumulatedModifiers);
 
@@ -75,6 +76,25 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             ApplyMemoryInfluenceToRelationships(newMemory);
 
             return newMemory;
+        }
+
+        private Dictionary<EmotionModifier, EmotionAccumulator> ExpandEmotionPotentialsIntoEmotionModifiers(List<MemoryParticipant> participants, Dictionary<EmotionPotential, EmotionAccumulator> newPotentials)
+        {
+            Dictionary<EmotionModifier, EmotionAccumulator> modifiers = new();
+
+            foreach (var (potential, accumulator) in newPotentials)
+            {
+                List<MemoryParticipant> targetParticipants = participants.Where(p => p.Roles.Contains(potential.Role)).ToList();
+
+                foreach (var p in targetParticipants)
+                {
+                    EmotionModifier mod = new(null, p, potential.Emotion, potential.Value);
+
+                    modifiers.Add(mod, accumulator);
+                }
+            }
+
+            return modifiers;
         }
 
         public void StrengthenMemories(MemoryQuery query, double amount)
@@ -88,34 +108,32 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         }
 
         /// <summary>
-        /// Takes a list of EmotionModifiers and combines ones with the same emotion type.
+        /// Takes a list of EmotionModifiers and combines ones with the same emotion type and target.
         /// </summary>
-        /// <returns>A list of EmotionModifiers where each one has a unique emotion type.</returns>
+        /// <returns>A list of EmotionModifiers where each one has a unique emotion type and target.</returns>
         private static List<EmotionModifier> CombineLikeEmotionModifiers(List<EmotionModifier> modifiers)
         {
-            List<EmotionModifier> combinedModifiers = [];
-
-            // sort by emotion type
-            // then iterate through and combine like emotion types
-            var sorted = modifiers.OrderBy(m => m.Type).ToList();
-
-            EmotionType currentEmotion = sorted.Count > 0 ? sorted[0].Type : EmotionType.Anger;
-            double currentAmount = 0;
-
-            foreach (EmotionModifier mod in sorted)
+            if (modifiers == null || modifiers.Count == 0)
             {
-                // if this is a new emotion type that we've encountered
-                if (mod.Type != currentEmotion)
-                {
-                    combinedModifiers.Add(new(currentEmotion, currentAmount));
-                    currentAmount = 0;
-                }
-
-                currentEmotion = mod.Type;
-                currentAmount += mod.InitialAmount;
+                return new List<EmotionModifier>();
             }
 
-            combinedModifiers.Add(new(currentEmotion, currentAmount));
+            List<EmotionModifier> combinedModifiers = modifiers
+                .GroupBy(m => (m.Type, m.Target))
+                .Select(group =>
+                {
+                    double totalAmount = group.Sum(m => m.InitialAmount);
+
+                    EmotionModifier first = group.First();
+
+                    return new EmotionModifier(
+                        parentMemory: null,
+                        target: first.Target,
+                        type: first.Type,
+                        initialAmount: totalAmount
+                    );
+                })
+                .ToList();
 
             return combinedModifiers;
         }
@@ -145,7 +163,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// <returns>A single EmotionModifier with its EmotionAccumulator applied.</returns>
         private static EmotionModifier ApplyAccumulatorToEmotionModifier(EmotionModifier mod, EmotionAccumulator accumulator)
         {
-            double newInitialAmount = (mod.InitialAmount + accumulator.TotalAdd);
+            double newInitialAmount = mod.InitialAmount + accumulator.TotalAdd;
 
             if (accumulator.TotalMult >= 0)
             {
@@ -156,10 +174,10 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                 newInitialAmount /= accumulator.TotalMult;
             }
 
-            return new(mod.Type, newInitialAmount);
+            return mod with { InitialAmount = newInitialAmount };
         }
         
-        private Dictionary<EmotionModifier, EmotionAccumulator> ApplyPersonalityReactionsToEmotionModifiers(MemoryDefinition def, Dictionary<EmotionModifier, EmotionAccumulator> initialModifiers)
+        private Dictionary<EmotionPotential, EmotionAccumulator> ApplyPersonalityReactionsToEmotionModifiers(MemoryDefinition def, Dictionary<EmotionPotential, EmotionAccumulator> initialPotentials)
         {
             // Loop over each MemoryTag in the given MemoryDefinition
             foreach (MemoryTag tag in def.Tags)
@@ -180,28 +198,28 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
                         // For every EmotionModifier and EmotionAccumulator in the given initialModifieres, 
                         // check if the modified emotion is the same as this reaction's emotion.
-                        foreach (var (modifier, accumulator) in initialModifiers)
+                        foreach (var (potential, accumulator) in initialPotentials)
                         {
-                            if (modifier.Type == reaction.emotion)
+                            if (potential.Emotion == reaction.Emotion)
                             {
-                                // If both this reaction and the current emotion modifier being checked modify the same emotion,
+                                // If both this reaction and the current emotion potential being checked modify the same emotion,
                                 // then add to the associated EmotionAccumulator's TotalMult and mark seen as true.
-                                accumulator.TotalMult = CalculateEmotionAccumulatorTotalMult(accumulator.TotalMult, _personality.PersonalityTraits[personalityTrait], reaction.mult);
+                                accumulator.TotalMult = CalculateEmotionAccumulatorTotalMult(accumulator.TotalMult, _personality.PersonalityTraits[personalityTrait], reaction.Mult);
                                 seen = true;
                             }
                         }
 
-                        // If there were no initial emotion modifiers that modify reaction.emotion then add a new EmotionModifier
+                        // If there were no initial emotion modifiers that modify reaction.Emotion then add a new EmotionPotential
                         if (!seen)
                         {
-                            EmotionModifier modifier = new(reaction.emotion, reaction.add * _personality.PersonalityTraits[personalityTrait]);
-                            initialModifiers.Add(modifier, new EmotionAccumulator());
+                            EmotionPotential potential = new(reaction.Emotion, reaction.Role, reaction.Add * _personality.PersonalityTraits[personalityTrait]);
+                            initialPotentials.Add(potential, new EmotionAccumulator());
                         }
                     }
                 }
             }
 
-            return initialModifiers;
+            return initialPotentials;
         }
         
         /// <summary>
@@ -456,22 +474,22 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         #region Initial Memory Calculations
 
         /// <summary>
-        /// Takes a Hashset of MemoryTags and returns the base EmotionModifiers that the given MemoryTags define.
+        /// Takes a Hashset of MemoryTags and returns the base EmotionPotentials that the given MemoryTags define.
         /// </summary>
         /// <param name="tags">The MemoryTags to parse and interpret.</param>
         /// <param name="currentTotalHours">The current total hours of the game.</param>
         /// <returns></returns>
-        private static Dictionary<EmotionModifier, EmotionAccumulator> GetInitialEmotionModifiers(HashSet<MemoryTag> tags, int currentTotalHours)
+        private static Dictionary<EmotionPotential, EmotionAccumulator> GetInitialEmotionPotentials(HashSet<MemoryTag> tags)
         {
-            Dictionary<EmotionModifier, EmotionAccumulator> mods = new();
+            Dictionary<EmotionPotential, EmotionAccumulator> mods = new();
 
             foreach (MemoryTag tag in tags)
             {
                 MemoryTagDefinition tagDefinition = MemoryTagDefinitions.Definitions[tag].Definition;
 
-                foreach (var baseMod in tagDefinition.BaseEmotionalModifiers)
+                foreach (var (emotion, (role, value)) in tagDefinition.BaseEmotionalModifiers)
                 {
-                    mods[new EmotionModifier(baseMod.Key, baseMod.Value)] = new EmotionAccumulator();
+                    mods[new EmotionPotential(emotion, role, value)] = new EmotionAccumulator();
                 }
             }
 
@@ -582,6 +600,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             return impact;
         }
 
+        // TODO: review this function; can we make it any more efficient?
         /// <summary>
         /// Takes a game event, the NPC's relationships and the current emotional modifiers of a memory and returns a Dictionary of the previous emotion modifiers and the updated emotion accumulators.
         /// </summary>
@@ -621,16 +640,16 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                                 {
                                     EmotionReaction reaction = rule.Reaction;
 
-                                    var targetMods = mods.Where(m => m.Key.Type == reaction.emotion);
+                                    var targetMods = mods.Where(m => m.Key.Type == reaction.Emotion);
 
                                     foreach (var (emotionMod, emotionAccumulator) in targetMods)
                                     {
-                                        emotionAccumulator.TotalMult = CalculateEmotionAccumulatorTotalMult(emotionAccumulator.TotalMult, alignment, reaction.mult);
+                                        emotionAccumulator.TotalMult = CalculateEmotionAccumulatorTotalMult(emotionAccumulator.TotalMult, alignment, reaction.Mult);
                                     }
 
                                     if (targetMods.Count() == 0)
                                     {
-                                        mods.Add(new(reaction.emotion, reaction.add * alignment), new());
+                                        mods.Add(new(null, participant, reaction.Emotion, reaction.Add * alignment), new());
                                     }
                                 }
                             }

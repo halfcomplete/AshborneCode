@@ -12,31 +12,33 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
         public MemoryTagDefinition Definition { get; } = 
             new MemoryTagDefinition(
                 // Base emotional modifiers
-                new Dictionary<EmotionType, double>
+                new Dictionary<EmotionType, (MemoryRole role, double value)>
                 {
-                    {EmotionType.Anger, 0.6},
-                    {EmotionType.Contempt, 0.5},
-                    {EmotionType.Disgust, 0.3},
-                    {EmotionType.Surprise, 0.4},
-                    {EmotionType.Happiness, -0.3},
+                    {EmotionType.Anger, (MemoryRole.Actor, 0.6)},
+                    {EmotionType.Contempt, (MemoryRole.Actor, 0.5)},
+                    {EmotionType.Disgust, (MemoryRole.Actor, 0.3)},
+                    {EmotionType.Surprise, (MemoryRole.Actor, 0.4)},
+                    {EmotionType.Happiness, (MemoryRole.Actor, -0.3)},
+                    {EmotionType.Sadness, (MemoryRole.Target, 0.3)},
                 }, 
                 // Personality reactions
                 new Dictionary<PersonalityTrait, List<EmotionReaction>>
                 {
                     {PersonalityTrait.Curiosity,
                     [
-                        new EmotionReaction(EmotionType.Surprise, 1.7, 0.6),
-                        new EmotionReaction(EmotionType.Contempt, 0.9, 0.2),
+                        new EmotionReaction(EmotionType.Surprise, 1.7, 0.6, MemoryRole.Actor),
+                        new EmotionReaction(EmotionType.Contempt, 0.9, 0.2, MemoryRole.Actor),
                     ]},
                     {PersonalityTrait.Aggression,
                     [
-                        new EmotionReaction(EmotionType.Anger, 1.2, 0.7),
-                        new EmotionReaction(EmotionType.Contempt, 1.1, 0.4),
+                        new EmotionReaction(EmotionType.Anger, 1.2, 0.7, MemoryRole.Actor),
+                        new EmotionReaction(EmotionType.Contempt, 1.1, 0.4, MemoryRole.Actor),
                     ]},
                     {PersonalityTrait.Compassion,
                     [
-                        new EmotionReaction(EmotionType.Disgust, 1.3, 0.4),
-                        new EmotionReaction(EmotionType.Sadness, 1.1, 0.3),
+                        new EmotionReaction(EmotionType.Disgust, 1.3, 0.4, MemoryRole.Actor),
+                        new EmotionReaction(EmotionType.Sadness, 1.1, 0.3, MemoryRole.Actor),
+                        new EmotionReaction(EmotionType.Sadness, 1.3, 0.3, MemoryRole.Target),
                     ]},
                 },
                 new Dictionary<RelationshipType, List<AttitudeRoleIntensityRule>>

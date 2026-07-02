@@ -12,30 +12,31 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
         public MemoryTagDefinition Definition { get; } = 
             new MemoryTagDefinition(
                 // Base emotional modifiers
-                new Dictionary<EmotionType, double>
+                new Dictionary<EmotionType, (MemoryRole role, double value)>
                 {
-                    {EmotionType.Anger, 0.8},
-                    {EmotionType.Sadness, 0.6},
-                    {EmotionType.Contempt, 0.4},
-                    {EmotionType.Happiness, -0.5},
+                    {EmotionType.Anger, (MemoryRole.Actor, 0.8)},
+                    {EmotionType.Sadness, (MemoryRole.Target, 0.3)},
+                    {EmotionType.Contempt, (MemoryRole.Actor, 0.4)},
+                    {EmotionType.Happiness, (MemoryRole.Actor, -0.5)},
                 }, 
                 // Personality reactions
                 new Dictionary<PersonalityTrait, List<EmotionReaction>>
                 {
                     {PersonalityTrait.Compassion,
                     [
-                        new EmotionReaction(EmotionType.Sadness, 1.6, 0.5),
-                        new EmotionReaction(EmotionType.Anger, 0.9, 0.2),
+                        new EmotionReaction(EmotionType.Sadness, 1.6, 0.5, MemoryRole.Target),
+                        new EmotionReaction(EmotionType.Anger, 0.9, 0.2, MemoryRole.Actor),
+                        new EmotionReaction(EmotionType.Sadness, 1.5, 0.3, MemoryRole.Actor),
                     ]},
                     {PersonalityTrait.Aggression,
                     [
-                        new EmotionReaction(EmotionType.Anger, 1.4, 0.9),
-                        new EmotionReaction(EmotionType.Contempt, 1.2, 0.5),
+                        new EmotionReaction(EmotionType.Anger, 1.4, 0.9, MemoryRole.Actor),
+                        new EmotionReaction(EmotionType.Contempt, 1.2, 0.5, MemoryRole.Actor),
+                        new EmotionReaction(EmotionType.Sadness, 0.8, -0.2, MemoryRole.Target),
                     ]},
                     {PersonalityTrait.Curiosity,
                     [
-                        new EmotionReaction(EmotionType.Sadness, 1.2, 0.3),
-                        new EmotionReaction(EmotionType.Surprise, 1.4, 0.3),
+                        new EmotionReaction(EmotionType.Surprise, 1.4, 0.4, MemoryRole.Actor),
                     ]},
                 },
                 new Dictionary<RelationshipType, List<AttitudeRoleIntensityRule>>

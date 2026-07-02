@@ -15,7 +15,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         public AttitudeRoleEmotionRule(MemoryRole role, EmotionType emotionType, double mult, double add)
         {
             Role = role;
-            Reaction = new(emotionType, mult, add);
+            Reaction = new(emotionType, mult, add, role);
         }
     }
 }

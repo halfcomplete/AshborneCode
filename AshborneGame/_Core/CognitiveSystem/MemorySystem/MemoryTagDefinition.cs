@@ -9,7 +9,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 {
     public record MemoryTagDefinition
     {
-        public Dictionary<EmotionType, double> BaseEmotionalModifiers { get; init; }
+        public Dictionary<EmotionType, (MemoryRole role, double value)> BaseEmotionalModifiers { get; init; }
 
         /// <summary>
         /// A Dictionary where the Key is each personality trait and the value is a list of personality reactions that define the effect that personality trait has on each emotion if this memory tag is on the memory.
@@ -21,6 +21,9 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// </summary>
         public Dictionary<RelationshipType, List<AttitudeRoleIntensityRule>> AttitudeIntensityModifiers { get; init; }
 
+        /// <summary>
+        /// A Dictionary where the Key is each attitude type (loves, hates, etc) and the value is a list of emotion rules that define how emotion modifiers towards the target/actor/etc are affected if this NPC loves/hates/etc the target/actor/etc.
+        /// </summary>
         public Dictionary<RelationshipType, List<AttitudeRoleEmotionRule>> AttitudeEmotionModifiers { get; init; }
 
         /// <summary>
@@ -36,7 +39,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// </summary>
         /// <param name="personalityEmotionModifiers">A Dictionary where the Key is each personality trait and the value is a list of personality reactions that define the effect that personality trait has on each emotion if this memory tag is on the memory.</param>
         public MemoryTagDefinition(
-            Dictionary<EmotionType, double> baseEmotionalModifiers,
+            Dictionary<EmotionType, (MemoryRole role, double value)> baseEmotionalModifiers,
             Dictionary<PersonalityTrait, List<EmotionReaction>> personalityEmotionModifiers,
             Dictionary<RelationshipType, List<AttitudeRoleIntensityRule>> attitudeIntensityModifiers,
             Dictionary<RelationshipType, List<AttitudeRoleEmotionRule>>? attitudeEmotionModifiers = null,
