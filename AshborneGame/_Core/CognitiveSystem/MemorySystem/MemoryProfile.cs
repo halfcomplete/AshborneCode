@@ -661,50 +661,26 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             return mods;
         }
 
-        private static double GetParticipantIntensityWeight(List<MemoryRole> roles)
-        {
-            double weight = 0;
-
-            foreach (MemoryRole role in roles)
-            {
-                weight += role switch
-                {
-                    MemoryRole.Actor => 0.35,
-                    MemoryRole.Target => 0.45,
-                    MemoryRole.Beneficiary => 0.2,
-                    MemoryRole.Witness => 0.1,
-                    _ => 0
-                };
-            }
-
-            return Math.Clamp(weight, 0, 1);
-        }
-
-        // TODO: fix attitude of victim TO owner should be changing, not other way round
         private void ApplyMemoryInfluenceToRelationships(Memory memory)
         {
-            foreach (MemoryParticipant participant in memory.Cause.Participants)
+            List<EmotionModifier> emotionModifiers = memory.EmotionModifiers;
+
+            foreach (var modifier in emotionModifiers)
             {
-                if (participant.EntityId == _ownerID)
-                {
-                    continue;
-                }
+                MemoryParticipant target = modifier.Target;
+                EmotionType emotion = modifier.Type;
 
-                if (!_relationships.TryGetValue(participant.EntityId, out Attitude? attitude) || attitude is null)
+                if (!_relationships.Keys.ToList().Contains(target.EntityId))
                 {
-                    continue;
+                    // if we don't have a relationship with this entity yet
+                    List<AttitudeReaction> attitudeReactions = EmotionToAttitudeMap.Reactions[emotion];
+                    _relationships.Add(target.EntityId, AttitudeFactory.CreateAttitude(attitudeReactions));
                 }
-
-                double influence = memory.Influence * GetParticipantIntensityWeight(participant.Roles) * 0.05;
-                if (participant.Roles.Contains(MemoryRole.Target))
+                else
                 {
-                    attitude.Affection -= influence;
-                    attitude.Trust -= influence * 0.75;
-                }
-                else if (participant.Roles.Contains(MemoryRole.Beneficiary))
-                {
-                    attitude.Affection += influence;
-                    attitude.Trust += influence * 0.5;
+                    // if we already have a relationship with this entity
+                    List<AttitudeReaction> attitudeReactions = EmotionToAttitudeMap.Reactions[emotion];
+                    _relationships[target.EntityId] = AttitudeFactory.ModifyAttitude(_relationships[target.EntityId], attitudeReactions);
                 }
             }
         }

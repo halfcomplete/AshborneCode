@@ -12,7 +12,10 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
     /// </summary>
     public static class EmotionToAttitudeMap
     {
-        public static Dictionary<EmotionType, List<AttitudeReaction>> Reactions = new()
+        /// <summary>
+        /// If the NPC feels [EmotionType] towards [Entity], then that NPC's attitude towards [Entity] should change by [Values * Intensity].
+        /// </summary>
+        public static readonly Dictionary<EmotionType, List<AttitudeReaction>> Reactions = new()
         {
             [EmotionType.Anger] = 
             {
