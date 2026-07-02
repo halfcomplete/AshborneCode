@@ -511,7 +511,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             {
                 var attitudeIntensityModifiers = MemoryTagDefinitions.Definitions[tag].Definition.AttitudeIntensityModifiers;
 
-                foreach ((AttitudeType attitudeType, List<AttitudeRoleIntensityRule> intensityRules) in attitudeIntensityModifiers)
+                foreach ((RelationshipType attitudeType, List<AttitudeRoleIntensityRule> intensityRules) in attitudeIntensityModifiers)
                 {
                     foreach (AttitudeRoleIntensityRule rule in intensityRules)
                     {
@@ -538,24 +538,24 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             return intensityImpact;
         }
 
-        private static double GetAttitudeAlignmentWithAttitudeType(Attitude attitude, AttitudeType attitudeType)
+        private static double GetAttitudeAlignmentWithAttitudeType(Attitude attitude, RelationshipType attitudeType)
         {
             return attitudeType switch
             {
-                AttitudeType.Loves => Math.Max(0, attitude.Affection),
-                AttitudeType.Hates => Math.Min(0, attitude.Affection),
+                RelationshipType.Loves => Math.Max(0, attitude.Affection),
+                RelationshipType.Hates => Math.Min(0, attitude.Affection),
 
-                AttitudeType.Trusts => Math.Max(0, attitude.Trust),
-                AttitudeType.Distrusts => Math.Min(0, attitude.Trust),
+                RelationshipType.Trusts => Math.Max(0, attitude.Trust),
+                RelationshipType.Distrusts => Math.Min(0, attitude.Trust),
 
-                AttitudeType.Respects => Math.Max(0, attitude.Respect),
-                AttitudeType.Disrespects => Math.Min(0, attitude.Respect),
+                RelationshipType.Respects => Math.Max(0, attitude.Respect),
+                RelationshipType.Disrespects => Math.Min(0, attitude.Respect),
 
-                AttitudeType.Fears => Math.Max(0, attitude.Fear),
-                AttitudeType.DoesNotFear => Math.Min(0, attitude.Fear),
+                RelationshipType.Fears => Math.Max(0, attitude.Fear),
+                RelationshipType.DoesNotFear => Math.Min(0, attitude.Fear),
 
-                AttitudeType.Dominates => Math.Max(0, attitude.Dominance),
-                AttitudeType.Submits => Math.Min(0, attitude.Dominance),
+                RelationshipType.Dominates => Math.Max(0, attitude.Dominance),
+                RelationshipType.Submits => Math.Min(0, attitude.Dominance),
 
                 _ => throw new ArgumentOutOfRangeException(nameof(attitudeType), $"Unhandled attitude: {attitudeType}")
             };

@@ -19,9 +19,9 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// <summary>
         /// A Dictionary where the Key is each attitude type (love, hate, etc) and the value is a list of intensity rules that define how intensity is affected if this NPC loves/hates/etc the victim/beneficiary/actor.
         /// </summary>
-        public Dictionary<AttitudeType, List<AttitudeRoleIntensityRule>> AttitudeIntensityModifiers { get; init; }
+        public Dictionary<RelationshipType, List<AttitudeRoleIntensityRule>> AttitudeIntensityModifiers { get; init; }
 
-        public Dictionary<AttitudeType, List<AttitudeRoleEmotionRule>> AttitudeEmotionModifiers { get; init; }
+        public Dictionary<RelationshipType, List<AttitudeRoleEmotionRule>> AttitudeEmotionModifiers { get; init; }
 
         /// <summary>
         /// A Dictionary where the Key is each personality trait and the value is a double that defines how much of an effect that personality trait has on the Memory's intensity if this memory tag is on it.
@@ -38,8 +38,8 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         public MemoryTagDefinition(
             Dictionary<EmotionType, double> baseEmotionalModifiers,
             Dictionary<PersonalityTrait, List<EmotionReaction>> personalityEmotionModifiers,
-            Dictionary<AttitudeType, List<AttitudeRoleIntensityRule>> attitudeIntensityModifiers,
-            Dictionary<AttitudeType, List<AttitudeRoleEmotionRule>>? attitudeEmotionModifiers = null,
+            Dictionary<RelationshipType, List<AttitudeRoleIntensityRule>> attitudeIntensityModifiers,
+            Dictionary<RelationshipType, List<AttitudeRoleEmotionRule>>? attitudeEmotionModifiers = null,
             Dictionary<PersonalityTrait, double>? personalityIntensityModifiers = null)
         {
             BaseEmotionalModifiers = baseEmotionalModifiers;

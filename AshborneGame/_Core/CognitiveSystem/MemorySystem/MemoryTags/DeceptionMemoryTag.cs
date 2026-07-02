@@ -39,43 +39,43 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
                         new EmotionReaction(EmotionType.Sadness, 1.1, 0.3),
                     ]},
                 },
-                new Dictionary<AttitudeType, List<AttitudeRoleIntensityRule>>
+                new Dictionary<RelationshipType, List<AttitudeRoleIntensityRule>>
                 {
                     {
-                        AttitudeType.Trusts,
+                        RelationshipType.Trusts,
                         [
                             new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.5),
                             new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: 0.3)
                         ]
                     },
                     {
-                        AttitudeType.Distrusts,
+                        RelationshipType.Distrusts,
                         [
                             new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: -0.25),
                             new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: 0.1)
                         ]
                     },
                     {
-                        AttitudeType.Loves,
+                        RelationshipType.Loves,
                         [
                             new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: 0.4),
                             new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.2)
                         ]
                     },
                     {
-                        AttitudeType.Hates,
+                        RelationshipType.Hates,
                         [
                             new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: -0.2)
                         ]
                     },
                     {
-                        AttitudeType.Respects,
+                        RelationshipType.Respects,
                         [
                             new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.2)
                         ]
                     },
                     {
-                        AttitudeType.Disrespects,
+                        RelationshipType.Disrespects,
                         [
                             new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: -0.15)
                         ]
