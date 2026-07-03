@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AshborneGame._Core.Data.IDSystem;
 
 namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 {
@@ -15,12 +16,12 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// <summary>
         /// A unique ID for the Memory.
         /// </summary>
-        public Guid ID { get; init; }
+        public InstanceID ID { get; init; }
 
         /// <summary>
         /// The NPC that owns this Memory.
         /// </summary>
-        public Guid Owner { get; init; }
+        public InstanceID Owner { get; init; }
 
         private double _intensity;
 
@@ -104,12 +105,12 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// </summary>
         public int HourLastReinforcedAt { get; private set; }
 
-        public Memory(Guid owner, double intensity, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
+        public Memory(InstanceID owner, double intensity, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
         : this(owner, intensity, 1.0, cause, emotionModifiers, tags, hourCreatedAt, hourLastReinforcedAt) { }
 
-        public Memory(Guid owner, double intensity, double strength, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
+        public Memory(InstanceID owner, double intensity, double strength, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
         {
-            ID = Guid.NewGuid();
+            ID = new();
             Owner = owner;
             Intensity = intensity;
             Strength = strength;

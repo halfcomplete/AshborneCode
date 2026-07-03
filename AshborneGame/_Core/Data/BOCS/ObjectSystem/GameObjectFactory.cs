@@ -27,7 +27,7 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem
                 GameContext.Player.Inventory.Slots.Any(slot =>
                     slot.Item.Behaviours.Values
                         .SelectMany(b => b).ToList()
-                            .Any(b => b is IUnlocksTarget unlocksTarget && unlocksTarget.UnlockableObjectIDs.Contains(gameObject.ID))
+                            .Any(b => b is IUnlocksTarget unlocksTarget && unlocksTarget.UnlockableObjectIDs.Contains(gameObject.InstanceID))
                 ),
             "It looks like it can be opened by one of your keys.");
             
@@ -61,7 +61,7 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem
                 GameContext.Player.Inventory.Slots.Any(slot =>
                     slot.Item.Behaviours.Values
                         .SelectMany(b => b).ToList()
-                            .Any(b => b is IUnlocksTarget unlocksTarget && unlocksTarget.UnlockableObjectIDs.Contains(gameObject.ID))
+                            .Any(b => b is IUnlocksTarget unlocksTarget && unlocksTarget.UnlockableObjectIDs.Contains(gameObject.InstanceID))
                 ),
             "It looks like it can be opened by one of your keys.");
 

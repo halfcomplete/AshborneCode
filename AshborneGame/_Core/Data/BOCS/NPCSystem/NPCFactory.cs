@@ -32,7 +32,9 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
                 throw new ArgumentException("Dialogue file name cannot be null or empty.", nameof(dialogueFileName));
             }
 
-            NPC npc = new NPC(name, description, null, dialogueFileName);
+            NPC npc = new NPC(name, description);
+            TalkableBehaviour talkable = new(npc, dialogueFileName);
+            npc.AddBehaviour(typeof(TalkableBehaviour), talkable);
             return npc;
         }
 
@@ -60,7 +62,9 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
                 throw new ArgumentException("Dialogue file name cannot be null or empty.", nameof(dialogueFileName));
             }
 
-            NPC npc = new NPC(name, description, null, dialogueFileName, synonyms);
+            NPC npc = new NPC(name, description, synonyms);
+            TalkableBehaviour talkable = new(npc, dialogueFileName);
+            npc.AddBehaviour(typeof(TalkableBehaviour), talkable);
             return npc;
         }
 
@@ -84,8 +88,43 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
                 throw new ArgumentException("Description cannot be null or empty.", nameof(description));
             }
 
-            NPC npc = new NPC(name, description, greeting, dialogueFileName);
-            npc.AddBehaviour(typeof(IHasInventory), new TradeableNPCBehaviour());
+            NPC npc = new NPC(name, description);
+            TalkableBehaviour talkable = new(npc, dialogueFileName, greeting);
+            npc.AddBehaviour(typeof(TalkableBehaviour), talkable);
+            return npc;
+        }
+
+        public static NPC CreateSmartNPC(string name, string description, string greeting, string dialogueFileName, List<string> synonyms, bool hasInventory = false)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("Name cannot be null or empty.", nameof(name));
+            }
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                throw new ArgumentException("Description cannot be null or empty.", nameof(description));
+            }
+            if (string.IsNullOrWhiteSpace(greeting))
+            {
+                throw new ArgumentException("Greeting cannot be null or empty.", nameof(description));
+            }
+            if (string.IsNullOrEmpty(dialogueFileName))
+            {
+                throw new ArgumentException("Dialogue file name cannot be null or empty.", nameof(dialogueFileName));
+            }
+
+            NPC npc = new NPC(name, description, synonyms);
+            TalkableBehaviour talkable = new(npc, dialogueFileName);
+            npc.AddBehaviour(typeof(TalkableBehaviour), talkable);
+            if (hasInventory)
+            {
+                TradeableNPCBehaviour tradeable = new();
+                npc.AddBehaviour(typeof(TradeableNPCBehaviour), tradeable);
+            }
+
+            CognitiveBehaviour brain = new(npc, new(npc.InstanceID));
+            npc.AddBehaviour(typeof(TradeableNPCBehaviour), brain);
+            
             return npc;
         }
 

@@ -2,17 +2,18 @@
 using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags;
 using System.Diagnostics;
+using AshborneGame._Core.Data.IDSystem;
 
 namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 {
     public class MemoryProfile
     {
-        private Guid _ownerID;
+        private InstanceID _ownerID;
         private PersonalityProfile _personality;
-        private Dictionary<Guid, Attitude> _relationships;
+        private Dictionary<InstanceID, Attitude> _relationships;
         private List<Memory> _memories;
 
-        public MemoryProfile(Guid ownerID, PersonalityProfile personality, Dictionary<Guid, Attitude> relationships, List<Memory> memories)
+        public MemoryProfile(InstanceID ownerID, PersonalityProfile personality, Dictionary<InstanceID, Attitude> relationships, List<Memory> memories)
         {
             _ownerID = ownerID;
             _personality = personality;
@@ -23,7 +24,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             EventBus.Subscribe<IMemorableGameEvent>(e => ReceiveMemorableEvent(e));
         }
 
-        public MemoryProfile(Guid ownerID, PersonalityProfile personality, Dictionary<Guid, Attitude> relationships) : this(ownerID, personality, relationships, new List<Memory>()) { }
+        public MemoryProfile(InstanceID ownerID, PersonalityProfile personality, Dictionary<InstanceID, Attitude> relationships) : this(ownerID, personality, relationships, new List<Memory>()) { }
 
         #region Receiving Memories
 
@@ -521,7 +522,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// their house burning down, then the intensity of the Memory (how significant that is to the NPC) would 
         /// decrease as they don't care.
         /// </remarks>
-        private static double GetAttitudeIntensityImpact(Dictionary<Guid, Attitude> relationships, HashSet<MemoryTag> tags, List<MemoryParticipant> participants)
+        private static double GetAttitudeIntensityImpact(Dictionary<InstanceID, Attitude> relationships, HashSet<MemoryTag> tags, List<MemoryParticipant> participants)
         {
             double intensityImpact = 0.0;
 
@@ -604,7 +605,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// <summary>
         /// Takes a game event, the NPC's relationships and the current emotional modifiers of a memory and returns a Dictionary of the previous emotion modifiers and the updated emotion accumulators.
         /// </summary>
-        private static Dictionary<EmotionModifier, EmotionAccumulator> ApplyAttitudeToEmotionalModifiers(IMemorySource source, Dictionary<Guid, Attitude> relationships, Dictionary<EmotionModifier, EmotionAccumulator> mods)
+        private static Dictionary<EmotionModifier, EmotionAccumulator> ApplyAttitudeToEmotionalModifiers(IMemorySource source, Dictionary<InstanceID, Attitude> relationships, Dictionary<EmotionModifier, EmotionAccumulator> mods)
         {
             // Loops over each memory tag in the memory definition
             // Gets the memory tag's AttitudeEmotionModifiers

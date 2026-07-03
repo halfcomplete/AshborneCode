@@ -3,6 +3,7 @@ using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ObjectSystem;
 using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours;
+using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
@@ -15,9 +16,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviou
     {
         public bool ConsumeOnUse { get; set; }
 
-        public List<Guid> UnlockableObjectIDs { get; private set; }
+        public List<InstanceID> UnlockableObjectIDs { get; private set; }
 
-        public OnUseUnlockObjectBehaviour(List<Guid> unlockableObjectIDs, bool consumeOnUse = true)
+        public OnUseUnlockObjectBehaviour(List<InstanceID> unlockableObjectIDs, bool consumeOnUse = true)
         {
             UnlockableObjectIDs = unlockableObjectIDs ?? throw new ArgumentNullException(nameof(unlockableObjectIDs), "Unlockable object IDs cannot be null.");
             ConsumeOnUse = consumeOnUse;
@@ -52,7 +53,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviou
 
         public override OnUseUnlockObjectBehaviour DeepClone()
         {
-            return new OnUseUnlockObjectBehaviour(new List<Guid>(UnlockableObjectIDs), ConsumeOnUse);
+            return new OnUseUnlockObjectBehaviour([.. UnlockableObjectIDs], ConsumeOnUse);
         }
     }
 }

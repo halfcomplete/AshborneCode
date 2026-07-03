@@ -17,6 +17,13 @@ public abstract class BOCSGameObject
     /// </summary>
     public abstract string Name { get; }
 
+    public abstract string Description { get; }
+
+    /// <summary>
+    /// List of synonyms for the NPC's name that can be used to identify them.
+    /// </summary>
+    public virtual List<string> Synonyms { get; init; }
+
     public InstanceID InstanceID { get; }
 
     public DefinitionID DefinitionID { get; }
@@ -31,11 +38,6 @@ public abstract class BOCSGameObject
     /// Note that a behaviour attached to this BOCSGameObject may implement multiple modules, and thus would be referenced in multiple key-value pairs.
     /// </remarks>
     public Dictionary<Type, List<object>> Behaviours { get; private set; } = new();
-
-    public void OverrideGuid(Guid guid)
-    {
-        ID = guid;
-    }
 
     #region Behaviours
     /// <summary>

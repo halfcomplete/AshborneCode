@@ -9,6 +9,8 @@ using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours;
 using System.Diagnostics;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
+using AshborneGame._Core.Data.IDSystem;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem
 {
@@ -16,7 +18,13 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
     {
         private static Item AddBaseBehaviours(Item item)
         {
-            item.AddBehaviour(typeof(IInspectable), new InspectableBehaviour(item, item.Description, item.Quality, "This item has a hidden lore."));
+            var res = item.TryGetBehaviour<ItemBehaviour>().Result;
+            ItemQualities quality = ItemQualities.None;
+            if (res.Item1)
+            {
+                quality = res.Item2.Quality;
+            }
+            item.AddBehaviour(typeof(IInspectable), new InspectableBehaviour(item, item.Description, quality, "This item has a hidden lore."));
             
             return item;
         }
@@ -44,7 +52,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             return AddBaseBehaviours(item);
         }
 
-        public static Item CreateKey(string name, string description, string useDescription, List<Guid> unlockableObjectIDs)
+        public static Item CreateKey(string name, string description, string useDescription, List<InstanceID> unlockableObjectIDs)
         {
             var item = new Item(name, description, useDescription, 1, ItemTypes.Key, ItemQualities.None);
             item.AddBehaviour(typeof(IUsable), new UsableBehaviour(item));
@@ -78,7 +86,13 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             var item = new Item(name, description, useDescription, stackLimit, ItemTypes.Consumable, ItemQualities.Mythic);
             item.AddBehaviour(typeof(IUsable), new UsableBehaviour(item));
             item.AddBehaviour(typeof(IActOnUse), new OnUseChangePlayerStatBehaviour(30, PlayerStatType.Strength));
-            item.AddBehaviour(typeof(IInspectable), new InspectableBehaviour(item, item.Description, item.Quality, inspectDesc));
+            var res = item.TryGetBehaviour<ItemBehaviour>().Result;
+            ItemQualities quality = ItemQualities.None;
+            if (res.Item1)
+            {
+                quality = res.Item2.Quality;
+            }
+            item.AddBehaviour(typeof(IInspectable), new InspectableBehaviour(item, item.Description, quality, inspectDesc));
             return item;
         }
 

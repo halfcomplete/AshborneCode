@@ -1,9 +1,10 @@
 ﻿using AshborneGame._Core.CognitiveSystem;
 using AshborneGame._Core.CognitiveSystem.MemorySystem;
+using AshborneGame._Core.Data.IDSystem;
 
 namespace AshborneGame._Core.Game.Events
 {
-    public sealed record MemoryParticipant(Guid EntityId, List<MemoryRole> Roles);
+    public sealed record MemoryParticipant(InstanceID EntityId, List<MemoryRole> Roles);
 
     /// <summary>
     /// Marker interface for all game events. All events must implement this interface

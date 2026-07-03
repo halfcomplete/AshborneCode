@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AshborneGame._Core.CognitiveSystem.MemorySystem;
+using AshborneGame._Core.Data.IDSystem;
 
 namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
 {
@@ -12,7 +13,7 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
     /// </summary>
     public sealed class PsychologicalState
     {
-        private readonly Guid _ownerID;
+        private readonly InstanceID _ownerID;
 
         /// <summary>
         /// Represents the mapping of character or entity identifiers to their corresponding attitudes in the
@@ -21,13 +22,13 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
         /// <remarks>Each key in the dictionary is a unique identifier for a character or entity, and the
         /// associated value indicates the current attitude toward that entity. This collection can be used to track and
         /// update relationship states dynamically during gameplay.</remarks>
-        public Dictionary<Guid, Attitude> Relationships = new Dictionary<Guid, Attitude>();
+        public Dictionary<InstanceID, Attitude> Relationships = new Dictionary<InstanceID, Attitude>();
 
         public MemoryProfile MemoryProfile { get; init; }
 
         public PersonalityProfile Personality { get; init; } = new();
         
-        public PsychologicalState(Guid ownerID)
+        public PsychologicalState(InstanceID ownerID)
         {
             _ownerID = ownerID;
             MemoryProfile = new(_ownerID, Personality, Relationships);
@@ -38,7 +39,7 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
         /// </summary>
         /// <param name="entityId">The unique identifier of the character or entity.</param>
         /// <param name="attitude">The attitude to associate with the specified entity.</param>
-        public void AddRelationship(Guid entityId, Attitude attitude)
+        public void AddRelationship(InstanceID entityId, Attitude attitude)
         {
             Relationships[entityId] = attitude;
         }
@@ -47,7 +48,7 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
         /// Removes the relationship associated with the specified entity identifier.
         /// </summary>
         /// <param name="entityId">The unique identifier of the entity whose relationship is to be removed. Cannot be null.</param>
-        public void RemoveRelationship(Guid entityId)
+        public void RemoveRelationship(InstanceID entityId)
         {
             Relationships.Remove(entityId);
         }
@@ -59,7 +60,7 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
         /// <param name="attitude">When this method returns, contains the attitude associated with the specified entity identifier, if found;
         /// otherwise, <see langword="null"/>. This parameter is passed uninitialized.</param>
         /// <returns>true if the relationship attitude for the specified entity identifier was found; otherwise, false.</returns>
-        public bool TryGetRelationship(Guid entityId, out Attitude? attitude)
+        public bool TryGetRelationship(InstanceID entityId, out Attitude? attitude)
         {
             return Relationships.TryGetValue(entityId, out attitude);
         }

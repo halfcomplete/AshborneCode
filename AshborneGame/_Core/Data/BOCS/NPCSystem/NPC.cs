@@ -9,7 +9,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
     /// <summary>
     /// A BOCSGameObject specifically for NPCs in the game. Contains attributes and methods to manage the psychological state, name, greeting, synonyms and description of this NPC.
     /// </summary>
-    public class NPC : BOCSGameObject, ISentientEntity
+    public class NPC : BOCSGameObject
     {
         /// <summary>
         /// The name of the NPC. This is used for identification and display.
@@ -19,46 +19,20 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
         /// <summary>
         /// A describer for the NPC, providing shallow details about their appearance or role. Often used with their name to give context.
         /// </summary>
-        public string Description { get; }
+        public override string Description { get; }
 
-        /// <summary>
-        /// List of synonyms for the NPC's name that can be used to identify them.
-        /// </summary>
-        public List<string> Synonyms { get; }
-
-        /// <summary>
-        /// The default greeting that will be said if there is no valid dialogue file to initiate.
-        /// </summary>
-        public string? Greeting { get; }
-        
-        /// <summary>
-        /// The file name of this NPC's dialogue file (not the full path, which is parsed from the file name).
-        /// </summary>
-        public string? DialogueFileName { get; init; }
-        
-        /// <summary>
-        /// Represents the psychological state of this NPC. Encompasses emotions, feelings and relationships.
-        /// </summary>
-        public PsychologicalState PsychologicalState { get; }
-
-        public NPC(string name, string? greeting, string? dialogueFileName = null)
+        public NPC(string name)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name), "Name cannot be null.");
             Description = "An NPC."; // Default description
             Synonyms = new List<string>();
-            Greeting = greeting;
-            DialogueFileName = dialogueFileName;
-            PsychologicalState = new(ID);
         }
 
-        public NPC(string name, string description, string? greeting, string? dialogueFileName = null)
+        public NPC(string name, string description)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name), "Name cannot be null.");
             Description = description ?? throw new ArgumentNullException(nameof(description), "Description cannot be null.");
             Synonyms = new List<string>();
-            Greeting = greeting;
-            DialogueFileName = dialogueFileName;
-            PsychologicalState = new(ID);
         }
 
         /// <summary>
@@ -70,14 +44,11 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
         /// <param name="dialogueFileName">the NPC's dialogue file name.</param>
         /// <param name="synonyms">A list of synonyms which can be used to refer to the NPC other than just its name.</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public NPC(string name, string description, string? greeting, string? dialogueFileName, List<string> synonyms)
+        public NPC(string name, string description, List<string> synonyms)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name), "Name cannot be null.");
             Description = description ?? throw new ArgumentNullException(nameof(description), "Description cannot be null.");
             Synonyms = synonyms ?? new List<string>();
-            Greeting = greeting;
-            DialogueFileName = dialogueFileName;
-            PsychologicalState = new(ID);
         }
 
         /// <summary>
@@ -110,33 +81,6 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
             }
             
             return false;
-        }
-
-        /// <summary>
-        /// Initiates this NPC's given dialogue file. If there is none, then simply the Greeting is output. 
-        /// <para>If there is no Greeting set, <c>$"{Name} has nothing to say."</c> is output.</para>
-        /// </summary>
-        /// <param name="player"></param>
-        /// <returns></returns>
-        public virtual async Task Talk(Player player)
-        {
-            // Set the player's current NPC interaction to this NPC object
-            player.CurrentNPCInteraction = this;
-            if (DialogueFileName != null)
-            {
-                // Start the dialogue
-                await GameContext.DialogueService.StartDialogue(DialogueFileName);
-            }
-            else if (Greeting != null)
-            {
-                // If there is no dialogue file, output the default greeting
-                await IOService.Output.Write($"{Name}: {Greeting}");
-            }
-            else
-            {
-                // If there is no dialogue file nor greeting assume this NPC is silent to the player
-                await IOService.Output.Write($"{Name} has nothing to say.");
-            }
         }
     }
 }
