@@ -91,6 +91,8 @@ public class BOCSObject
             await IOService.Output.DisplayDebugMessage($"{Name} is now usable.", ConsoleMessageTypes.ERROR);
         }
 
+        behaviour.Owner = this;
+
 #if DEBUG
         // Debug messages
         await IOService.Output.DisplayDebugMessage($"Added behaviour of type {type.FullName} to {Name}.", ConsoleMessageTypes.INFO);

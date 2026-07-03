@@ -31,6 +31,12 @@ namespace AshborneGame._Core.Game
         {
             IOService.Initialise(input, output);
 
+            var definitionRegistry = new DefinitionRegistry();
+            var instanceRegistry = new InstanceRegistry();
+            var definitionRegistrationService = new DefinitionRegistrationService();
+
+            definitionRegistrationService.RegisterAllDefinitions(definitionRegistry);
+
             Player player = new Player("Hero");
             var gameState = new GameStateManager(player);
             gameState.SetCounter(StateKeys.Counters.Player.CurrentActNo, 1);
@@ -38,7 +44,9 @@ namespace AshborneGame._Core.Game
             _dialogueService = new DialogueService(inkRunner);
             var questTracker = new QuestTracker();
             var timeTracker = new TimeTracker(questTracker);
-            GameContext.Initialise(player, gameState, _dialogueService, inkRunner, this, timeTracker);
+            
+            GameContext.Initialise(player, gameState, _dialogueService, inkRunner, this, timeTracker, definitionRegistry, instanceRegistry);
+
             gameState.InitialiseMasks(MaskInitialiser.InitialiseMasks());
 
             ((Location startingLocation, Scene startingLocationGroup), (_firstLocation, _firstScene)) = InitialiseStartingLocation(player);
