@@ -79,7 +79,7 @@ namespace AshborneTests.CommandTests
             (_, var openCloseBehaviour) = await chest.TryGetBehaviour<IInteractable>();
             openCloseBehaviour.Interact(ObjectInteractionTypes.Open, player);
             (_, var inventoryBehaviour) = await chest.TryGetBehaviour<IHasInventory>();
-            inventoryBehaviour.Inventory.AddItem(TestUtils.CreateTestItem());
+            inventoryBehaviour.Inventory.TryAddItem(TestUtils.CreateTestItem());
 
             bool result = await CommandManager.TryExecute("take", ["-1", "test_item"], player);
 
@@ -104,7 +104,7 @@ namespace AshborneTests.CommandTests
             (_, var openCloseBehaviour) = await chest.TryGetBehaviour<IInteractable>();
             openCloseBehaviour.Interact(ObjectInteractionTypes.Open, player);
             (_, var inventoryBehaviour) = await chest.TryGetBehaviour<IHasInventory>();
-            inventoryBehaviour.Inventory.AddItem(TestUtils.CreateTestItem());
+            inventoryBehaviour.Inventory.TryAddItem(TestUtils.CreateTestItem());
 
             bool result = await CommandManager.TryExecute("take", ["0", "test_item"], player);
 
@@ -129,7 +129,7 @@ namespace AshborneTests.CommandTests
             (_, var openCloseBehaviour) = await chest.TryGetBehaviour<IInteractable>();
             openCloseBehaviour.Interact(ObjectInteractionTypes.Open, player);
             (_, var inventoryBehaviour) = await chest.TryGetBehaviour<IHasInventory>();
-            inventoryBehaviour.Inventory.AddItem(TestUtils.CreateTestItem());
+            inventoryBehaviour.Inventory.TryAddItem(TestUtils.CreateTestItem());
 
             bool result = await CommandManager.TryExecute("take", ["item_test"], player);
 
@@ -154,7 +154,7 @@ namespace AshborneTests.CommandTests
             (_, var openCloseBehaviour) = await chest.TryGetBehaviour<IInteractable>();
             openCloseBehaviour.Interact(ObjectInteractionTypes.Open, player);
             (_, var inventoryBehaviour) = await chest.TryGetBehaviour<IHasInventory>();
-            inventoryBehaviour.Inventory.AddItem(TestUtils.CreateTestItem());
+            inventoryBehaviour.Inventory.TryAddItem(TestUtils.CreateTestItem());
 
             bool result = await CommandManager.TryExecute("take", ["1", "item_test"], player);
 

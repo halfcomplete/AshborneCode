@@ -27,7 +27,7 @@ namespace AshborneGame._Core.LocationManagement
         /// <summary>
         /// The object that is at this sublocation.
         /// </summary>
-        public BOCSGameObject FocusObject { get; }
+        public BOCSObject FocusObject { get; }
 
         public string ShortenedPositionalPhrase { get; init; }
 
@@ -82,7 +82,7 @@ namespace AshborneGame._Core.LocationManagement
         /// <param name="id">Unique identifier.</param>
         /// <param name="shortenedPositionalPhrase">From OutputConstants, where the sublocation is relative to the parent location.</param>
         /// <param name="shortRefDesc">Used when listing the sublocations in the parent location.</param>
-        public Sublocation(Location parent, BOCSGameObject focusObject, LocationNameAdapter name, DescriptionComposer desc, DefinitionID id, string shortenedPositionalPhrase, string shortRefDesc)
+        public Sublocation(Location parent, BOCSObject focusObject, LocationNameAdapter name, DescriptionComposer desc, DefinitionID id, string shortenedPositionalPhrase, string shortRefDesc)
         {
             ParentLocation = parent;
             FocusObject = focusObject;

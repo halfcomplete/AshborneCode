@@ -1,13 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using AshborneGame._Core.Data.IDSystem;
 
 namespace AshborneGame._Core.Data.Definitions
 {
-    public abstract class Definition
+    public abstract class BehaviourConfig
     {
-        public DefinitionID ID { get; init; }
     }
 }

@@ -181,7 +181,7 @@ namespace AshborneGame._Core.Game
         {
             try
             {
-                _player.Inventory.AddItem(Masks[maskName]);
+                _player.Inventory.TryAddItem(Masks[maskName]);
                 return true;
             }
             catch (KeyNotFoundException e)
@@ -195,7 +195,7 @@ namespace AshborneGame._Core.Game
         {
             if (_player.Inventory.GetItem(maskName) != null)
             {
-                _player.Inventory.RemoveItem(Masks[maskName]);
+                _player.Inventory.TryRemoveItem(Masks[maskName]);
                 if (PlayerWearingMask(maskName)) _player.EquippedItems["face"] = null;
                 return true;
             }
@@ -209,7 +209,7 @@ namespace AshborneGame._Core.Game
         {
             _player.EquippedItems["face"] = null;
             _player.EquippedItems["face"] = Masks[maskName];
-            _player.Inventory.AddItem(Masks[maskName]);
+            _player.Inventory.TryAddItem(Masks[maskName]);
 
             if (!OperatingSystem.IsBrowser())
             {

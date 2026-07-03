@@ -14,7 +14,7 @@ namespace AshborneTests.CommandTests
         internal async void GiveItem_Fails_When_No_Container_Is_Opened()
         {
             var player = TestUtils.CreateTestPlayer();
-            player.Inventory.AddItem(TestUtils.CreateTestItem());
+            player.Inventory.TryAddItem(TestUtils.CreateTestItem());
             var testSublocation = TestUtils.CreateTestSublocation(TestUtils.CreateTestGameObject());
             player.MoveTo(testSublocation);
 
@@ -27,7 +27,7 @@ namespace AshborneTests.CommandTests
         internal async void GiveItem_Fails_When_No_NPC_Is_Interacted_With()
         {
             var player = TestUtils.CreateTestPlayer();
-            player.Inventory.AddItem(TestUtils.CreateTestItem());
+            player.Inventory.TryAddItem(TestUtils.CreateTestItem());
             var testSublocation = TestUtils.CreateTestSublocation(await TestUtils.CreateTestNPCWithInventory());
             player.MoveTo(testSublocation);
 
@@ -40,7 +40,7 @@ namespace AshborneTests.CommandTests
         internal async void GiveItem_Fails_When_NPC_Is_Not_Tradeable_With()
         {
             var player = TestUtils.CreateTestPlayer();
-            player.Inventory.AddItem(TestUtils.CreateTestItem());
+            player.Inventory.TryAddItem(TestUtils.CreateTestItem());
             var npc = TestUtils.CreateTestNPC();
             var testSublocation = TestUtils.CreateTestSublocation(npc);
             player.MoveTo(testSublocation);
@@ -55,7 +55,7 @@ namespace AshborneTests.CommandTests
         internal async void GiveItem_Fails_When_Item_Does_Not_Exist()
         {
             var player = TestUtils.CreateTestPlayer();
-            player.Inventory.AddItem(TestUtils.CreateTestItem(), 2);
+            player.Inventory.TryAddItem(TestUtils.CreateTestItem(), 2);
             var testSublocation = TestUtils.CreateTestSublocation(TestUtils.CreateTestGameObject());
             player.MoveTo(testSublocation);
 
@@ -76,7 +76,7 @@ namespace AshborneTests.CommandTests
         internal async void GiveItem_Fails_With_Negative_Amount()
         {
             var player = TestUtils.CreateTestPlayer();
-            player.Inventory.AddItem(TestUtils.CreateTestItem(), 2);
+            player.Inventory.TryAddItem(TestUtils.CreateTestItem(), 2);
             var chest = await TestUtils.CreateTestGameObjectChest(true);
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
@@ -100,7 +100,7 @@ namespace AshborneTests.CommandTests
         internal async void GiveItem_Fails_With_Zero_Amount()
         {
             var player = TestUtils.CreateTestPlayer();
-            player.Inventory.AddItem(TestUtils.CreateTestItem());
+            player.Inventory.TryAddItem(TestUtils.CreateTestItem());
             var chest = await TestUtils.CreateTestGameObjectChest(false);
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
@@ -124,7 +124,7 @@ namespace AshborneTests.CommandTests
         internal async void GiveItem_Fails_With_No_Provided_Quantity_And_Invalid_ItemName()
         {
             var player = TestUtils.CreateTestPlayer();
-            player.Inventory.AddItem(TestUtils.CreateTestItem());
+            player.Inventory.TryAddItem(TestUtils.CreateTestItem());
             var chest = await TestUtils.CreateTestGameObjectChest();
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
@@ -148,7 +148,7 @@ namespace AshborneTests.CommandTests
         internal async void GiveAllItem_Fails_When_Item_Does_Not_Exist()
         {
             var player = TestUtils.CreateTestPlayer();
-            player.Inventory.AddItem(TestUtils.CreateTestItem(), 2);
+            player.Inventory.TryAddItem(TestUtils.CreateTestItem(), 2);
             var chest = await TestUtils.CreateTestGameObjectChest();
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
@@ -172,7 +172,7 @@ namespace AshborneTests.CommandTests
         internal async void GiveAllItem_Succeeds_In_Good_Conditions()
         {
             var player = TestUtils.CreateTestPlayer();
-            player.Inventory.AddItem(TestUtils.CreateTestItem(), 2);
+            player.Inventory.TryAddItem(TestUtils.CreateTestItem(), 2);
             var chest = await TestUtils.CreateTestGameObjectChest(false);
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
@@ -188,7 +188,7 @@ namespace AshborneTests.CommandTests
             player.OpenedInventory = null;
             var npc = await TestUtils.CreateTestNPCWithInventory();
             var testSublocation2 = TestUtils.CreateTestSublocation(npc);
-            player.Inventory.AddItem(TestUtils.CreateTestItem(), 2);
+            player.Inventory.TryAddItem(TestUtils.CreateTestItem(), 2);
             player.MoveTo(testSublocation2);
             player.CurrentNPCInteraction = npc;
 
@@ -204,7 +204,7 @@ namespace AshborneTests.CommandTests
         internal async void GiveItem_Succeeds_In_Good_Conditions()
         {
             var player = TestUtils.CreateTestPlayer();
-            player.Inventory.AddItem(TestUtils.CreateTestItem(), 2);
+            player.Inventory.TryAddItem(TestUtils.CreateTestItem(), 2);
             var chest = await TestUtils.CreateTestGameObjectChest(false);
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
@@ -236,7 +236,7 @@ namespace AshborneTests.CommandTests
         internal async void GiveItem_Succeeds_With_No_Provided_Quantity_But_Valid_ItemName()
         {
             var player = TestUtils.CreateTestPlayer();
-            player.Inventory.AddItem(TestUtils.CreateTestItem(), 2);
+            player.Inventory.TryAddItem(TestUtils.CreateTestItem(), 2);
             var chest = await TestUtils.CreateTestGameObjectChest(false);
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);

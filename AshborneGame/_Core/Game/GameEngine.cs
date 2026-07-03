@@ -254,7 +254,7 @@ namespace AshborneGame._Core.Game
                 () => $"\nYou pick up the {mirrorShard.Name}. It is sharp and cold against your hand. Maybe it could be useful later.",
                 () =>
                 {
-                    GameContext.Player.Inventory.AddItem(mirrorShard, 1);
+                    GameContext.Player.Inventory.TryAddItem(mirrorShard, 1);
                     hallOfMirrors.RemoveSublocation(mirrorShardSublocation);
                 });
 

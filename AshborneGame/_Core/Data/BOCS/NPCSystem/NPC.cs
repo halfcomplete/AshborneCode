@@ -9,7 +9,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem
     /// <summary>
     /// A BOCSGameObject specifically for NPCs in the game. Contains attributes and methods to manage the psychological state, name, greeting, synonyms and description of this NPC.
     /// </summary>
-    public class NPC : BOCSGameObject
+    public class NPC : BOCSObject
     {
         /// <summary>
         /// The name of the NPC. This is used for identification and display.

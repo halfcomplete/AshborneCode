@@ -13,7 +13,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours
 {
     public class MaskInterjectionBehaviour : ItemBehaviourBase<MaskInterjectionBehaviour>, IAwareOfParentObject
     {
-        public BOCSGameObject ParentObject { get; set; }
+        public BOCSObject ParentObject { get; set; }
 
         /// <summary>
         /// A trigger that can respond to strongly-typed game events.
@@ -60,7 +60,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours
         private readonly CompositeEventToken _subscriptionTokens = new();
         private GameStateManager _stateManager;
 
-        public MaskInterjectionBehaviour(BOCSGameObject parentObject, GameStateManager stateManager)
+        public MaskInterjectionBehaviour(BOCSObject parentObject, GameStateManager stateManager)
         {
             ParentObject = parentObject;
             _stateManager = stateManager;

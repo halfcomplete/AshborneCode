@@ -11,11 +11,11 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 {
     public class OpenCloseBehaviour: IInteractable, IAwareOfParentObject
     {
-        public BOCSGameObject ParentObject { get; set; }
+        public BOCSObject ParentObject { get; set; }
 
         public bool IsOpen { get; private set; } = false;
 
-        public OpenCloseBehaviour(BOCSGameObject parentObject, bool isOpenInitially)
+        public OpenCloseBehaviour(BOCSObject parentObject, bool isOpenInitially)
         {
             ParentObject = parentObject;
             IsOpen = isOpenInitially;

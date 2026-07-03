@@ -9,11 +9,11 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.CombatBehaviour
 {
     public class BreakableBehaviour : ItemBehaviourBase<BreakableBehaviour>, IBreakable, IAwareOfParentObject
     {
-        public BOCSGameObject ParentObject { get; set; }
+        public BOCSObject ParentObject { get; set; }
         public int Durability { get; set; }
         public int MaxDurability { get; set; }
 
-        public BreakableBehaviour(BOCSGameObject parentObject, int maxDurability)
+        public BreakableBehaviour(BOCSObject parentObject, int maxDurability)
         {
             if (maxDurability <= 0)
             {
@@ -30,7 +30,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.CombatBehaviour
             if (ParentObject is Item item)
             {
                 await IOService.Output.WriteNonDialogueLine($"{item.Name} has broken!");
-                player.Inventory.RemoveItem(item, 1); // Remove the item from the player's inventory
+                player.Inventory.TryRemoveItem(item, 1); // Remove the item from the player's inventory
             }
         }
 

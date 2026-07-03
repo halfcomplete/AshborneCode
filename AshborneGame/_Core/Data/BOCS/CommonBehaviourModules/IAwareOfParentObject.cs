@@ -7,11 +7,11 @@ namespace AshborneGame._Core.Data.BOCS.CommonBehaviourModules
     /// </summary>
     public interface IAwareOfParentObject
     {
-        BOCSGameObject ParentObject { get; set; }
+        BOCSObject ParentObject { get; set; }
         
-        public void SetParentItem(Item parentItem)
+        public void SetParentObject(BOCSObject obj)
         {
-            ParentObject = parentItem ?? throw new ArgumentNullException(nameof(parentItem), "Parent item cannot be null.");
+            ParentObject = obj ?? throw new ArgumentNullException(nameof(obj), "Parent object cannot be null.");
         }
     }
 }

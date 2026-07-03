@@ -8,10 +8,10 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 {
     public class LockUnlockBehaviour : IInteractable, IAwareOfParentObject
     {
-        public BOCSGameObject ParentObject { get; set; } = null!;
+        public BOCSObject ParentObject { get; set; } = null!;
         public bool IsLocked { get; private set; } = false;
 
-        public LockUnlockBehaviour(BOCSGameObject parentObject, bool initialState = false)
+        public LockUnlockBehaviour(BOCSObject parentObject, bool initialState = false)
         {
             ParentObject = parentObject ?? throw new ArgumentNullException(nameof(parentObject));
             IsLocked = initialState;

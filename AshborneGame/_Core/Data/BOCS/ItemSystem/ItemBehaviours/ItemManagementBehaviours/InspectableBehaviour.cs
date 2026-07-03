@@ -8,13 +8,13 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.ItemManagementB
 {
     public class InspectableBehaviour : ItemBehaviourBase<InspectableBehaviour>, IInspectable, IAwareOfParentObject
     {
-        public BOCSGameObject ParentObject { get; set; }
+        public BOCSObject ParentObject { get; set; }
         private string _baseDescription;
         private ItemQualities _rarity;
         private string? _inspectDesc;
         public bool IsInspected { get; private set; } = false;
 
-        public InspectableBehaviour(BOCSGameObject parentObject, string baseDesc, ItemQualities rarity, string? inspectDesc)
+        public InspectableBehaviour(BOCSObject parentObject, string baseDesc, ItemQualities rarity, string? inspectDesc)
         {
             ParentObject = parentObject ?? throw new ArgumentNullException(nameof(parentObject));
             _baseDescription = baseDesc;
@@ -22,7 +22,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.ItemManagementB
             _inspectDesc = inspectDesc;
         }
 
-        public InspectableBehaviour(BOCSGameObject parentObject, string baseDesc, bool requiresIdentification = false)
+        public InspectableBehaviour(BOCSObject parentObject, string baseDesc, bool requiresIdentification = false)
         {
             ParentObject = parentObject ?? throw new ArgumentNullException(nameof(parentObject));
             _baseDescription = baseDesc;

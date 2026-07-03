@@ -1,20 +1,28 @@
+using AshborneGame._Core.Data.Definitions;
+using AshborneGame._Core.Data.IDSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AshborneGame._Core.Data.IDSystem;
 
 namespace AshborneGame._Core.Data.BOCS
 {
-    public static class BOCSFactory
+    public class BOCSFactory
     {
-        public BOCSGameObject Create(DefinitionID definitionId)
+        private IDefinitionRegistry _definitionRegistry;
+        private IInstanceRegistry _instanceRegistry;
+
+        public BOCSFactory(IDefinitionRegistry definitionRegistry, IInstanceRegistry instanceRegistry)
+        {
+            _definitionRegistry = definitionRegistry;
+            _instanceRegistry = instanceRegistry;
+        }
+
+        public BOCSObject Create(DefinitionID definitionId)
         {
             var definition = _definitionRegistry.Get<GameObjectDefinition>(definitionId);
 
-            var gameObject = new BOCSGameObject(
-                InstanceId.New(),
-                definitionId);
+            var gameObject = new BOCSObject(definitionId);
 
             foreach (var behaviourDefinition in definition.Behaviours)
             {
@@ -28,6 +36,26 @@ namespace AshborneGame._Core.Data.BOCS
             _instanceRegistry.Register(gameObject);
 
             return gameObject;
+        }
+
+        public BOCSObject Clone(BOCSObject source)
+        {
+            var definition = _definitionRegistry.Get<GameObjectDefinition>(source.DefinitionID);
+
+            var clone = new BOCSObject(source.DefinitionID);
+
+            foreach (var (behaviourType, behaviours) in source.Behaviours)
+            {
+                foreach (var behaviour in behaviours)
+                {
+                    // TODO: Add deep clone functionality to every behaviour
+                    clone.AddBehaviour(behaviourType, behaviour);
+                }
+            }
+
+            _instanceRegistry.Register(clone);
+
+            return clone;
         }
     }
 }

@@ -32,12 +32,12 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         /// <summary>
         /// Adds an item to the inventory, stacking where possible.
         /// </summary>
-        public void AddItem(Item item, int count = 1)
+        public bool TryAddItem(BOCSObject item, int count = 1)
         {
             var res = item.TryGetBehaviour<ItemBehaviour>().Result;
             ItemBehaviour b;
 
-            if (res.Item1)
+            if (res.Item1 && res.Item2 != null)
             {
                 b = res.Item2;
             }
@@ -59,7 +59,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
                 if (slot.Item.Name == item.Name && !slot.IsFull)
                 {
                     remaining = slot.Add(remaining);
-                    if (remaining <= 0) return;
+                    if (remaining <= 0) return true;
                 }
             }
 
@@ -67,9 +67,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             while (remaining > 0)
             {
                 int toAdd = Math.Min(b.StackLimit, remaining);
-                var newItem = new Item(
-                    item.Name, item.Description, b.UseDescription, b.StackLimit, b.ItemType, b.Quality
-                );
+                var newItem = BOCSFactory.Clone(item);
 
                 // Deep clone behaviours if applicable
                 foreach (var kvp in item.Behaviours)
@@ -104,20 +102,25 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
                 _slots.Add(new InventorySlot(newItem, toAdd));
                 remaining -= toAdd;
             }
+
+            return true;
         }
 
         /// <summary>
         /// Removes a quantity of an item from the inventory.
         /// </summary>
-        public async void RemoveItem(Item item, int count = 1)
+        /// <returns>True if the given obj is an item, false otherwise.</returns>
+        public async Task<bool> TryRemoveItem(BOCSObject obj, int count = 1)
         {
-            if (item == null)
-                throw new ArgumentNullException(nameof(item));
+            if (!BOCSQueries.IsItem(obj)) return false;
+
+            if (obj == null)
+                throw new ArgumentNullException(nameof(obj));
             if (count <= 0)
                 throw new ArgumentException("Count must be greater than 0.", nameof(count));
 
             var relevantSlots = _slots
-                .Where(s => s.Item.Name == item.Name)
+                .Where(s => s.Item.Name == obj.Name)
                 .OrderByDescending(s => s.Quantity)
                 .ToList();
 
@@ -141,12 +144,14 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
                 // If we didn't find enough items to remove but still removed as many as possible
                 await IOService.Output.DisplayDebugMessage($"Not enough items to remove {count} of them!");
             }
+
+            return true;
         }
 
         /// <summary>
         /// Finds the first item by name.
         /// </summary>
-        public Item? GetItem(string itemName)
+        public BOCSObject? GetItem(string itemName)
         {
             return _slots
                 .Select(slot => slot.Item)
@@ -202,8 +207,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         public async void TransferItem(Inventory originInventory, Inventory destinationInventory, Item item, int count)
         {
             await IOService.Output.DisplayDebugMessage($"Transferring {count} x {item.Name} from {originInventory.GetType().Name} to {destinationInventory.GetType().Name}.");
-            originInventory.RemoveItem(item, count);
-            destinationInventory.AddItem(item, count);
+            originInventory.TryRemoveItem(item, count);
+            destinationInventory.TryAddItem(item, count);
         }
 
         public async void TransferAllItems(Inventory originInventory, Inventory destinationInventory)
@@ -216,8 +221,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             {
                 if (!slot.IsEmpty)
                 {
-                    destinationInventory.AddItem(slot.Item, slot.Quantity);
-                    originInventory.RemoveItem(slot.Item, slot.Quantity);
+                    destinationInventory.TryAddItem(slot.Item, slot.Quantity);
+                    originInventory.TryRemoveItem(slot.Item, slot.Quantity);
                 }
             }
         }

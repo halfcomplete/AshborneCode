@@ -1,7 +1,7 @@
 ﻿
 namespace AshborneGame._Core.Data.BOCS.ObjectSystem
 {
-    public class GameObject : BOCSGameObject
+    public class GameObject : BOCSObject
     {
         public override string Name { get; }
         public override string Description { get; }

@@ -10,7 +10,7 @@ namespace AshborneGame._Core.Data.BOCS;
 /// An abstract class representing any object in the game using the BOCS architecture.
 /// Contains attributes and methods that allow for tracking and modification of Behaviours on this object.
 /// </summary>
-public abstract class BOCSGameObject
+public class BOCSObject
 {
     /// <summary>
     /// Gets the name of the object. This is used for identification and display.
@@ -24,9 +24,9 @@ public abstract class BOCSGameObject
     /// </summary>
     public virtual List<string> Synonyms { get; init; }
 
-    public InstanceID InstanceID { get; }
+    public InstanceID InstanceID { get; init; }
 
-    public DefinitionID DefinitionID { get; }
+    public DefinitionID DefinitionID { get; init; }
 
     /// <summary>
     /// Represents the Behaviours attached to this BOCSGameObject.
@@ -38,6 +38,12 @@ public abstract class BOCSGameObject
     /// Note that a behaviour attached to this BOCSGameObject may implement multiple modules, and thus would be referenced in multiple key-value pairs.
     /// </remarks>
     public Dictionary<Type, List<object>> Behaviours { get; private set; } = new();
+
+    public BOCSObject(DefinitionID definitionID, InstanceID instanceID = new())
+    {
+        DefinitionID = definitionID;
+        InstanceID = instanceID;
+    }
 
     #region Behaviours
     /// <summary>

@@ -27,7 +27,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviou
         public async void OnUse(Player player)
         {
             await IOService.Output.DisplayDebugMessage("On Use Trigger successfully called for OnUseUnlockObjectBehaviour", ConsoleMessageTypes.INFO);
-            BOCSGameObject? targetObject = null; // Reset targetObject to null before searching
+            BOCSObject? targetObject = null; // Reset targetObject to null before searching
             // If we're in a sublocation, get the object directly
             if (player.CurrentSublocation != null)
             {

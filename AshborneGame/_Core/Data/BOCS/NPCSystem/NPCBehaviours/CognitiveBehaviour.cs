@@ -9,11 +9,11 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
 {
     public class CognitiveBehaviour : IAwareOfParentObject
     {
-        public BOCSGameObject ParentObject { get; set; }
+        public BOCSObject ParentObject { get; set; }
 
         public PsychologicalState PsychologicalState { get; init; }
 
-        public CognitiveBehaviour(BOCSGameObject parent, PsychologicalState psychologicalState)
+        public CognitiveBehaviour(BOCSObject parent, PsychologicalState psychologicalState)
         {
             ParentObject = parent;
             PsychologicalState = psychologicalState;

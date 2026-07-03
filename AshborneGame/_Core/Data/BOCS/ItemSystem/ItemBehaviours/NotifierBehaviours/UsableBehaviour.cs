@@ -14,9 +14,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
     /// </summary>
     public class UsableBehaviour : ItemBehaviourBase<UsableBehaviour>, IUsable, IAwareOfParentObject
     {
-        public BOCSGameObject ParentObject { get; set; }
+        public BOCSObject ParentObject { get; set; }
 
-        public UsableBehaviour(BOCSGameObject parentObject)
+        public UsableBehaviour(BOCSObject parentObject)
         {
             ParentObject = parentObject ?? throw new ArgumentNullException(nameof(parentObject), "Parent object cannot be null.");
         }

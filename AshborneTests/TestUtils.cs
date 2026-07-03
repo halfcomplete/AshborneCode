@@ -49,7 +49,7 @@ namespace AshborneTests
             npc.AddBehaviour(typeof(IHasInventory), new TradeableNPCBehaviour());
             (_, var inv) = await npc.TryGetBehaviour<IHasInventory>();
             if (itemNumber > 0)
-                inv.Inventory.AddItem(CreateTestItem(), itemNumber);
+                inv.Inventory.TryAddItem(CreateTestItem(), itemNumber);
             return npc;
         }
 
@@ -67,7 +67,7 @@ namespace AshborneTests
         /// <summary>
         /// Returns a test sublocation with a default name "Test Sublocation" and a default location "Test Location". Has a default game object "Test Object".
         /// </summary>
-        static internal Sublocation CreateTestSublocation(BOCSGameObject gameObject)
+        static internal Sublocation CreateTestSublocation(BOCSObject gameObject)
         {
             var parent = CreateTestLocation(Guid.NewGuid().ToString());
             var identifier = new LocationNameAdapter("test", null);
@@ -92,7 +92,7 @@ namespace AshborneTests
             GameObject chest = GameObjectFactory.CreateChest("Test chest", "A test chest");
             (_, var inv) = await chest.TryGetBehaviour<IHasInventory>();
             if (hasItem)
-                inv.Inventory.AddItem(CreateTestItem(), amount);
+                inv.Inventory.TryAddItem(CreateTestItem(), amount);
             return chest;
         }
 

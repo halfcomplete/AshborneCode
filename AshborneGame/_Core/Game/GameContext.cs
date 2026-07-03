@@ -1,10 +1,14 @@
 ﻿using AshborneGame._Core._Player;
+using AshborneGame._Core.Data.Definitions;
 using AshborneGame._Core.Globals.Services;
 
 namespace AshborneGame._Core.Game
 {
     public static class GameContext
     {
+        public static IDefinitionRegistry DefinitionRegistry { get; private set; }
+        public static IInstanceRegistry InstanceRegistry { get; private set; }
+
         public static Player Player { get; private set; }
         public static GameStateManager GameState { get; private set; }
         public static TimeTracker TimeTracker { get; private set; }
