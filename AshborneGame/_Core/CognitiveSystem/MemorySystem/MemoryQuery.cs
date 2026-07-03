@@ -11,6 +11,6 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
     {
         public HashSet<MemoryTag>? Tags { get; init; }
         public Dictionary<InstanceID, List<MemoryRole>?>? Participants { get; init; }
-        public List<Guid>? Locations { get; init; }
+        public List<InstanceID>? Locations { get; init; }
     }
 }

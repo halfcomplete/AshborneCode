@@ -34,6 +34,18 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         /// </summary>
         public void AddItem(Item item, int count = 1)
         {
+            var res = item.TryGetBehaviour<ItemBehaviour>().Result;
+            ItemBehaviour b;
+
+            if (res.Item1)
+            {
+                b = res.Item2;
+            }
+            else
+            {
+                throw new ArgumentException($"Item '{item.Name}' does not have ItemBehaviour.");
+            }
+
             if (item == null)
                 throw new ArgumentNullException(nameof(item));
             if (count <= 0)
@@ -54,9 +66,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             // Create new stacks
             while (remaining > 0)
             {
-                int toAdd = Math.Min(item.StackLimit, remaining);
+                int toAdd = Math.Min(b.StackLimit, remaining);
                 var newItem = new Item(
-                    item.Name, item.Description, item.UseDescription, item.StackLimit, item.ItemType, item.Quality
+                    item.Name, item.Description, b.UseDescription, b.StackLimit, b.ItemType, b.Quality
                 );
 
                 // Deep clone behaviours if applicable

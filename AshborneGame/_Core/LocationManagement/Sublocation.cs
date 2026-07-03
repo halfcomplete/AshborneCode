@@ -1,6 +1,7 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.ObjectSystem;
+using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Game.DescriptionHandling;
@@ -19,6 +20,9 @@ namespace AshborneGame._Core.LocationManagement
         /// The parent location containing this sublocation.
         /// </summary>
         public Location ParentLocation { get; }
+
+        public InstanceID InstanceID { get; } = new();
+        public DefinitionID DefinitionID { get; }
 
         /// <summary>
         /// The object that is at this sublocation.
@@ -64,11 +68,6 @@ namespace AshborneGame._Core.LocationManagement
         }
 
         /// <summary>
-        /// Unique identifier for the sublocation.
-        /// </summary>
-        public string ID { get; }
-
-        /// <summary>
         /// Flexible naming and parsing for the sublocation.
         /// </summary>
         public LocationNameAdapter Name { get; }
@@ -83,13 +82,13 @@ namespace AshborneGame._Core.LocationManagement
         /// <param name="id">Unique identifier.</param>
         /// <param name="shortenedPositionalPhrase">From OutputConstants, where the sublocation is relative to the parent location.</param>
         /// <param name="shortRefDesc">Used when listing the sublocations in the parent location.</param>
-        public Sublocation(Location parent, BOCSGameObject focusObject, LocationNameAdapter name, DescriptionComposer desc, string id, string shortenedPositionalPhrase, string shortRefDesc)
+        public Sublocation(Location parent, BOCSGameObject focusObject, LocationNameAdapter name, DescriptionComposer desc, DefinitionID id, string shortenedPositionalPhrase, string shortRefDesc)
         {
             ParentLocation = parent;
             FocusObject = focusObject;
             Name = name;
             DescriptionComposer = desc;
-            ID = id;
+            DefinitionID = id;
             Exits = new Dictionary<string, Location> { { "back", parent } };
             ShortenedPositionalPhrase = shortenedPositionalPhrase;
             ShortRefDesc = shortRefDesc;

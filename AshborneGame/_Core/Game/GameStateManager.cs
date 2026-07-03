@@ -6,6 +6,7 @@ using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.QuestManagement;
 using AshborneGame._Core.LocationManagement;
+using AshborneGame._Core.Data.IDSystem;
 
 namespace AshborneGame._Core.Game
 {
@@ -274,17 +275,17 @@ namespace AshborneGame._Core.Game
         /// <param name="id">The ID of the location.</param>
         /// <exception cref="KeyNotFoundException">Thrown when the given location ID is not found in the LocationRegistry.</exception>
         /// <exception cref="InvalidOperationException">Thrown when the location with the given ID is null in the LocationRegistry.</exception>
-        public int GetLocationVisitCount(string id)
+        public int GetLocationVisitCount(DefinitionID id)
         {
             if (!LocationRegistry.GetLocationByID(id, out var location))
             {
                 var knownIds = string.Join(", ", LocationRegistry.GetAllLocationIds());
-                throw new KeyNotFoundException($"Location with ID '{id}' not found in LocationRegistry. Known location IDs: [{knownIds}]");
+                throw new KeyNotFoundException($"Location with ID '{id.Value}' not found in LocationRegistry. Known location IDs: [{knownIds}]");
             }
 
             if (location == null)
             {
-                throw new InvalidOperationException($"Location with ID '{id}' is null in LocationRegistry.");
+                throw new InvalidOperationException($"Location with ID '{id.Value}' is null in LocationRegistry.");
             }
 
             return location.VisitCount;
@@ -297,17 +298,17 @@ namespace AshborneGame._Core.Game
         /// <returns>The new visit count after incrementing.</returns>
         /// <exception cref="KeyNotFoundException">Thrown when the given location ID is not found in the LocationRegistry.</exception>
         /// <exception cref="InvalidOperationException">Thrown when the location with the given ID is null in the LocationRegistry.</exception>
-        public int IncrementLocationVisitCount(string id)
+        public int IncrementLocationVisitCount(DefinitionID id)
         {
             if (!LocationRegistry.GetLocationByID(id, out var location))
             {
                 var knownIds = string.Join(", ", LocationRegistry.GetAllLocationIds());
-                throw new KeyNotFoundException($"Location with ID '{id}' not found in LocationRegistry. Known location IDs: [{knownIds}]");
+                throw new KeyNotFoundException($"Location with ID '{id.Value}' not found in LocationRegistry. Known location IDs: [{knownIds}]");
             }
 
             if (location == null)
             {
-                throw new InvalidOperationException($"Location with ID '{id}' is null in LocationRegistry.");
+                throw new InvalidOperationException($"Location with ID '{id.Value}' is null in LocationRegistry.");
             }
 
             location.VisitCount += 1;

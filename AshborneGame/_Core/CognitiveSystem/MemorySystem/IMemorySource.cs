@@ -1,3 +1,4 @@
+using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game.Events;
 
 namespace AshborneGame._Core.CognitiveSystem.MemorySystem
@@ -7,13 +8,13 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         int CurrentTotalHours { get; }
         MemoryDefinition MemoryDefinition { get; }
         List<MemoryParticipant> Participants { get; }
-        Guid LocationID { get; }
+        InstanceID LocationID { get; }
     }
 
     public sealed record SyntheticMemorySource(
         int CurrentTotalHours,
         MemoryDefinition MemoryDefinition,
         List<MemoryParticipant> Participants,
-        Guid LocationID,
+        InstanceID LocationID,
         string SourceLabel) : IMemorySource;
 }

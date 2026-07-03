@@ -1,4 +1,5 @@
 using AshborneGame._Core.CognitiveSystem.MemorySystem;
+using AshborneGame._Core.Data.IDSystem;
 
 namespace AshborneGame._Core.Game.Events
 {
@@ -41,7 +42,7 @@ namespace AshborneGame._Core.Game.Events
             int currentTotalHours,
             MemoryDefinition memoryDefinition,
             List<MemoryParticipant> participants,
-            Guid locationID,
+            InstanceID locationID,
             IReadOnlyDictionary<string, string> eventData)
         {
             return new ExternalMemorableGameEvent(eventName, currentTotalHours, memoryDefinition, participants, locationID, new Dictionary<string, string>(eventData));
@@ -89,7 +90,7 @@ namespace AshborneGame._Core.Game.Events
             int CurrentTotalHours,
             MemoryDefinition MemoryDefinition,
             List<MemoryParticipant> Participants,
-            Guid LocationID,
+            InstanceID LocationID,
             Dictionary<string, string> Data) : IMemorableGameEvent;
     }
 }

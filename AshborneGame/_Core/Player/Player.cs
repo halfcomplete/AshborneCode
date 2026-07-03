@@ -14,6 +14,7 @@ using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Constants;
 using System.Net.Mail;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem;
+using AshborneGame._Core.Data.IDSystem;
 
 namespace AshborneGame._Core._Player
 {
@@ -22,7 +23,7 @@ namespace AshborneGame._Core._Player
     /// </summary>
     public class Player : ISentientEntity
     {
-        private Guid ID = new Guid();
+        private InstanceID ID = new();
 
         public PsychologicalState PsychologicalState { get; }
 
@@ -79,8 +80,9 @@ namespace AshborneGame._Core._Player
             _name = "Hero"; // Default name
             var descriptor = new LocationNameAdapter("test location");
             // Use unique ID to avoid registry collisions in tests
+            // HACK: fix the def id
             CurrentLocation = LocationFactory.CreateLocation(
-                new Location(descriptor, "Locations.test-location-" + Guid.NewGuid().ToString("N")[..8]),
+                new Location(descriptor, new DefinitionID("Locations.test-location-" + Guid.NewGuid().ToString("N")[..8])),
                 new LookDescription(),
                 new VisitDescription("You enter a new place.", "You are here again.", "You have been here many times."),
                 new SensoryDescription("A generic location.", "You hear ambient sounds.")
@@ -111,8 +113,9 @@ namespace AshborneGame._Core._Player
             _name = name;
             var descriptor = new LocationNameAdapter("Placeholder");
             // Use unique ID to avoid registry collisions in tests
+            // HACK: wth is this
             CurrentLocation = LocationFactory.CreateLocation(
-                new Location(descriptor, "Locations.placeholder-" + Guid.NewGuid().ToString("N")[..8]),
+                new Location(descriptor, new DefinitionID("locations.placeholder_" + Guid.NewGuid().ToString("N")[..8])),
                 new LookDescription(),
                 new VisitDescription("You enter a placeholder place.", "You are at the placeholder place again.", "You have been here many times."),
                 new SensoryDescription("A placeholder location.", "You hear placeholder sounds.")

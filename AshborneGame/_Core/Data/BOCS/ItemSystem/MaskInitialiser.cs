@@ -31,7 +31,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         {
             var mask = new Item(name, description, "", 1, ItemTypes.Equipment, ItemQualities.Legendary);
             mask.AddBehaviour(typeof(IEquippable), new EquippableBehaviour(new List<string>() { "face" }));
-            mask.AddBehaviour(typeof(IInspectable), new InspectableBehaviour(mask, mask.Description, mask.Quality, "This mask is heavy with history, power, and owners."));
+            mask.AddBehaviour(typeof(IInspectable), new InspectableBehaviour(mask, mask.Description, ItemQualities.Legendary, "This mask is heavy with history, power, and owners."));
 
             interjectionBehaviour = new MaskInterjectionBehaviour(mask, GameContext.GameState);
             mask.AddBehaviour(typeof(MaskInterjectionBehaviour), interjectionBehaviour);

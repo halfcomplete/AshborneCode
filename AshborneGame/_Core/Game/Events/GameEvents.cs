@@ -4,6 +4,7 @@ using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.CognitiveSystem;
 using AshborneGame._Core.CognitiveSystem.MemorySystem;
+using AshborneGame._Core.Data.IDSystem;
 
 namespace AshborneGame._Core.Game.Events
 {
@@ -95,9 +96,7 @@ namespace AshborneGame._Core.Game.Events
             public sealed record StoleItemEvent(int CurrentTotalHours, NPC victim, Item item, List<MemoryParticipant> Participants, Location location) : IMemorableGameEvent
             {
                 public MemoryDefinition MemoryDefinition { get; } = new(0.4, [MemoryTag.Theft]);
-
-                // TODO: Change Location ID's to be handled with a Guid object rather than a string
-                public Guid LocationID { get; } = Guid.NewGuid();
+                public InstanceID LocationID { get; } = location.InstanceID;
             }
         }
 

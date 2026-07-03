@@ -43,7 +43,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// <summary>
         /// Creates a memory without requiring a concrete IMemorableGameEvent.
         /// </summary>
-        public Memory? ReceiveSyntheticMemory(string sourceLabel, MemoryDefinition memoryDefinition, int currentTotalHours, Guid locationID, List<MemoryParticipant>? participants = null)
+        public Memory? ReceiveSyntheticMemory(string sourceLabel, MemoryDefinition memoryDefinition, int currentTotalHours, InstanceID locationID, List<MemoryParticipant>? participants = null)
         {
             List<MemoryParticipant> sourceParticipants = participants ?? [new MemoryParticipant(_ownerID, [MemoryRole.Actor])];
             SyntheticMemorySource source = new(currentTotalHours, memoryDefinition, sourceParticipants, locationID, sourceLabel);

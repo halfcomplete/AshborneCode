@@ -55,7 +55,6 @@ namespace AshborneTests.CommandTests
         {
             internal bool WasTalkedTo = false;
             internal TestNPC(string name) : base(name, null) { }
-            public override async Task Talk(Player player) { WasTalkedTo = true; await Task.CompletedTask; }
         }
     }
 }

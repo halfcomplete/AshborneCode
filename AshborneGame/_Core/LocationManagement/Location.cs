@@ -2,6 +2,7 @@
 using System.Text;
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ObjectSystem;
+using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Game.DescriptionHandling;
@@ -20,7 +21,8 @@ namespace AshborneGame._Core.LocationManagement
         /// Unique identifier for the location. Uses a slug-based format derived from the location name.
         /// Format: "Locations.{normalized-name}" (e.g., "Locations.eye-platform")
         /// </summary>
-        public string ID { get; }
+        public InstanceID InstanceID { get; }
+        public DefinitionID DefinitionID { get; }
 
         /// <summary>
         /// The group this location belongs to, if any.
@@ -59,12 +61,12 @@ namespace AshborneGame._Core.LocationManagement
         /// </summary>
         /// <param name="name">LocationDescriptor for naming and parsing.</param>
         /// <param name="composer">DescriptionComposer to combine descriptions.</param>
-        /// <param name="id">Explicit ID for the location. If null, auto-generates from name.</param>
-        public Location(LocationNameAdapter name, DescriptionComposer composer, string? id = null)
+        public Location(LocationNameAdapter name, DescriptionComposer composer, DefinitionID definitionID)
         {
             Name = name;
             DescriptionComposer = composer;
-            ID = id ?? SlugIdService.GenerateSlugId(name.ReferenceName, "location");
+            InstanceID = new();
+            DefinitionID = definitionID;
         }
 
         /// <summary>
@@ -72,8 +74,8 @@ namespace AshborneGame._Core.LocationManagement
         /// </summary>
         /// <param name="name">LocationDescriptor for naming and parsing.</param>
         /// <param name="id">Optional explicit ID. If null, auto-generates from name.</param>
-        public Location(LocationNameAdapter name, string? id = null)
-            : this(name, new DescriptionComposer(), id)
+        public Location(LocationNameAdapter name, DefinitionID definitionID)
+            : this(name, new DescriptionComposer(), definitionID)
         {
         }
 
@@ -81,7 +83,9 @@ namespace AshborneGame._Core.LocationManagement
         {
             Scene = new Scene("default_scene", "Default Scene");
             Name = new LocationNameAdapter("Default Location");
-            ID = SlugIdService.GenerateSlugId(Name.ReferenceName, "location");
+            // TODO: temporary
+            DefinitionID = new(SlugIdService.GenerateSlugId(Name.ReferenceName, "location"));
+            InstanceID = new();
             DescriptionComposer = new DescriptionComposer(
                 new LookDescription(),
                 new VisitDescription("You enter a new place.", "You are here again.", "You have been here many times."),

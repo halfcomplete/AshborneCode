@@ -1,6 +1,7 @@
 ﻿
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
+using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
@@ -41,9 +42,19 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                 return false;
             }
 
-            // May cause an issue where this method returns true before the dialogue begins
-            await npc.Talk(player);
-            return true;
+            // TODO: May cause an issue where this method returns true before the dialogue begins
+
+            var res = npc.TryGetBehaviour<TalkableBehaviour>().Result;
+
+            if (res.Item1)
+            {
+                await res.Item2.Talk(player);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

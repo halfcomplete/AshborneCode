@@ -1,4 +1,6 @@
 ﻿
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
+
 namespace AshborneGame._Core.Data.BOCS.ItemSystem
 {
     public class InventorySlot
@@ -6,12 +8,28 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         public Item Item { get; }
         public int Quantity { get; private set; }
 
-        public bool IsFull => Quantity >= Item.StackLimit;
+        public bool IsFull
+        {
+            get
+            {
+                var (res, b) = Item.TryGetBehaviour<ItemBehaviour>().Result;
+                if (!res || b == null)
+                {
+                    throw new Exception($"Item {Item.Name} doesn't have ItemBehaviour attached.");
+                }
+                return Quantity >= b.StackLimit;
+            }
+        }
 
         public InventorySlot(Item item, int quantity = 1)
         {
             Item = item ?? throw new ArgumentNullException(nameof(item));
-            Quantity = Math.Clamp(quantity, 0, item.StackLimit);
+            var (res, b) = Item.TryGetBehaviour<ItemBehaviour>().Result;
+            if (!res || b == null)
+            {
+                throw new Exception($"Item {Item.Name} doesn't have ItemBehaviour attached.");
+            }
+            Quantity = Math.Clamp(quantity, 0, b.StackLimit);
         }
 
         /// <summary>
@@ -21,7 +39,12 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         /// <returns></returns>
         public int Add(int amount)
         {
-            int space = Item.StackLimit - Quantity;
+            var (res, b) = Item.TryGetBehaviour<ItemBehaviour>().Result;
+            if (!res || b == null)
+            {
+                throw new Exception($"Item {Item.Name} doesn't have ItemBehaviour attached.");
+            }
+            int space = b.StackLimit - Quantity;
             int toAdd = Math.Min(space, amount);
             Quantity += toAdd;
             return amount - toAdd; // leftover

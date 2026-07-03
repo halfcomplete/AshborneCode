@@ -1,6 +1,8 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
+using AshborneGame._Core.Data.Definitions;
+using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Game.Events;
@@ -97,7 +99,7 @@ namespace AshborneGame._Core.Game
             // Location IDs are slug-based (e.g., "Locations.eye-platform") and auto-generated from the name.
             Location eyePlatform = LocationFactory.CreateLocation(
                 new Location(
-                    new LocationNameAdapter("Eye Platform")),
+                    new LocationNameAdapter("Eye Platform"), new DefinitionID("locations.dreamspace.eye_platform")),
                 new LookDescription(
                     "You glance around uneasily. The eye you stand on is unblinking and unmoving. Black clouds cover the sky, and the occasional lightning flashes are bright white against an otherwise dull and dark background.",
                     "You look around once more. Nothing changes — but are the shards sharper now?"),
@@ -114,7 +116,7 @@ namespace AshborneGame._Core.Game
                     // If the player has visited the Hall of Mirrors and this is their 1st, 2nd, or 4th visit to the Eye Platform
                     .If((player, gameState) =>
                     {
-                        int hallOfMirrorsVisits = gameState.GetLocationVisitCount("Locations.hall-of-mirrors");
+                        int hallOfMirrorsVisits = gameState.GetLocationVisitCount(new DefinitionID("locations.dreamspace.hall_of_mirrors"));
                         int currentVisits = player.CurrentLocation.VisitCount;
                         if (hallOfMirrorsVisits > 0 && 
                             (currentVisits == 1 || currentVisits == 2 || currentVisits == 4))
@@ -129,7 +131,7 @@ namespace AshborneGame._Core.Game
                     // If the player has visited the Hall of Mirrors and this is their 3rd or later (>4) visit to the Eye Platform
                     .If((player, gameState) =>
                     {
-                        int hallOfMirrorsVisits = gameState.GetLocationVisitCount("Locations.hall-of-mirrors");
+                        int hallOfMirrorsVisits = gameState.GetLocationVisitCount(new DefinitionID("locations.dreamspace.hall_of_mirrors"));
                         int currentVisits = player.CurrentLocation.VisitCount;
                         if (hallOfMirrorsVisits > 0 &&
                             (currentVisits == 3 || currentVisits > 4))
@@ -143,7 +145,7 @@ namespace AshborneGame._Core.Game
                 ConditionalDescription.StartNew()
                     .If((player, gameState) =>
                     {
-                        int templeVisits = gameState.GetLocationVisitCount("Locations.temple-of-the-bound-one");
+                        int templeVisits = gameState.GetLocationVisitCount(new DefinitionID("locations.dreamspace.temple_of_the_bound_one"));
                         bool talkedToBound = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOne, out bool v2) && v2;
                         int visits = player.CurrentLocation.VisitCount;
 
@@ -160,7 +162,7 @@ namespace AshborneGame._Core.Game
                 ConditionalDescription.StartNew()
                     .If((player, gameState) =>
                     {
-                        int templeVisits = gameState.GetLocationVisitCount("Locations.temple-of-the-bound-one");
+                        int templeVisits = gameState.GetLocationVisitCount(new DefinitionID("locations.dreamspace.temple_of_the_bound_one"));
                         bool talkedToBound = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOne, out bool v2) && v2;
                         int visits = player.CurrentLocation.VisitCount;
 
@@ -190,7 +192,7 @@ namespace AshborneGame._Core.Game
                         "A low hum vibrates through your chest, syncing with your heartbeat."),
                     new AmbientDescription(new Dictionary<TimeSpan, string> { { TimeSpan.FromSeconds(8), "A shadow flickers at the edge of your vision, gone when you turn." } })
                 ),
-                "platform edge",
+                new DefinitionID("platform edge"),
                 OutputConstants.ShortenedLeft,
                 "the edge of the platform, overlooking the abyss"
             );
@@ -203,7 +205,7 @@ namespace AshborneGame._Core.Game
 
             Location hallOfMirrors = LocationFactory.CreateLocation(
                 new Location(
-                    new LocationNameAdapter("Hall of Mirrors")),
+                    new LocationNameAdapter("Hall of Mirrors"), new DefinitionID("locations.dreamspace.hall_of_mirrors")),
                 new LookDescription(
                     "You look around the hall. Everywhere, your reflection stares right back at you, each mirror containing an infinite universe of you's.",
                     "You look around the hall again. The mirrors remain ever so still, ever so silent."
@@ -231,7 +233,7 @@ namespace AshborneGame._Core.Game
                         "You walk up to the shard again. It still feels empty, but you can't shake the feeling that it is important.",
                         "You go to the shard again. It still feels empty, but you can't shake the feeling that it is important."),
                     new SensoryDescription("The shard is cold to the touch.", "It is eerily quiet here.")),
-                "mirror shard",
+                new DefinitionID("mirror shard"),
                 OutputConstants.ShortenedAtMiddle,
                 "a shard of a mirror, lying on the floor");
 
@@ -260,7 +262,7 @@ namespace AshborneGame._Core.Game
 
             Location chamberOfCycles = LocationFactory.CreateLocation(
                 new Location(
-                    new LocationNameAdapter("Chamber of Cycles")),
+                    new LocationNameAdapter("Chamber of Cycles"), new DefinitionID("dreamspace.chamber_of_cycles")),
                 new LookDescription(
                     "You look around the chamber, inspecting the clocks further. The clocks are broken — a tick forward is immediately followed by a jump back. Time isn't moving forward. Not anymore.",
                     "You look around the chamber again. Still, the clocks are broken. Time is frozen. Tick. Tock. Tick. Tock."),
@@ -276,7 +278,7 @@ namespace AshborneGame._Core.Game
 
             Location templeOfTheBound = LocationFactory.CreateLocation(
                 new Location(
-                    new LocationNameAdapter("Temple of the Bound One")),
+                    new LocationNameAdapter("Temple of the Bound One"), new DefinitionID("dreamspace.temple_of_the_bound_one")),
                 new LookDescription(
                     "You look around the temple. The strange, alien symbols covering the walls are each etched deep into rough bricks the size of a person. You cannot read them, but as your eyes jump from one symbol to another, they glow ever so slightly against the dark. The characters are beautiful, each line a river of the unknown.",
                     "You look around the temple again. The prisoner shuffles slightly.",
@@ -305,7 +307,7 @@ namespace AshborneGame._Core.Game
                 "You walk up to the circle again. The candles dim ever so slightly as your movement shakes the otherwise still air.",
                 "You go to the circle again. The candles and shadows tire of your presence. And perhaps the prisoner does too."),
                 new SensoryDescription("The flames are red and wild — almost as wild as the prisoner.",
-                "It is quiet save for the soft crackling of the candles.")), "circle of candles", OutputConstants.ShortenedCentre, "a circle of dimly lit candles surrounding a chained prisoner"));
+                "It is quiet save for the soft crackling of the candles.")), new DefinitionID ("circle of candles"), OutputConstants.ShortenedCentre, "a circle of dimly lit candles surrounding a chained prisoner"));
 
             LocationFactory.AddMutualExits(eyePlatform, hallOfMirrors, DirectionConstants.South);
             LocationFactory.AddMutualExits(eyePlatform, chamberOfCycles, DirectionConstants.West);
@@ -346,11 +348,11 @@ namespace AshborneGame._Core.Game
                     .If((gameState) =>
                     {
                         // Completion criteria: Player has visited the Eye Platform after visiting other locations
-                        int eyePlatformVisits = gameState.GetLocationVisitCount("Locations.eye-platform");
-                        int hallOfMirrorsVisits = gameState.GetLocationVisitCount("Locations.hall-of-mirrors");
+                        int eyePlatformVisits = gameState.GetLocationVisitCount(new DefinitionID("locations.dreamspace.eye_platform"));
+                        int hallOfMirrorsVisits = gameState.GetLocationVisitCount(new DefinitionID("locations.dreamspace.hall_of_mirrors"));
                         // Commented out as chamber of cycles does not exist yet
                         int chamberOfCyclesVisits = 1; //gameState.GetLocationVisitCount("Locations.chamber-of-cycles");
-                        int templeOfTheBoundVisits = gameState.GetLocationVisitCount("Locations.temple-of-the-bound-one");
+                        int templeOfTheBoundVisits = gameState.GetLocationVisitCount(new DefinitionID("locations.dreamspace.temple_of_the_bound_one"));
 
                         return eyePlatformVisits > 0 &&
                             (hallOfMirrorsVisits > 0 || chamberOfCyclesVisits > 0 || templeOfTheBoundVisits > 0);

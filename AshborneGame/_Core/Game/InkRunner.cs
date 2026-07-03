@@ -10,6 +10,7 @@ using System.IO;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Game.Events;
+using AshborneGame._Core.Data.IDSystem;
 
 namespace AshborneGame._Core.Game
 {
@@ -381,8 +382,8 @@ namespace AshborneGame._Core.Game
             _story.BindExternalFunction("getPlayerStat", (string statName) => ExternalGetPlayerStat(statName));
 
             // --- Location Visit Counts ---
-            _story.BindExternalFunction("getLocationVisits", (string locationId) => ExternalGetLocationVisits(locationId));
-            _story.BindExternalFunction("incLocationVisits", (string locationId) => ExternalIncLocationVisits(locationId));
+            _story.BindExternalFunction("getLocationVisits", (string locationId) => ExternalGetLocationVisits(new DefinitionID(locationId)));
+            _story.BindExternalFunction("incLocationVisits", (string locationId) => ExternalIncLocationVisits(new DefinitionID(locationId)));
 
             // --- In-Game Time & Emotions ---
             _story.BindExternalFunction("advance_time", (int hours) => ExternalAdvanceTime(hours));
@@ -593,7 +594,7 @@ namespace AshborneGame._Core.Game
                 sourceLabel,
                 memoryDefinition,
                 _gameState.TimeTracker.TotalInGameHours,
-                Guid.Empty);
+                new InstanceID(Guid.Empty));
 
             return null;
         }
@@ -686,12 +687,8 @@ namespace AshborneGame._Core.Game
         /// </summary>
         /// <param name="locationId">The slug-based location ID (e.g., "Locations.eye-platform")</param>
         /// <returns>The visit count for the location.</returns>
-        public object ExternalGetLocationVisits(string locationId)
+        public object ExternalGetLocationVisits(DefinitionID locationId)
         {
-            // Normalize: if user passes just the slug without prefix, add it
-            if (!locationId.StartsWith("Locations."))
-                locationId = "Locations." + locationId;
-
             try
             {
                 return _gameState.GetLocationVisitCount(locationId);
@@ -710,12 +707,8 @@ namespace AshborneGame._Core.Game
         /// </summary>
         /// <param name="locationId">The slug-based location ID (e.g., "Locations.eye-platform")</param>
         /// <returns>The new visit count after incrementing.</returns>
-        public object ExternalIncLocationVisits(string locationId)
+        public object ExternalIncLocationVisits(DefinitionID locationId)
         {
-            // Normalize: if user passes just the slug without prefix, add it
-            if (!locationId.StartsWith("Locations."))
-                locationId = "Locations." + locationId;
-
             try
             {
                 return _gameState.IncrementLocationVisitCount(locationId);

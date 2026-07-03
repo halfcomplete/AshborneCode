@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AshborneGame._Core.Data.IDSystem;
 
 namespace AshborneGame._Core.Game.Events
 {
@@ -63,7 +64,7 @@ namespace AshborneGame._Core.Game.Events
             throw new InvalidOperationException($"[ExternalEventBuilder] Unknown event '{EventName}'. Add a mapping in ExternalGameEventFactory or mark it as memorable/synthetic via event data key 'kind'.");
         }
 
-
+        // TODO: double check if it's meant to use new InstanceID() if there's no participants
         private static void CommitMemorable(int currentTotalHours)
         {
             MemoryDefinition memoryDefinition = BuildMemoryDefinitionFromData();
@@ -71,10 +72,10 @@ namespace AshborneGame._Core.Game.Events
 
             if (participants.Count == 0)
             {
-                participants.Add(new MemoryParticipant(Guid.Empty, [MemoryRole.Actor]));
+                participants.Add(new MemoryParticipant(new InstanceID(Guid.Empty), [MemoryRole.Actor]));
             }
 
-            Guid locationID = TryParseGuid(GetDataOrDefault("locationGuid", "")) ?? Guid.Empty;
+            InstanceID locationID = TryParseInstanceID(GetDataOrDefault("locationGuid", "")) ?? new InstanceID(Guid.Empty);
 
             IMemorableGameEvent memorableEvent = ExternalGameEventFactory.CreateExternalMemorableEvent(
                 EventName,
@@ -94,11 +95,11 @@ namespace AshborneGame._Core.Game.Events
             List<MemoryParticipant> participants = BuildParticipants();
 
             string sourceLabel = GetDataOrDefault("sourceLabel", EventName);
-            Guid locationID = TryParseGuid(GetDataOrDefault("locationGuid", "")) ?? Guid.Empty;
+            InstanceID locationID = TryParseInstanceID(GetDataOrDefault("locationGuid", "")) ?? new InstanceID(Guid.Empty);
 
-            List<(ISentientEntity Entity, Guid EntityId)> targets = ResolveSyntheticTargets(participants);
+            List<(ISentientEntity Entity, InstanceID EntityId)> targets = ResolveSyntheticTargets(participants);
 
-            foreach ((ISentientEntity entity, Guid entityId) in targets)
+            foreach ((ISentientEntity entity, InstanceID entityId) in targets)
             {
                 List<MemoryParticipant> targetParticipants = CloneParticipants(participants);
                 if (targetParticipants.All(p => p.EntityId != entityId))
@@ -121,7 +122,7 @@ namespace AshborneGame._Core.Game.Events
 
             foreach ((string participantIdText, List<MemoryRole> roles) in EventParticipants)
             {
-                Guid? parsedId = ParseEntityId(participantIdText);
+                InstanceID? parsedId = ParseEntityId(participantIdText);
                 if (parsedId == null)
                 {
                     continue;
@@ -183,11 +184,11 @@ namespace AshborneGame._Core.Game.Events
             return tags;
         }
 
-        private static List<(ISentientEntity Entity, Guid EntityId)> ResolveSyntheticTargets(List<MemoryParticipant> participants)
+        private static List<(ISentientEntity Entity, InstanceID EntityId)> ResolveSyntheticTargets(List<MemoryParticipant> participants)
         {
-            List<(ISentientEntity Entity, Guid EntityId)> targets = new();
+            List<(ISentientEntity Entity, InstanceID EntityId)> targets = new();
 
-            Guid? targetEntityId = ParseEntityId(GetDataOrDefault("target", GetDataOrDefault("targetId", "")));
+            InstanceID? targetEntityId = ParseEntityId(GetDataOrDefault("target", GetDataOrDefault("targetId", "")));
             if (targetEntityId != null)
             {
                 ISentientEntity? targetEntity = ResolveEntityById(targetEntityId.Value);
@@ -212,15 +213,15 @@ namespace AshborneGame._Core.Game.Events
             if (targets.Count == 0)
             {
                 // Player currently has Guid.Empty in this codebase.
-                targets.Add((GameContext.Player, Guid.Empty));
+                targets.Add((GameContext.Player, new InstanceID(Guid.Empty)));
             }
 
             return targets;
         }
 
-        private static ISentientEntity? ResolveEntityById(Guid entityId)
+        private static ISentientEntity? ResolveEntityById(InstanceID entityId)
         {
-            if (entityId == Guid.Empty)
+            if (entityId == new InstanceID(Guid.Empty))
             {
                 return GameContext.Player;
             }
@@ -234,7 +235,7 @@ namespace AshborneGame._Core.Game.Events
             {
                 foreach (var sublocation in location.Sublocations)
                 {
-                    if (sublocation.FocusObject is ISentientEntity sentient && sublocation.FocusObject.ID == entityId)
+                    if (sublocation.FocusObject is ISentientEntity sentient && sublocation.FocusObject.InstanceID == entityId)
                     {
                         return sentient;
                     }
@@ -254,7 +255,7 @@ namespace AshborneGame._Core.Game.Events
             publishMethod.Invoke(null, [gameEvent]);
         }
 
-        private static Guid? ParseEntityId(string rawId)
+        private static InstanceID? ParseEntityId(string rawId)
         {
             if (string.IsNullOrWhiteSpace(rawId))
             {
@@ -266,15 +267,15 @@ namespace AshborneGame._Core.Game.Events
             if (trimmed.Equals("player", StringComparison.OrdinalIgnoreCase) ||
                 trimmed.Equals("self", StringComparison.OrdinalIgnoreCase))
             {
-                return Guid.Empty;
+                return new(Guid.Empty);
             }
 
-            return TryParseGuid(trimmed);
+            return TryParseInstanceID(trimmed);
         }
 
-        private static Guid? TryParseGuid(string rawGuid)
+        private static InstanceID? TryParseInstanceID(string rawGuid)
         {
-            return Guid.TryParse(rawGuid, out Guid parsedGuid) ? parsedGuid : null;
+            return Guid.TryParse(rawGuid, out Guid parsedGuid) ? new(parsedGuid) : null;
         }
 
         private static double? TryParseDouble(string rawDouble)

@@ -106,7 +106,7 @@ public abstract class BOCSGameObject
     /// An asynchronous Task where the first value is whether the retrieval was successful, and the second value is the Behaviour retrieved.
     /// If the operation was unsuccessful, T is null.
     /// </returns>
-    public async Task<(bool, T)> TryGetBehaviour<T>() where T : class
+    public async Task<(bool, T?)> TryGetBehaviour<T>() where T : class
     {
 #if DEBUG
         // Debug messages
@@ -131,7 +131,7 @@ public abstract class BOCSGameObject
         }
         // If not, return false and null
         await IOService.Output.DisplayDebugMessage($"Failed to retrieve behaviour of type {typeof(T).Name} from {Name}.", ConsoleMessageTypes.INFO);
-        return (false, null!);
+        return (false, null);
     }
 
     public bool HasBehaviours<T>() where T : class => Behaviours.ContainsKey(typeof(T)) && Behaviours[typeof(T)].Count > 0;

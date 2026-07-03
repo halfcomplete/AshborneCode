@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AshborneGame._Core._Player;
+using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Game.DescriptionHandling;
@@ -19,7 +20,8 @@ namespace AshborneGame._Core.Globals.Interfaces
         /// <summary>
         /// Unique identifier for the location.
         /// </summary>
-        string ID { get; }
+        InstanceID InstanceID { get; }
+        DefinitionID DefinitionID { get; }
 
         /// <summary>
         /// Flexible naming and parsing for the location.
