@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace AshborneGame._Core.Data.Definitions
 {
-    internal class LocationDefinitions
+    public static class LocationDefinitions
     {
+
     }
 }
