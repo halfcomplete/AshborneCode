@@ -7,10 +7,16 @@ using System.Threading.Tasks;
 
 namespace AshborneGame._Core.Data.Definitions
 {
+    /// <summary>
+    /// Registry for all the Definition IDs and their associated Definitions.
+    /// </summary>
     public class DefinitionRegistry : IDefinitionRegistry
     {
         private readonly Dictionary<DefinitionID, Definition> _definitions = new();
 
+        /// <summary>
+        /// Gets the Definition associated with a Definition ID.
+        /// </summary>
         public T Get<T>(DefinitionID id) where T : Definition
         {
             if (!_definitions.TryGetValue(id, out var def))

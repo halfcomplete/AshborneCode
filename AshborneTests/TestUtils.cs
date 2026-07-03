@@ -1,6 +1,6 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS;
-using AshborneGame._Core.Data.BOCS.ItemSystem;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
@@ -31,19 +31,19 @@ namespace AshborneTests
             var player = new Player(name, location);
             return player;
         }
-
+        // TODO: fix
         /// <summary>
         /// Creates a test NPC with a default name "TestNPC". Has no behaviours.
         /// </summary>
-        static internal NPC CreateTestNPC(string name = "TestNPC")
+        static internal BOCSObject CreateTestNPC(string name = "TestNPC")
         {
-            return new NPC(name, null);
+            return null;
         }
 
         /// <summary>
         /// Creates a test NPC with a default name "TestNPCWithInventory" and adds a TradeableNPCBehaviour to it. Optionally adds items to the NPC's inventory.
         /// </summary>
-        static internal async Task<NPC> CreateTestNPCWithInventory(int itemNumber = 0)
+        static internal async Task<BOCSObject> CreateTestNPCWithInventory(int itemNumber = 0)
         {
             var npc = CreateTestNPC();
             npc.AddBehaviour(typeof(IHasInventory), new TradeableNPCBehaviour());
@@ -64,6 +64,7 @@ namespace AshborneTests
             return new Location(descriptor, narrative, new DefinitionID("locations.test-" + Guid.NewGuid().ToString("N")[..8]));
         }
 
+        // TODO: hack
         /// <summary>
         /// Returns a test sublocation with a default name "Test Sublocation" and a default location "Test Location". Has a default game object "Test Object".
         /// </summary>
@@ -76,7 +77,7 @@ namespace AshborneTests
                 gameObject,
                 identifier,
                 new DescriptionComposer(),
-                Guid.NewGuid().ToString(),
+                new DefinitionID("test-sublocatioon"),
                 "[shortened positional phrase]",
                 "[short ref desc]"
             );

@@ -1,43 +1,47 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehaviours
 {
-    public class EquippableBehaviour : ItemBehaviourBase<EquippableBehaviour>, IEquippable
+    public class EquippableBehaviour : Behaviour, IEquippable
     {
-        public (bool IsEquippable, List<string> BodyParts) EquipInfo { get; set; }
+        public List<string> EquippableSlots { get; set; }
         public int TimesEquipped { get; set; }
 
-        public EquippableBehaviour(List<string> bodyParts, bool isEquippable = true)
+        public EquippableBehaviour(List<string> equippableSlots, int timesEquipped = 0)
         {
-            if (bodyParts == null || bodyParts.Count == 0)
+            if (EquippableSlots == null || EquippableSlots.Count == 0)
             {
-                throw new ArgumentException("Body parts cannot be null or empty.", nameof(bodyParts));
+                throw new ArgumentException("Body parts cannot be null or empty.", nameof(EquippableSlots));
             }
-            EquipInfo = (isEquippable, bodyParts);
+
+            EquippableSlots = equippableSlots;
+            TimesEquipped = timesEquipped;
         }
 
-        public async void Equip(Player player, Item item, string bodyPart)
+        // TODO: remove async
+        public async void Equip(Player player, string bodyPart)
         {
-            if (string.IsNullOrWhiteSpace(bodyPart) || !player.EquippedItems.ContainsKey(bodyPart.ToLower()) || !EquipInfo.BodyParts.Contains(bodyPart))
+            if (string.IsNullOrWhiteSpace(bodyPart) || !player.EquippedItems.ContainsKey(bodyPart.ToLower()) || !EquippableSlots.Contains(bodyPart))
             {
                 throw new ArgumentException($"Invalid equipment slot: {bodyPart}", nameof(bodyPart));
             }
 
-            player.EquipItem(item, bodyPart);
-            await IOService.Output.DisplayDebugMessage($"Equipped {item.Name} in the {bodyPart} slot.", ConsoleMessageTypes.INFO);
-            await IOService.Output.WriteNonDialogueLine($"You equip {item.Name} on your {bodyPart}.");
-            await IOService.Output.DisplayDebugMessage($"Item Behaviour Values: {item.Behaviours.Values.SelectMany(x => x).OfType<IActOnEquip>().Count()}", ConsoleMessageTypes.INFO);
+            player.EquipItem(Owner, bodyPart);
+            await IOService.Output.DisplayDebugMessage($"Equipped {Owner.Name} in the {bodyPart} slot.", ConsoleMessageTypes.INFO);
+            await IOService.Output.WriteNonDialogueLine($"You equip {Owner.Name} on your {bodyPart}.");
+            await IOService.Output.DisplayDebugMessage($"Item Behaviour Values: {Owner.Behaviours.Values.SelectMany(x => x).OfType<IActOnEquip>().Count()}", ConsoleMessageTypes.INFO);
             
-            foreach (var behaviour in item.Behaviours)
+            foreach (var behaviour in Owner.Behaviours)
             {
                 await IOService.Output.DisplayDebugMessage($"Behaviour Type: {behaviour.Key.Name}, Count: {behaviour.Value.Count}", ConsoleMessageTypes.INFO);
             }
 
-            foreach (var behaviour in item.Behaviours.Values.SelectMany(x => x).OfType<IActOnEquip>())
+            foreach (var behaviour in Owner.Behaviours.Values.SelectMany(x => x).OfType<IActOnEquip>())
             {
                 behaviour.OnEquip(player);
             }
@@ -45,7 +49,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
 
         }
 
-        public void Unequip(Player player, Item item, string bodyPart)
+        // TODO: do we really need to pass in the entire Player object every time?
+        public void Unequip(Player player, string bodyPart)
         {
             if (string.IsNullOrWhiteSpace(bodyPart) || !player.EquippedItems.ContainsKey(bodyPart.ToLower()))
             {
@@ -56,17 +61,17 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
             {
                 throw new InvalidOperationException($"No item is currently equipped in the {bodyPart} slot.");
             }
-            player.UnequipItem(item, bodyPart);
+            player.UnequipItem(bodyPart);
 
-            foreach (var behaviour in item.Behaviours.Values.SelectMany(x => x).OfType<IActOnEquip>())
+            foreach (var behaviour in Owner.Behaviours.Values.SelectMany(x => x).OfType<IActOnEquip>())
             {
                 behaviour.OnUnequip(player);
             }
         }
 
-        public override EquippableBehaviour DeepClone()
+        public override Behaviour DeepClone()
         {
-            return new EquippableBehaviour(new List<string>(EquipInfo.BodyParts), EquipInfo.IsEquippable);
+            return new EquippableBehaviour(EquippableSlots, TimesEquipped);
         }
     }
 }

@@ -6,7 +6,7 @@ using AshborneGame._Core.Globals.Services;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBehaviours
 {
-    internal class OnUseHealPlayerBehaviour : ItemBehaviourBase<OnUseHealPlayerBehaviour>, IActOnUse
+    internal class OnUseHealPlayerBehaviour : Behaviour, IActOnUse
     {
         public bool ConsumeOnUse { get; set; }
         public int HealAmount { get; private set; }

@@ -8,8 +8,8 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules
 {
     public interface ICanBeAttacked
     {
-        float Health { get; set; }
-        float MaxHealth { get; set; }
-        void Attacked(float damage);
+        double Health { get; set; }
+        double MaxHealth { get; set; }
+        void Attacked(double damage);
     }
 }

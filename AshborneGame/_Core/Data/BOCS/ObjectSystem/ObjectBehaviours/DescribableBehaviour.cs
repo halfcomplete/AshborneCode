@@ -10,12 +10,21 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
     /// <summary>
     /// Used by LocationNarrativeProfile, GameObjects, NPCs, etc. for conditional descriptions.
     /// </summary>
-    public class DescribableBehaviour : IDescribable
+    public class DescribableBehaviour : Behaviour, IDescribable
     {
         /// <summary>
         /// List of (condition, description) pairs.
         /// </summary>
         public List<(Func<GameStateManager, bool> condition, string description)> Conditions { get; } = new();
+
+        public DescribableBehaviour(List<(Func<GameStateManager, bool> condition, string description)> conditions)
+        {
+            Conditions = conditions;
+        }
+        public DescribableBehaviour()
+        {
+
+        }
 
         /// <summary>
         /// Adds a new conditional description.
@@ -36,6 +45,11 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
                 .ToList();
 
             return string.Join(" ", applicable);
+        }
+
+        public override DescribableBehaviour DeepClone()
+        {
+            return new DescribableBehaviour(new(Conditions));
         }
     }
 }

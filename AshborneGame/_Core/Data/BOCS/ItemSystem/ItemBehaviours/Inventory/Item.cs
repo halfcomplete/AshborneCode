@@ -2,7 +2,7 @@
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
 using AshborneGame._Core.Globals.Enums;
 
-namespace AshborneGame._Core.Data.BOCS.ItemSystem
+namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
 {
     /// <summary>
     /// Represents an item that can be collected, used, and managed in the game.

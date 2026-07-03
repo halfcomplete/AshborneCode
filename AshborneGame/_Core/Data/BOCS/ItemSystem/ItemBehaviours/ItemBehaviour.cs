@@ -6,7 +6,7 @@ using AshborneGame._Core.Globals.Enums;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours
 {
-    public class ItemBehaviour : ItemBehaviourBase<ItemBehaviour>
+    public class ItemBehaviour : Behaviour
     {
         /// <summary>
         /// Gets the description that appears when the item is used.

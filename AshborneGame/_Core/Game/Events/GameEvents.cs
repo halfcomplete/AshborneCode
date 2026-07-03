@@ -1,10 +1,11 @@
 using System.Data.SqlTypes;
-using AshborneGame._Core.Data.BOCS.ItemSystem;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.CognitiveSystem;
 using AshborneGame._Core.CognitiveSystem.MemorySystem;
 using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
+using AshborneGame._Core.Data.BOCS;
 
 namespace AshborneGame._Core.Game.Events
 {
@@ -90,10 +91,10 @@ namespace AshborneGame._Core.Game.Events
             /// <summary>
             /// Test event. Raised when the player steals an item from an NPC.
             /// </summary>
-            /// <param name="victim">The NPC affected.</param>
+            /// <param name="target">The NPC affected.</param>
             /// <param name="item">The item stolen.</param>
             /// <param name="location">The location where the item was stolen.</param>
-            public sealed record StoleItemEvent(int CurrentTotalHours, NPC victim, Item item, List<MemoryParticipant> Participants, Location location) : IMemorableGameEvent
+            public sealed record StoleItemEvent(int CurrentTotalHours, BOCSObject target, BOCSObject item, List<MemoryParticipant> Participants, Location location) : IMemorableGameEvent
             {
                 public MemoryDefinition MemoryDefinition { get; } = new(0.4, [MemoryTag.Theft]);
                 public InstanceID LocationID { get; } = location.InstanceID;

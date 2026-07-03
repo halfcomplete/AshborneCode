@@ -1,15 +1,16 @@
 ﻿
 using AshborneGame._Core._Player;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules
 {
     public interface IEquippable
     {
-        (bool IsEquippable, List<string> BodyParts) EquipInfo { get; set; }
-        int TimesEquipped { get; set; }
+        public List<string> EquippableSlots { get; set; }
+        public int TimesEquipped { get; set; }
 
-        void Equip(Player player, Item item, string bodyPart);
+        void Equip(Player player, string bodyPart);
 
-        void Unequip(Player player, Item item, string bodyPart);
+        void Unequip(Player player, string bodyPart);
     }
 }

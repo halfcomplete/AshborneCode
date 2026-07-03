@@ -1,5 +1,6 @@
 ﻿using AshborneGame._Core._Player;
-using AshborneGame._Core.Data.BOCS.ItemSystem;
+using AshborneGame._Core.Data.BOCS;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.Data.Definitions;
 using AshborneGame._Core.Data.IDSystem;
@@ -297,8 +298,7 @@ namespace AshborneGame._Core.Game
                 { 
                 });
 
-            NPC boundOne = NPCFactory.CreateTalkableNPC("Bound One", "It's a sad, chained man with messy, overgrown hair and bloodred eyes.", "Act1_Scene1_Prisoner_Dialogue", 
-                new List<string> { "the prisoner", "prisoner", "the chained prisoner", "chained prisoner" });
+            BOCSObject boundOne = GameContext.BOCSFactory.Create(DefinitionIDs.NPCs.BoundOne);
             
             templeOfTheBound.AddSublocation(new Sublocation(templeOfTheBound, boundOne, new LocationNameAdapter("circle of candles", new List<string>() { "circle", "candles", "candle circle" }), new DescriptionComposer(
                 new LookDescription("You look closer at the circle. It's made up of 12 white wax candles placed precisely around the prisoner. Beneath the candles and the prisoner is a scrawled red 12-pointed star, with the centre circle formed by the intersecting lines slightly aflame. Shadows dance on the floor. You shiver. The fire is not warm.",

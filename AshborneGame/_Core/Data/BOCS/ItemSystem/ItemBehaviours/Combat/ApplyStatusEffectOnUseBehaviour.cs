@@ -1,11 +1,12 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
 
-namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.CombatBehaviours
+namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Combat
 {
-    public class ApplyStatusEffectOnUseBehaviour : ItemBehaviourBase<ApplyStatusEffectOnUseBehaviour>, IUsable
+    public class ApplyStatusEffectOnUseBehaviour : Behaviour, IUsable
     {
         public StatusEffectTypes StatusEffectType { get; private set; }
         public bool ConsumeOnUse { get; private set; }

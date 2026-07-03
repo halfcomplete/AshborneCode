@@ -9,7 +9,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
     /// <summary>
     /// Changes a specific player stat instantly when used.
     /// </summary>
-    internal class OnUseChangePlayerStatBehaviour : ItemBehaviourBase<OnUseChangePlayerStatBehaviour>, IActOnUse
+    internal class OnUseChangePlayerStatBehaviour : Behaviour, IActOnUse
     {
         public PlayerStatType StatType;
         public bool ConsumeOnUse { get; set; }

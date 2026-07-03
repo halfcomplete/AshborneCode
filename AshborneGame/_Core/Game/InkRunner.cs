@@ -2,7 +2,6 @@
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core._Player;
-using AshborneGame._Core.Data.BOCS.ItemSystem;
 using AshborneGame._Core.CognitiveSystem.MemorySystem;
 using System.Reflection.Metadata.Ecma335;
 using AshborneGame._Core.Globals.Enums;
@@ -11,6 +10,7 @@ using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 
 namespace AshborneGame._Core.Game
 {

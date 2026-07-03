@@ -1,6 +1,6 @@
-﻿using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
+﻿using AshborneGame._Core.Data.BOCS.Behaviours;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.ItemManagementBehaviours;
-using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehaviours;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Game.Events;
@@ -13,7 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AshborneGame._Core.Data.BOCS.ItemSystem
+namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
 {
     internal static class MaskInitialiser
     {
@@ -31,7 +31,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         {
             var mask = new Item(name, description, "", 1, ItemTypes.Equipment, ItemQualities.Legendary);
             mask.AddBehaviour(typeof(IEquippable), new EquippableBehaviour(new List<string>() { "face" }));
-            mask.AddBehaviour(typeof(IInspectable), new InspectableBehaviour(mask, mask.Description, ItemQualities.Legendary, "This mask is heavy with history, power, and owners."));
+            mask.AddBehaviour(typeof(IInspectable), new InspectableBehaviour(mask.Description, ItemQualities.Legendary, "This mask is heavy with history, power, and owners."));
 
             interjectionBehaviour = new MaskInterjectionBehaviour(mask, GameContext.GameState);
             mask.AddBehaviour(typeof(MaskInterjectionBehaviour), interjectionBehaviour);

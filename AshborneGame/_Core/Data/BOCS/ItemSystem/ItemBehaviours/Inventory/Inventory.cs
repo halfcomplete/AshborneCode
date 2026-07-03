@@ -1,4 +1,5 @@
 ﻿using AshborneGame._Core._Player;
+using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.CommonBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
@@ -6,7 +7,7 @@ using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Services;
 using System.Text;
 
-namespace AshborneGame._Core.Data.BOCS.ItemSystem
+namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
 {
     /// <summary>
     /// Represents a collection of items that can be carried by a player or stored in a container.
@@ -34,7 +35,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         /// </summary>
         public bool TryAddItem(BOCSObject item, int count = 1)
         {
-            var res = item.TryGetBehaviour<ItemBehaviour>().Result;
+            var res = item.TryGetBehaviour<ItemBehaviour>().GetAwaiter().GetResult();
             ItemBehaviour b;
 
             if (res.Item1 && res.Item2 != null)
@@ -43,7 +44,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             }
             else
             {
-                throw new ArgumentException($"Item '{item.Name}' does not have ItemBehaviour.");
+                return false;
             }
 
             if (item == null)
@@ -67,37 +68,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             while (remaining > 0)
             {
                 int toAdd = Math.Min(b.StackLimit, remaining);
-                var newItem = BOCSFactory.Clone(item);
-
-                // Deep clone behaviours if applicable
-                foreach (var kvp in item.Behaviours)
-                {
-                    if (kvp.Key is IBreakable)
-                    {
-                        continue;
-                    }
-                    foreach (var behaviour in kvp.Value)
-                    {
-                        // See if this Behaviour has a DeepClone method
-                        var clonedBehaviour = behaviour is IItemBehaviourBase cloneable
-                            ? cloneable.DeepClone()
-                            : null;
-
-                        if (clonedBehaviour != null)
-                        {
-                            newItem.AddBehaviour(kvp.Key, clonedBehaviour);
-                        }
-                        else
-                        {
-                            newItem.AddBehaviour(kvp.Key, behaviour);
-                        }
-
-                        if (clonedBehaviour is IAwareOfParentObject awareOfParent)
-                        {
-                            awareOfParent.ParentObject = newItem;
-                        }
-                    }
-                }
+                var newItem = GameContext.BOCSFactory.Clone(item);
                 
                 _slots.Add(new InventorySlot(newItem, toAdd));
                 remaining -= toAdd;
@@ -112,7 +83,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         /// <returns>True if the given obj is an item, false otherwise.</returns>
         public async Task<bool> TryRemoveItem(BOCSObject obj, int count = 1)
         {
-            if (!BOCSQueries.IsItem(obj)) return false;
+            if (!obj.IsItem()) return false;
 
             if (obj == null)
                 throw new ArgumentNullException(nameof(obj));
@@ -204,10 +175,14 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
         /// <summary>
         /// Transfers items between two inventories.
         /// </summary>
-        public async void TransferItem(Inventory originInventory, Inventory destinationInventory, Item item, int count)
+        public async void TransferItem(Inventory originInventory, Inventory destinationInventory, BOCSObject item, int count)
         {
+            if (!item.IsItem())
+            {
+                throw new ArgumentException($"Can't transfer {item.Name} between inventories as it's not an item!");
+            }
             await IOService.Output.DisplayDebugMessage($"Transferring {count} x {item.Name} from {originInventory.GetType().Name} to {destinationInventory.GetType().Name}.");
-            originInventory.TryRemoveItem(item, count);
+            await originInventory.TryRemoveItem(item, count);
             destinationInventory.TryAddItem(item, count);
         }
 

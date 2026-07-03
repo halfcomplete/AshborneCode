@@ -1,5 +1,5 @@
-﻿using AshborneGame._Core.Data.BOCS.CommonBehaviourModules;
-using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules.MaskBehaviourModules;
+﻿using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules.MaskBehaviourModules;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Globals.Services;
@@ -9,12 +9,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours
+namespace AshborneGame._Core.Data.BOCS.Behaviours
 {
-    public class MaskInterjectionBehaviour : ItemBehaviourBase<MaskInterjectionBehaviour>, IAwareOfParentObject
+    public class MaskInterjectionBehaviour : Behaviour
     {
-        public BOCSObject ParentObject { get; set; }
-
         /// <summary>
         /// A trigger that can respond to strongly-typed game events.
         /// </summary>
@@ -48,7 +46,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours
                     if (behaviour.ShouldTrigger(_trigger, e))
                     {
                         if (_trigger.Message != null)
-                            await IOService.Output.WriteNonDialogueLine($"{behaviour.ParentObject.Name}: {_trigger.Message}");
+                            await IOService.Output.WriteNonDialogueLine($"{behaviour.Owner.Name}: {_trigger.Message}");
                         if (_trigger.Effect != null)
                             await _trigger.Effect();
                     }
@@ -60,9 +58,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours
         private readonly CompositeEventToken _subscriptionTokens = new();
         private GameStateManager _stateManager;
 
-        public MaskInterjectionBehaviour(BOCSObject parentObject, GameStateManager stateManager)
+        public MaskInterjectionBehaviour(GameStateManager stateManager)
         {
-            ParentObject = parentObject;
             _stateManager = stateManager;
         }
 
@@ -103,9 +100,10 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours
             return passesEvent && passesState;
         }
 
+        // TODO: state manager deep clone????
         public override MaskInterjectionBehaviour DeepClone()
         {
-            var clone = new MaskInterjectionBehaviour(ParentObject, _stateManager);
+            var clone = new MaskInterjectionBehaviour(_stateManager);
             foreach (var registration in _triggerRegistrations)
             {
                 clone._triggerRegistrations.Add(registration);

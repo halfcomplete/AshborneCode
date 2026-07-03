@@ -1,19 +1,16 @@
 ﻿using AshborneGame._Core._Player;
-using AshborneGame._Core.Data.BOCS.CommonBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviourModules;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
 
 namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 {
-    public class LockUnlockBehaviour : IInteractable, IAwareOfParentObject
+    public class LockUnlockBehaviour : Behaviour, IInteractable
     {
-        public BOCSObject ParentObject { get; set; } = null!;
         public bool IsLocked { get; private set; } = false;
 
-        public LockUnlockBehaviour(BOCSObject parentObject, bool initialState = false)
+        public LockUnlockBehaviour(bool initialState = false)
         {
-            ParentObject = parentObject ?? throw new ArgumentNullException(nameof(parentObject));
             IsLocked = initialState;
         }
 
@@ -37,23 +34,29 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
         {
             if (IsLocked)
             {
-                await IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is already locked.");
+                await IOService.Output.WriteNonDialogueLine($"The {Owner.Name} is already locked.");
                 return;
             }
 
             IsLocked = true;
-            await IOService.Output.WriteNonDialogueLine($"You lock the {ParentObject.Name}.");
+            await IOService.Output.WriteNonDialogueLine($"You lock the {Owner.Name}.");
         }
 
         private async void Unlock()
         {
             if (!IsLocked)
             {
-                await IOService.Output.WriteNonDialogueLine($"The {ParentObject.Name} is already unlocked.");
+                await IOService.Output.WriteNonDialogueLine($"The {Owner.Name} is already unlocked.");
                 return;
             }
             IsLocked = false;
-            await IOService.Output.WriteNonDialogueLine($"You unlock the {ParentObject.Name}.");
+            await IOService.Output.WriteNonDialogueLine($"You unlock the {Owner.Name}.");
+        }
+
+        // TODO: rethink?
+        public override LockUnlockBehaviour DeepClone()
+        {
+            return new LockUnlockBehaviour(IsLocked);
         }
     }
 }

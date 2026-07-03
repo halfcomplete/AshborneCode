@@ -6,13 +6,12 @@ using AshborneGame._Core.Globals.Services;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBehaviours
 {
-    internal class OnEquipChangePlayerStatBehaviour : ItemBehaviourBase<OnEquipChangePlayerStatBehaviour>, IActOnEquip
+    internal class OnEquipChangePlayerStatBehaviour : Behaviour, IActOnEquip
     {
-        private PlayerStatType StatType { get; set; }
+        public PlayerStatType StatType { get; set; }
+        public int ChangeAmount { get; set; }
 
-        private int ChangeAmount { get; set; }
-
-        public OnEquipChangePlayerStatBehaviour(int changeAmount, PlayerStatType statType)
+        public OnEquipChangePlayerStatBehaviour(PlayerStatType statType, int changeAmount)
         {
             StatType = statType;
             ChangeAmount = changeAmount;
@@ -30,9 +29,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
             await IOService.Output.WriteNonDialogueLine($"Your {StatType} has been decreased by {ChangeAmount} after unequipping this item.");
         }
 
-        public override OnEquipChangePlayerStatBehaviour DeepClone()
+        public override Behaviour DeepClone()
         {
-            return new OnEquipChangePlayerStatBehaviour(ChangeAmount, StatType);
+            return new OnEquipChangePlayerStatBehaviour(StatType, ChangeAmount);
         }
     }
 }

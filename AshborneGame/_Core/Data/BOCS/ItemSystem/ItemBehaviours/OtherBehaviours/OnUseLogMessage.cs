@@ -5,7 +5,7 @@ using AshborneGame._Core.Globals.Services;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.OtherBehaviours
 {
-    internal class OnUseLogMessage : ItemBehaviourBase<OnUseLogMessage>, IActOnUse
+    internal class OnUseLogMessage : Behaviour, IActOnUse
     {
         public bool ConsumeOnUse { get; set; } = false;
         private readonly string message;

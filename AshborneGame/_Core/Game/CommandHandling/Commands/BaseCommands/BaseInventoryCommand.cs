@@ -1,5 +1,4 @@
 ﻿using AshborneGame._Core._Player;
-using AshborneGame._Core.Data.BOCS.ItemSystem;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using System.Numerics;

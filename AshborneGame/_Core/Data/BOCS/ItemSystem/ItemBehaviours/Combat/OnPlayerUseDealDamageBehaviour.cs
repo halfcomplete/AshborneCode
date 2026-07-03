@@ -1,13 +1,14 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
 using AshborneGame._Core.Globals.Services;
 
-namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.CombatBehaviours
+namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Combat
 {
     /// <summary>
     /// Deals a specific amount of damage to a target when used.
     /// </summary>
-    public class OnPlayerUseDealDamageBehaviour : ItemBehaviourBase<OnPlayerUseDealDamageBehaviour>, IActOnUse, ICanDamage
+    public class OnPlayerUseDealDamageBehaviour : Behaviour, IActOnUse, ICanDamage
     {
         public int BaseDamage { get; set; }
         public bool ConsumeOnUse { get; set; }

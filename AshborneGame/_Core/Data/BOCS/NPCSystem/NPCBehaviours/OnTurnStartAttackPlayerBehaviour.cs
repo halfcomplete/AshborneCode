@@ -1,6 +1,6 @@
 ﻿using AshborneGame._Core._Player;
-using AshborneGame._Core.Data.BOCS.ItemSystem;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Enums;
@@ -27,10 +27,11 @@ public class OnTurnStartAttackPlayerBehaviour : ICanAttackPlayer
         BaseAttackPower = baseAttackPower;
     }
 
+    // TODO: remove async
     private async Task<int> GetWeaponAttackPower()
     {
         var behaviour = await Weapon.TryGetBehaviour<ICanDamage>();
-        if (behaviour.Item1)
+        if (behaviour.Item1 && behaviour.Item2 != null)
         {
             return behaviour.Item2.BaseDamage;
         }

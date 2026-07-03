@@ -4,7 +4,7 @@ using AshborneGame._Core.Globals.Services;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviours
 {
-    internal class OnEquipChangeEnvironmentStatBehaviour : ItemBehaviourBase<OnEquipChangeEnvironmentStatBehaviour>, IActOnEquip
+    internal class OnEquipChangeEnvironmentStatBehaviour : Behaviour, IActOnEquip
     {
         string Message;
         public OnEquipChangeEnvironmentStatBehaviour(string message)

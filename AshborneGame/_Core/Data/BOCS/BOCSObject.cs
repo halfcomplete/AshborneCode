@@ -1,5 +1,8 @@
-﻿using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
+﻿using AshborneGame._Core.Data.BOCS.Behaviours;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
 using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
 using System.Runtime.CompilerServices;
@@ -15,14 +18,14 @@ public class BOCSObject
     /// <summary>
     /// Gets the name of the object. This is used for identification and display.
     /// </summary>
-    public abstract string Name { get; }
+    public string Name { get; }
 
-    public abstract string Description { get; }
+    public string Description { get; }
 
     /// <summary>
     /// List of synonyms for the NPC's name that can be used to identify them.
     /// </summary>
-    public virtual List<string> Synonyms { get; init; }
+    public List<string> Synonyms { get; init; }
 
     public InstanceID InstanceID { get; init; }
 
@@ -37,12 +40,16 @@ public class BOCSObject
     /// </para>
     /// Note that a behaviour attached to this BOCSGameObject may implement multiple modules, and thus would be referenced in multiple key-value pairs.
     /// </remarks>
-    public Dictionary<Type, List<object>> Behaviours { get; private set; } = new();
+    public Dictionary<Type, List<Behaviour>> Behaviours { get; private set; } = new();
 
-    public BOCSObject(DefinitionID definitionID, InstanceID instanceID = new())
+    public BOCSObject(string name, string description, DefinitionID definitionID, List<string>? synonyms = null, InstanceID instanceID = new())
     {
         DefinitionID = definitionID;
         InstanceID = instanceID;
+
+        Name = name;
+        Description = description;
+        Synonyms = synonyms ?? new();
     }
 
     #region Behaviours
@@ -54,7 +61,7 @@ public class BOCSObject
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="InvalidOperationException"></exception>
-    public async void AddBehaviour(Type type, object behaviour)
+    public async void AddBehaviour(Type type, Behaviour behaviour)
     {
         // Throw if null
         if (type == null || behaviour == null)
@@ -73,7 +80,7 @@ public class BOCSObject
         // Initialise the list if it doesn't exist
         if (!Behaviours.ContainsKey(type))
         {
-            Behaviours[type] = new List<object>();
+            Behaviours[type] = new List<Behaviour>();
         }
 
         // Add the behavior to the list
@@ -157,4 +164,11 @@ public class BOCSObject
     }
 
     #endregion Behaviours
+
+    public bool IsItem() => HasBehaviours<ItemBehaviour>();
+
+    // TODO: Make more exact
+    public bool IsNPC() => HasBehaviours<TalkableBehaviour>();
+
+    public bool IsObject() => !(IsItem() || IsNPC());
 }

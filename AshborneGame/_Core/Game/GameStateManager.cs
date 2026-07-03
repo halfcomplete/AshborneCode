@@ -1,12 +1,12 @@
 ﻿
 using AshborneGame._Core._Player;
-using AshborneGame._Core.Data.BOCS.ItemSystem;
 using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.QuestManagement;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 
 namespace AshborneGame._Core.Game
 {

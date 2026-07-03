@@ -1,4 +1,3 @@
-using AshborneGame._Core.Data.BOCS.ItemSystem;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
@@ -15,6 +14,9 @@ using AshborneGame._Core.Globals.Constants;
 using System.Net.Mail;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.Data.BOCS;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehaviours;
 
 namespace AshborneGame._Core._Player
 {
@@ -48,15 +50,15 @@ namespace AshborneGame._Core._Player
         /// </summary>
         public Inventory? OpenedInventory { get; set; }
 
-        public NPC? CurrentNPCInteraction { get; set; } = null;
+        public BOCSObject? CurrentNPCInteraction { get; set; } = null;
 
         public Item? CurrentMask { get; set; } = null;
 
-
+        // TODO: maybe make more type-safe
         /// <summary>
         /// Gets or sets the items equipped by the player, either on the hand, offhand, head, body, or feet.
         /// </summary>
-        public Dictionary<string, Item?> EquippedItems { get; set; } = new Dictionary<string, Item?>()
+        public Dictionary<string, BOCSObject?> EquippedItems { get; set; } = new Dictionary<string, BOCSObject?>()
         {
             { "face", null },
             { "hand", null },
@@ -357,20 +359,22 @@ namespace AshborneGame._Core._Player
             return false;
         }
 
-        public async void EquipItem(Item item, string slot)
+        // TODO: should not access equippable internal state
+        // TODO: remove async
+        public async void EquipItem(BOCSObject item, string slot)
         {
             (bool hasEquippableBehaviour, var equippableBehaviour) = await item.TryGetBehaviour<IEquippable>();
-            if (hasEquippableBehaviour && equippableBehaviour.EquipInfo.IsEquippable)
+            if (hasEquippableBehaviour && equippableBehaviour != null)
             {
                 await IOService.Output.DisplayDebugMessage($"Attempting to equip {item} on player's {slot}.", ConsoleMessageTypes.INFO);
-                if (!equippableBehaviour.EquipInfo.BodyParts.Contains(slot.ToLower()))
+                if (!equippableBehaviour.EquippableSlots.Contains(slot.ToLower()))
                 {
-                    throw new ArgumentException($"Item cannot be equipped in the {slot} slot. Valid slots are: {string.Join(", ", equippableBehaviour.EquipInfo.BodyParts)}");
+                    throw new ArgumentException($"Item cannot be equipped in the {slot} slot. Valid slots are: {string.Join(", ", equippableBehaviour.EquippableSlots)}");
                 }
                 else if (EquippedItems.TryGetValue(slot.ToLower(), out var _item) && _item != null)
                 {
                     // If the slot is already occupied, unequip the current item
-                    UnequipItem(EquippedItems[slot.ToLower()]!, slot);
+                    UnequipItem(slot);
                     await IOService.Output.WriteNonDialogueLine($"You unequip the {_item.Name} from your {slot}.");
 
                     // Then equip the item in the specified slot
@@ -390,7 +394,7 @@ namespace AshborneGame._Core._Player
             }
         }
 
-        public void UnequipItem(Item item, string slot)
+        public void UnequipItem(string slot)
         {
             if (!EquippedItems.ContainsKey(slot.ToLower()))
             {
@@ -399,15 +403,16 @@ namespace AshborneGame._Core._Player
             EquippedItems[slot.ToLower()] = null;
         }
 
-        public async void Attack(NPC npc)
+        // TODO: remove async void, check logic
+        public async void Attack(BOCSObject npc)
         {
             (bool hasAttackableBehaviour, var attackableBehaviour) = await npc.TryGetBehaviour<ICanBeAttacked>();
-            if (hasAttackableBehaviour)
+            if (hasAttackableBehaviour && attackableBehaviour != null)
             {
                 float damage = 0;
                 var (baseStrength, bonusStrength, totalStrength) = Stats.GetStat(PlayerStatType.Strength);
                 (bool hasDamageBehaviour, var damageBehaviour) = await npc.TryGetBehaviour<ICanDamage>();
-                if (EquippedItems.TryGetValue("hand", out var weapon) && weapon != null && hasDamageBehaviour)
+                if (EquippedItems.TryGetValue("hand", out var weapon) && weapon != null && hasDamageBehaviour && damageBehaviour != null)
                 {
                     damage = (float)(damageBehaviour.BaseDamage + totalStrength * 0.5); // Example damage calculation
                     await IOService.Output.WriteNonDialogueLine($"You attack {npc.Name} with {weapon.Name} for {damage} damage.");

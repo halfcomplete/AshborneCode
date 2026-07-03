@@ -12,7 +12,7 @@ using System.Collections.Generic;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviours
 {
-    public class OnUseUnlockObjectBehaviour : ItemBehaviourBase<OnUseUnlockObjectBehaviour>, IActOnUse, IUnlocksTarget
+    public class OnUseUnlockObjectBehaviour : Behaviour, IActOnUse, IUnlocksTarget
     {
         public bool ConsumeOnUse { get; set; }
 

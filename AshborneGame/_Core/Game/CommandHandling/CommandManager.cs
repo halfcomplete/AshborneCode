@@ -1,7 +1,7 @@
 ﻿using AshborneGame._Core._Player;
-using AshborneGame._Core.Data.BOCS.ItemSystem;
+using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules.MaskBehaviourModules;
-using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.MaskBehaviours;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Game.CommandHandling.Commands;
 using AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands;
 using AshborneGame._Core.Game.Events;
@@ -122,15 +122,21 @@ namespace AshborneGame._Core.Game.CommandHandling
                     return "go to";
                 }
                 // NPC in sublocation
-                if (player.CurrentSublocation?.FocusObject is AshborneGame._Core.Data.BOCS.NPCSystem.NPC npc && npc.MatchesName(word))
+                if (player.CurrentSublocation != null)
                 {
-                    args = new List<string> { word };
-                    return "talk to";
+                    // TODO: hack
+                    if (player.CurrentSublocation.FocusObject.IsNPC() && (player.CurrentSublocation.FocusObject.Name == word || player.CurrentSublocation.FocusObject.Synonyms.Contains(word)))
+                    {
+                        args = new List<string> { word };
+                        return "talk to";
+                    }
                 }
+                
                 // NPC in location
+                // TODO: hack
                 foreach (var subloc in player.CurrentLocation.Sublocations)
                 {
-                    if (subloc.FocusObject is AshborneGame._Core.Data.BOCS.NPCSystem.NPC npc2 && npc2.MatchesName(word))
+                    if (subloc.FocusObject.IsNPC() && (subloc.FocusObject.Name == word || subloc.FocusObject.Synonyms.Contains(word)))
                     {
                         args = new List<string> { word };
                         return "talk to";
@@ -153,8 +159,6 @@ namespace AshborneGame._Core.Game.CommandHandling
         private static bool CheckIfCaughtByCommandBuckets(Player player, string action, out string message)
         {
             message = string.Empty;
-            Item? currentMask = player.EquippedItems["face"];
-            string currentMaskName = currentMask != null ? currentMask.Name : string.Empty;
             if (CommandCatchers.ShoutVerbs.Contains(action))
             {
                 message = "You try to shout, yell, scream, but nothing comes out.";

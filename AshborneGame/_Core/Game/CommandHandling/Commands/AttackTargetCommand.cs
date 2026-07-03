@@ -4,6 +4,7 @@ using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
 using System.Collections.Generic;
+using AshborneGame._Core.Data.BOCS;
 
 namespace AshborneGame._Core.Game.CommandHandling.Commands
 {
@@ -26,7 +27,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                 await IOService.Output.DisplayFailMessage("There's nothing to attack here. You might want to get closer.");
                 return true;
             }
-            NPC? targetNPC = sublocation.FocusObject as NPC;
+            BOCSObject? targetNPC = sublocation.FocusObject;
             if (targetNPC == null)
             {
                 await IOService.Output.DisplayFailMessage($"You cannot attack that.");

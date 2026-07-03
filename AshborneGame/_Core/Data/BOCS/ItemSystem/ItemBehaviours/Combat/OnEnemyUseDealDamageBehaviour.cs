@@ -1,11 +1,12 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Services;
 
-namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.CombatBehaviours
+namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Combat
 {
-    public class OnEnemyUseDealDamageBehaviour : ItemBehaviourBase<OnEnemyUseDealDamageBehaviour>, IUsable, ICanDamage
+    public class OnEnemyUseDealDamageBehaviour : Behaviour, IUsable, ICanDamage
     {
         public int BaseDamage { get; set; }
         public bool ConsumeOnUse { get; private set; }

@@ -20,8 +20,8 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem
         {
             var gameObject = new GameObject(name, description);
             gameObject.AddBehaviour(typeof(IHasInventory), new ContainerBehaviour());
-            gameObject.AddBehaviour(typeof(IInteractable), new OpenCloseBehaviour(gameObject, isOpen));
-            gameObject.AddBehaviour(typeof(IInteractable), new LockUnlockBehaviour(gameObject, isLocked));
+            gameObject.AddBehaviour(typeof(IInteractable), new OpenCloseBehaviour(isOpen));
+            gameObject.AddBehaviour(typeof(IInteractable), new LockUnlockBehaviour(isLocked));
             (gameObject, var describableBehaviour) = AddDescribableBehaviour(gameObject);
             describableBehaviour.AddCondition(_ =>
                 GameContext.Player.Inventory.Slots.Any(slot =>
@@ -37,7 +37,7 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem
         public static async Task<GameObject> CreateDoor(string name, string description, Location location, bool isOpen = false)
         {
             var gameObject = new GameObject(name, description);
-            gameObject.AddBehaviour(typeof(IInteractable), new OpenCloseBehaviour(gameObject, isOpen));
+            gameObject.AddBehaviour(typeof(IInteractable), new OpenCloseBehaviour(isOpen));
             gameObject.AddBehaviour(typeof(IExit), new ExitToNewLocationBehaviour(location));
             (gameObject, var describableBehaviour) = AddDescribableBehaviour(gameObject);
             var (hasBehaviour, behaviour) = await gameObject.TryGetBehaviour<OpenCloseBehaviour>();
@@ -53,8 +53,8 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem
         {
             var gameObject = new GameObject(name, description);
             gameObject.AddBehaviour(typeof(IHasInventory), new ContainerBehaviour());
-            gameObject.AddBehaviour(typeof(IInteractable), new OpenCloseBehaviour(gameObject, isOpen));
-            gameObject.AddBehaviour(typeof(IInteractable), new LockUnlockBehaviour(gameObject, isLocked));
+            gameObject.AddBehaviour(typeof(IInteractable), new OpenCloseBehaviour(isOpen));
+            gameObject.AddBehaviour(typeof(IInteractable), new LockUnlockBehaviour(isLocked));
             gameObject.AddBehaviour(typeof(IExit), new ExitToNewLocationBehaviour(location));
             (gameObject, var describableBehaviour) = AddDescribableBehaviour(gameObject);
             describableBehaviour.AddCondition(_ =>

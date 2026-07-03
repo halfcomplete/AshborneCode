@@ -1,11 +1,11 @@
-﻿
+﻿using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
 
-namespace AshborneGame._Core.Data.BOCS.ItemSystem
+namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
 {
     public class InventorySlot
     {
-        public Item Item { get; }
+        public BOCSObject Item { get; }
         public int Quantity { get; private set; }
 
         public bool IsFull
@@ -21,14 +21,15 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem
             }
         }
 
-        public InventorySlot(Item item, int quantity = 1)
+        public InventorySlot(BOCSObject item, int quantity = 1)
         {
-            Item = item ?? throw new ArgumentNullException(nameof(item));
-            var (res, b) = Item.TryGetBehaviour<ItemBehaviour>().Result;
+            var (res, b) = item.TryGetBehaviour<ItemBehaviour>().Result;
             if (!res || b == null)
             {
-                throw new Exception($"Item {Item.Name} doesn't have ItemBehaviour attached.");
+                throw new Exception($"Item {item.Name} doesn't have ItemBehaviour attached.");
             }
+
+            Item = item ?? throw new ArgumentNullException(nameof(item));
             Quantity = Math.Clamp(quantity, 0, b.StackLimit);
         }
 

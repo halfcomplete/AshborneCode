@@ -1,7 +1,8 @@
 ﻿
 using AshborneGame._Core._Player;
+using AshborneGame._Core.Data.BOCS;
+using AshborneGame._Core.Data.BOCS.Behaviours;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
-using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
@@ -26,17 +27,18 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                 await IOService.Output.DisplayFailMessage("You are not in a place where you can talk.");
                 return false;
             }
-            if (player.CurrentSublocation.FocusObject is not NPC)
+            if (!player.CurrentSublocation.FocusObject.IsNPC())
             {
                 await IOService.Output.DisplayFailMessage($"There is no one to talk to.");
                 return false;
             }
 
             Sublocation sublocation = player.CurrentSublocation!;
-            NPC npc = (NPC)sublocation.FocusObject;
+            BOCSObject npc = sublocation.FocusObject;
 
             // Check if the NPC's name or synonyms match the target name
-            if (!npc.MatchesName(targetName))
+            // TODO: add new helper method for objects to check for name similarity
+            if (!npc.Synonyms.Contains(targetName))
             {
                 await IOService.Output.DisplayFailMessage($"There is no one named '{targetName}' here.");
                 return false;
@@ -46,7 +48,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 
             var res = npc.TryGetBehaviour<TalkableBehaviour>().Result;
 
-            if (res.Item1)
+            if (res.Item1 && res.Item2 != null)
             {
                 await res.Item2.Talk(player);
                 return true;
