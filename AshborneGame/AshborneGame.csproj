@@ -24,10 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="_Core\Data\BOCS\CommonBehaviours\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="_Core\Game\CommandHandling\Commands\BaseCommands\BaseInventoryCommand.cs" />
   </ItemGroup>
 
