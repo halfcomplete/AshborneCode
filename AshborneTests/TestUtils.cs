@@ -5,6 +5,7 @@ using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
 using AshborneGame._Core.Data.BOCS.ObjectSystem;
+using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.LocationManagement;
@@ -60,7 +61,7 @@ namespace AshborneTests
             var descriptor = new LocationNameAdapter(name, null);
             var narrative = new DescriptionComposer();
             // Pass explicit ID to ensure uniqueness in tests
-            return new Location(descriptor, narrative, "Locations.test-" + Guid.NewGuid().ToString("N")[..8]);
+            return new Location(descriptor, narrative, new DefinitionID("locations.test-" + Guid.NewGuid().ToString("N")[..8]));
         }
 
         /// <summary>
