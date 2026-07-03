@@ -19,11 +19,17 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours
         /// Gets the maximum number of this item that can be stacked in a single inventory slot.
         /// Default is 1 for most items, but can be higher for consumables like potions or materials.
         /// </summary>
+        /// <remarks>
+        /// For example:
+        /// <br></br>
         /// <example>
         /// 1 for weapons and equipment
+        /// <br></br>
         /// 32 for gold coins
+        /// <br></br>
         /// 10 for potions
         /// </example>
+        /// </remarks>
         public int StackLimit { get; } = 1;
 
         /// <summary>
