@@ -11,6 +11,7 @@ using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
+using AshborneGame._Core.Data.BOCS;
 
 namespace AshborneGame._Core.Game
 {
@@ -540,7 +541,7 @@ namespace AshborneGame._Core.Game
 
         public object ExternalPlayerHas(string itemName)
         {
-            Item? item = _player.Inventory.GetItem(itemName);
+            BOCSObject? item = _player.Inventory.GetItem(itemName);
             return item != null;
         }
         public object ExternalPlayerGiveMask(string maskName) => _gameState.TryGivePlayerMask(maskName);
