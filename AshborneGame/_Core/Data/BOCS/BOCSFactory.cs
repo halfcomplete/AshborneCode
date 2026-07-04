@@ -33,7 +33,9 @@ namespace AshborneGame._Core.Data.BOCS
 
             var gameObject = new BOCSObject(definition.Name, definition.Description, definitionId);
 
-            foreach (var (btype, behaviours) in definition.BehaviourPrototypes)
+            var behavioursD = CreateBehaviours(definition.BehaviourPrototypes);
+
+            foreach (var (btype, behaviours) in behavioursD)
             {
                 foreach (var b in behaviours)
                 {
@@ -48,11 +50,9 @@ namespace AshborneGame._Core.Data.BOCS
 
         public BOCSObject Clone(BOCSObject source)
         {
-            var definition = _definitionRegistry.Get<BOCSObjectDefinition>(source.DefinitionID);
-
             var clone = new BOCSObject(source.Name, source.Description, source.DefinitionID, source.Synonyms);
 
-            foreach (var (behaviourType, behaviours) in source.Behaviours)
+            foreach (var (behaviourType, behaviours) in source.ByModule)
             {
                 foreach (var behaviour in behaviours)
                 {
@@ -66,7 +66,7 @@ namespace AshborneGame._Core.Data.BOCS
             return clone;
         }
 
-        public Dictionary<Type, IReadOnlyList<Behaviour>> CreateBehaviours(List<Behaviour> behaviours)
+        private Dictionary<Type, IReadOnlyList<Behaviour>> CreateBehaviours(IReadOnlyList<Behaviour> behaviours)
         {
             var result = new Dictionary<Type, List<Behaviour>>();
 

@@ -1,6 +1,5 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS;
-using AshborneGame._Core.Data.BOCS.CommonBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
 using AshborneGame._Core.Game;
@@ -144,7 +143,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
                 if (player != null)
                 {
                     var (hasBehaviour, equippableBehaviour) = await slot.Item.TryGetBehaviour<IEquippable>();
-                    if (hasBehaviour && equippableBehaviour.EquipInfo.IsEquippable)
+                    if (hasBehaviour && equippableBehaviour != null)
                     {
                         // If the item is equippable, check if it's equipped
                         var isEquipped = player.EquippedItems.TryGetValue(slot.Item.Name.ToLower(), out var equippedItem) && equippedItem != null;

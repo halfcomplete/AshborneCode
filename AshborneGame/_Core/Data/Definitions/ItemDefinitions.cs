@@ -1,0 +1,50 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AshborneGame._Core.Data.BOCS;
+using AshborneGame._Core.Data.BOCS.Behaviours;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.ItemManagementBehaviours;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehaviours;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBehaviours;
+using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.Game;
+using AshborneGame._Core.Game.Events;
+using AshborneGame._Core.Globals.Enums;
+
+namespace AshborneGame._Core.Data.Definitions
+{
+    public static class ItemDefinitions
+    {
+        // TODO: clarify what each 'description' format is meant to be
+        // TODO: add various interjection triggers for Ossaneth
+        public static BOCSObjectDefinition Mask = 
+            new(
+                DefinitionIDs.Items.Masks.Ossaneth,
+                "Ossaneth",
+                "A strange, void-black object of unknown origins",
+                [],
+                [
+                    new ItemBehaviour(1, ItemTypes.Equipment, ItemQualities.Legendary),
+                    new EquippableBehaviour(new (["face"])),
+                    new InspectableBehaviour("The mask is heavy with history, power, and owners.", ItemQualities.Legendary),
+                    new MaskInterjectionBehaviour(GameContext.GameState),
+                ]
+            );
+
+        public static BOCSObjectDefinition MirrorShard =
+            new(
+                DefinitionIDs.Items.Magic.MirrorShard,
+                "Mirror Shard",
+                "A small, sharp mirror shard from Ossaneth's Domain.",
+                ["shard", "mirror", "shard of mirror", "piece of mirror", "mirror piece"],
+                [
+                    new ItemBehaviour(1, ItemTypes.Consumable, ItemQualities.Rare),
+                    new InspectableBehaviour("You hold the shard up to your face and feel a strange emptiness inside you. Light faintly glints off it as you turn it around in your hand.", ItemQualities.Rare),
+                    new UsableBehaviour(),
+                    new OnUseChangePlayerStatBehaviour(20, PlayerStatType.MaxHealth, true),
+                ]
+            );
+    }
+}

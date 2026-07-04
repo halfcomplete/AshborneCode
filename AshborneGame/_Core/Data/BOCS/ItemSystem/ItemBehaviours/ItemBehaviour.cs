@@ -9,13 +9,6 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours
     public class ItemBehaviour : Behaviour
     {
         /// <summary>
-        /// Gets the description that appears when the item is used.
-        /// Only applicable if the item is usable (Usable = true).
-        /// </summary>
-        /// <example>"The potion heals your wounds", "The wand shoots a bolt of lightning"</example>
-        public string UseDescription { get; }
-
-        /// <summary>
         /// Gets the maximum number of this item that can be stacked in a single inventory slot.
         /// Default is 1 for most items, but can be higher for consumables like potions or materials.
         /// </summary>
@@ -62,14 +55,13 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours
         /// </remarks>
         public ItemQualities Quality { get; }
 
-        public ItemBehaviour(string useDescription, int stackLimit, ItemTypes itemType, ItemQualities itemQuality)
+        public ItemBehaviour(int stackLimit, ItemTypes itemType, ItemQualities itemQuality)
         {
-            UseDescription = useDescription ?? throw new ArgumentNullException(nameof(useDescription));
             StackLimit = stackLimit;
             ItemType = itemType;
             Quality = itemQuality;
         }
 
-        public override ItemBehaviour DeepClone() => new(UseDescription, StackLimit, ItemType, Quality);
+        public override ItemBehaviour DeepClone() => new(StackLimit, ItemType, Quality);
     }
 }

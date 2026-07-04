@@ -34,14 +34,14 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
             player.EquipItem(Owner, bodyPart);
             await IOService.Output.DisplayDebugMessage($"Equipped {Owner.Name} in the {bodyPart} slot.", ConsoleMessageTypes.INFO);
             await IOService.Output.WriteNonDialogueLine($"You equip {Owner.Name} on your {bodyPart}.");
-            await IOService.Output.DisplayDebugMessage($"Item Behaviour Values: {Owner.Behaviours.Values.SelectMany(x => x).OfType<IActOnEquip>().Count()}", ConsoleMessageTypes.INFO);
+            await IOService.Output.DisplayDebugMessage($"Item Behaviour Values: {Owner.ByModule.Values.SelectMany(x => x).OfType<IActOnEquip>().Count()}", ConsoleMessageTypes.INFO);
             
-            foreach (var behaviour in Owner.Behaviours)
+            foreach (var behaviour in Owner.ByModule)
             {
                 await IOService.Output.DisplayDebugMessage($"Behaviour Type: {behaviour.Key.Name}, Count: {behaviour.Value.Count}", ConsoleMessageTypes.INFO);
             }
 
-            foreach (var behaviour in Owner.Behaviours.Values.SelectMany(x => x).OfType<IActOnEquip>())
+            foreach (var behaviour in Owner.ByModule.Values.SelectMany(x => x).OfType<IActOnEquip>())
             {
                 behaviour.OnEquip(player);
             }
@@ -63,7 +63,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
             }
             player.UnequipItem(bodyPart);
 
-            foreach (var behaviour in Owner.Behaviours.Values.SelectMany(x => x).OfType<IActOnEquip>())
+            foreach (var behaviour in Owner.ByModule.Values.SelectMany(x => x).OfType<IActOnEquip>())
             {
                 behaviour.OnUnequip(player);
             }

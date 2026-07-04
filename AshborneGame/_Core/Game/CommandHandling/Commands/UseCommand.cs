@@ -1,4 +1,5 @@
 ﻿using AshborneGame._Core._Player;
+using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Globals.Enums;
@@ -12,6 +13,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         public List<string> Names { get; } = ["use"];
         public string Description { get; } = "Use an item from your inventory.";
 
+        // TODO: remove async
         public async Task<bool> TryExecute(List<string> args, Player player)
         {
             if (args.Count == 0)
@@ -20,28 +22,32 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                 return false;
             }
 
-            string itemName = string.Join(" ", args).Trim();
-            Item? item = player.Inventory.GetItem(itemName);
+            string objectName = string.Join(" ", args).Trim();
+            BOCSObject? obj = player.Inventory.GetItem(objectName);
 
-            if (item == null)
+            if (obj == null)
             {
-                await IOService.Output.DisplayFailMessage($"You do not have an item named '{itemName}' in your inventory.");
+                await IOService.Output.DisplayFailMessage($"You do not have an object named '{objectName}' in your inventory.");
                 return false;
             }
 
-            if (!item.Behaviours.ContainsKey(typeof(IUsable)))
+            if (!obj.ByModule.ContainsKey(typeof(IUsable)))
             {
-                await IOService.Output.DisplayFailMessage($"The item '{item.Name}' cannot be used.");
+                await IOService.Output.DisplayFailMessage($"The object '{obj.Name}' cannot be used.");
                 return false;
             }
 
             await IOService.Output.DisplayDebugMessage($"Parsed Input for 'use': {string.Join(" ", args)}", ConsoleMessageTypes.INFO); // Debugging output
-            await IOService.Output.DisplayDebugMessage($"Using item: {item.Name}", ConsoleMessageTypes.INFO); // Debugging output
+            await IOService.Output.DisplayDebugMessage($"Using item: {obj.Name}", ConsoleMessageTypes.INFO); // Debugging output
 
-            IUsable usableItem = (IUsable)item.Behaviours[typeof(IUsable)][0];
-            usableItem.Use(player);
+            List<IUsable> usable = obj.GetAllBehaviours<IUsable>().ToList();
+            foreach (var u in usable)
+            {
+                u.Use(player);
+            }
+            
 
-            await IOService.Output.WriteNonDialogueLine($"You used {item.Name}.");
+            await IOService.Output.WriteNonDialogueLine($"You used {obj.Name}.");
 
             return true;
         }

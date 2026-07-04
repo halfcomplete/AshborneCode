@@ -58,6 +58,7 @@ namespace AshborneGame._Core.Data.BOCS.Behaviours
         private readonly CompositeEventToken _subscriptionTokens = new();
         private GameStateManager _stateManager;
 
+        // TODO: add support for adding triggers directly through the constructor
         public MaskInterjectionBehaviour(GameStateManager stateManager)
         {
             _stateManager = stateManager;

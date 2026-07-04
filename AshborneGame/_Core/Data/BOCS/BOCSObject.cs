@@ -40,7 +40,10 @@ public class BOCSObject
     /// </para>
     /// Note that a behaviour attached to this BOCSGameObject may implement multiple modules, and thus would be referenced in multiple key-value pairs.
     /// </remarks>
-    public Dictionary<Type, List<Behaviour>> Behaviours { get; private set; } = new();
+    public Dictionary<Type, List<Behaviour>> ByModule { get; private set; } = new();
+
+    public List<Behaviour> ByBehaviour { get; private set; } = new();
+
 
     public BOCSObject(string name, string description, DefinitionID definitionID, List<string>? synonyms = null, InstanceID instanceID = new())
     {
@@ -71,20 +74,20 @@ public class BOCSObject
             throw new ArgumentException($"The provided behaviour does not implement or inherit from the specified type: {type.FullName}");
 
         // Enforce behaviour dependencies
-        if (type == typeof(IActOnUse) && !Behaviours.ContainsKey(typeof(IUsable)))
+        if (type == typeof(IActOnUse) && !ByModule.ContainsKey(typeof(IUsable)))
             throw new InvalidOperationException($"Cannot add IActOnUse without IUsable. {Name} must be usable before it can act on use.");
 
-        if (type == typeof(IActOnEquip) && !Behaviours.ContainsKey(typeof(IEquippable)))
+        if (type == typeof(IActOnEquip) && !ByModule.ContainsKey(typeof(IEquippable)))
             throw new InvalidOperationException($"Cannot add IActOnEquip without IEquippable. {Name} must be equippable before it can act on equip.");
 
         // Initialise the list if it doesn't exist
-        if (!Behaviours.ContainsKey(type))
+        if (!ByModule.ContainsKey(type))
         {
-            Behaviours[type] = new List<Behaviour>();
+            ByModule[type] = new List<Behaviour>();
         }
 
         // Add the behavior to the list
-        Behaviours[type].Add(behaviour);
+        ByModule[type].Add(behaviour);
 
         if (type == typeof(IUsable))
         {
@@ -96,8 +99,8 @@ public class BOCSObject
 #if DEBUG
         // Debug messages
         await IOService.Output.DisplayDebugMessage($"Added behaviour of type {type.FullName} to {Name}.", ConsoleMessageTypes.INFO);
-        await IOService.Output.DisplayDebugMessage($"All registered behaviours for {Name}: {string.Join(", ", Behaviours.Keys.Select(t => t.Name))}", ConsoleMessageTypes.INFO);
-        foreach (var b in Behaviours)
+        await IOService.Output.DisplayDebugMessage($"All registered behaviours for {Name}: {string.Join(", ", ByModule.Keys.Select(t => t.Name))}", ConsoleMessageTypes.INFO);
+        foreach (var b in ByModule)
         {
             await IOService.Output.DisplayDebugMessage($"- {b.GetType().Name}: {string.Join(", ", b)}", ConsoleMessageTypes.INFO);
         }
@@ -111,7 +114,7 @@ public class BOCSObject
     /// Note that this does not fully remove any Behaviours who are registered with more than one module (key) in the Dictionary.
     /// </remarks>
     /// <typeparam name="T">The module type (key) that will be removed.</typeparam>
-    public void RemoveBehaviour<T>() where T : class => Behaviours.Remove(typeof(T));
+    public void RemoveBehaviour<T>() where T : class => ByModule.Remove(typeof(T));
 
     /// <summary>
     /// Tries to retrieve the first Behaviour registered in this BOCSGameObject that implements the given module.
@@ -129,7 +132,7 @@ public class BOCSObject
         await IOService.Output.DisplayDebugMessage($"{Name} has Behaviours:", ConsoleMessageTypes.INFO);
         
         // Loop over each module and each Behaviour implementing that module and print it
-        foreach (var kvp in Behaviours)
+        foreach (var kvp in ByModule)
         {
             foreach (var b in kvp.Value)
             {
@@ -138,7 +141,7 @@ public class BOCSObject
         }
 #endif
         // Check if the given module T exists in Behaviours
-        if (Behaviours.TryGetValue(typeof(T), out var behaviours) && behaviours.Count > 0 && behaviours[0] is T castedBehaviour)
+        if (ByModule.TryGetValue(typeof(T), out var behaviours) && behaviours.Count > 0 && behaviours[0] is T castedBehaviour)
         {
             // If it does, return the first Behaviour in the list
             await IOService.Output.DisplayDebugMessage($"Successfully retrieved behaviour of type {typeof(T).FullName} from {Name}", ConsoleMessageTypes.INFO);
@@ -149,7 +152,7 @@ public class BOCSObject
         return (false, null);
     }
 
-    public bool HasBehaviours<T>() where T : class => Behaviours.ContainsKey(typeof(T)) && Behaviours[typeof(T)].Count > 0;
+    public bool HasBehaviours<T>() where T : class => ByModule.ContainsKey(typeof(T)) && ByModule[typeof(T)].Count > 0;
 
     /// <summary>
     /// Retrieves all Behaviours implementing the given module.
@@ -158,7 +161,7 @@ public class BOCSObject
     /// <returns>An IEnumerable containing a reference to all the Behaviours implementing the module T.</returns>
     public IEnumerable<T> GetAllBehaviours<T>() where T : class
     {
-        if (Behaviours.TryGetValue(typeof(T), out var behaviours))
+        if (ByModule.TryGetValue(typeof(T), out var behaviours))
         {
             return behaviours.OfType<T>();
         }

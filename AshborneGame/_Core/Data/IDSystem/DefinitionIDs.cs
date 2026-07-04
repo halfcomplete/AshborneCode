@@ -23,5 +23,18 @@ namespace AshborneGame._Core.Data.IDSystem
                 public static readonly DefinitionID TempleOfTheBoundOne = new("Locations_Dreamspace_TempleOfTheBoundOne");
             }
         }
+
+        public static class Items
+        {
+            public static class Masks
+            {
+                public static readonly DefinitionID Ossaneth = new("Items_Masks_Ossaneth");
+            }
+
+            public static class Magic
+            {
+                public static readonly DefinitionID MirrorShard = new("Items_Magic_MirrorShard");
+            }
+        }
     }
 }

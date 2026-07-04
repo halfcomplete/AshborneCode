@@ -1,6 +1,4 @@
 using AshborneGame._Core._Player;
-using AshborneGame._Core.Data.BOCS.BehaviourData;
-using AshborneGame._Core.Data.BOCS.CommonBehaviourModules;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Services;

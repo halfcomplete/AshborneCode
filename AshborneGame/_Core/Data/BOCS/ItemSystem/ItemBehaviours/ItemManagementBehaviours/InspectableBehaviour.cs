@@ -7,32 +7,18 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.ItemManagementB
 {
     public class InspectableBehaviour : Behaviour, IInspectable
     {
-        private string _baseDescription;
         private ItemQualities _rarity;
         private string? _inspectDesc;
         public bool IsInspected { get; private set; } = false;
 
-        public InspectableBehaviour(string baseDesc, ItemQualities rarity, string? inspectDesc)
+        public InspectableBehaviour(string? inspectDesc, ItemQualities rarity)
         {
-            _baseDescription = baseDesc;
             _rarity = rarity;
             _inspectDesc = inspectDesc;
         }
 
-        public InspectableBehaviour(string baseDesc, bool requiresIdentification = false)
-        {
-            _baseDescription = baseDesc;
-            _rarity = ItemQualities.None;
-        }
-
         public async Task Inspect()
         {
-            if (IsInspected)
-            {
-                await IOService.Output.WriteNonDialogueLine("You have already inspected this item.");
-                return;
-            }
-
             // TODO: Implement logic to reveal hidden lore based on player actions or conditions, such as having a specific skill, item or quest completion.
 
             if (_inspectDesc == null)
@@ -56,7 +42,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.ItemManagementB
 
         public override InspectableBehaviour DeepClone()
         {
-            return new InspectableBehaviour(_baseDescription, _rarity, _inspectDesc)
+            return new InspectableBehaviour(_inspectDesc, _rarity)
             {
                 IsInspected = IsInspected,
             };

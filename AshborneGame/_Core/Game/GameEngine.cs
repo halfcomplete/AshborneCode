@@ -1,7 +1,5 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS;
-using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
-using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.Data.Definitions;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game.CommandHandling;
@@ -47,7 +45,7 @@ namespace AshborneGame._Core.Game
             
             GameContext.Initialise(player, gameState, _dialogueService, inkRunner, this, timeTracker, definitionRegistry, instanceRegistry);
 
-            gameState.InitialiseMasks(MaskInitialiser.InitialiseMasks());
+            // TODO: initialise masks through the new definition system
 
             ((Location startingLocation, Scene startingLocationGroup), (_firstLocation, _firstScene)) = InitialiseStartingLocation(player);
             player.SetupMoveTo(startingLocation, startingLocationGroup, false);
@@ -228,11 +226,7 @@ namespace AshborneGame._Core.Game
                 new AmbientDescription(
                     new Dictionary<TimeSpan, string>() { { TimeSpan.FromSeconds(12), "You stand still. Your reflections do not." } }));
 
-            Item mirrorShard = ItemFactory.CreateMagicScroll(
-                "mirror shard",
-                "A small, sharp mirror shard from Ossaneth's Domain.",
-                "You try to use the shard, but nothing happens.",
-                "You hold the shard up to your face and feel a strange emptiness inside you. Light faintly glints off it as you turn it around in your hand.");
+            BOCSObject mirrorShard = GameContext.BOCSFactory.Create(DefinitionIDs.Items.Magic.MirrorShard);
 
             Sublocation mirrorShardSublocation = new Sublocation(hallOfMirrors, mirrorShard, new LocationNameAdapter("mirror shard", new List<string> { "shard", "mirror shard", "shard of glass", "shard of mirror", "shard of a mirror" }),
                 new DescriptionComposer(

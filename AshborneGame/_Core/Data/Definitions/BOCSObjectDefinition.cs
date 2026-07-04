@@ -15,9 +15,9 @@ namespace AshborneGame._Core.Data.Definitions
 
         public List<string> Synonyms { get; init; }
 
-        public IReadOnlyDictionary<Type, IReadOnlyList<Behaviour>> BehaviourPrototypes { get; init; }
+        public IReadOnlyList<Behaviour> BehaviourPrototypes { get; init; }
 
-        public BOCSObjectDefinition(DefinitionID id, string name, string description, List<string> synonyms, IReadOnlyDictionary<Type, IReadOnlyList<Behaviour>> behaviourPrototypes)
+        public BOCSObjectDefinition(DefinitionID id, string name, string description, List<string> synonyms, IReadOnlyList<Behaviour> behaviourPrototypes)
         {
             ID = id;
             Name = name;

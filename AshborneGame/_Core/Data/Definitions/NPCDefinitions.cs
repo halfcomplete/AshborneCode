@@ -13,9 +13,9 @@ namespace AshborneGame._Core.Data.Definitions
                 "The Bound One",
                 "A mysterious figure...",
                 ["Prisoner"],
-                GameContext.BOCSFactory.CreateBehaviours([
+                [
                     new TalkableBehaviour(null, "Act1_Scene1_Prisoner_Dialogue"),
-                ])
+                ]
             );
 
         public static readonly BOCSObjectDefinition Dummy =
@@ -24,10 +24,10 @@ namespace AshborneGame._Core.Data.Definitions
                 "A dummy NPC",
                 "He's a bit slow in the head...",
                 ["stupid boy", "Ricky"],
-                GameContext.BOCSFactory.CreateBehaviours([
+                [
                     new TalkableBehaviour(null, "Act1_Scene1_Prisoner_Dialogue"),
                     new CanBeAttackedBehaviour(100),
-                ])
+                ]
             );
     }
 }
