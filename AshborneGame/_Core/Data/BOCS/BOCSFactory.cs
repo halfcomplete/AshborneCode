@@ -90,7 +90,9 @@ namespace AshborneGame._Core.Data.BOCS
             //    kvp => (IReadOnlyList<Behaviour>)kvp.Value);
             // unsafe
             // TODO: maybe better way?
-            return System.Runtime.CompilerServices.Unsafe.As<Dictionary<Type, IReadOnlyList<Behaviour>>>(result);
+            return result.ToDictionary(
+                kvp => kvp.Key,
+                kvp => (IReadOnlyList<Behaviour>)kvp.Value.AsReadOnly());
         }
     }
 }

@@ -83,9 +83,9 @@ namespace AshborneTests
             );
         }
 
-        static internal GameObject CreateTestGameObject(string name = "Test Object")
+        static internal BOCSObject CreateTestGameObject(string name = "Test Object")
         {
-            return new GameObject(name, "A test object.");
+            return new BOCSObject(name, "A test object.");
         }
 
         static internal async Task<GameObject> CreateTestGameObjectChest(bool hasItem = false, int amount = 1)

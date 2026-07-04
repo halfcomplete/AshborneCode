@@ -128,7 +128,7 @@ namespace AshborneTests.CommandTests
             var chest = await TestUtils.CreateTestGameObjectChest();
             var testSublocation = TestUtils.CreateTestSublocation(chest);
             player.MoveTo(testSublocation);
-            (_, IInteractable openClose) = await chest.TryGetBehaviour<IInteractable>();
+            var (_, openClose) = await chest.TryGetBehaviour<IInteractable>();
             openClose.Interact(ObjectInteractionTypes.Open, player);
 
             bool result = await CommandManager.TryExecute("give", ["item_test"], player);
