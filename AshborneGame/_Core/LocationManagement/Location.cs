@@ -193,7 +193,7 @@ namespace AshborneGame._Core.LocationManagement
             var sb = new StringBuilder();
 
             sb.AppendLine(DescriptionComposer.GetDescription(player, state));
-            sb.AppendLine(GetExitListing());
+            sb.AppendLine(GetExits());
 
             return sb.ToString();
         }
