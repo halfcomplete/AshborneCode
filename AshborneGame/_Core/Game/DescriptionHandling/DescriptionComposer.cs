@@ -125,9 +125,9 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             Conditionals = newConditionals;
 
             // Add sublocation snippets if available and not currently in a sublocation
-            if (player.CurrentSublocation == null && player.CurrentLocation.Sublocations.Count > 0 && visitCount == 1)
+            if (player.CurrentSublocation == null && player.CurrentLocation.Children.Count > 0 && visitCount == 1)
             {
-                var names = player.CurrentLocation.Sublocations
+                var names = player.CurrentLocation.Children
                     .Select(s => s.ShortRefDesc);
 
                 var joined = NaturalJoin(names);

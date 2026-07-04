@@ -7,6 +7,7 @@ using AshborneGame._Core.QuestManagement;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
+using AshborneGame._Core.Data.BOCS;
 
 namespace AshborneGame._Core.Game
 {
@@ -20,7 +21,7 @@ namespace AshborneGame._Core.Game
         public Dictionary<string, int> Counters { get; private set; } = new();
         public Dictionary<string, string> Labels { get; private set; } = new();
         public Dictionary<string, object> Variables { get; private set; } = new();
-        public Dictionary<string, Item> Masks { get; private set; } = new();
+        public Dictionary<string, BOCSObject> Masks { get; private set; } = new();
 
         public TimeTracker TimeTracker { get; private set; }
 
@@ -33,7 +34,7 @@ namespace AshborneGame._Core.Game
             _player = player;
         }
 
-        public void InitialiseMasks(Dictionary<string, Item> masks)
+        public void InitialiseMasks(Dictionary<string, BOCSObject> masks)
         {
             Masks = masks;
         }
@@ -277,9 +278,9 @@ namespace AshborneGame._Core.Game
         /// <exception cref="InvalidOperationException">Thrown when the location with the given ID is null in the LocationRegistry.</exception>
         public int GetLocationVisitCount(DefinitionID id)
         {
-            if (!LocationRegistry.GetLocationByID(id, out var location))
+            if (!GameContext.LocationRegistry.TryGetLocationByDefinitionID(id, out var location))
             {
-                var knownIds = string.Join(", ", LocationRegistry.GetAllLocationIds());
+                var knownIds = string.Join(", ", GameContext.LocationRegistry.GetLocationIDs());
                 throw new KeyNotFoundException($"Location with ID '{id.Value}' not found in LocationRegistry. Known location IDs: [{knownIds}]");
             }
 
@@ -300,9 +301,9 @@ namespace AshborneGame._Core.Game
         /// <exception cref="InvalidOperationException">Thrown when the location with the given ID is null in the LocationRegistry.</exception>
         public int IncrementLocationVisitCount(DefinitionID id)
         {
-            if (!LocationRegistry.GetLocationByID(id, out var location))
+            if (!GameContext.LocationRegistry.TryGetLocationByDefinitionID(id, out var location))
             {
-                var knownIds = string.Join(", ", LocationRegistry.GetAllLocationIds());
+                var knownIds = string.Join(", ", GameContext.LocationRegistry.GetLocationIDs());
                 throw new KeyNotFoundException($"Location with ID '{id.Value}' not found in LocationRegistry. Known location IDs: [{knownIds}]");
             }
 

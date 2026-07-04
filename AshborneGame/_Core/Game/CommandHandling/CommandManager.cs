@@ -110,7 +110,7 @@ namespace AshborneGame._Core.Game.CommandHandling
                     return word; // fall back to raw word so it can still error gracefully
                 }
                 // Sublocation
-                if (player.CurrentLocation.Sublocations.Any(s => s.Name.Matches(word)))
+                if (player.CurrentLocation.Children.Any(s => s.Name.Matches(word)))
                 {
                     args = new List<string> { word };
                     return "go to";
@@ -134,7 +134,7 @@ namespace AshborneGame._Core.Game.CommandHandling
                 
                 // NPC in location
                 // TODO: hack
-                foreach (var subloc in player.CurrentLocation.Sublocations)
+                foreach (var subloc in player.CurrentLocation.Children)
                 {
                     if (subloc.FocusObject.IsNPC() && (subloc.FocusObject.Name == word || subloc.FocusObject.Synonyms.Contains(word)))
                     {

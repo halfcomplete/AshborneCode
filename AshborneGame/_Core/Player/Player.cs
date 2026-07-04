@@ -38,8 +38,6 @@ namespace AshborneGame._Core._Player
 
         public Location? PreviousLocation { get; private set; } = null;
 
-        public Sublocation? CurrentSublocation { get; private set; } = null;
-
         /// <summary>
         /// Gets the player's inventory.
         /// </summary>
@@ -52,7 +50,7 @@ namespace AshborneGame._Core._Player
 
         public BOCSObject? CurrentNPCInteraction { get; set; } = null;
 
-        public Item? CurrentMask { get; set; } = null;
+        public BOCSObject? CurrentMask { get; set; } = null;
 
         // TODO: maybe make more type-safe
         /// <summary>
@@ -145,218 +143,117 @@ namespace AshborneGame._Core._Player
         }
 
         /// <summary>
-        /// Moves the player to a location. Sets sublocation to null.
+        /// Moves the player to the specified location.
+        ///
+        /// This method is the final step of player movement and is intended to be
+        /// called only by <see cref="MovementService"/> after the destination has
+        /// been validated and resolved.
+        ///
+        /// Responsibilities:
+        /// <list type="bullet">
+        /// <item><description>Updates the player's current and previous locations.</description></item>
+        /// <item><description>Notifies the game state that the player entered a new location.</description></item>
+        /// <item><description>Increments the visit count.</description></item>
+        /// <item><description>Publishes movement-related events.</description></item>
+        /// <item><description>Displays the location description.</description></item>
+        /// </list>
         /// </summary>
-        /// <param name="newLocation">The sublocation to move to.</param>
-        /// <exception cref="ArgumentNullException">Thrown when newLocation is null.</exception>
-        public async void MoveTo(Location newLocation)
+        /// <param name="newLocation">The destination location.</param>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <paramref name="newLocation"/> is null.
+        /// </exception>
+        public async Task MoveTo(Location newLocation)
         {
-            if (CurrentSublocation == null)
-            {
-                GameContext.GameState.OnPlayerEnterLocation(newLocation);
-            }
+            ArgumentNullException.ThrowIfNull(newLocation);
+
             PreviousLocation = CurrentLocation;
             CurrentLocation = newLocation;
-            CurrentSublocation = null;
 
-            // Increment visit count BEFORE description
+            GameContext.GameState.OnPlayerEnterLocation(newLocation);
+
             CurrentLocation.VisitCount++;
-            Console.WriteLine($"Player moved to {CurrentLocation.Name.DisplayName}. Visit count: {CurrentLocation.VisitCount}");
 
-            // Fire event if Ossaneth Domain and visit count == 4
-            bool sceneMatch = newLocation.Scene != null && newLocation.Scene.DisplayName == "Ossaneth's Domain";
-            bool nameMatch = newLocation.Name.ReferenceName == "Eye Platform";
-            bool visitMatch = CurrentLocation.VisitCount == 3;
-            Console.WriteLine($"[MoveTo] Location={newLocation.Name.DisplayName} Scene={(newLocation.Scene?.DisplayName ?? "<null>")} VisitCount={CurrentLocation.VisitCount} sceneMatch={sceneMatch} nameMatch={nameMatch} visitMatch={visitMatch}", ConsoleMessageTypes.INFO);
-            if (sceneMatch && nameMatch && visitMatch)
+            await IOService.Output.DisplayDebugMessage(
+                $"Player moved to {CurrentLocation.Name.DisplayName}. Visit count: {CurrentLocation.VisitCount}");
+
+            bool sceneMatch =
+                newLocation.Scene?.DisplayName == "Ossaneth's Domain";
+
+            bool locationMatch =
+                newLocation.Name.ReferenceName == "Eye Platform";
+
+            bool thresholdReached =
+                CurrentLocation.VisitCount == 3;
+
+            if (sceneMatch && locationMatch && thresholdReached)
             {
-                var evt = new GameEvents.OssanethsDomain.EyePlatformVisitThresholdEvent(GameContext.TimeTracker.TotalInGameHours, newLocation.Name.ReferenceName, CurrentLocation.VisitCount);
-                EventBus.Publish(evt);
-                await IOService.Output.DisplayDebugMessage($"[MoveTo] Fired EyePlatformVisitThresholdEvent", ConsoleMessageTypes.INFO);
+                EventBus.Publish(
+                    new GameEvents.OssanethsDomain.EyePlatformVisitThresholdEvent(
+                        GameContext.TimeTracker.TotalInGameHours,
+                        newLocation.Name.ReferenceName,
+                        CurrentLocation.VisitCount));
             }
 
-            // Suppress description on the special 4th Eye Platform visit (outro) so dialogue leads
-            if (!(sceneMatch && nameMatch && visitMatch))
+            if (!(sceneMatch && locationMatch && thresholdReached))
             {
-                await IOService.Output.WriteNonDialogueLine(newLocation.GetDescription(this, GameContext.GameState));
+                await IOService.Output.WriteNonDialogueLine(
+                    CurrentLocation.GetDescription(this, GameContext.GameState));
             }
         }
 
         /// <summary>
-        /// Same as MoveTo, but prints 'You are back at {location name}.'
-        /// Does NOT increment visit count (force move).
+        /// Instantly relocates the player without incrementing visit counts or
+        /// triggering movement events.
+        ///
+        /// Intended for scripted sequences, loading saves and developer tools.
         /// </summary>
-        public async void ForceMoveTo(Location newLocation)
+        public async Task ForceMoveTo(Location location)
         {
-            if (CurrentSublocation == null)
+            ArgumentNullException.ThrowIfNull(location);
+
+            PreviousLocation = CurrentLocation;
+            CurrentLocation = location;
+
+            GameContext.GameState.OnPlayerEnterLocation(location);
+
+            await IOService.Output.WriteNonDialogueLine(
+                $"You are back at {location.Name.DisplayName}.\n");
+        }
+
+        public async Task MoveTo(Scene scene)
+        {
+            ArgumentNullException.ThrowIfNull(scene);
+
+            CurrentScene = scene;
+
+            if (!OperatingSystem.IsBrowser())
             {
-                // If the player is not in a sublocation
-                GameContext.GameState.OnPlayerEnterLocation(newLocation);
+                await IOService.Output.WriteNonDialogueLine(scene.GetHeader());
             }
-            CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
-            CurrentSublocation = null;
-            
-            // Force move does NOT increment visit count
-            
-            await IOService.Output.WriteNonDialogueLine($"You are back at {CurrentLocation.Name.DisplayName}.\n\n");
         }
 
-        public async void MoveTo(Sublocation newSublocation)
+        public async Task SetupMoveTo(Location location, Scene scene, bool displayDescription = true)
         {
-            CurrentSublocation = newSublocation;
-            
-            // Increment visit count for sublocation movement BEFORE description
-            CurrentSublocation.VisitCount++;
+            ArgumentNullException.ThrowIfNull(location);
+            ArgumentNullException.ThrowIfNull(scene);
 
-            // Get description AFTER incrementing visit count
-            await IOService.Output.WriteNonDialogueLine(newSublocation.GetDescription(this, GameContext.GameState));
-        }
+            CurrentScene = scene;
+            CurrentLocation = location;
 
-        public async void MoveTo(Scene newScene)
-        {
-            CurrentScene = newScene;
-            if (OperatingSystem.IsBrowser())
+            GameContext.GameState.OnPlayerEnterLocation(location);
+
+            location.VisitCount = 1;
+
+            if (!OperatingSystem.IsBrowser())
             {
-                // In Blazor, don't write the scene header to the console
-                // Instead, the scene header is displayed in the UI
-                return;
+                await IOService.Output.WriteNonDialogueLine(scene.GetHeader());
             }
-            await IOService.Output.WriteNonDialogueLine(newScene.GetHeader());
-        }
-
-        public async void SetupMoveTo(Location newLocation, Scene newScene, bool displayDescription = true)
-        {
-            await IOService.Output.DisplayDebugMessage($"Set up move to location: {newLocation.Name} in scene: {newScene.DisplayName}");
-            CurrentScene = newScene;
-            CurrentLocation = newLocation ?? throw new ArgumentNullException(nameof(newLocation));
-            CurrentSublocation = null;
-            GameContext.GameState.OnPlayerEnterLocation(newLocation);
-            
-            // Setup move sets visit count to 1 (first visit)
-            CurrentLocation.VisitCount = 1;
 
             if (displayDescription)
             {
-                await IOService.Output.WriteNonDialogueLine(CurrentLocation.GetDescription(GameContext.Player, GameContext.GameState));
+                await IOService.Output.WriteNonDialogueLine(
+                    location.GetDescription(this, GameContext.GameState));
             }
-
-            // In Blazor, don't write the scene header to the console
-            // Instead, the scene header is displayed in the UI
-            if (OperatingSystem.IsBrowser())
-            {
-                return;
-            }
-            await IOService.Output.WriteNonDialogueLine(newScene.GetHeader());
-        }
-
-        /// <summary>
-        /// Moves the player based on parsed input.
-        /// </summary>
-        /// <param name="parsedInput">The parsed input containing the direction or location to move to.</param>
-        public async Task<bool> TryMoveTo(List<string> parsedInput)
-        {
-            if (parsedInput == null || parsedInput.Count == 0)
-            {
-                throw new ArgumentException("Parsed input cannot be null or empty.", nameof(parsedInput));
-            }
-
-            string place = string.Join(" ", parsedInput).ToLower().Trim();
-
-            await IOService.Output.DisplayDebugMessage("Move to... " + place, ConsoleMessageTypes.INFO);
-
-            // Directional movement
-            if (DirectionConstants.CardinalDirections.Contains(place) || place.Equals(DirectionConstants.Back))
-            {
-                return await TryMoveDirectionally(place);
-            }
-
-            // Sublocation movement
-            if (CurrentLocation.Sublocations.Any(s => s.Name.Matches(place)))
-            {
-                var sublocation = CurrentLocation.Sublocations.First(s => s.Name.Matches(place));
-                MoveTo(sublocation);
-                return true;
-            }
-
-            // Location movement (within current scene)
-            if (CurrentScene.Locations.Any(l => l.Name.Matches(place)))
-            {
-                var location = CurrentScene.Locations.First(l => l.Name.Matches(place));
-                if (location == CurrentLocation)
-                {
-                    await IOService.Output.WriteNonDialogueLine(location.GetDescription(this, GameContext.GameState));
-                    return true;
-                }
-                MoveTo(location);
-                return true;
-            }
-
-            // Already at location/sublocation
-            if (CurrentLocation.Name.Matches(place))
-            {
-                await IOService.Output.WriteNonDialogueLine(CurrentLocation.GetDescription(this, GameContext.GameState));
-                return true;
-            }
-            if (CurrentSublocation != null && CurrentSublocation.Name.Matches(place))
-            {
-                await IOService.Output.WriteNonDialogueLine(CurrentSublocation.GetDescription(this, GameContext.GameState));
-                return true;
-            }
-
-            // If nothing matches, try custom sublocation movement
-            return TryMoveToSublocation(place);
-        }
-
-        private async Task<bool> TryMoveDirectionally(string direction)
-        {
-            if (CurrentSublocation != null)
-            {
-                // Only 'back' is supported in sublocations
-                // TODO: Implement 'back' functionality for locations, which returns the player to the previous location
-                if (direction == "back" && CurrentSublocation.Exits.ContainsKey("back"))
-                {
-                    MoveTo(CurrentSublocation.Exits["back"]);
-                    return true;
-                }
-                await IOService.Output.DisplayFailMessage("You can't go that way from here.");
-                return false;
-            }
-            else
-            {
-                if (direction == "back")
-                {
-                    if (PreviousLocation != null)
-                    {
-                        MoveTo(PreviousLocation);
-                        return true;
-                    }
-                }
-                if (CurrentLocation.Exits.TryGetValue(direction, out var newLocation))
-                {
-                    MoveTo(newLocation);
-                    return true;
-                }
-                // Provide debug info on available exits to aid troubleshooting
-                var available = string.Join(", ", CurrentLocation.Exits.Keys);
-                await IOService.Output.DisplayDebugMessage($"No exit '{direction}' from {CurrentLocation.Name.DisplayName}. Available: [{available}]", ConsoleMessageTypes.WARNING);
-                await IOService.Output.DisplayFailMessage("You can't go that way.");
-                return false;
-            }
-        }
-
-        private bool TryMoveToSublocation(string place)
-        {
-            // Get the sublocation from sublocation list in the current location by name
-            var sublocation = CurrentLocation.Sublocations
-                .FirstOrDefault(s => s.Name.Matches(place));
-
-            if (sublocation != null)
-            {
-                MoveTo(sublocation);
-                return true;
-            }
-
-            return false;
         }
 
         // TODO: should not access equippable internal state

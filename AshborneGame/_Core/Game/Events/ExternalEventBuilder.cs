@@ -233,7 +233,7 @@ namespace AshborneGame._Core.Game.Events
 
             foreach (var location in GameContext.Player.CurrentScene.Locations)
             {
-                foreach (var sublocation in location.Sublocations)
+                foreach (var sublocation in location.Children)
                 {
                     if (sublocation.FocusObject is ISentientEntity sentient && sublocation.FocusObject.InstanceID == entityId)
                     {

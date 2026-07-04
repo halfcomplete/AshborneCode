@@ -2,6 +2,7 @@
 using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.Definitions;
 using AshborneGame._Core.Globals.Services;
+using AshborneGame._Core.LocationManagement;
 
 namespace AshborneGame._Core.Game
 {
@@ -9,6 +10,7 @@ namespace AshborneGame._Core.Game
     {
         public static IDefinitionRegistry DefinitionRegistry { get; private set; }
         public static IInstanceRegistry InstanceRegistry { get; private set; }
+        public static ILocationRegistry LocationRegistry { get; private set; }
 
         public static Player Player { get; private set; }
         public static GameStateManager GameState { get; private set; }
@@ -19,7 +21,7 @@ namespace AshborneGame._Core.Game
         public static Random Random { get; } = new Random();
         public static BOCSFactory BOCSFactory { get; private set; }
 
-        public static void Initialise(Player player, GameStateManager gameState, DialogueService dialogueRunner, InkRunner inkRunner, GameEngine gameEngine, TimeTracker timeTracker, IDefinitionRegistry def, IInstanceRegistry inst)
+        public static void Initialise(Player player, GameStateManager gameState, DialogueService dialogueRunner, InkRunner inkRunner, GameEngine gameEngine, TimeTracker timeTracker, IDefinitionRegistry def, IInstanceRegistry inst, ILocationRegistry loc)
         {
             Player = player;
             GameState = gameState;
@@ -29,6 +31,7 @@ namespace AshborneGame._Core.Game
             GameEngine = gameEngine;
             DefinitionRegistry = def;
             InstanceRegistry = inst;
+            LocationRegistry = loc;
             BOCSFactory = new(DefinitionRegistry, InstanceRegistry);
         }
     }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using AshborneGame._Core._Player;
+using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.ObjectSystem;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
@@ -13,155 +14,193 @@ using AshborneGame._Core.Globals.Services;
 namespace AshborneGame._Core.LocationManagement
 {
     /// <summary>
-    /// Represents a location in the game world, supporting rich environmental storytelling and dynamic scene control.
+    /// Represents a navigable region of the game world.
+    ///
+    /// Locations form a recursive hierarchy describing the world's spatial
+    /// structure. Every location has a unique runtime identity
+    /// (<see cref="InstanceID"/>) and an immutable definition identity
+    /// (<see cref="DefinitionID"/>).
+    ///
+    /// Unlike <see cref="BOCSObject"/>, Locations are not composition-based.
+    /// They are a specialised spatial structure responsible for:
+    /// <list type="bullet">
+    /// <item><description>World topology (parent/child relationships)</description></item>
+    /// <item><description>Navigation (via <see cref="Exit"/> objects)</description></item>
+    /// <item><description>Environmental descriptions</description></item>
+    /// <item><description>Containing runtime <see cref="BOCSObject"/> instances</description></item>
+    /// </list>
     /// </summary>
-    public class Location : ILocation
+    public class Location
     {
         /// <summary>
-        /// Unique identifier for the location. Uses a slug-based format derived from the location name.
-        /// Format: "Locations.{normalized-name}" (e.g., "Locations.eye-platform")
+        /// Unique runtime identifier for this specific location instance.
         /// </summary>
         public InstanceID InstanceID { get; }
+
+        /// <summary>
+        /// Immutable identifier of the definition this location was created from.
+        /// </summary>
         public DefinitionID DefinitionID { get; }
 
         /// <summary>
-        /// The group this location belongs to, if any.
+        /// The scene this location belongs to.
         /// </summary>
-        public Scene Scene { get; set; }
+        public Scene Scene { get; internal set; }
 
         /// <summary>
-        /// Flexible naming and parsing for the location.
+        /// Flexible naming used for display and parser matching.
         /// </summary>
         public LocationNameAdapter Name { get; }
 
         /// <summary>
-        /// Composer class for managing descriptions.
+        /// Generates the dynamic environmental description for this location.
         /// </summary>
         public DescriptionComposer DescriptionComposer { get; private set; }
 
         /// <summary>
-        /// Sublocations within this location.
+        /// The parent location in the world hierarchy, or null if this is a root location.
+        /// Parent/child relationships describe world organisation only and do not imply
+        /// traversability.
         /// </summary>
-        public List<Sublocation> Sublocations { get; } = new();
+        public Location? Parent { get; private set; }
 
         /// <summary>
-        /// Dictionary of exits from this location. Keys are directions/keywords, values are Locations.
+        /// Child locations contained within this location.
         /// </summary>
-        public Dictionary<string, Location> Exits { get; } = new();
+        public IReadOnlyList<Location> Children => _children;
+        private readonly List<Location> _children = new();
 
         /// <summary>
-        /// Dictionary of custom commands for this location.
+        /// Runtime objects currently contained within this location.
         /// </summary>
-        public Dictionary<string, (Func<string> message, Action effect)> CustomCommands { get; } = new();
-
-        public int VisitCount { get; set; } = 0;
+        public IReadOnlyList<BOCSObject> ContainedObjects => _containedObjects;
+        private readonly List<BOCSObject> _containedObjects = new();
 
         /// <summary>
-        /// Creates a new Location with a given name, DescriptionComposer, and explicit ID.
+        /// Traversable connections originating from this location.
+        /// Every form of movement, including movement to child locations, is represented through an Exit.
         /// </summary>
-        /// <param name="name">LocationDescriptor for naming and parsing.</param>
-        /// <param name="composer">DescriptionComposer to combine descriptions.</param>
-        public Location(LocationNameAdapter name, DescriptionComposer composer, DefinitionID definitionID)
+        public IReadOnlyList<Exit> Exits => _exits;
+        private readonly List<Exit> _exits = new();
+
+        /// <summary>
+        /// Custom commands available only while the player is in this location.
+        /// </summary>
+        public Dictionary<string, (Func<string> Message, Action Effect)> CustomCommands { get; } = new();
+
+        /// <summary>
+        /// Number of times the player has entered this location.
+        /// </summary>
+        public int VisitCount { get; internal set; }
+
+        public Location(
+            LocationNameAdapter name,
+            DescriptionComposer composer,
+            DefinitionID definitionID)
         {
-            Name = name;
-            DescriptionComposer = composer;
-            InstanceID = new();
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            DescriptionComposer = composer ?? throw new ArgumentNullException(nameof(composer));
+
             DefinitionID = definitionID;
+            InstanceID = new();
         }
 
-        /// <summary>
-        /// Creates a new Location with a given name and a placeholder DescriptionComposer.
-        /// </summary>
-        /// <param name="name">LocationDescriptor for naming and parsing.</param>
-        /// <param name="id">Optional explicit ID. If null, auto-generates from name.</param>
         public Location(LocationNameAdapter name, DefinitionID definitionID)
             : this(name, new DescriptionComposer(), definitionID)
         {
         }
 
-        public Location()
+        /// <summary>
+        /// Adds a child location to this location.
+        /// This establishes the spatial hierarchy only.
+        /// Traversal should be added separately via an Exit.
+        /// </summary>
+        public void AddChild(Location child)
         {
-            Scene = new Scene("default_scene", "Default Scene");
-            Name = new LocationNameAdapter("Default Location");
-            // TODO: temporary
-            DefinitionID = new(SlugIdService.GenerateSlugId(Name.ReferenceName, "location"));
-            InstanceID = new();
-            DescriptionComposer = new DescriptionComposer(
-                new LookDescription(),
-                new VisitDescription("You enter a new place.", "You are here again.", "You have been here many times."),
-                new SensoryDescription("A generic location.", "You hear ambient sounds."));
+            ArgumentNullException.ThrowIfNull(child);
+
+            if (child.Parent != null)
+                throw new InvalidOperationException(
+                    $"Location '{child.Name.ReferenceName}' already has a parent.");
+
+            child.Parent = this;
+            _children.Add(child);
         }
 
         /// <summary>
-        /// Adds custom commands to this location.
+        /// Adds a runtime object to this location.
         /// </summary>
-        public void AddCustomCommand(CustomCommandPhrasing phrasings, Func<string> messageFunc, Action effect)
+        public void AddObject(BOCSObject obj)
         {
-            foreach (var command in phrasings.Phrases)
+            ArgumentNullException.ThrowIfNull(obj);
+
+            _containedObjects.Add(obj);
+        }
+
+        /// <summary>
+        /// Removes a runtime object from this location.
+        /// </summary>
+        public bool RemoveObject(BOCSObject obj)
+        {
+            ArgumentNullException.ThrowIfNull(obj);
+
+            return _containedObjects.Remove(obj);
+        }
+
+        /// <summary>
+        /// Adds a traversable exit from this location.
+        /// </summary>
+        public void AddExit(Exit exit)
+        {
+            ArgumentNullException.ThrowIfNull(exit);
+
+            _exits.Add(exit);
+        }
+
+        /// <summary>
+        /// Adds custom parser commands available while inside this location.
+        /// </summary>
+        public void AddCustomCommand(
+            CustomCommandPhrasing phrasings,
+            Func<string> message,
+            Action effect)
+        {
+            foreach (var phrase in phrasings.Phrases)
             {
-                CustomCommands[command] = (messageFunc, effect);
+                CustomCommands[phrase] = (message, effect);
             }
         }
 
         /// <summary>
-        /// Removes a custom command by its string key.
+        /// Removes a custom command.
         /// </summary>
         public void RemoveCustomCommand(string command)
         {
-            if (CustomCommands.ContainsKey(command))
-                CustomCommands.Remove(command);
+            CustomCommands.Remove(command);
         }
 
         /// <summary>
-        /// Adds a sublocation to this location.
+        /// Replaces the DescriptionComposer used by this location.
         /// </summary>
-        public void AddSublocation(Sublocation sublocation)
-        {
-            if (!Sublocations.Contains(sublocation))
-                Sublocations.Add(sublocation);
-        }
-
-        /// <summary>
-        /// Removes a sublocation from this location. If the player is in that sublocation, they are moved back to the parent location.
-        /// </summary>
-        public void RemoveSublocation(Sublocation sublocation)
-        {
-            if (Sublocations.Contains(sublocation))
-                Sublocations.Remove(sublocation);
-            if (GameContext.Player.CurrentSublocation?.Equals(sublocation) == true)
-            {
-                GameContext.Player.ForceMoveTo(this);
-            }
-        }
-
-        /// <summary>
-        /// Returns the appropriate description for the player and state.
-        /// </summary>
-        public string GetDescription(Player player, GameStateManager state)
-        {
-            StringBuilder description = new StringBuilder();
-
-            try
-            {
-                description.AppendLine(DescriptionComposer.GetDescription(player, state));
-            }
-            catch (InvalidOperationException e)
-            {
-                // FAST FAIL FOR NOW
-                throw new InvalidOperationException($"Location.cs: DescriptionComposer for location '{Name.ReferenceName}' is not properly set up. {e.Message}");
-            }
-
-            description.AppendLine(GetExits());
-
-            return description.ToString();
-        }
-
-        public string GetLookDescription(Player player, GameStateManager state) => DescriptionComposer.GetLookDescription(player, state);
-
         public void SetDescriptionComposer(DescriptionComposer composer)
         {
-            DescriptionComposer = composer ?? throw new ArgumentNullException(nameof(composer), "Description composer cannot be null.");
+            DescriptionComposer = composer
+                ?? throw new ArgumentNullException(nameof(composer));
         }
+
+        public string GetDescription(Player player, GameStateManager state)
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine(DescriptionComposer.GetDescription(player, state));
+            sb.AppendLine(GetExitListing());
+
+            return sb.ToString();
+        }
+
+        public string GetLookDescription(Player player, GameStateManager state)
+            => DescriptionComposer.GetLookDescription(player, state);
+
 
         public string GetExits()
         {
@@ -169,37 +208,34 @@ namespace AshborneGame._Core.LocationManagement
             if (Exits.Count == 0)
             {
                 sb.AppendLine("\nThere are no exits from here.");
-                if (Sublocations.Count == 0)
-                {
-                    sb.Append(" There is also nothing of note here.");
-                }
-                else
-                {
-                    sb.Append(" However, you can go to:");
+                if (Children.Count == 0) 
+                { 
+                    sb.Append(" There is also nothing of note here."); 
+                } 
+                else 
+                { 
+                    sb.Append(" However, you can go to:"); 
                 }
             }
-            else
+            else 
+            { 
+                sb.AppendLine("From here you can go:"); 
+                foreach (var exit in Exits) 
+                { 
+                    if (DirectionConstants.CardinalDirections.Contains(exit.Direction)) 
+                    { 
+                        sb.AppendLine($"- {exit.Direction} to {exit.TargetLocation.Name.DisplayName}"); 
+                    } 
+                } 
+                if (Children.Count > 0) 
+                { 
+                    sb.AppendLine("\n You can also go to:"); 
+                } 
+            }
+            foreach (var child in Children) 
             {
-                sb.AppendLine("From here you can go:");
-                foreach (var exit in Exits)
-                {
-                    if (DirectionConstants.CardinalDirections.Contains(exit.Key))
-                    {
-                        sb.AppendLine($"- {exit.Key} to {exit.Value.Name.DisplayName}");
-                    }
-                }
-
-                if (Sublocations.Count > 0)
-                {
-                    sb.AppendLine("\n You can also go to:");
-                }
+                sb.AppendLine($"- {child.Name.DisplayName}"); 
             }
-
-            foreach (var sublocation in Sublocations)
-            {
-                sb.AppendLine($"- {sublocation.Name.DisplayName}");
-            }
-
             return sb.ToString();
         }
     }

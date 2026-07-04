@@ -1,4 +1,5 @@
 ﻿using AshborneGame._Core.Globals.Interfaces;
+using AshborneGame._Core.LocationManagement;
 
 namespace AshborneGame._Core.Game.Events
 {
@@ -23,7 +24,7 @@ namespace AshborneGame._Core.Game.Events
             OneTime = oneTime;
         }
 
-        public bool CheckTrigger(ILocation? currentLocation, int ticksSpentInCurrentLocation)
+        public bool CheckTrigger(Location? currentLocation, int ticksSpentInCurrentLocation)
         {
             if (OneTime && Triggered) return false;
 

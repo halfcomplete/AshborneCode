@@ -1,47 +1,54 @@
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Globals.Interfaces;
+using System.Collections.Immutable;
 
 namespace AshborneGame._Core.LocationManagement
 {
     /// <summary>
     /// Registry for managing and retrieving locations by their unique identifiers.
     /// </summary>
-    public static class LocationRegistry
+    public class LocationRegistry : ILocationRegistry
     {
-        private static readonly Dictionary<DefinitionID, ILocation> _locationsByID = [];
+        private readonly Dictionary<DefinitionID, Location> _byDefinitionID = [];
+        private readonly Dictionary<InstanceID, Location> _byInstanceID = [];
 
-        public static void RegisterLocation(ILocation location)
+        public void RegisterLocation(Location location)
         {
             ArgumentNullException.ThrowIfNull(location);
 
-            if (_locationsByID.ContainsKey(location.DefinitionID))
+            if (_byDefinitionID.ContainsKey(location.DefinitionID))
                 throw new InvalidOperationException($"Location with ID '{location.DefinitionID}' is already registered. The Location's name is '{location.Name.ReferenceName}'.");
 
-            _locationsByID[location.DefinitionID] = location;
+            _byDefinitionID[location.DefinitionID] = location;
         }
 
-        public static bool GetLocationByID(DefinitionID id, out ILocation? location)
+        public bool TryGetLocationByDefinitionID(DefinitionID id, out Location? location)
         {
             if (string.IsNullOrWhiteSpace(id.Value.ToString()))
                 throw new ArgumentException("ID cannot be null or whitespace.", nameof(id));
 
-            return _locationsByID.TryGetValue(id, out location);
+            return _byDefinitionID.TryGetValue(id, out location);
+        }
+
+        public bool TryGetLocationByInstanceID(InstanceID id, out Location? location)
+        {
+            if (string.IsNullOrWhiteSpace(id.Value.ToString()))
+                throw new ArgumentException("ID cannot be null or whitespace.", nameof(id));
+
+            return _byInstanceID.TryGetValue(id, out location);
         }
 
         /// <summary>
         /// Returns all registered location IDs. Useful for error messages and debugging.
         /// </summary>
-        public static IEnumerable<DefinitionID> GetAllLocationIds()
+        public IReadOnlyList<DefinitionID> GetLocationIDs()
         {
-            return _locationsByID.Keys;
+            return _byDefinitionID.Keys.ToImmutableList();
         }
 
-        /// <summary>
-        /// Clears all registered locations. Used for test isolation between tests.
-        /// </summary>
-        public static void Clear()
+        public IReadOnlyList<Location> GetLocations()
         {
-            _locationsByID.Clear();
+            return _byDefinitionID.Values.ToImmutableList();
         }
     }
 }
