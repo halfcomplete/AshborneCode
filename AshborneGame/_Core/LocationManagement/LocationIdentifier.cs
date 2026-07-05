@@ -55,7 +55,7 @@ namespace AshborneGame._Core.LocationManagement
         /// </summary>
         public List<string> Synonyms { get; }
 
-        private ILocation _parentLocation;
+        private Location _parentLocation;
 
         /// <summary>
         /// Creates a new LocationDescriptor.
@@ -76,7 +76,7 @@ namespace AshborneGame._Core.LocationManagement
             return input == ReferenceName.ToLowerInvariant() || input == DisplayName || Synonyms.Any(s => s.ToLowerInvariant() == input) || Synonyms.Any(s => (Article + " " + s.ToLowerInvariant()) == input);
         }
 
-        public void SetParentLocation(ILocation location)
+        public void SetParentLocation(Location location)
         {
             if (_parentLocation != null)
                 throw new InvalidOperationException("Parent location is already set.");

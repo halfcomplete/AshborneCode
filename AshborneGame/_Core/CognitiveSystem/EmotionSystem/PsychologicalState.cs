@@ -24,14 +24,21 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
         /// update relationship states dynamically during gameplay.</remarks>
         public Dictionary<InstanceID, Attitude> Relationships = new Dictionary<InstanceID, Attitude>();
 
-        public MemoryProfile MemoryProfile { get; init; }
+        public MemoryProfile Memory { get; init; }
 
         public PersonalityProfile Personality { get; init; } = new();
         
         public PsychologicalState(InstanceID ownerID)
         {
             _ownerID = ownerID;
-            MemoryProfile = new(_ownerID, Personality, Relationships);
+            Memory = new(_ownerID, Personality, Relationships);
+        }
+
+        public PsychologicalState(Dictionary<InstanceID, Attitude> relationships, MemoryProfile memory, PersonalityProfile personality)
+        {
+            Relationships = relationships;
+            Memory = memory;
+            Personality = personality;
         }
 
         /// <summary>
@@ -63,6 +70,12 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
         public bool TryGetRelationship(InstanceID entityId, out Attitude? attitude)
         {
             return Relationships.TryGetValue(entityId, out attitude);
+        }
+
+        public PsychologicalState DeepClone()
+        {
+            // TODO: deepclone personality and memory?
+            return new PsychologicalState(new(Relationships), new(new(), Personality, Relationships), new());
         }
     }
 }

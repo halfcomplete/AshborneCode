@@ -20,6 +20,7 @@ namespace AshborneGame._Core.Game
         public static GameEngine GameEngine { get; private set; }
         public static Random Random { get; } = new Random();
         public static BOCSFactory BOCSFactory { get; private set; }
+        public static LocationFactory LocationFactory { get; private set; }
 
         public static void Initialise(Player player, GameStateManager gameState, DialogueService dialogueRunner, InkRunner inkRunner, GameEngine gameEngine, TimeTracker timeTracker, IDefinitionRegistry def, IInstanceRegistry inst, ILocationRegistry loc)
         {
@@ -33,6 +34,7 @@ namespace AshborneGame._Core.Game
             InstanceRegistry = inst;
             LocationRegistry = loc;
             BOCSFactory = new(DefinitionRegistry, InstanceRegistry);
+            LocationFactory = new
         }
     }
 }

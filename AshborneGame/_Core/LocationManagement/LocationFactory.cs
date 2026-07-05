@@ -3,9 +3,16 @@ using AshborneGame._Core.Globals.Constants;
 
 namespace AshborneGame._Core.LocationManagement
 {
-    public static class LocationFactory
+    public class LocationFactory
     {
-        public static Location CreateLocation(Location location, LookDescription lookDescription, VisitDescription fading, SensoryDescription sensory, AmbientDescription? ambient = null, params ConditionalDescription[] conditionals)
+        private ILocationRegistry _registry;
+
+        public LocationFactory(ILocationRegistry registry)
+        {
+            _registry = registry;
+        }
+
+        public Location CreateLocation(Location location, LookDescription lookDescription, VisitDescription fading, SensoryDescription sensory, AmbientDescription? ambient = null, params ConditionalDescription[] conditionals)
         {
             var descriptionComposer = new DescriptionComposer(
                 lookDescription,
@@ -17,7 +24,7 @@ namespace AshborneGame._Core.LocationManagement
             location.SetDescriptionComposer(descriptionComposer);
             location.Name.SetParentLocation(location);
 
-            LocationRegistry.RegisterLocation(location);
+            _registry.RegisterLocation(location);
             
             return location;
         }
@@ -29,15 +36,16 @@ namespace AshborneGame._Core.LocationManagement
         /// <param name="location2">The second location.</param>
         /// <param name="direction">The direction from the first location to the second location.</param>
         /// <exception cref="ArgumentNullException">Thrown when any of the locations provided are null.</exception>
-        public static void AddMutualExits(Location location1, Location location2, string direction)
+        public void AddMutualExits(Location location1, Location location2, string direction)
         {
             if (location1 == null || location2 == null)
                 throw new ArgumentNullException("LocationFactory.cs: Locations provided for 'AddMutualExits.cs' cannot be null.");
 
-            if (!location1.Exits.ContainsKey(direction) && !location2.Exits.ContainsKey(direction))
+            if (!location1.Exits.Any(e => e.Direction == direction) && !location2.Exits.Any(e => e.Direction == direction))
             {
-                location1.Exits.Add(direction, location2);
-                location2.Exits.Add(DirectionConstants.CardinalDirectionOppositesMap[direction], location1);
+                // TODO: support custom exit checking n stuff
+                location1.AddExit(new Exit(location2, direction, () => true));
+                location2.AddExit(new Exit(location1, DirectionConstants.CardinalDirectionOppositesMap[direction], () => true));
             }
             else
             {
@@ -45,7 +53,7 @@ namespace AshborneGame._Core.LocationManagement
             }
         }
 
-        public static Scene CreateScene(string sceneName, string sceneID, List<Location>? locations = null)
+        public Scene CreateScene(string sceneName, string sceneID, List<Location>? locations = null)
         {
             var scene = new Scene(sceneID, sceneName);
             if (locations != null)

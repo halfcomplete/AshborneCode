@@ -591,7 +591,7 @@ namespace AshborneGame._Core.Game
             HashSet<MemoryTag> tags = ParseMemoryTags(tagsCsv);
             MemoryDefinition memoryDefinition = new(baseIntensity, tags);
 
-            GameContext.Player.PsychologicalState.MemoryProfile.ReceiveSyntheticMemory(
+            GameContext.Player.PsychologicalState.Memory.ReceiveSyntheticMemory(
                 sourceLabel,
                 memoryDefinition,
                 _gameState.TimeTracker.TotalInGameHours,

@@ -10,8 +10,8 @@ namespace AshborneGame._Core.LocationManagement
     public interface ILocationRegistry
     {
         void RegisterLocation(Location location);
-        bool TryGetLocationByDefinitionID(DefinitionID definitionID, out Location location);
-        bool TryGetLocationByInstanceID(InstanceID instanceID, out Location location);
+        bool TryGetLocationByDefinitionID(DefinitionID definitionID, out Location? location);
+        bool TryGetLocationByInstanceID(InstanceID instanceID, out Location? location);
         IReadOnlyList<DefinitionID> GetLocationIDs();
         IReadOnlyList<Location> GetLocations();
     }
