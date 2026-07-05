@@ -18,14 +18,9 @@ public class BOCSObject
     /// <summary>
     /// Gets the name of the object. This is used for identification and display.
     /// </summary>
-    public string Name { get; }
+    public ObjectNameAdapter Name { get; }
 
     public string Description { get; }
-
-    /// <summary>
-    /// List of synonyms for the NPC's name that can be used to identify them.
-    /// </summary>
-    public List<string> Synonyms { get; init; }
 
     public InstanceID InstanceID { get; init; }
 
@@ -45,14 +40,13 @@ public class BOCSObject
     public List<Behaviour> ByBehaviour { get; private set; } = new();
 
 
-    public BOCSObject(string name, string description, DefinitionID definitionID, List<string>? synonyms = null, InstanceID instanceID = new())
+    public BOCSObject(ObjectNameAdapter name, string description, DefinitionID definitionID, InstanceID instanceID = new())
     {
         DefinitionID = definitionID;
         InstanceID = instanceID;
 
         Name = name;
         Description = description;
-        Synonyms = synonyms ?? new();
     }
 
     #region Behaviours

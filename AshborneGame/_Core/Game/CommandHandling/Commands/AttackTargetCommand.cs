@@ -21,18 +21,15 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                 return true;
             }
             string targetName = string.Join(" ", args).Trim();
-            Sublocation? sublocation = player.CurrentSublocation;
-            if (sublocation == null)
-            {
-                await IOService.Output.DisplayFailMessage("There's nothing to attack here. You might want to get closer.");
-                return true;
-            }
-            BOCSObject? targetNPC = sublocation.FocusObject;
+            Location location = player.CurrentLocation;
+            // TODO: make cleaner with method on bocsobject
+            BOCSObject? targetNPC = location.ContainedObjects.Where(o => o.IsNPC() && (o.Name == string.Join(" ", args) || o.Synonyms.Any(s => s == string.Join(" ", args)))).FirstOrDefault();
             if (targetNPC == null)
             {
                 await IOService.Output.DisplayFailMessage($"You cannot attack that.");
                 return true;
             }
+            
             player.Attack(targetNPC);
             return true;
         }

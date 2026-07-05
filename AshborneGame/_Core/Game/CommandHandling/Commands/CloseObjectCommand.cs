@@ -1,4 +1,5 @@
 ﻿using AshborneGame._Core._Player;
+using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours;
 using AshborneGame._Core.Globals.Enums;
@@ -22,19 +23,21 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             }
 
             string objectName = string.Join(" ", args).Trim();
-            Sublocation? sublocation = player.CurrentSublocation;
+            Location? location = player.CurrentLocation;
 
-            if (sublocation == null)
+            if (location == null)
             {
                 await IOService.Output.DisplayFailMessage("There's nothing to close here.");
                 return false;
             }
+            // TODO: add helper method to match names
+            List<BOCSObject> focusObject = location.ContainedObjects.FirstOrDefault(o => o.Name)
 
-            (bool hasOpenCloseBehaviour, var openCloseBehaviour) = await sublocation.FocusObject.TryGetBehaviour<IInteractable>();
+            (bool hasOpenCloseBehaviour, var openCloseBehaviour) = await location.FocusObject.TryGetBehaviour<IInteractable>();
 
             if (hasOpenCloseBehaviour && openCloseBehaviour is ContainerBehaviour)
             {
-                (bool hasLockUnlockBehaviour, var lockUnlockBehaviour) = await sublocation.FocusObject.TryGetBehaviour<IInteractable>();
+                (bool hasLockUnlockBehaviour, var lockUnlockBehaviour) = await location.FocusObject.TryGetBehaviour<IInteractable>();
                 if (hasLockUnlockBehaviour && lockUnlockBehaviour is LockUnlockBehaviour)
                 {
                     LockUnlockBehaviour lockUnlockBehaviour1 = (LockUnlockBehaviour)lockUnlockBehaviour;

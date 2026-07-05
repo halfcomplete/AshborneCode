@@ -16,9 +16,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviou
     {
         public bool ConsumeOnUse { get; set; }
 
-        public List<InstanceID> UnlockableObjectIDs { get; private set; }
+        public List<DefinitionID> UnlockableObjectIDs { get; private set; }
 
-        public OnUseUnlockObjectBehaviour(List<InstanceID> unlockableObjectIDs, bool consumeOnUse = true)
+        public OnUseUnlockObjectBehaviour(List<DefinitionID> unlockableObjectIDs, bool consumeOnUse = true)
         {
             UnlockableObjectIDs = unlockableObjectIDs ?? throw new ArgumentNullException(nameof(unlockableObjectIDs), "Unlockable object IDs cannot be null.");
             ConsumeOnUse = consumeOnUse;
@@ -27,25 +27,19 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviou
         public async void OnUse(Player player)
         {
             await IOService.Output.DisplayDebugMessage("On Use Trigger successfully called for OnUseUnlockObjectBehaviour", ConsoleMessageTypes.INFO);
-            BOCSObject? targetObject = null; // Reset targetObject to null before searching
-            // If we're in a sublocation, get the object directly
-            if (player.CurrentSublocation != null)
-            {
-                targetObject = player.CurrentSublocation.FocusObject;
-            }
-            else // If we're in a regular location, output and return
-            {
-                await IOService.Output.WriteNonDialogueLine("There's nothing to unlock here.");
-                return;
-            }
+            var targetObjects = player.CurrentLocation.ContainedObjects;
 
-            foreach (var objectID in UnlockableObjectIDs)
+            foreach (var obj in targetObjects)
             {
-                if (targetObject != null && targetObject.GetAllBehaviours<IInteractable>().ToList().Any(s => s is LockUnlockBehaviour))
+                var bs = obj.GetAllBehaviours<IInteractable>().ToList();
+                foreach (var b in bs)
                 {
-                    var lockUnlockBehaviour = targetObject.GetAllBehaviours<IInteractable>().ToList().First(s => s.GetType() == typeof(LockUnlockBehaviour));
-                    lockUnlockBehaviour.Interact(ObjectInteractionTypes.Unlock, player);
-                    return;
+                    // TODO: bad practice?
+                    if (b is LockUnlockBehaviour l && UnlockableObjectIDs.Contains(obj.DefinitionID))
+                    {
+                        l.Interact(ObjectInteractionTypes.Unlock, player);
+                        return;
+                    }
                 }
             }
             await IOService.Output.WriteNonDialogueLine("There's nothing to unlock here.");

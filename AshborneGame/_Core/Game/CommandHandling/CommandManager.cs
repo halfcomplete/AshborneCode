@@ -45,33 +45,10 @@ namespace AshborneGame._Core.Game.CommandHandling
 
         public static async Task<bool> TryExecute(string action, List<string> args, Player player)
         {
-            // Check sublocation custom commands first
-            if (player.CurrentSublocation != null)
-            {
-                foreach (var kvp in player.CurrentSublocation.CustomCommands)
-                {
-                    var args2 = new List<string>(args);
-                    args2.Insert(0, action);
-                    if (string.Join(' ', args2).Equals(kvp.Key, StringComparison.OrdinalIgnoreCase))
-                    {
-                        await IOService.Output.WriteNonDialogueLine(kvp.Value.message.Invoke());
-                        kvp.Value.effect?.Invoke();
-                        return true;
-                    }
-                }
-            }
-
             // Then check location custom commands
-            foreach (var kvp in player.CurrentLocation.CustomCommands)
+            if (player.CurrentLocation.CustomCommands.CheckForMatch(action, args).GetAwaiter().GetResult())
             {
-                var args2 = new List<string>(args);
-                args2.Insert(0, action);
-                if (string.Join(' ', args2).Equals(kvp.Key, StringComparison.OrdinalIgnoreCase))
-                {
-                    await IOService.Output.WriteNonDialogueLine(kvp.Value.message.Invoke());
-                    kvp.Value.effect?.Invoke();
-                    return true;
-                }
+                return true;
             }
 
             if (CheckIfCaughtByCommandBuckets(player, action, out string message))
@@ -110,7 +87,7 @@ namespace AshborneGame._Core.Game.CommandHandling
                     return word; // fall back to raw word so it can still error gracefully
                 }
                 // Sublocation
-                if (player.CurrentLocation.Children.Any(s => s.Name.Matches(word)))
+                if (player.CurrentLocation.Children.Any(s => s.Name.(word)))
                 {
                     args = new List<string> { word };
                     return "go to";
@@ -121,22 +98,11 @@ namespace AshborneGame._Core.Game.CommandHandling
                     args = new List<string> { word };
                     return "go to";
                 }
-                // NPC in sublocation
-                if (player.CurrentSublocation != null)
-                {
-                    // TODO: hack
-                    if (player.CurrentSublocation.FocusObject.IsNPC() && (player.CurrentSublocation.FocusObject.Name == word || player.CurrentSublocation.FocusObject.Synonyms.Contains(word)))
-                    {
-                        args = new List<string> { word };
-                        return "talk to";
-                    }
-                }
-                
                 // NPC in location
                 // TODO: hack
-                foreach (var subloc in player.CurrentLocation.Children)
+                foreach (var obj in player.CurrentLocation.ContainedObjects)
                 {
-                    if (subloc.FocusObject.IsNPC() && (subloc.FocusObject.Name == word || subloc.FocusObject.Synonyms.Contains(word)))
+                    if (obj.IsNPC() && (obj.Name == word || obj.Name.Contains(word)))
                     {
                         args = new List<string> { word };
                         return "talk to";

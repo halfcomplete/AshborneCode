@@ -1,0 +1,56 @@
+﻿using AshborneGame._Core.Globals.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AshborneGame._Core.Data.BOCS
+{
+    public class ObjectNameAdapter : INameAdapter
+    {
+        public string ReferenceName { get; }
+
+        private string _article;
+
+        public string Article
+        {
+            get
+            {
+                return _article;
+            }
+            set
+            {
+                ArgumentNullException.ThrowIfNullOrWhiteSpace(value);
+                _article = value;
+            }
+        }
+
+        public string DisplayName => Article + " " + ReferenceName;
+
+        public List<string> Synonyms { get; private set; }
+
+        public ObjectNameAdapter(string reference, List<string> synonyms, string article = "the")
+        {
+            ReferenceName = reference;
+            Article = article;
+            Synonyms = synonyms;
+        }
+
+        /// <summary>
+        /// Checks if the input matches the reference name, display name, or any synonym.
+        /// </summary>
+        public bool Matches(string input)
+        {
+            return MatchesDisplayName(input) || MatchesReferenceNameOrSynonyms(input) || MatchesDisplayNameWithSynonyms(input);
+        }
+
+        public bool MatchesReferenceName(string input) => input.ToLowerInvariant() == ReferenceName.ToLowerInvariant();
+
+        public bool MatchesDisplayName(string input) => input.ToLowerInvariant() == DisplayName.ToLowerInvariant();
+
+        public bool MatchesReferenceNameOrSynonyms(string input) => MatchesReferenceName(input) || Synonyms.Any(s => input.ToLowerInvariant() == s.ToLowerInvariant());
+
+        public bool MatchesDisplayNameWithSynonyms(string input) => Synonyms.Any(s => input.ToLowerInvariant() == Article + " " + s.ToLowerInvariant());
+    }
+}

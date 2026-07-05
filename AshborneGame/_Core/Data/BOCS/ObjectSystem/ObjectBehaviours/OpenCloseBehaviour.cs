@@ -5,6 +5,7 @@ using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
+using AshborneGame._Core.LocationManagement;
 
 namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 {
@@ -68,10 +69,10 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
                 }
             }
             (bool hasExitBehaviour, ExitToNewLocationBehaviour exitToNewLocationBehaviour) = await Owner.TryGetBehaviour<ExitToNewLocationBehaviour>();
-            if (hasExitBehaviour && exitToNewLocationBehaviour != null && player.CurrentSublocation != null)
+            if (hasExitBehaviour && exitToNewLocationBehaviour != null && player.CurrentLocation != null)
             {
-                ILocation sublocation = player.CurrentSublocation;
-                sublocation.AddExit("through", exitToNewLocationBehaviour.Location);
+                Location location = player.CurrentLocation;
+                location.AddExit(new(exitToNewLocationBehaviour.Location.DefinitionID, "through"));
             }
         }
 

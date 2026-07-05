@@ -38,7 +38,6 @@ namespace AshborneGame._Core.LocationManagement
             {
                 var location = new Location(locationDefinition.Name, locationDefinition.DefinitionID);
                 location.SetDescriptionComposer(locationDefinition.DescriptionComposer);
-                location.Name.SetParentLocation(location);
 
                 foreach (var containedObjectDefinitionId in locationDefinition.ContainedObjects)
                 {

@@ -5,7 +5,7 @@ namespace AshborneGame._Core.LocationManagement
     /// <summary>
     /// Supports flexible naming for parsing, immersion, and varied prose.
     /// </summary>
-    public class LocationNameAdapter
+    public class LocationNameAdapter : INameAdapter
     {
         /// <summary>
         /// The core name of the location (e.g., "Dusty Armoury").
@@ -39,7 +39,10 @@ namespace AshborneGame._Core.LocationManagement
             set
             {
                 if (string.IsNullOrWhiteSpace(value))
+                {
                     throw new ArgumentException("Article cannot be null or whitespace.", nameof(value));
+                }
+
                 _article = value;
             }
         }
@@ -65,15 +68,6 @@ namespace AshborneGame._Core.LocationManagement
             ReferenceName = referenceName;
             Synonyms = synonyms ?? new List<string>();
             Article = article;
-        }
-
-        /// <summary>
-        /// Checks if the input matches the reference name, display name, or any synonym.
-        /// </summary>
-        public bool Matches(string input)
-        {
-            input = input.ToLowerInvariant();
-            return input == ReferenceName.ToLowerInvariant() || input == DisplayName || Synonyms.Any(s => s.ToLowerInvariant() == input) || Synonyms.Any(s => (Article + " " + s.ToLowerInvariant()) == input);
         }
 
         public void SetParentLocation(Location location)

@@ -1,9 +1,10 @@
 ﻿using AshborneGame._Core._Player;
+using AshborneGame._Core.Data.BOCS;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
+using AshborneGame._Core.Game.CommandHandling.Commands.BaseCommands;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
-using AshborneGame._Core.Game.CommandHandling.Commands.BaseCommands;
-using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 
 namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 {
@@ -55,8 +56,8 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
                 }
                 else
                 {
-                    
-                    Item? targetItem = originInventory.GetItem(itemName);
+
+                    BOCSObject? targetItem = originInventory.GetItem(itemName);
                     if (targetItem == null)
                     {
                         await IOService.Output.DisplayFailMessage($"You cannot take {itemName} because it is not there.");
@@ -75,7 +76,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
                 return false;
             }
 
-            Item? item = originInventory.GetItem(itemName);
+            BOCSObject? item = originInventory.GetItem(itemName);
             if (item == null)
             {
                 await IOService.Output.DisplayFailMessage($"You cannot take {itemName} because it is not there.");
@@ -129,7 +130,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
             ShowInventorySummary(player, origin, "The container / NPC now has:");
         }
 
-        private void TakeAllOfAnItem(Inventory origin, Inventory destination, Item item)
+        private void TakeAllOfAnItem(Inventory origin, Inventory destination, BOCSObject item)
         {
             int count = origin.Slots.Where(s => s.Item.Name == item.Name).Sum(s => s.Quantity);
             origin.TransferItem(origin, destination, item, count);

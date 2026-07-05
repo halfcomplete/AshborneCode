@@ -4,6 +4,7 @@ using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.Game.CommandHandling.Commands.BaseCommands;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
+using AshborneGame._Core.Data.BOCS;
 
 namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 {
@@ -54,7 +55,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
                 }
                 else
                 {
-                    Item? targetItem = originInventory.GetItem(itemName);
+                    BOCSObject? targetItem = originInventory.GetItem(itemName);
                     if (targetItem == null)
                     {
                         await IOService.Output.DisplayFailMessage($"You cannot give {itemName} because it is not in your inventory.");
@@ -71,7 +72,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
                 return false;
             }
 
-            Item? item = originInventory.GetItem(itemName);
+            BOCSObject? item = originInventory.GetItem(itemName);
             if (item == null)
             {
                 await IOService.Output.DisplayFailMessage($"You cannot give {itemName} because it is not in your inventory.");
@@ -133,7 +134,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
             return true;
         }
 
-        private void GiveAllOfAnItem(Inventory origin, Inventory destination, Item item)
+        private void GiveAllOfAnItem(Inventory origin, Inventory destination, BOCSObject item)
         {
             int count = origin.Slots.Where(s => s.Item.Name == item.Name).Sum(s => s.Quantity);
             origin.TransferItem(origin, destination, item, count);

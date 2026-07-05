@@ -5,6 +5,6 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules
 {
     public interface IUnlocksTarget
     {
-        List<InstanceID> UnlockableObjectIDs { get; }
+        List<DefinitionID> UnlockableObjectIDs { get; }
     }
 }
