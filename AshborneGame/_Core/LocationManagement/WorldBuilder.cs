@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.Definitions;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
@@ -10,22 +11,28 @@ namespace AshborneGame._Core.LocationManagement
 {
     public class WorldBuilder
     {
-        public void Initialise(ILocationRegistry registry)
+        public void Initialise(ILocationRegistry registry, IDefinitionRegistry definitionRegistry, BOCSFactory factory)
         {
             ArgumentNullException.ThrowIfNull(registry);
 
-            if (GameContext.DefinitionRegistry is null)
+            if (definitionRegistry is null)
             {
                 throw new InvalidOperationException("Definition registry is not initialised.");
             }
 
-            if (GameContext.BOCSFactory is null)
+            if (factory is null)
             {
                 throw new InvalidOperationException("BOCS factory is not initialised.");
             }
 
             var locationsByDefinition = new Dictionary<DefinitionID, Location>();
             var scenesByDefinition = new Dictionary<DefinitionID, Scene>();
+
+            foreach (var (definitionID, sceneDefinition) in SceneDefinitions.Definitions)
+            {
+                var scene = new Scene(definitionID, sceneDefinition.SceneName);
+                scenesByDefinition.Add(definitionID, scene);
+            }
 
             foreach (var locationDefinition in LocationDefinitions.All)
             {
@@ -35,7 +42,7 @@ namespace AshborneGame._Core.LocationManagement
 
                 foreach (var containedObjectDefinitionId in locationDefinition.ContainedObjects)
                 {
-                    var containedObject = GameContext.BOCSFactory.Create(containedObjectDefinitionId);
+                    var containedObject = factory.Create(containedObjectDefinitionId);
                     location.AddObject(containedObject);
                 }
 
@@ -46,8 +53,7 @@ namespace AshborneGame._Core.LocationManagement
 
                 if (!scenesByDefinition.TryGetValue(locationDefinition.Scene, out var scene))
                 {
-                    scene = new Scene(locationDefinition.Scene.Value, locationDefinition.Scene.Value);
-                    scenesByDefinition[locationDefinition.Scene] = scene;
+                    throw new KeyNotFoundException($"Definition ID {locationDefinition.Scene} not found in scenesByDefinition.");
                 }
 
                 scene.AddLocation(location);
@@ -81,13 +87,18 @@ namespace AshborneGame._Core.LocationManagement
                     throw new KeyNotFoundException($"Target location definition '{exitDefinition.to}' was not built.");
                 }
 
-                sourceLocation.AddExit(exitDefinition.From());
-                targetLocation.AddExit(exitDefinition.To());
+                sourceLocation.AddExit(exitDefinition.FromFrom());
+                targetLocation.AddExit(exitDefinition.FromTo());
             }
 
             foreach (var location in locationsByDefinition.Values)
             {
                 registry.RegisterLocation(location);
+            }
+
+            foreach (var scene in scenesByDefinition.Values)
+            {
+                registry.RegisterScene(scene);
             }
         }
     }

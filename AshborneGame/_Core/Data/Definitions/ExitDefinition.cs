@@ -11,12 +11,18 @@ namespace AshborneGame._Core.Data.Definitions
     // TODO: make more general
     public record ExitDefinition(DefinitionID from, DefinitionID to, string direction)
     {
-        public Exit From()
+        /// <summary>
+        /// Returns a new Exit object from the "from" location to the "to" location.
+        /// </summary>
+        public Exit FromFrom()
         {
             return new Exit(to, direction);
         }
-
-        public Exit To()
+        
+        /// <summary>
+        /// Returns a new Exit object from the "to" location to the "from" location.
+        /// </summary>
+        public Exit FromTo()
         {
             return new Exit(from, DirectionConstants.CardinalDirectionOppositesMap[direction]);
         }

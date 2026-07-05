@@ -1,4 +1,5 @@
-﻿using AshborneGame._Core.Game;
+﻿using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Services;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace AshborneGame._Core.LocationManagement
         /// <summary>
         /// Unique identifier for the scene.
         /// </summary>
-        public string ID { get; }
+        public DefinitionID DefinitionID { get; }
 
         /// <summary>
         /// Display name for the scene (e.g., "Tower of Awakening").
@@ -34,9 +35,9 @@ namespace AshborneGame._Core.LocationManagement
         /// <param name="id">Unique identifier.</param>
         /// <param name="displayName">Display name.</param>
         /// <param name="act">The act number of the scene.</param>
-        public Scene(string id, string displayName, List<Location>? locations = null)
+        public Scene(DefinitionID id, string displayName, List<Location>? locations = null)
         {
-            ID = id;
+            DefinitionID = id;
             DisplayName = displayName;
             Locations = locations ?? new List<Location>();
         }
