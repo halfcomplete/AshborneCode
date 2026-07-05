@@ -86,7 +86,7 @@ namespace AshborneGame._Core.LocationManagement
         /// <summary>
         /// Custom commands available only while the player is in this location.
         /// </summary>
-        public Dictionary<string, (Func<string> Message, Action Effect)> CustomCommands { get; } = new();
+        public CustomCommandHandler CustomCommands { get; } = new();
 
         /// <summary>
         /// Number of times the player has entered this location.
@@ -157,25 +157,11 @@ namespace AshborneGame._Core.LocationManagement
         }
 
         /// <summary>
-        /// Adds custom parser commands available while inside this location.
-        /// </summary>
-        public void AddCustomCommand(
-            CustomCommandPhrasing phrasings,
-            Func<string> message,
-            Action effect)
-        {
-            foreach (var phrase in phrasings.Phrases)
-            {
-                CustomCommands[phrase] = (message, effect);
-            }
-        }
-
-        /// <summary>
         /// Removes a custom command.
         /// </summary>
         public void RemoveCustomCommand(string command)
         {
-            CustomCommands.Remove(command);
+            CustomCommands.RemoveCommand(command);
         }
 
         /// <summary>

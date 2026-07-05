@@ -46,7 +46,7 @@ namespace AshborneGame._Core.Game
             var timeTracker = new TimeTracker(questTracker);
             
             GameContext.Initialise(player, gameState, _dialogueService, inkRunner, this, timeTracker, definitionRegistry, instanceRegistry, locationRegistry);
-            GameContext.WorldBuilder.Initialise(locationRegistry);
+            GameContext.WorldBuilder.Initialise(locationRegistry, definitionRegistry, GameContext.BOCSFactory);
 
             // TODO: initialise masks through the new definition system
 

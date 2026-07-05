@@ -1,5 +1,6 @@
 ﻿using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.LocationManagement;
@@ -54,7 +55,7 @@ namespace AshborneGame._Core.Data.Definitions
         /// <summary>
         /// Custom commands available only while the player is in this location.
         /// </summary>
-        public Dictionary<string, (Func<string> Message, Action Effect)> CustomCommands { get; init; } = new();
+        public CustomCommandHandler CustomCommands { get; init; } = new();
 
         public LocationDefinition(
             DefinitionID definitionID,
@@ -62,7 +63,7 @@ namespace AshborneGame._Core.Data.Definitions
             LocationNameAdapter name,
             DescriptionComposer composer,
             List<DefinitionID>? objects,
-            Dictionary<string, (Func<string> Message, Action Effect)>? customCommands)
+            CustomCommandHandler? customCommands)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Scene = scene;

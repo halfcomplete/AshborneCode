@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.LocationManagement;
@@ -12,7 +13,7 @@ namespace AshborneGame._Core.Data.Definitions
 {
     public static class LocationDefinitions
     {
-        public static IReadOnlyList<LocationDefinition> All { get; } = [Dreamspace.EyePlatform];
+        public static IReadOnlyList<LocationDefinition> All { get; } = [Dreamspace.EyePlatform, Dreamspace.PlatformEdge];
 
         public static class Dreamspace
         {
@@ -96,6 +97,31 @@ namespace AshborneGame._Core.Data.Definitions
                 ),
                 objects: [],
                 customCommands: new()
+            );
+        
+            public static LocationDefinition PlatformEdge = new(
+                DefinitionIDs.Locations.Dreamspace.PlatformEdge,
+                DefinitionIDs.Scenes.OssanethsDomain,
+                new LocationNameAdapter("platform edge", new List<string> { "edge", "side" }),
+                new DescriptionComposer(
+                    new LookDescription(
+                        "Peering over the edge, the void stretches endlessly. Fragments warp and twist as if reality itself is bending.",
+                        "You peer over the edge once more. The darkness seems thicker than before. You feel your mind resisting the pull."),
+                    new VisitDescription(
+                        "You walk to the edge, careful and cautious. There, the platform ends abruptly: no smooth curves or edges, just solid ground suddenly giving way to black.",
+                        "You stride back to the edge. The void seems darker and deeper now...",
+                        "You are once more at the edge."),
+                    new SensoryDescription(
+                        "The air smells sharper here, like it's... metallic.",
+                        "A low hum vibrates through your chest, syncing with your heartbeat."),
+                    new AmbientDescription().AddTimeBased(15, "A shadow flickers at the edge of your vision, gone when you turn.")
+                ),
+                new(),
+                new CustomCommandHandler().AddCustomCommand(
+                    new (["look over", "look down", "peer over", "peer down"], ["edge", "the edge"]),
+                    () => "You stare into the rift. Vertigo strikes, but the depths reveal nothing.",
+                    () => { }
+                )
             );
         }
     }
