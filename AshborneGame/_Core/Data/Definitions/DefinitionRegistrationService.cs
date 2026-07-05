@@ -34,7 +34,10 @@ namespace AshborneGame._Core.Data.Definitions
 
         public void RegisterLocationDefinitions(DefinitionRegistry registry)
         {
-
+            foreach (var locationDefinition in LocationDefinitions.All)
+            {
+                registry.Register(locationDefinition);
+            }
         }
     }
 }

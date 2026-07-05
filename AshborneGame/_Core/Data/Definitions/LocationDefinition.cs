@@ -1,6 +1,7 @@
 ﻿using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game.DescriptionHandling;
+using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.LocationManagement;
 using System;
 using System.Collections.Generic;
@@ -25,7 +26,7 @@ namespace AshborneGame._Core.Data.Definitions
         /// <summary>
         /// The scene this location belongs to.
         /// </summary>
-        public Scene Scene { get; init; }
+        public DefinitionID Scene { get; init; }
 
         /// <summary>
         /// Flexible naming used for display and parser matching.
@@ -42,42 +43,35 @@ namespace AshborneGame._Core.Data.Definitions
         /// Parent/child relationships describe world organisation only and do not imply
         /// traversability.
         /// </summary>
-        public DefinitionID? Parent { get; init; }
-
-        /// <summary>
-        /// Child locations contained within this location.
-        /// </summary>
-        public IReadOnlyList<DefinitionID> Children => _children;
-        private readonly List<DefinitionID> _children = new();
+        public DefinitionID? Parent { get; private set; }
 
         /// <summary>
         /// Runtime objects currently contained within this location.
         /// </summary>
-        public IReadOnlyList<BOCSObjectDefinition> ContainedObjects => _containedObjects;
-        private readonly List<BOCSObjectDefinition> _containedObjects = new();
-
-        /// <summary>
-        /// Traversable connections originating from this location.
-        /// Every form of movement, including movement to child locations, is represented through an Exit.
-        /// </summary>
-        public IReadOnlyList<Exit> Exits => _exits;
-        private readonly List<Exit> _exits = new();
+        public IReadOnlyList<DefinitionID> ContainedObjects => _containedObjects;
+        private readonly List<DefinitionID> _containedObjects = new();
 
         /// <summary>
         /// Custom commands available only while the player is in this location.
         /// </summary>
         public Dictionary<string, (Func<string> Message, Action Effect)> CustomCommands { get; init; } = new();
 
-        public LocationDefinition(DefinitionID definitionID, LocationNameAdapter name, DescriptionComposer composer, List<DefinitionID> children, List<BOCSObjectDefinition> objects, List<Exit> exits, Dictionary<string, (Func<string> Message, Action Effect)> customCommands)
+        public LocationDefinition(
+            DefinitionID definitionID,
+            DefinitionID scene,
+            LocationNameAdapter name,
+            DescriptionComposer composer,
+            List<DefinitionID>? objects,
+            Dictionary<string, (Func<string> Message, Action Effect)>? customCommands)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
+            Scene = scene;
             DescriptionComposer = composer ?? throw new ArgumentNullException(nameof(composer));
 
-            _children = children;
-            _containedObjects = objects;
-            _exits = exits;
+            _containedObjects = objects ?? new();
             DefinitionID = definitionID;
-            CustomCommands = customCommands;
+            ID = definitionID;
+            CustomCommands = customCommands ?? new();
         }
     }
 }

@@ -46,11 +46,20 @@ namespace AshborneGame._Core.Game
             var timeTracker = new TimeTracker(questTracker);
             
             GameContext.Initialise(player, gameState, _dialogueService, inkRunner, this, timeTracker, definitionRegistry, instanceRegistry, locationRegistry);
+            GameContext.WorldBuilder.Initialise(locationRegistry);
 
             // TODO: initialise masks through the new definition system
 
-            ((Location startingLocation, Scene startingLocationGroup), (_firstLocation, _firstScene)) = InitialiseStartingLocation(player);
-            player.SetupMoveTo(startingLocation, startingLocationGroup, false);
+            var builtLocations = GameContext.LocationRegistry.GetLocations();
+            if (builtLocations.Count == 0)
+            {
+                throw new InvalidOperationException("No locations were built for the world.");
+            }
+
+            _firstLocation = builtLocations[0];
+            _firstScene = _firstLocation.Scene ?? throw new InvalidOperationException($"Location '{_firstLocation.DefinitionID}' does not have a scene.");
+
+            player.SetupMoveTo(_firstLocation, _firstScene, false).GetAwaiter().GetResult();
             _dialogueService.DialogueStart += async () =>
             {
                 _dialogueRunning = true;
@@ -95,12 +104,14 @@ namespace AshborneGame._Core.Game
 
             Console.WriteLine("[GameEngine] Initial intro dialogue completed. Starting Ossaneth's Domain intro dialogue");
 
-            GameContext.Player.SetupMoveTo(_firstLocation, _firstScene);
+            await GameContext.Player.SetupMoveTo(_firstLocation, _firstScene);
             // Description is now handled inside SetupMoveTo
         }
 
+        /*
         private ((Location, Scene), (Location, Scene)) InitialiseStartingLocation(Player player)
         {
+            
             #region Ossaneth's Domain Locations
             // Location visit counts are now tracked via Location.VisitCount property directly.
             // Access from C#: location.VisitCount or gameState.GetLocationVisitCount("Locations.{slug}")
@@ -362,9 +373,11 @@ namespace AshborneGame._Core.Game
                     .ThenProgressThisQuest());
 
             #endregion
+            
 
             return ((prologueLocation, prologue), (eyePlatform, OssanethsDomain));
         }
+        */
 
 
         private async void InitialiseGameWorld(Player player)
@@ -394,7 +407,10 @@ namespace AshborneGame._Core.Game
             _isRunning = true;
             while (_isRunning)
             {
-                if (_dialogueRunning) continue;
+                if (_dialogueRunning)
+                {
+                    continue;
+                }
 
                 string inputStr = await IOService.Input.GetPlayerInput();
                 inputStr = inputStr.Trim().ToLower();
@@ -417,7 +433,10 @@ namespace AshborneGame._Core.Game
 
                     inputStr = await IOService.Input.GetPlayerInput();
                     inputStr = inputStr.Trim().ToLower();
-                    if (string.IsNullOrWhiteSpace(inputStr)) continue;
+                    if (string.IsNullOrWhiteSpace(inputStr))
+                    {
+                        continue;
+                    }
 
                     splitInput = inputStr.Split(' ').ToList();
                     action = CommandManager.ExtractAction(splitInput, out var args2);

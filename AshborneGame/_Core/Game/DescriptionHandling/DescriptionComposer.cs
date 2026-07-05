@@ -50,6 +50,21 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             _hasDescription = true;
         }
 
+        public DescriptionComposer(
+            LookDescription lookDescription,
+            VisitDescription fading,
+            SensoryDescription sensory,
+            AmbientDescription? ambient = null,
+            List<ConditionalDescription>? conditionals = null)
+        {
+            Look = lookDescription;
+            Fading = fading ?? throw new ArgumentNullException(nameof(fading), "Fading description cannot be null.");
+            Sensory = sensory ?? throw new ArgumentNullException(nameof(sensory), "Sensory description cannot be null.");
+            Ambient = ambient;
+            Conditionals = conditionals ?? new();
+            _hasDescription = true;
+        }
+
         public DescriptionComposer()
         {
             Look = new LookDescription();

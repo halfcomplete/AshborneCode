@@ -12,10 +12,13 @@ namespace AshborneGame._Core.Data.Definitions
 {
     public static class LocationDefinitions
     {
+        public static IReadOnlyList<LocationDefinition> All { get; } = [Dreamspace.EyePlatform];
+
         public static class Dreamspace
         {
             public static LocationDefinition EyePlatform = new(
                 DefinitionIDs.Locations.Dreamspace.EyePlatform,
+                DefinitionIDs.Scenes.OssanethsDomain,
                 new LocationNameAdapter("Eye Platform"),
                 new DescriptionComposer(
                     new LookDescription(
@@ -29,7 +32,7 @@ namespace AshborneGame._Core.Data.Definitions
                     new SensoryDescription(
                         "The platform beneath is an alien stone, black and white patterns etched into every part of the eye.",
                         "It's eerily quiet despite the chaos above and below. As though the eye is remembering, and commanding everything to be silent."),
-                    new AmbientDescription(new Dictionary<TimeSpan, string>() { { TimeSpan.FromSeconds(5), "The glass keeps on spinning around you. The eye does not blink." } }),
+                    new AmbientDescription().AddTimeBased(15, "The glass keeps on spinning around you. The eye does not blink."),
                     ConditionalDescription.StartNew()
                         // If the player has visited the Hall of Mirrors and this is their 1st, 2nd, or 4th visit to the Eye Platform
                         .If((player, gameState) =>
@@ -91,10 +94,8 @@ namespace AshborneGame._Core.Data.Definitions
                             return false;
                         })
                 ),
-                [DefinitionIDs.Locations.Dreamspace.PlatformEdge],
-                [],
-                [],
-                new()
+                objects: [],
+                customCommands: new()
             );
         }
     }

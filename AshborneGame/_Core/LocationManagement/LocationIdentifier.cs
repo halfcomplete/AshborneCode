@@ -27,7 +27,7 @@ namespace AshborneGame._Core.LocationManagement
                 if (_parentLocation != null)
                 {
                     if (_parentLocation.VisitCount == 0)
-                        return "the";
+                        return "a";
 
                     if (_parentLocation.VisitCount == 1)
                         return _article;

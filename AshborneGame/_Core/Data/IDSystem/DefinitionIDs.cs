@@ -25,6 +25,11 @@ namespace AshborneGame._Core.Data.IDSystem
             }
         }
 
+        public static class Scenes
+        {
+            public static readonly DefinitionID OssanethsDomain = new("Ossaneths_Domain");
+        }
+
         public static class Items
         {
             public static class Masks

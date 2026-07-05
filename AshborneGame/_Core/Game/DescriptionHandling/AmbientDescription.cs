@@ -30,14 +30,16 @@ namespace AshborneGame._Core.Game.DescriptionHandling
                 : string.Empty;
         }
 
-        public void AddTimeBased(int ticks, string desc)
+        public AmbientDescription AddTimeBased(int ticks, string desc)
         {
             FromDuration.Add(ticks, desc);
+            return this;
         }
 
-        public void AddRandom(string desc)
+        public AmbientDescription AddRandom(string desc)
         {
             FromRandom.Add(desc);
+            return this;
         }
     }
 }
