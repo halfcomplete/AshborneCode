@@ -12,7 +12,7 @@ namespace AshborneGame._Core.LocationManagement
     {
         public string Direction { get; }
 
-        public Location TargetLocation { get; }
+        public DefinitionID TargetLocation { get; }
 
         public Func<bool>? CanTraverse { get; }
 
@@ -21,7 +21,7 @@ namespace AshborneGame._Core.LocationManagement
         public string? FailureMessage { get; }
 
         public Exit(
-            Location targetLocation,
+            DefinitionID targetLocation,
             string direction,
             Func<bool>? canTraverse = null,
             Action? onTraverse = null,
@@ -32,12 +32,6 @@ namespace AshborneGame._Core.LocationManagement
             CanTraverse = canTraverse;
             OnTraverse = onTraverse;
             FailureMessage = failureMessage;
-        }
-
-        // TODO: make more sophisticated?
-        public string GetDisplayText()
-        {
-            return Direction + " to " + TargetLocation.Name;
         }
     }
 }

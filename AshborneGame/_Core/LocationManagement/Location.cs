@@ -224,7 +224,12 @@ namespace AshborneGame._Core.LocationManagement
                 { 
                     if (DirectionConstants.CardinalDirections.Contains(exit.Direction)) 
                     { 
-                        sb.AppendLine($"- {exit.Direction} to {exit.TargetLocation.Name.DisplayName}"); 
+                        // TODO: fix?
+                        if (!GameContext.LocationRegistry.TryGetLocationByDefinitionID(exit.TargetLocation, out var loc))
+                        {
+                            throw new KeyNotFoundException($"Definition ID {exit.TargetLocation} not found.");
+                        }
+                        sb.AppendLine($"- {exit.Direction} to {loc?.Name.DisplayName}"); 
                     } 
                 } 
                 if (Children.Count > 0) 

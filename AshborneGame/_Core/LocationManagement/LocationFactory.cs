@@ -39,18 +39,30 @@ namespace AshborneGame._Core.LocationManagement
         public void AddMutualExits(Location location1, Location location2, string direction)
         {
             if (location1 == null || location2 == null)
-                throw new ArgumentNullException("LocationFactory.cs: Locations provided for 'AddMutualExits.cs' cannot be null.");
+                throw new ArgumentNullException("LocationFactory.cs: Locations provided for 'AddMutualExits' cannot be null.");
 
             if (!location1.Exits.Any(e => e.Direction == direction) && !location2.Exits.Any(e => e.Direction == direction))
             {
                 // TODO: support custom exit checking n stuff
-                location1.AddExit(new Exit(location2, direction, () => true));
-                location2.AddExit(new Exit(location1, DirectionConstants.CardinalDirectionOppositesMap[direction], () => true));
+                location1.AddExit(new Exit(location2.DefinitionID, direction, () => true));
+                location2.AddExit(new Exit(location1.DefinitionID, DirectionConstants.CardinalDirectionOppositesMap[direction], () => true));
             }
             else
             {
                 throw new InvalidOperationException($"LocationFactory.cs: Cannot add mutual exits to locations '{location1.Name.ReferenceName}' and '{location2.Name.ReferenceName}'. One or both locations already have an exit in that direction.");
             }
+        }
+
+        // TODO: support custom exits
+        public void AddChildToLocation(Location child, Location parent, Exit childToParent, Exit parentToChild)
+        {
+            if (child == null || parent == null)
+            {
+                throw new ArgumentNullException("LocationFactory.cs: Locations provided for 'AddChildToLocation' cannot be null.");
+            }
+
+            parent.AddChild(child);
+            AddMutualExits(child, parent, childToParent.Direction);
         }
 
         public Scene CreateScene(string sceneName, string sceneID, List<Location>? locations = null)

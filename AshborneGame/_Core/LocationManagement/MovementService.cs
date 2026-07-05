@@ -53,13 +53,14 @@ namespace AshborneGame._Core.LocationManagement
                     return false;
                 }
 
-                if (!_locationRegistry.TryGetLocationByInstanceID(exit.TargetLocation.InstanceID, out var destination))
+                if (!_locationRegistry.TryGetLocationByDefinitionID(exit.TargetLocation, out var destination))
                 {
+                    return false;
                     throw new InvalidOperationException(
                         $"Unknown location '{exit.TargetLocation}'.");
                 }
 
-                await player.MoveTo(destination);
+                await player.MoveTo(destination!);
                 return true;
             }
 

@@ -33,6 +33,8 @@ namespace AshborneGame._Core.Game
             var instanceRegistry = new InstanceRegistry();
             var definitionRegistrationService = new DefinitionRegistrationService();
 
+            var locationRegistry = new LocationRegistry();
+
             definitionRegistrationService.RegisterAllDefinitions(definitionRegistry);
 
             Player player = new Player("Hero");
@@ -43,7 +45,7 @@ namespace AshborneGame._Core.Game
             var questTracker = new QuestTracker();
             var timeTracker = new TimeTracker(questTracker);
             
-            GameContext.Initialise(player, gameState, _dialogueService, inkRunner, this, timeTracker, definitionRegistry, instanceRegistry);
+            GameContext.Initialise(player, gameState, _dialogueService, inkRunner, this, timeTracker, definitionRegistry, instanceRegistry, locationRegistry);
 
             // TODO: initialise masks through the new definition system
 
@@ -182,9 +184,7 @@ namespace AshborneGame._Core.Game
             );
 
             // Add Abyssal Rift sublocation to Eye Platform
-            Sublocation platformEdge = new Sublocation(
-                eyePlatform,
-                ItemFactory.CreateFillerItem(),
+            Location platformEdge = new Location(
                 new LocationNameAdapter("platform edge", new List<string> { "edge", "side" }),
                 new DescriptionComposer(
                     new LookDescription(
