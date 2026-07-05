@@ -34,7 +34,7 @@ namespace AshborneGame._Core.Game
             InstanceRegistry = inst;
             LocationRegistry = loc;
             BOCSFactory = new(DefinitionRegistry, InstanceRegistry);
-            LocationFactory = new
+            LocationFactory = new(loc);
         }
     }
 }
