@@ -66,17 +66,7 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             StringBuilder description = new StringBuilder();
             
             // Determine which visit count to use based on whether player is in a sublocation or location
-            int visitCount;
-            if (player.CurrentSublocation != null)
-            {
-                // Player is in a sublocation, use sublocation visit count
-                visitCount = player.CurrentSublocation.VisitCount;
-            }
-            else
-            {
-                // Player is in a location, use location visit count
-                visitCount = player.CurrentLocation.VisitCount;
-            }
+            int visitCount = player.CurrentLocation.VisitCount;
             
             // Add fading descriptions based on visit count
             if (visitCount == 1)
@@ -97,8 +87,7 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             }
             else
             {
-                // Use appropriate name based on whether player is in sublocation or location
-                string displayName = player.CurrentSublocation?.Name.DisplayName ?? player.CurrentLocation.Name.DisplayName;
+                string displayName = player.CurrentLocation.Name.DisplayName;
                 description.Append($"You go back to {displayName}. It hasn't changed since you last came.");
             }
 
@@ -125,10 +114,10 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             Conditionals = newConditionals;
 
             // Add sublocation snippets if available and not currently in a sublocation
-            if (player.CurrentSublocation == null && player.CurrentLocation.Children.Count > 0 && visitCount == 1)
+            if (player.CurrentLocation.Children.Count > 0 && visitCount == 1)
             {
                 var names = player.CurrentLocation.Children
-                    .Select(s => s.ShortRefDesc);
+                    .Select(s => s.Name.DisplayName).ToList();
 
                 var joined = NaturalJoin(names);
 

@@ -106,7 +106,7 @@ namespace AshborneGame._Core.Game
             // Access from C#: location.VisitCount or gameState.GetLocationVisitCount("Locations.{slug}")
             // Access from Ink: getLocationVisits("location-slug") or incLocationVisits("location-slug")
             // Location IDs are slug-based (e.g., "Locations.eye-platform") and auto-generated from the name.
-            Location eyePlatform = LocationFactory.CreateLocation(
+            Location eyePlatform = GameContext.LocationFactory.CreateLocation(
                 new Location(
                     new LocationNameAdapter("Eye Platform"), new DefinitionID("locations.dreamspace.eye_platform")),
                 new LookDescription(
@@ -228,7 +228,7 @@ namespace AshborneGame._Core.Game
 
             BOCSObject mirrorShard = GameContext.BOCSFactory.Create(DefinitionIDs.Items.Magic.MirrorShard);
 
-            Sublocation mirrorShardSublocation = new Sublocation(hallOfMirrors, mirrorShard, new LocationNameAdapter("mirror shard", new List<string> { "shard", "mirror shard", "shard of glass", "shard of mirror", "shard of a mirror" }),
+            Sublocation mirrorShardSublocation = new Location(hallOfMirrors, mirrorShard, new LocationNameAdapter("mirror shard", new List<string> { "shard", "mirror shard", "shard of glass", "shard of mirror", "shard of a mirror" }),
                 new DescriptionComposer(
                     new LookDescription("You look at the shard. It is a small piece of a broken mirror, but it seems to reflect deeper than a normal mirror. You can see your reflection, but it feels... empty.",
                         "You look at the shard again. It still feels empty, but you can't shake the feeling that it is important."),
@@ -311,12 +311,12 @@ namespace AshborneGame._Core.Game
                 new SensoryDescription("The flames are red and wild — almost as wild as the prisoner.",
                 "It is quiet save for the soft crackling of the candles.")), new DefinitionID ("circle of candles"), OutputConstants.ShortenedCentre, "a circle of dimly lit candles surrounding a chained prisoner"));
 
-            LocationFactory.AddMutualExits(eyePlatform, hallOfMirrors, DirectionConstants.South);
-            LocationFactory.AddMutualExits(eyePlatform, chamberOfCycles, DirectionConstants.West);
-            LocationFactory.AddMutualExits(eyePlatform, templeOfTheBound, DirectionConstants.North);
+            GameContext.LocationFactory.AddMutualExits(eyePlatform, hallOfMirrors, DirectionConstants.South);
+            GameContext.LocationFactory.AddMutualExits(eyePlatform, chamberOfCycles, DirectionConstants.West);
+            GameContext.LocationFactory.AddMutualExits(eyePlatform, templeOfTheBound, DirectionConstants.North);
 
             // Create Ossaneth's Domain scene and ensure ALL related locations are registered with it
-            var OssanethsDomain = LocationFactory.CreateScene("Ossaneth's Domain", "Ossaneth's Domain", new List<Location> { eyePlatform, hallOfMirrors });
+            var OssanethsDomain = GameContext.LocationFactory.CreateScene("Ossaneth's Domain", "Ossaneth's Domain", new List<Location> { eyePlatform, hallOfMirrors });
             // These two locations were previously not added to the scene, causing their Scene to remain null
             // which broke single-word command parsing (e.g. 'help') after entering them due to null CurrentScene.
             OssanethsDomain.AddLocation(chamberOfCycles);

@@ -93,20 +93,19 @@ namespace AshborneGame._Core.LocationManagement
         /// </summary>
         public int VisitCount { get; internal set; }
 
-        public Location(
-            LocationNameAdapter name,
-            DescriptionComposer composer,
-            DefinitionID definitionID)
+        public Location(DefinitionID definitionID, LocationNameAdapter name, DescriptionComposer composer, List<Location> children, List<BOCSObject> objects, List<Exit> exits, Dictionary<string, (Func<string> Message, Action Effect)> customCommands)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             DescriptionComposer = composer ?? throw new ArgumentNullException(nameof(composer));
-
+            _children = children;
+            _containedObjects = objects;
+            _exits = exits;
             DefinitionID = definitionID;
             InstanceID = new();
         }
 
         public Location(LocationNameAdapter name, DefinitionID definitionID)
-            : this(name, new DescriptionComposer(), definitionID)
+            : this(definitionID, name, new DescriptionComposer(), new(), new(), new(), new())
         {
         }
 
