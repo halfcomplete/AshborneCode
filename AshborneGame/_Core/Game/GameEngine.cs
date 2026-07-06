@@ -52,13 +52,9 @@ namespace AshborneGame._Core.Game
 
             // TODO: initialise masks through the new definition system
 
-            var builtLocations = GameContext.LocationRegistry.GetLocations();
-            if (builtLocations.Count == 0)
-            {
-                throw new InvalidOperationException("No locations were built for the world.");
-            }
+            var firstLocationID = DefinitionIDs.Locations.Prologue.PrologueStart;
 
-            _firstLocation = builtLocations[0];
+            _firstLocation = GameContext.LocationRegistry.TryGetLocationByDefinitionID(firstLocationID, out var loc) ? loc : throw new InvalidOperationException($"Location '{firstLocationID}' not found.");
             _firstScene = _firstLocation.Scene ?? throw new InvalidOperationException($"Location '{_firstLocation.DefinitionID}' does not have a scene.");
 
             player.SetupMoveTo(_firstLocation, _firstScene, false).GetAwaiter().GetResult();

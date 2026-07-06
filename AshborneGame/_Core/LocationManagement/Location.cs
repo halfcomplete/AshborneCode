@@ -126,6 +126,16 @@ namespace AshborneGame._Core.LocationManagement
             _children.Add(child);
         }
 
+        public void RemoveChild(Location child)
+        {
+            ArgumentNullException.ThrowIfNull(child);
+            if (child.Parent != this)
+                throw new InvalidOperationException(
+                    $"Location '{child.Name.ReferenceName}' is not a child of '{Name.ReferenceName}'.");
+            child.Parent = null;
+            _children.Remove(child);
+        }
+
         /// <summary>
         /// Adds a runtime object to this location.
         /// </summary>

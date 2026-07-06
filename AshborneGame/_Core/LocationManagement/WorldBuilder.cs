@@ -84,7 +84,7 @@ namespace AshborneGame._Core.LocationManagement
 
                 if (!locationsByDefinition.TryGetValue(exitDefinition.to, out var targetLocation))
                 {
-                    throw new KeyNotFoundException($"Target location definition '{exitDefinition.to}' was not built.");
+                    throw new KeyNotFoundException($"Target location definition '{exitDefinition.to}' was not built. Built definitions: {string.Join(", ", locationsByDefinition.Keys)}");
                 }
 
                 sourceLocation.AddExit(exitDefinition.FromFrom());
@@ -100,6 +100,21 @@ namespace AshborneGame._Core.LocationManagement
             {
                 registry.RegisterScene(scene);
             }
+        }
+
+        public void RemoveParentChildRelationship(ILocationRegistry registry, DefinitionID parent, DefinitionID child)
+        {
+            ArgumentNullException.ThrowIfNull(parent);
+            ArgumentNullException.ThrowIfNull(child);
+            if (!registry.TryGetLocationByDefinitionID(parent, out var parentLocation))
+            {
+                throw new KeyNotFoundException($"Parent location definition '{parent}' was not found.");
+            }
+            if (!registry.TryGetLocationByDefinitionID(child, out var childLocation))
+            {
+                throw new KeyNotFoundException($"Child location definition '{child}' was not found.");
+            }
+            parentLocation.RemoveChild(childLocation);
         }
     }
 }

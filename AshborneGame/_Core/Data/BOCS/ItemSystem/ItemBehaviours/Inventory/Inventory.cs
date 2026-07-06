@@ -2,6 +2,7 @@
 using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
+using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Services;
 using System.Text;
@@ -74,6 +75,16 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
             }
 
             return true;
+        }
+
+        public bool TryAddItem(DefinitionID definitionID, int count = 1)
+        {
+            var item = GameContext.BOCSFactory.Create(definitionID);
+            if (item == null)
+            {
+                throw new ArgumentException($"No item found for DefinitionID: {definitionID.Value}");
+            }
+            return TryAddItem(item, count);
         }
 
         /// <summary>

@@ -19,6 +19,7 @@ namespace AshborneGame._Core.Data.Definitions
         public static readonly IReadOnlyList<ParentChildDefinition> Hierarchy =
         [
             new(DefinitionIDs.Locations.Dreamspace.EyePlatform, DefinitionIDs.Locations.Dreamspace.PlatformEdge),
+            new(DefinitionIDs.Locations.Dreamspace.HallOfMirrors, DefinitionIDs.Locations.Dreamspace.MirrorShardSublocation),
         ];
     }
 }

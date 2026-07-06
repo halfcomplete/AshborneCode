@@ -29,7 +29,7 @@ namespace AshborneGame._Core.Data.Definitions
 
         public void RegisterItemDefinitions(DefinitionRegistry registry)
         {
-
+            registry.Register(ItemDefinitions.MirrorShard);
         }
 
         public void RegisterLocationDefinitions(DefinitionRegistry registry)

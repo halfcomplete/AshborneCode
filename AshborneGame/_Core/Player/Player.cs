@@ -125,23 +125,6 @@ namespace AshborneGame._Core._Player
             _name = name;
             var descriptor = new LocationNameAdapter("Placeholder");
             // Use unique ID to avoid registry collisions in tests
-            // HACK: wth is this
-            CurrentLocation = new Location(
-                new DefinitionID("Locations.test-location-" + Guid.NewGuid().ToString("N")[..8]),
-                descriptor,
-                new(
-                    new LookDescription(),
-                    new VisitDescription("You enter a new place.", "You are here again.", "You have been here many times."),
-                    new SensoryDescription("A generic location.", "You hear ambient sounds.")),
-                new(),
-                new(),
-                new(),
-                new()
-            );
-            CurrentScene = new Scene(new DefinitionID("TestScene"), "Test Scene", [CurrentLocation]);
-
-            GameContext.LocationRegistry.RegisterScene(CurrentScene);
-            GameContext.LocationRegistry.RegisterLocation(CurrentLocation);
             Inventory = new Inventory();
             PsychologicalState = new(_definitionID);
         }

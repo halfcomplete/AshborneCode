@@ -14,6 +14,10 @@ namespace AshborneGame._Core.Data.Definitions
                 DefinitionIDs.Scenes.OssanethsDomain, 
                 new SceneDefinition(DefinitionIDs.Scenes.OssanethsDomain, "Ossaneth's Domain")
             },
+            {
+                DefinitionIDs.Scenes.Prologue,
+                new SceneDefinition(DefinitionIDs.Scenes.Prologue, "Prologue")
+            },
         };
     }
 }

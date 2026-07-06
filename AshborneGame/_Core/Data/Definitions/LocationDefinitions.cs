@@ -1,19 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AshborneGame._Core.Data.IDSystem;
+﻿using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.Game;
 using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.LocationManagement;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace AshborneGame._Core.Data.Definitions
 {
     public static class LocationDefinitions
     {
-        public static IReadOnlyList<LocationDefinition> All { get; } = [Dreamspace.EyePlatform, Dreamspace.PlatformEdge];
+        public static IReadOnlyList<LocationDefinition> All { get; } = [Prologue.PrologueStart, Dreamspace.EyePlatform, Dreamspace.PlatformEdge, Dreamspace.HallOfMirrors, Dreamspace.MirrorShardSublocation];
+
+        public static class Prologue
+        {
+            public static LocationDefinition PrologueStart = new(
+                DefinitionIDs.Locations.Prologue.PrologueStart,
+                DefinitionIDs.Scenes.Prologue,
+                new LocationNameAdapter("Prologue Start"),
+                new DescriptionComposer(
+                    new LookDescription(
+                        "You find yourself in a dimly lit room, the walls adorned with ancient tapestries.",
+                        "The room remains unchanged, but the shadows seem to dance more vividly now."),
+                    new VisitDescription(
+                        "You awaken in a mysterious chamber, the air thick with anticipation.",
+                        "You return to the chamber, feeling a sense of déjà vu.",
+                        "Once again, you are in the chamber, the atmosphere unchanged."),
+                    new SensoryDescription(
+                        "The scent of old parchment fills the air.",
+                        "A faint whisper echoes through the room, though no one is there."),
+                    new AmbientDescription().AddTimeBased(10, "The flickering candlelight casts eerie shadows on the walls.")
+                ),
+                objects: [],
+                customCommands: new()
+            );
+        }
 
         public static class Dreamspace
         {
@@ -121,6 +146,62 @@ namespace AshborneGame._Core.Data.Definitions
                     new CustomCommandPhrasing(["look over", "look down", "peer over", "peer down"], ["edge", "the edge"]),
                     () => "You stare into the rift. Vertigo strikes, but the depths reveal nothing.",
                     () => { }
+                )
+            );
+
+            public static LocationDefinition HallOfMirrors = new(
+                DefinitionIDs.Locations.Dreamspace.HallOfMirrors,
+                DefinitionIDs.Scenes.OssanethsDomain,
+                new LocationNameAdapter("Hall of Mirrors", new List<string> { "hall" }),
+                new DescriptionComposer(
+                    new LookDescription(
+                        "You look around the hall. Everywhere, your reflection stares right back at you, each mirror containing an infinite universe of you's.",
+                        "You look around the hall again. The mirrors remain ever so still, ever so silent."
+                    ),
+                    new VisitDescription(
+                        "You enter the Hall of Mirrors. In front of you is a long, stretching hallway that seems to go on forever; the wall, floor, and ceilings are covered in mirrors. As you walk by, some reflections lag behind and others move before you. " +
+                        "You are surprised to see that the Mask that was forced on to you just before is no longer on your face — instead, it leaves blank, featureless skin. Your identity. Gone.",
+                        "You enter the Hall of Mirrors again. Nothing seems to have changed, but you think that the reflections are diverging further and further away from your real self.",
+                        "For the fourth time, you enter the Hall of Mirrors. The reflections are increasingly clearer in some mirrors, while gone in others. For the first time, there are cracked mirrors dotted along the silver-lined hallway."),
+                    new SensoryDescription(),
+                    new AmbientDescription().AddTimeBased(12, "You stand still. Your reflections do not.")
+                ),
+                [],
+                new CustomCommandHandler().AddCustomCommand(
+                    new CustomCommandPhrasing(["reflect", "self-reflect"], []),
+                    () => "You stare at the mirrors. Your reflections are everywhere, but none of them feel like you.",
+                    () => { }
+                ).AddCustomCommand(new CustomCommandPhrasing(
+                    ["pick up", "grab", "take", "get"],
+                    ["the shard", "shard", "the mirror shard",
+                        "the shard of mirror", "the piece of mirror",
+                        "the mirror piece"]),
+                    () => $"You cannot do that from here. Try going closer to the shard.",
+                    () => { }
+                )
+            );
+
+            public static LocationDefinition MirrorShardSublocation = new(
+                DefinitionIDs.Locations.Dreamspace.MirrorShardSublocation,
+                DefinitionIDs.Scenes.OssanethsDomain,
+                new LocationNameAdapter("Mirror Shard", new List<string> { "shard", "mirror shard", "shard of glass", "shard of mirror", "shard of a mirror" }),
+                new DescriptionComposer(
+                    new LookDescription("You look at the shard. It is a small piece of a broken mirror, but it seems to reflect deeper than a normal mirror. You can see your reflection, but it feels... empty.",
+                        "You look at the shard again. It still feels empty, but you can't shake the feeling that it is important."),
+                    new VisitDescription("You walk up to the shard of mirror. It is small and broken, but it seems to reflect deeper than a normal mirror can. Perhaps storing it for later will be beneficial.\n",
+                        "You walk up to the shard again. It still feels empty, but you can't shake the feeling that it is important.",
+                        "You go to the shard again. It still feels empty, but you can't shake the feeling that it is important."),
+                    new SensoryDescription("The shard lies still on the ground.", "It is eerily quiet here.")
+                ),
+                [],
+                new CustomCommandHandler().AddCustomCommand(
+                    new CustomCommandPhrasing(["pick up", "take", "grab"], ["shard", "mirror shard", "shard of glass", "shard of mirror", "shard of a mirror"]),
+                    () => "You pick up the shard. It feels cold and heavy in your hand.",
+                    () =>
+                    {
+                        GameContext.Player.Inventory.TryAddItem(DefinitionIDs.Items.Magic.MirrorShard, 1);
+                        GameContext.WorldBuilder.RemoveParentChildRelationship(GameContext.LocationRegistry, DefinitionIDs.Locations.Dreamspace.HallOfMirrors, DefinitionIDs.Locations.Dreamspace.MirrorShardSublocation);
+                    }
                 )
             );
         }
