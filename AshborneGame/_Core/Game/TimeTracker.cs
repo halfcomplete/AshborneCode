@@ -29,7 +29,7 @@ namespace AshborneGame._Core.Game
         // Tracks the total number of ticks spent in the current location, starting from when the player last entered it.
         private int _totalTicksInCurrentLocation;
         private Dictionary<Location, int> _locationDurations = new Dictionary<Location, int>();
-        private List<LocationTimeTrigger> _locationTimeTriggers = new();
+        private List<TimeBasedTrigger> _locationTimeTriggers = new();
 
         // Default to 1000ms per tick
         private int _tickInterval = 1000;
@@ -140,7 +140,7 @@ namespace AshborneGame._Core.Game
 
             foreach (var trigger in _locationTimeTriggers)
             {
-                if (trigger.CheckTrigger(_currentLocation, _totalTicksInCurrentLocation))
+                if (trigger.CheckTrigger(_currentLocation.DefinitionID, _totalTicksInCurrentLocation))
                 {
                     trigger.Effect?.Invoke();
                     EventBus.Publish(trigger.EventToRaise);
@@ -224,7 +224,7 @@ namespace AshborneGame._Core.Game
 
         public Location? CurrentLocation => _currentLocation;
 
-        public void AddLocationTimeTrigger(LocationTimeTrigger trigger)
+        public void AddLocationTimeTrigger(TimeBasedTrigger trigger)
         {
             _locationTimeTriggers.Add(trigger);
         }
