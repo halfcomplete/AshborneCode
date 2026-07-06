@@ -8,13 +8,12 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         int CurrentTotalHours { get; }
         MemoryDefinition MemoryDefinition { get; }
         List<MemoryParticipant> Participants { get; }
-        InstanceID LocationID { get; }
+        DefinitionID LocationID { get; }
     }
 
     public sealed record SyntheticMemorySource(
         int CurrentTotalHours,
         MemoryDefinition MemoryDefinition,
         List<MemoryParticipant> Participants,
-        InstanceID LocationID,
-        string SourceLabel) : IMemorySource;
+        DefinitionID LocationID) : IMemorySource;
 }

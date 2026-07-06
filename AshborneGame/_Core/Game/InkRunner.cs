@@ -12,6 +12,8 @@ using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Data.BOCS;
+using AshborneGame._Core.LocationManagement;
+using AshborneGame._Core.Data.Definitions;
 
 namespace AshborneGame._Core.Game
 {
@@ -388,13 +390,13 @@ namespace AshborneGame._Core.Game
 
             // --- In-Game Time & Emotions ---
             _story.BindExternalFunction("advance_time", (int hours) => ExternalAdvanceTime(hours));
-            _story.BindExternalFunction("add_synthetic_memory", (string sourceLabel, string tagsCsv, float baseIntensity) => ExternalAddSyntheticMemory(sourceLabel, tagsCsv, baseIntensity));
+            _story.BindExternalFunction("add_synthetic_memory", (string tagsCsv, float baseIntensity, string locationId) => ExternalAddSyntheticMemory(tagsCsv, baseIntensity, new DefinitionID(locationId)));
 
             // --- Game Events ---
             _story.BindExternalFunction("eventBegin", (string eventName) => ExternalEventBegin(eventName));
             _story.BindExternalFunction("eventAddParticipant", (string id, string memRoles) => ExternalEventAddParticipant(id, memRoles));
             _story.BindExternalFunction("eventAddData", (string dataName, string dataValue) => ExternalEventAddData(dataName, dataValue));
-            _story.BindExternalFunction("eventCommit", ExternalEventCommit);
+            _story.BindExternalFunction("eventCommit", () => ExternalEventCommit(GameContext.LocationRegistry, GameContext.DefinitionRegistry));
 
             // --- Silent Path ---
             _story.BindExternalFunction("setSilentPath", (string silentPath, int silentMs) => ExternalSetSilentPath(silentPath, silentMs));
@@ -586,16 +588,16 @@ namespace AshborneGame._Core.Game
             return null;
         }
 
-        private object ExternalAddSyntheticMemory(string sourceLabel, string tagsCsv, float baseIntensity)
+        private object ExternalAddSyntheticMemory(string tagsCsv, float baseIntensity, DefinitionID locationID)
         {
             HashSet<MemoryTag> tags = ParseMemoryTags(tagsCsv);
             MemoryDefinition memoryDefinition = new(baseIntensity, tags);
 
             GameContext.Player.PsychologicalState.Memory.ReceiveSyntheticMemory(
-                sourceLabel,
                 memoryDefinition,
                 _gameState.TimeTracker.TotalInGameHours,
-                new InstanceID(Guid.Empty));
+                locationID
+            );
 
             return null;
         }
@@ -656,9 +658,9 @@ namespace AshborneGame._Core.Game
             return null;
         }
 
-        private static object ExternalEventCommit()
+        private static object ExternalEventCommit(ILocationRegistry locationRegistry, IDefinitionRegistry definitionRegistry)
         {
-            ExternalEventBuilder.Commit();
+            ExternalEventBuilder.Commit(locationRegistry, definitionRegistry);
 
             ExternalEventBuilder.Clear();
 

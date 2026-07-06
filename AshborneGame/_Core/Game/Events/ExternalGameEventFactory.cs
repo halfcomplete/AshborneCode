@@ -42,7 +42,7 @@ namespace AshborneGame._Core.Game.Events
             int currentTotalHours,
             MemoryDefinition memoryDefinition,
             List<MemoryParticipant> participants,
-            InstanceID locationID,
+            DefinitionID locationID,
             IReadOnlyDictionary<string, string> eventData)
         {
             return new ExternalMemorableGameEvent(eventName, currentTotalHours, memoryDefinition, participants, locationID, new Dictionary<string, string>(eventData));
@@ -90,7 +90,7 @@ namespace AshborneGame._Core.Game.Events
             int CurrentTotalHours,
             MemoryDefinition MemoryDefinition,
             List<MemoryParticipant> Participants,
-            InstanceID LocationID,
+            DefinitionID LocationID,
             Dictionary<string, string> Data) : IMemorableGameEvent;
     }
 }

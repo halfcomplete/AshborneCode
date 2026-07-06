@@ -25,7 +25,8 @@ namespace AshborneGame._Core._Player
     /// </summary>
     public class Player : ISentientEntity
     {
-        private InstanceID ID = new();
+        private InstanceID _instanceID = new();
+        private DefinitionID _definitionID = new("Player");
 
         public PsychologicalState PsychologicalState { get; }
 
@@ -81,16 +82,25 @@ namespace AshborneGame._Core._Player
             var descriptor = new LocationNameAdapter("test location");
             // Use unique ID to avoid registry collisions in tests
             // HACK: fix the def id
-            CurrentLocation = LocationFactory.CreateLocation(
-                new Location(descriptor, new DefinitionID("Locations.test-location-" + Guid.NewGuid().ToString("N")[..8])),
-                new LookDescription(),
-                new VisitDescription("You enter a new place.", "You are here again.", "You have been here many times."),
-                new SensoryDescription("A generic location.", "You hear ambient sounds.")
+            CurrentLocation = new Location(
+                new DefinitionID("Locations.test-location-" + Guid.NewGuid().ToString("N")[..8]),
+                descriptor,
+                new(
+                    new LookDescription(),
+                    new VisitDescription("You enter a new place.", "You are here again.", "You have been here many times."),
+                    new SensoryDescription("A generic location.", "You hear ambient sounds.")),
+                new(),
+                new(),
+                new(),
+                new()
             );
-            CurrentScene = new Scene("test location group", "Test Location Group");
-            CurrentScene.AddLocation(CurrentLocation);
+            CurrentScene = new Scene(new DefinitionID("TestScene"), "Test Scene", [CurrentLocation]);
+
+            GameContext.LocationRegistry.RegisterScene(CurrentScene);
+            GameContext.LocationRegistry.RegisterLocation(CurrentLocation);
+
             Inventory = new Inventory();
-            PsychologicalState = new(ID);
+            PsychologicalState = new(_definitionID);
 		}
 
 		/// <summary>
@@ -102,10 +112,12 @@ namespace AshborneGame._Core._Player
         {
             _name = "Hero"; // Default name
             CurrentLocation = startingLocation ?? throw new ArgumentNullException(nameof(startingLocation));
-            CurrentScene = new Scene("test location group", "Test Location Group");
-            CurrentScene.AddLocation(CurrentLocation);
+            CurrentScene = new Scene(new DefinitionID("TestScene"), "Test Scene", [CurrentLocation]);
+
+            GameContext.LocationRegistry.RegisterScene(CurrentScene);
+            GameContext.LocationRegistry.RegisterLocation(CurrentLocation);
             Inventory = new Inventory();
-            PsychologicalState = new(ID);
+            PsychologicalState = new(_definitionID);
         }
 
         public Player(string name)
@@ -114,16 +126,24 @@ namespace AshborneGame._Core._Player
             var descriptor = new LocationNameAdapter("Placeholder");
             // Use unique ID to avoid registry collisions in tests
             // HACK: wth is this
-            CurrentLocation = LocationFactory.CreateLocation(
-                new Location(descriptor, new DefinitionID("locations.placeholder_" + Guid.NewGuid().ToString("N")[..8])),
-                new LookDescription(),
-                new VisitDescription("You enter a placeholder place.", "You are at the placeholder place again.", "You have been here many times."),
-                new SensoryDescription("A placeholder location.", "You hear placeholder sounds.")
+            CurrentLocation = new Location(
+                new DefinitionID("Locations.test-location-" + Guid.NewGuid().ToString("N")[..8]),
+                descriptor,
+                new(
+                    new LookDescription(),
+                    new VisitDescription("You enter a new place.", "You are here again.", "You have been here many times."),
+                    new SensoryDescription("A generic location.", "You hear ambient sounds.")),
+                new(),
+                new(),
+                new(),
+                new()
             );
-            CurrentScene = new Scene("Placeholder", "Placeholder");
-            CurrentScene.AddLocation(CurrentLocation);
+            CurrentScene = new Scene(new DefinitionID("TestScene"), "Test Scene", [CurrentLocation]);
+
+            GameContext.LocationRegistry.RegisterScene(CurrentScene);
+            GameContext.LocationRegistry.RegisterLocation(CurrentLocation);
             Inventory = new Inventory();
-            PsychologicalState = new(ID);
+            PsychologicalState = new(_definitionID);
         }
 
         /// <summary>
@@ -136,10 +156,12 @@ namespace AshborneGame._Core._Player
         {
             _name = name ?? throw new ArgumentNullException(nameof(name));
             CurrentLocation = startingLocation ?? throw new ArgumentNullException(nameof(startingLocation));
-            CurrentScene = new Scene("test location group", "Test Location Group");
+            CurrentScene = new Scene(new DefinitionID("TestScene"), "Test Location Group");
             CurrentScene.AddLocation(CurrentLocation);
+            GameContext.LocationRegistry.RegisterScene(CurrentScene);
+            GameContext.LocationRegistry.RegisterLocation(CurrentLocation);
             Inventory = new Inventory();
-            PsychologicalState = new(ID);
+            PsychologicalState = new(_definitionID);
         }
 
         /// <summary>

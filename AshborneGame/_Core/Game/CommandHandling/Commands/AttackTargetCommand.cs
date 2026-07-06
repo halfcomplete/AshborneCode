@@ -23,7 +23,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             string targetName = string.Join(" ", args).Trim();
             Location location = player.CurrentLocation;
             // TODO: make cleaner with method on bocsobject
-            BOCSObject? targetNPC = location.ContainedObjects.Where(o => o.IsNPC() && (o.Name == string.Join(" ", args) || o.Synonyms.Any(s => s == string.Join(" ", args)))).FirstOrDefault();
+            BOCSObject? targetNPC = location.ContainedObjects.Where(o => o.IsNPC() && o.Name.Matches(targetName)).FirstOrDefault();
             if (targetNPC == null)
             {
                 await IOService.Output.DisplayFailMessage($"You cannot attack that.");

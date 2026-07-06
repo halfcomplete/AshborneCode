@@ -18,7 +18,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
         public override Behaviour DeepClone()
         {
             // TODO: Figure out deep cloning method of psychological state
-            return new CognitiveBehaviour(new PsychologicalState(Owner.InstanceID));
+            return new CognitiveBehaviour(new PsychologicalState(Owner.DefinitionID));
         }
     }
 }

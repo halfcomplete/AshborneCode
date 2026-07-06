@@ -118,7 +118,7 @@ namespace AshborneGame._Core.Data.Definitions
                 ),
                 new(),
                 new CustomCommandHandler().AddCustomCommand(
-                    new (["look over", "look down", "peer over", "peer down"], ["edge", "the edge"]),
+                    new CustomCommandPhrasing(["look over", "look down", "peer over", "peer down"], ["edge", "the edge"]),
                     () => "You stare into the rift. Vertigo strikes, but the depths reveal nothing.",
                     () => { }
                 )

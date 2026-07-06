@@ -7,7 +7,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 {
     internal class GoCommand : ICommand
     {
-        public List<string> Names => ["go"];
+        public List<string> Names => ["go", "leave", "back", "head", "continue"];
         public string Description => "Takes the player to a new location based on direction.";
 
         public async Task<bool> TryExecute(List<string> args, Player player)
@@ -20,7 +20,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 
             await IOService.Output.DisplayDebugMessage($"Parsed Input for 'go': {string.Join(" ", args)}", ConsoleMessageTypes.INFO); // Debugging output
 
-            return await player.TryMoveTo(args);
+            return await GameContext.MovementService.Move(player, args);
         }
     }
 }

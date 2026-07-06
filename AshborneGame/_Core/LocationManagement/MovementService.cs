@@ -16,14 +16,22 @@ namespace AshborneGame._Core.LocationManagement
             _locationRegistry = locationRegistry;
         }
 
-        // replace console.writeline with IOService
-        public async Task<bool> Move(Player player, string direction)
+        // TODO: replace console.writeline with IOService
+        // TODO: add support for single-word commands such as "back" or "enter"
+        /// <summary>
+        /// Tries to move the player to a valid location given the arguments.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="args">The list of words that DON'T include the command verb.</param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public async Task<bool> Move(Player player, List<string> args)
         {
             var current = player.CurrentLocation;
+            var arguments = string.Join(" ", args).ToLowerInvariant();
 
             // 1. Parent ("leave", "back")
-            if ((direction == "back" || direction == "leave") &&
-                current.Parent != null)
+            if ((arguments == "back" || arguments == "leave") && current.Parent != null)
             {
                 await player.MoveTo(current.Parent);
                 return true;
@@ -31,7 +39,7 @@ namespace AshborneGame._Core.LocationManagement
 
             // 2. Child locations
             var child = current.Children.FirstOrDefault(c =>
-                c.Name.Matches(direction));
+                c.Name.Matches(arguments));
 
             if (child != null)
             {
@@ -41,7 +49,7 @@ namespace AshborneGame._Core.LocationManagement
 
             // 3. Explicit exits
             var exit = current.Exits.FirstOrDefault(e =>
-                e.Direction.Equals(direction,
+                e.Direction.Equals(arguments,
                     StringComparison.OrdinalIgnoreCase));
 
             if (exit != null)

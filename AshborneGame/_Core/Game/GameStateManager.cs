@@ -221,11 +221,11 @@ namespace AshborneGame._Core.Game
             else GameContext.InkRunner.StopOssanethTimer.Invoke();
         }
 
-        public bool PlayerHasMask(string maskName) => _player.Inventory.Slots.Any(s => s.Item.Name == maskName);
+        public bool PlayerHasMask(string maskName) => _player.Inventory.Slots.Any(s => s.Item.Name.Matches(maskName));
 
         public bool PlayerWearingMask(string maskName)
         {
-            return _player.EquippedItems["face"] != null && _player.EquippedItems["face"]!.Name == maskName;
+            return _player.EquippedItems["face"] != null && _player.EquippedItems["face"]!.Name.Matches(maskName);
         }
 
         #endregion

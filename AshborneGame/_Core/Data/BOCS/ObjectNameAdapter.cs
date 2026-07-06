@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,9 +12,9 @@ namespace AshborneGame._Core.Data.BOCS
     {
         public string ReferenceName { get; }
 
-        private string _article;
+        private string? _article;
 
-        public string Article
+        public string? Article
         {
             get
             {
@@ -26,11 +27,18 @@ namespace AshborneGame._Core.Data.BOCS
             }
         }
 
-        public string DisplayName => Article + " " + ReferenceName;
+        public string DisplayName
+        {
+            get
+            {
+                if (Article == null) return ReferenceName;
+                else return Article + " " + ReferenceName;
+            }
+        }
 
         public List<string> Synonyms { get; private set; }
 
-        public ObjectNameAdapter(string reference, List<string> synonyms, string article = "the")
+        public ObjectNameAdapter(string reference, List<string> synonyms, string? article = "the")
         {
             ReferenceName = reference;
             Article = article;
@@ -45,6 +53,11 @@ namespace AshborneGame._Core.Data.BOCS
             return MatchesDisplayName(input) || MatchesReferenceNameOrSynonyms(input) || MatchesDisplayNameWithSynonyms(input);
         }
 
+        public bool DoesNotMatch(string input)
+        {
+            return !Matches(input);
+        }
+
         public bool MatchesReferenceName(string input) => input.ToLowerInvariant() == ReferenceName.ToLowerInvariant();
 
         public bool MatchesDisplayName(string input) => input.ToLowerInvariant() == DisplayName.ToLowerInvariant();
@@ -52,5 +65,20 @@ namespace AshborneGame._Core.Data.BOCS
         public bool MatchesReferenceNameOrSynonyms(string input) => MatchesReferenceName(input) || Synonyms.Any(s => input.ToLowerInvariant() == s.ToLowerInvariant());
 
         public bool MatchesDisplayNameWithSynonyms(string input) => Synonyms.Any(s => input.ToLowerInvariant() == Article + " " + s.ToLowerInvariant());
+
+        public override string ToString()
+        {
+            return ReferenceName;
+        }
+
+        public static implicit operator string(ObjectNameAdapter name)
+        {
+            return name.ReferenceName;
+        }
+
+        public ObjectNameAdapter DeepClone()
+        {
+            return new ObjectNameAdapter(ReferenceName, new(Synonyms), Article);
+        }
     }
 }

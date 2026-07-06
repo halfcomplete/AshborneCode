@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AshborneGame._Core.CognitiveSystem.MemorySystem;
 using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.Game;
 
 namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
 {
@@ -13,7 +14,7 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
     /// </summary>
     public sealed class PsychologicalState
     {
-        private readonly InstanceID _ownerID;
+        private readonly DefinitionID _ownerID;
 
         /// <summary>
         /// Represents the mapping of character or entity identifiers to their corresponding attitudes in the
@@ -22,19 +23,19 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
         /// <remarks>Each key in the dictionary is a unique identifier for a character or entity, and the
         /// associated value indicates the current attitude toward that entity. This collection can be used to track and
         /// update relationship states dynamically during gameplay.</remarks>
-        public Dictionary<InstanceID, Attitude> Relationships = new Dictionary<InstanceID, Attitude>();
+        public Dictionary<DefinitionID, Attitude> Relationships = new Dictionary<DefinitionID, Attitude>();
 
         public MemoryProfile Memory { get; init; }
 
         public PersonalityProfile Personality { get; init; } = new();
         
-        public PsychologicalState(InstanceID ownerID)
+        public PsychologicalState(DefinitionID ownerID)
         {
             _ownerID = ownerID;
             Memory = new(_ownerID, Personality, Relationships);
         }
 
-        public PsychologicalState(Dictionary<InstanceID, Attitude> relationships, MemoryProfile memory, PersonalityProfile personality)
+        public PsychologicalState(Dictionary<DefinitionID, Attitude> relationships, MemoryProfile memory, PersonalityProfile personality)
         {
             Relationships = relationships;
             Memory = memory;
@@ -46,7 +47,7 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
         /// </summary>
         /// <param name="entityId">The unique identifier of the character or entity.</param>
         /// <param name="attitude">The attitude to associate with the specified entity.</param>
-        public void AddRelationship(InstanceID entityId, Attitude attitude)
+        public void AddRelationship(DefinitionID entityId, Attitude attitude)
         {
             Relationships[entityId] = attitude;
         }
@@ -55,7 +56,7 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
         /// Removes the relationship associated with the specified entity identifier.
         /// </summary>
         /// <param name="entityId">The unique identifier of the entity whose relationship is to be removed. Cannot be null.</param>
-        public void RemoveRelationship(InstanceID entityId)
+        public void RemoveRelationship(DefinitionID entityId)
         {
             Relationships.Remove(entityId);
         }
@@ -67,7 +68,7 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
         /// <param name="attitude">When this method returns, contains the attitude associated with the specified entity identifier, if found;
         /// otherwise, <see langword="null"/>. This parameter is passed uninitialized.</param>
         /// <returns>true if the relationship attitude for the specified entity identifier was found; otherwise, false.</returns>
-        public bool TryGetRelationship(InstanceID entityId, out Attitude? attitude)
+        public bool TryGetRelationship(DefinitionID entityId, out Attitude? attitude)
         {
             return Relationships.TryGetValue(entityId, out attitude);
         }
@@ -75,7 +76,7 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
         public PsychologicalState DeepClone()
         {
             // TODO: deepclone personality and memory?
-            return new PsychologicalState(new(Relationships), new(new(), Personality, Relationships), new());
+            return new PsychologicalState(new(Relationships), new(_ownerID, Personality, Relationships), new());
         }
     }
 }

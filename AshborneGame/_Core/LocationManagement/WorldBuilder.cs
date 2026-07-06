@@ -6,6 +6,7 @@ using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.Definitions;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
+using AshborneGame._Core.Game.CommandHandling;
 
 namespace AshborneGame._Core.LocationManagement
 {
@@ -45,9 +46,9 @@ namespace AshborneGame._Core.LocationManagement
                     location.AddObject(containedObject);
                 }
 
-                foreach (var (command, commandHandlers) in locationDefinition.CustomCommands)
+                foreach (var (command, commandHandlers) in locationDefinition.CustomCommands.GetCommands())
                 {
-                    location.CustomCommands[command] = commandHandlers;
+                    location.CustomCommands.AddCustomCommand(command, commandHandlers.Message, commandHandlers.Effect);
                 }
 
                 if (!scenesByDefinition.TryGetValue(locationDefinition.Scene, out var scene))

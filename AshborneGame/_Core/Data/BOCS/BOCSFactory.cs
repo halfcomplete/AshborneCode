@@ -31,7 +31,7 @@ namespace AshborneGame._Core.Data.BOCS
         {
             var definition = _definitionRegistry.Get<BOCSObjectDefinition>(definitionId);
 
-            var gameObject = new BOCSObject(definition.Name, definition.Description, definitionId);
+            var gameObject = new BOCSObject(definition.Name.DeepClone(), definition.Description, definitionId);
 
             var behavioursD = CreateBehaviours(definition.BehaviourPrototypes);
 
@@ -50,7 +50,7 @@ namespace AshborneGame._Core.Data.BOCS
 
         public BOCSObject Clone(BOCSObject source)
         {
-            var clone = new BOCSObject(source.Name, source.Description, source.DefinitionID, source.Synonyms);
+            var clone = new BOCSObject(source.Name.DeepClone(), source.Description, source.DefinitionID);
 
             foreach (var (behaviourType, behaviours) in source.ByModule)
             {

@@ -76,5 +76,21 @@ namespace AshborneGame._Core.LocationManagement
                 throw new InvalidOperationException("Parent location is already set.");
             _parentLocation = location ?? throw new ArgumentNullException(nameof(location), "Parent location cannot be null.");
         }
+
+        /// <summary>
+        /// Checks if the input matches the reference name, display name, or any synonym.
+        /// </summary>
+        public bool Matches(string input)
+        {
+            return MatchesDisplayName(input) || MatchesReferenceNameOrSynonyms(input) || MatchesDisplayNameWithSynonyms(input);
+        }
+
+        public bool MatchesReferenceName(string input) => input.ToLowerInvariant() == ReferenceName.ToLowerInvariant();
+
+        public bool MatchesDisplayName(string input) => input.ToLowerInvariant() == DisplayName.ToLowerInvariant();
+
+        public bool MatchesReferenceNameOrSynonyms(string input) => MatchesReferenceName(input) || Synonyms.Any(s => input.ToLowerInvariant() == s.ToLowerInvariant());
+
+        public bool MatchesDisplayNameWithSynonyms(string input) => Synonyms.Any(s => input.ToLowerInvariant() == Article + " " + s.ToLowerInvariant());
     }
 } 

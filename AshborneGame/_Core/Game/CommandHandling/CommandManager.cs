@@ -87,7 +87,7 @@ namespace AshborneGame._Core.Game.CommandHandling
                     return word; // fall back to raw word so it can still error gracefully
                 }
                 // Sublocation
-                if (player.CurrentLocation.Children.Any(s => s.Name.(word)))
+                if (player.CurrentLocation.Children.Any(s => s.Name.Matches(word)))
                 {
                     args = new List<string> { word };
                     return "go to";
@@ -102,7 +102,7 @@ namespace AshborneGame._Core.Game.CommandHandling
                 // TODO: hack
                 foreach (var obj in player.CurrentLocation.ContainedObjects)
                 {
-                    if (obj.IsNPC() && (obj.Name == word || obj.Name.Contains(word)))
+                    if (obj.IsNPC() && obj.Name.Matches(word))
                     {
                         args = new List<string> { word };
                         return "talk to";

@@ -1,5 +1,6 @@
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
+using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Services;
 using System;
@@ -10,7 +11,7 @@ using System.Xml.Linq;
 
 namespace AshborneGame._Core.Data.BOCS.Behaviours
 {
-    public class TalkableBehaviour : Behaviour
+    public class TalkableBehaviour : Behaviour, ITalkable
     {
         /// <summary>
         /// The default greeting that will be said if there is no valid dialogue file to initiate.

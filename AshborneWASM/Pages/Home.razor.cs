@@ -181,8 +181,7 @@ public partial class Home : ComponentBase, IDisposable
 
     private string SceneHeaderText => BuildSceneHeaderText();
 
-    private bool ShowOssanethSigil =>
-        GameContext.Player?.EquippedItems["face"]?.Name == MaskNameConstants.Ossaneth;
+    private bool ShowOssanethSigil => GameContext.Player?.EquippedItems["face"]?.Name.Matches(MaskNameConstants.Ossaneth) ?? false;
 
     private void StartListeningAnimation()
     {
@@ -1178,8 +1177,8 @@ public partial class Home : ComponentBase, IDisposable
 #if DEBUG
                 await IOService.Output.DisplayDebugMessage($"[DEBUG] Executing command: '{command}'");
                 await IOService.Output.DisplayDebugMessage($"[DEBUG] Player location: {GameContext.Player.CurrentLocation.Name}");
-                await IOService.Output.DisplayDebugMessage($"[DEBUG] Player sublocation: {(GameContext.Player.CurrentSublocation?.Name.ReferenceName ?? "None")}");
-                await IOService.Output.DisplayDebugMessage($"[DEBUG] Sublocation object: {(GameContext.Player.CurrentSublocation?.FocusObject?.GetType().Name ?? "None")}");
+                await IOService.Output.DisplayDebugMessage($"[DEBUG] Player sublocation: {(GameContext.Player.CurrentLocation?.Name.ReferenceName ?? "None")}");
+                await IOService.Output.DisplayDebugMessage($"[DEBUG] Sublocation objects: {(string.Join(", ", GameContext.Player.CurrentLocation?.ContainedObjects ?? []))}");
 #endif
                 engine.ReceiveCommand(command);
 #if DEBUG
@@ -1284,7 +1283,7 @@ public partial class Home : ComponentBase, IDisposable
 
     private void StartOssanethSigilTimer()
     {
-        if (GameContext.Player.EquippedItems["face"]?.Name != MaskNameConstants.Ossaneth)
+        if (GameContext.Player.EquippedItems["face"]?.Name.DoesNotMatch(MaskNameConstants.Ossaneth) ?? true)
         {
             isOssanethGifActive = false;
             ossanethSigilTimer?.Dispose();
@@ -1314,11 +1313,11 @@ public partial class Home : ComponentBase, IDisposable
     {
         await base.SetParametersAsync(parameters);
         // Defensive: restart timer if component is re-rendered and mask is equipped
-        if (ossanethSigilTimer == null && GameContext.Player.EquippedItems["face"]?.Name == MaskNameConstants.Ossaneth)
+        if (ossanethSigilTimer == null && (GameContext.Player.EquippedItems["face"]?.Name.Matches(MaskNameConstants.Ossaneth) ?? false))
         {
             StartOssanethSigilTimer();
         }
-        else if (GameContext.Player.EquippedItems["face"]?.Name != MaskNameConstants.Ossaneth)
+        else if (GameContext.Player.EquippedItems["face"]?.Name.DoesNotMatch(MaskNameConstants.Ossaneth) ?? false)
         {
             isOssanethGifActive = false;
             ossanethSigilTimer?.Dispose();

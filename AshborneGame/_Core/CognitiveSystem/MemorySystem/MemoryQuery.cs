@@ -10,7 +10,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
     public record MemoryQuery
     {
         public HashSet<MemoryTag>? Tags { get; init; }
-        public Dictionary<InstanceID, List<MemoryRole>?>? Participants { get; init; }
-        public List<InstanceID>? Locations { get; init; }
+        public Dictionary<DefinitionID, List<MemoryRole>?>? Participants { get; init; }
+        public List<DefinitionID>? Locations { get; init; }
     }
 }

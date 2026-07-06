@@ -23,7 +23,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 
             string place = string.Join(" ", args).Trim();
             await IOService.Output.DisplayDebugMessage($"Place to go to: {place}", ConsoleMessageTypes.INFO); // Debugging output
-            return await player.TryMoveTo(args);
+            return await GameContext.MovementService.Move(player, args);
         }
     }
 }

@@ -9,14 +9,27 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.LocationManagement;
+using AshborneGame._Core.Data.Definitions;
 
 namespace AshborneGame._Core.Game.Events
 {
     public static class ExternalEventBuilder
     {
         public static string EventName { get; private set; } = "";
-        public static Dictionary<string, List<MemoryRole>> EventParticipants { get; private set; } = new();
+        public static Dictionary<DefinitionID, List<MemoryRole>> EventParticipants { get; private set; } = new();
         public static Dictionary<string, string> EventData { get; private set; } = new();
+
+        private static IDefinitionRegistry? _definitionRegistry;
+        private static IInstanceRegistry? _instanceRegistry;
+        private static ILocationRegistry? _locationRegistry;
+
+        public static void Initialise(IDefinitionRegistry definitionRegistry, IInstanceRegistry instanceRegistry, ILocationRegistry locationRegistry)
+        {
+            _definitionRegistry = definitionRegistry;
+            _instanceRegistry = instanceRegistry;
+            _locationRegistry = locationRegistry;
+        }
 
         public static void BeginNew(string eventName)
         {
@@ -25,7 +38,7 @@ namespace AshborneGame._Core.Game.Events
 
         public static void AddParticipant(string participantId, List<MemoryRole> memoryRoles)
         {
-            EventParticipants[participantId] = memoryRoles;
+            EventParticipants[new DefinitionID(participantId)] = memoryRoles;
         }
 
         public static void AddData(string dataName, string dataValue)
@@ -33,7 +46,7 @@ namespace AshborneGame._Core.Game.Events
             EventData[dataName] = dataValue;
         }
 
-        public static void Commit()
+        public static void Commit(ILocationRegistry locationRegistry, IDefinitionRegistry definitionRegistry)
         {
             if (string.IsNullOrWhiteSpace(EventName))
             {
@@ -41,17 +54,17 @@ namespace AshborneGame._Core.Game.Events
             }
 
             int currentTotalHours = GameContext.TimeTracker.TotalInGameHours;
-            string kind = GetDataOrDefault("kind", "auto").Trim().ToLowerInvariant();
+            string type = GetDataOrDefault("type", "auto").Trim().ToLowerInvariant();
 
-            if (kind == "synthetic" || EventName.StartsWith("synthetic.", StringComparison.OrdinalIgnoreCase))
+            if (type == "synthetic" || EventName.StartsWith("synthetic.", StringComparison.OrdinalIgnoreCase))
             {
-                CommitSynthetic(currentTotalHours);
+                CommitSynthetic(currentTotalHours, definitionRegistry);
                 return;
             }
 
-            if (kind == "memorable" || EventData.ContainsKey("memoryTags") || EventData.ContainsKey("baseIntensity"))
+            if (type == "memorable" || EventData.ContainsKey("memoryTags") || EventData.ContainsKey("baseIntensity"))
             {
-                CommitMemorable(currentTotalHours);
+                CommitMemorable(currentTotalHours, locationRegistry, definitionRegistry);
                 return;
             }
 
@@ -61,21 +74,25 @@ namespace AshborneGame._Core.Game.Events
                 return;
             }
 
-            throw new InvalidOperationException($"[ExternalEventBuilder] Unknown event '{EventName}'. Add a mapping in ExternalGameEventFactory or mark it as memorable/synthetic via event data key 'kind'.");
+            throw new InvalidOperationException($"[ExternalEventBuilder] Unknown event '{EventName}'. Add a mapping in ExternalGameEventFactory or mark it as memorable/synthetic via event data key 'type'.");
         }
 
-        // TODO: double check if it's meant to use new InstanceID() if there's no participants
-        private static void CommitMemorable(int currentTotalHours)
+        private static void CommitMemorable(int currentTotalHours, ILocationRegistry locationRegistry, IDefinitionRegistry definitionRegistry)
         {
             MemoryDefinition memoryDefinition = BuildMemoryDefinitionFromData();
-            List<MemoryParticipant> participants = BuildParticipants();
+            List<MemoryParticipant> participants = BuildParticipants(definitionRegistry);
 
-            if (participants.Count == 0)
+            DefinitionID locationID = new(GetDataOrDefault("locationID", ""));
+
+            if (locationID.Value == "")
             {
-                participants.Add(new MemoryParticipant(new InstanceID(Guid.Empty), [MemoryRole.Actor]));
+                throw new ArgumentException($"[ExternalEventBuilder] Cannot commit memorable event '{EventName}': locationID is required in EventData.");
             }
 
-            InstanceID locationID = TryParseInstanceID(GetDataOrDefault("locationGuid", "")) ?? new InstanceID(Guid.Empty);
+            if (!locationRegistry.TryGetLocationByDefinitionID(locationID, out _))
+            {
+                throw new ArgumentException($"[ExternalEventBuilder] Cannot commit memorable event '{EventName}': locationID {locationID.Value} in EventData is not valid.");
+            }
 
             IMemorableGameEvent memorableEvent = ExternalGameEventFactory.CreateExternalMemorableEvent(
                 EventName,
@@ -89,17 +106,21 @@ namespace AshborneGame._Core.Game.Events
             EventBus.Publish<IMemorableGameEvent>(memorableEvent);
         }
 
-        private static void CommitSynthetic(int currentTotalHours)
+        private static void CommitSynthetic(int currentTotalHours, IDefinitionRegistry definitionRegistry)
         {
             MemoryDefinition memoryDefinition = BuildMemoryDefinitionFromData();
-            List<MemoryParticipant> participants = BuildParticipants();
+            List<MemoryParticipant> participants = BuildParticipants(definitionRegistry);
 
-            string sourceLabel = GetDataOrDefault("sourceLabel", EventName);
-            InstanceID locationID = TryParseInstanceID(GetDataOrDefault("locationGuid", "")) ?? new InstanceID(Guid.Empty);
+            DefinitionID locationID = new(GetDataOrDefault("locationID", ""));
 
-            List<(ISentientEntity Entity, InstanceID EntityId)> targets = ResolveSyntheticTargets(participants);
+            if (locationID.Value == "")
+            {
+                throw new ArgumentException($"[ExternalEventBuilder] Cannot commit synthetic event '{EventName}': locationID is required in EventData.");
+            }
 
-            foreach ((ISentientEntity entity, InstanceID entityId) in targets)
+            List<(ISentientEntity Entity, DefinitionID EntityId)> targets = ResolveSyntheticTargets(participants);
+
+            foreach ((ISentientEntity entity, DefinitionID entityId) in targets)
             {
                 List<MemoryParticipant> targetParticipants = CloneParticipants(participants);
                 if (targetParticipants.All(p => p.EntityId != entityId))
@@ -108,7 +129,6 @@ namespace AshborneGame._Core.Game.Events
                 }
 
                 entity.PsychologicalState.Memory.ReceiveSyntheticMemory(
-                    sourceLabel,
                     memoryDefinition,
                     currentTotalHours,
                     locationID,
@@ -116,20 +136,22 @@ namespace AshborneGame._Core.Game.Events
             }
         }
 
-        private static List<MemoryParticipant> BuildParticipants()
+        /// <summary>
+        /// Builds a list of MemoryParticipant objects based on the EventParticipants dictionary.
+        /// </summary>
+        /// <returns></returns>
+        private static List<MemoryParticipant> BuildParticipants(IDefinitionRegistry definitionRegistry)
         {
             List<MemoryParticipant> participants = new();
 
-            foreach ((string participantIdText, List<MemoryRole> roles) in EventParticipants)
+            foreach ((DefinitionID definitionID, List<MemoryRole> roles) in EventParticipants)
             {
-                InstanceID? parsedId = ParseEntityId(participantIdText);
-                if (parsedId == null)
+                if (!definitionRegistry.TryGet<Definition>(definitionID, out var _))
                 {
-                    continue;
+                    throw new InvalidOperationException($"Building Participants: DefinitionID {definitionID} doesn't exist.");
                 }
-
                 List<MemoryRole> parsedRoles = roles.Count > 0 ? roles : [MemoryRole.Witness];
-                participants.Add(new MemoryParticipant(parsedId.Value, parsedRoles));
+                participants.Add(new MemoryParticipant(definitionID, parsedRoles));
             }
 
             return participants;
@@ -147,6 +169,10 @@ namespace AshborneGame._Core.Game.Events
             return clone;
         }
 
+        /// <summary>
+        /// Builds a MemoryDefinition object based on the EventData dictionary, specifically looking for "memoryTags" and "baseIntensity" keys. If no tags are provided, it defaults to a Theft tag. The base intensity is clamped between 0.0 and 1.0.
+        /// </summary>
+        /// <returns></returns>
         private static MemoryDefinition BuildMemoryDefinitionFromData()
         {
             string tagsCsv = GetDataOrDefault("memoryTags", GetDataOrDefault("tags", ""));
@@ -164,6 +190,11 @@ namespace AshborneGame._Core.Game.Events
             return new MemoryDefinition(baseIntensity, tags);
         }
 
+        /// <summary>
+        /// Parses a comma-separated string of memory tags into a HashSet of MemoryTag enums. If the input string is null or whitespace, an empty HashSet is returned. Only valid MemoryTag values are added to the HashSet.
+        /// </summary>
+        /// <param name="tagsCsv"></param>
+        /// <returns></returns>
         private static HashSet<MemoryTag> ParseMemoryTags(string tagsCsv)
         {
             HashSet<MemoryTag> tags = new();
@@ -184,18 +215,30 @@ namespace AshborneGame._Core.Game.Events
             return tags;
         }
 
-        private static List<(ISentientEntity Entity, InstanceID EntityId)> ResolveSyntheticTargets(List<MemoryParticipant> participants)
+        /// <summary>
+        /// Resolves the target entities for a synthetic event based on the provided participants and event data. 
+        /// If a specific target is defined in the event data, it will be used; otherwise, all participants will 
+        /// be considered as targets. If no targets are found, the player entity will be used as a fallback.
+        /// </summary>
+        /// <param name="participants"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        private static List<(ISentientEntity Entity, DefinitionID EntityId)> ResolveSyntheticTargets(List<MemoryParticipant> participants)
         {
-            List<(ISentientEntity Entity, InstanceID EntityId)> targets = new();
+            List<(ISentientEntity Entity, DefinitionID EntityId)> targets = new();
 
-            InstanceID? targetEntityId = ParseEntityId(GetDataOrDefault("target", GetDataOrDefault("targetId", "")));
-            if (targetEntityId != null)
+            DefinitionID targetEntityId = new(GetDataOrDefault("target", GetDataOrDefault("targetID", "")));
+            if (targetEntityId.Value != "")
             {
-                ISentientEntity? targetEntity = ResolveEntityById(targetEntityId.Value);
+                ISentientEntity? targetEntity = ResolveEntityById(targetEntityId);
                 if (targetEntity != null)
                 {
-                    targets.Add((targetEntity, targetEntityId.Value));
+                    targets.Add((targetEntity, targetEntityId));
                 }
+            }
+            else
+            {
+                throw new InvalidOperationException($"Resolving Synthetic Targets: event data 'targetID' does not exist.");
             }
 
             if (targets.Count == 0)
@@ -213,33 +256,33 @@ namespace AshborneGame._Core.Game.Events
             if (targets.Count == 0)
             {
                 // Player currently has Guid.Empty in this codebase.
-                targets.Add((GameContext.Player, new InstanceID(Guid.Empty)));
+                targets.Add((GameContext.Player, new DefinitionID("Player")));
             }
 
             return targets;
         }
 
-        private static ISentientEntity? ResolveEntityById(InstanceID entityId)
+        private static ISentientEntity? ResolveEntityById(DefinitionID entityId)
         {
-            if (entityId == new InstanceID(Guid.Empty))
+            ConfirmInitialised();
+
+            if (entityId.Value == "Player")
             {
                 return GameContext.Player;
             }
 
-            if (GameContext.Player.CurrentScene?.Locations == null)
+            var targets = _instanceRegistry.GetByDefinition(entityId).ToList();
+
+            if (targets.Count() != 1)
             {
-                return null;
+                throw new InvalidOperationException($"Resolve Entity by ID: Number of instances with definition ID {entityId} was {targets.Count()}. Expected 1.");
             }
 
-            foreach (var location in GameContext.Player.CurrentScene.Locations)
+            var target = targets[0];
+
+            if (target.HasBehaviours<ISentientEntity>())
             {
-                foreach (var sublocation in location.Children)
-                {
-                    if (sublocation.FocusObject is ISentientEntity sentient && sublocation.FocusObject.InstanceID == entityId)
-                    {
-                        return sentient;
-                    }
-                }
+                return target.TryGetBehaviour<ISentientEntity>().Result.Item2;
             }
 
             return null;
@@ -255,37 +298,27 @@ namespace AshborneGame._Core.Game.Events
             publishMethod.Invoke(null, [gameEvent]);
         }
 
-        private static InstanceID? ParseEntityId(string rawId)
-        {
-            if (string.IsNullOrWhiteSpace(rawId))
-            {
-                return null;
-            }
-
-            string trimmed = rawId.Trim();
-
-            if (trimmed.Equals("player", StringComparison.OrdinalIgnoreCase) ||
-                trimmed.Equals("self", StringComparison.OrdinalIgnoreCase))
-            {
-                return new(Guid.Empty);
-            }
-
-            return TryParseInstanceID(trimmed);
-        }
-
-        private static InstanceID? TryParseInstanceID(string rawGuid)
-        {
-            return Guid.TryParse(rawGuid, out Guid parsedGuid) ? new(parsedGuid) : null;
-        }
-
         private static double? TryParseDouble(string rawDouble)
         {
             return double.TryParse(rawDouble, out double parsedDouble) ? parsedDouble : null;
         }
 
+        /// <summary>
+        /// Returns the value associated with the specified key from EventData, or the provided fallback value if the key does not exist.
+        /// </summary>
+        /// <param name="key">The key to look up in the EventData dictionary.</param>
+        /// <param name="fallback">The value to return if the key does not exist in EventData.</param>
+        /// <returns>The value associated with the specified key, or the fallback value if the key does not exist.</returns>
         private static string GetDataOrDefault(string key, string fallback)
         {
             return EventData.TryGetValue(key, out string? value) ? value : fallback;
+        }
+
+        private static void ConfirmInitialised()
+        {
+            ArgumentNullException.ThrowIfNull(_definitionRegistry);
+            ArgumentNullException.ThrowIfNull(_instanceRegistry);
+            ArgumentNullException.ThrowIfNull(_locationRegistry);
         }
 
         public static void Clear()

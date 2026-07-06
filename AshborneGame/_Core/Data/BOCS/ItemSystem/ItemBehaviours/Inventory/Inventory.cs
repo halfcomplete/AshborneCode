@@ -56,7 +56,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
             // Fill existing stacks
             foreach (var slot in _slots)
             {
-                if (slot.Item.Name == item.Name && !slot.IsFull)
+                if (slot.Item.Name.Matches(item.Name.ReferenceName) && !slot.IsFull)
                 {
                     remaining = slot.Add(remaining);
                     if (remaining <= 0) return true;
@@ -90,7 +90,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
                 throw new ArgumentException("Count must be greater than 0.", nameof(count));
 
             var relevantSlots = _slots
-                .Where(s => s.Item.Name == obj.Name)
+                .Where(s => s.Item.Name.Matches(obj.Name.ReferenceName))
                 .OrderByDescending(s => s.Quantity)
                 .ToList();
 
@@ -125,33 +125,32 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
         {
             return _slots
                 .Select(slot => slot.Item)
-                .FirstOrDefault(item => item.Name.Equals(itemName, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(item => item.Name.Matches(itemName));
         }
 
         /// <summary>
         /// Returns a textual summary of the inventory.
         /// </summary>
-        public async Task<(bool, string)> GetInventoryContents(Player? player)
+        public async Task<(bool, string)> GetInventoryContents(Player player)
         {
             if (_slots.Count == 0)
                 return (true, "");
 
             var sb = new StringBuilder();
+
+            ArgumentNullException.ThrowIfNull(player);
+
             foreach (var slot in _slots)
             {
                 var equipped = string.Empty;
-                if (player != null)
+                var (hasBehaviour, equippableBehaviour) = await slot.Item.TryGetBehaviour<IEquippable>();
+                if (hasBehaviour && equippableBehaviour != null)
                 {
-                    var (hasBehaviour, equippableBehaviour) = await slot.Item.TryGetBehaviour<IEquippable>();
-                    if (hasBehaviour && equippableBehaviour != null)
-                    {
-                        // If the item is equippable, check if it's equipped
-                        var isEquipped = player.EquippedItems.TryGetValue(slot.Item.Name.ToLower(), out var equippedItem) && equippedItem != null;
-                        equipped = isEquipped ? " (Equipped)" : "";
-                    }
+                    // If the item is equippable, check if it's equipped
+                    equipped = equippableBehaviour.IsEquipped ? "(Equipped)" : "";
                 }
                 
-                sb.AppendLine($"{slot.Quantity} x {slot.Item.Name} - {slot.Item.Description}{equipped}");
+                sb.AppendLine($"{slot.Quantity} x {slot.Item.Name} - {slot.Item.Description} {equipped}");
             }
 
             return (false, sb.ToString());

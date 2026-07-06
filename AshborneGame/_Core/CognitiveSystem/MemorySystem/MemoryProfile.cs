@@ -3,17 +3,18 @@ using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags;
 using System.Diagnostics;
 using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.Data.Definitions;
 
 namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 {
     public class MemoryProfile
     {
-        private InstanceID _ownerID;
+        private DefinitionID _ownerID;
         private PersonalityProfile _personality;
-        private Dictionary<InstanceID, Attitude> _relationships;
+        private Dictionary<DefinitionID, Attitude> _relationships;
         private List<Memory> _memories;
 
-        public MemoryProfile(InstanceID ownerID, PersonalityProfile personality, Dictionary<InstanceID, Attitude> relationships, List<Memory> memories)
+        public MemoryProfile(DefinitionID ownerID, PersonalityProfile personality, Dictionary<DefinitionID, Attitude> relationships, List<Memory> memories)
         {
             _ownerID = ownerID;
             _personality = personality;
@@ -24,7 +25,8 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             EventBus.Subscribe<IMemorableGameEvent>(e => ReceiveMemorableEvent(e));
         }
 
-        public MemoryProfile(InstanceID ownerID, PersonalityProfile personality, Dictionary<InstanceID, Attitude> relationships) : this(ownerID, personality, relationships, new List<Memory>()) { }
+        public MemoryProfile(DefinitionID ownerID, PersonalityProfile personality, Dictionary<DefinitionID, Attitude> relationships) 
+            : this(ownerID, personality, relationships, new List<Memory>()) { }
 
         #region Receiving Memories
 
@@ -43,10 +45,10 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// <summary>
         /// Creates a memory without requiring a concrete IMemorableGameEvent.
         /// </summary>
-        public Memory? ReceiveSyntheticMemory(string sourceLabel, MemoryDefinition memoryDefinition, int currentTotalHours, InstanceID locationID, List<MemoryParticipant>? participants = null)
+        public Memory? ReceiveSyntheticMemory(MemoryDefinition memoryDefinition, int currentTotalHours, DefinitionID locationID, List<MemoryParticipant>? participants = null)
         {
-            List<MemoryParticipant> sourceParticipants = participants ?? [new MemoryParticipant(_ownerID, [MemoryRole.Actor])];
-            SyntheticMemorySource source = new(currentTotalHours, memoryDefinition, sourceParticipants, locationID, sourceLabel);
+            List<MemoryParticipant> sourceParticipants = participants ?? new();
+            SyntheticMemorySource source = new(currentTotalHours, memoryDefinition, sourceParticipants, locationID);
 
             return ReceiveMemorySource(source);
         }
@@ -522,7 +524,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// their house burning down, then the intensity of the Memory (how significant that is to the NPC) would 
         /// decrease as they don't care.
         /// </remarks>
-        private static double GetAttitudeIntensityImpact(Dictionary<InstanceID, Attitude> relationships, HashSet<MemoryTag> tags, List<MemoryParticipant> participants)
+        private static double GetAttitudeIntensityImpact(Dictionary<DefinitionID, Attitude> relationships, HashSet<MemoryTag> tags, List<MemoryParticipant> participants)
         {
             double intensityImpact = 0.0;
 
@@ -605,7 +607,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// <summary>
         /// Takes a game event, the NPC's relationships and the current emotional modifiers of a memory and returns a Dictionary of the previous emotion modifiers and the updated emotion accumulators.
         /// </summary>
-        private static Dictionary<EmotionModifier, EmotionAccumulator> ApplyAttitudeToEmotionalModifiers(IMemorySource source, Dictionary<InstanceID, Attitude> relationships, Dictionary<EmotionModifier, EmotionAccumulator> mods)
+        private static Dictionary<EmotionModifier, EmotionAccumulator> ApplyAttitudeToEmotionalModifiers(IMemorySource source, Dictionary<DefinitionID, Attitude> relationships, Dictionary<EmotionModifier, EmotionAccumulator> mods)
         {
             // Loops over each memory tag in the memory definition
             // Gets the memory tag's AttitudeEmotionModifiers
@@ -675,11 +677,11 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                 {
                     // if we don't have a relationship with this entity yet
                     List<AttitudeReaction> attitudeReactions = EmotionToAttitudeMap.Reactions[emotion];
+
                     _relationships.Add(target.EntityId, AttitudeFactory.CreateAttitude(attitudeReactions));
                 }
                 else
                 {
-                    // if we already have a relationship with this entity
                     List<AttitudeReaction> attitudeReactions = EmotionToAttitudeMap.Reactions[emotion];
                     _relationships[target.EntityId] = AttitudeFactory.ModifyAttitude(_relationships[target.EntityId], attitudeReactions);
                 }

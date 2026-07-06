@@ -15,8 +15,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
         public async Task<bool> TryExecute(List<string> args, Player player)
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(player.CurrentSublocation?.GetDescription(player, GameContext.GameState) ?? player.CurrentLocation.GetLookDescription(player, GameContext.GameState));
-            sb.AppendLine(player.CurrentSublocation?.GetExits() ?? player.CurrentLocation.GetExits());
+            sb.AppendLine(player.CurrentLocation.GetLookDescription(player, GameContext.GameState));
             await IOService.Output.WriteNonDialogueLine(sb.ToString());
             return true;
         }

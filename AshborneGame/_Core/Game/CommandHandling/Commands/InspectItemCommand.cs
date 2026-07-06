@@ -1,4 +1,5 @@
 ﻿using AshborneGame._Core._Player;
+using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Globals.Interfaces;
@@ -20,11 +21,11 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             }
 
             string itemName = string.Join(" ", args).Trim();
-            Item? item = player.Inventory.GetItem(itemName);
+            BOCSObject? item = player.Inventory.GetItem(itemName);
             if (item != null)
             {
                 (bool canBeInspected, var inspectableBehaviour) = await item.TryGetBehaviour<IInspectable>();
-                if (!canBeInspected)
+                if (!canBeInspected || inspectableBehaviour == null)
                 {
                     await IOService.Output.DisplayFailMessage($"That can't be inspected.");
                     return false;

@@ -21,7 +21,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// <summary>
         /// The NPC that owns this Memory.
         /// </summary>
-        public InstanceID Owner { get; init; }
+        public DefinitionID Owner { get; init; }
 
         private double _intensity;
 
@@ -105,10 +105,10 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// </summary>
         public int HourLastReinforcedAt { get; private set; }
 
-        public Memory(InstanceID owner, double intensity, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
+        public Memory(DefinitionID owner, double intensity, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
         : this(owner, intensity, 1.0, cause, emotionModifiers, tags, hourCreatedAt, hourLastReinforcedAt) { }
 
-        public Memory(InstanceID owner, double intensity, double strength, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
+        public Memory(DefinitionID owner, double intensity, double strength, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
         {
             ID = new();
             Owner = owner;

@@ -19,7 +19,13 @@ namespace AshborneGame._Core.Game.CommandHandling
 
             return this;
         }
-        
+
+        public CustomCommandHandler AddCustomCommand(string command, Func<string> message, Action effect)
+        {
+            _commands.Add(command, (message, effect));
+            return this;
+        }
+
         // TODO: add support for full command removal
         public void RemoveCommand(string command)
         {
@@ -41,6 +47,11 @@ namespace AshborneGame._Core.Game.CommandHandling
             }
 
             return false;
+        }
+
+        public Dictionary<string, (Func<string> Message, Action Effect)> GetCommands()
+        {
+            return new(_commands);
         }
     }
 }

@@ -173,6 +173,12 @@ namespace AshborneGame._Core.LocationManagement
                 ?? throw new ArgumentNullException(nameof(composer));
         }
 
+        /// <summary>
+        /// Gets the full description, including the DescriptionComposer and exits, of this Location.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
         public string GetDescription(Player player, GameStateManager state)
         {
             var sb = new StringBuilder();
@@ -183,6 +189,12 @@ namespace AshborneGame._Core.LocationManagement
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Gets only the DescriptionComposer's LookDescription.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
         public string GetLookDescription(Player player, GameStateManager state)
             => DescriptionComposer.GetLookDescription(player, state);
 

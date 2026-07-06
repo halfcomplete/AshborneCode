@@ -84,7 +84,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
             }
 
             int availableCount = originInventory.Slots
-                .Where(slot => slot.Item.Name == item.Name)
+                .Where(slot => slot.Item.Name.Matches(item.Name.ReferenceName))
                 .Sum(slot => slot.Quantity);
 
             if (quantity < 0)
@@ -132,7 +132,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
 
         private void TakeAllOfAnItem(Inventory origin, Inventory destination, BOCSObject item)
         {
-            int count = origin.Slots.Where(s => s.Item.Name == item.Name).Sum(s => s.Quantity);
+            int count = origin.Slots.Where(s => s.Item.Name.Matches(item.Name)).Sum(s => s.Quantity);
             origin.TransferItem(origin, destination, item, count);
         }
     }

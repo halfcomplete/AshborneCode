@@ -11,6 +11,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
     {
         public List<string> EquippableSlots { get; set; }
         public int TimesEquipped { get; set; }
+        public bool IsEquipped { get; set; }
 
         public EquippableBehaviour(List<string> equippableSlots, int timesEquipped = 0)
         {
@@ -46,7 +47,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
                 behaviour.OnEquip(player);
             }
 
-
+            IsEquipped = true;
         }
 
         // TODO: do we really need to pass in the entire Player object every time?
@@ -67,6 +68,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
             {
                 behaviour.OnUnequip(player);
             }
+
+            IsEquipped = false;
         }
 
         public override Behaviour DeepClone()

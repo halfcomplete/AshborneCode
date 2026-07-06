@@ -3,6 +3,7 @@ using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.Behaviours;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
+using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
@@ -22,31 +23,22 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                 return false;
             }
             string targetName = string.Join(" ", args).Trim();
-            if (player.CurrentSublocation == null)
-            {
-                await IOService.Output.DisplayFailMessage("You are not in a place where you can talk.");
-                return false;
-            }
-            if (!player.CurrentSublocation.FocusObject.IsNPC())
-            {
-                await IOService.Output.DisplayFailMessage($"There is no one to talk to.");
-                return false;
-            }
 
-            Sublocation sublocation = player.CurrentSublocation!;
-            BOCSObject npc = sublocation.FocusObject;
+            Location loc = player.CurrentLocation;
+            List<BOCSObject> possibleNPCs = loc.ContainedObjects.Where(o => o.HasBehaviours<ITalkable>() && o.Name.Matches(targetName)).ToList();
 
-            // Check if the NPC's name or synonyms match the target name
-            // TODO: add new helper method for objects to check for name similarity
-            if (!npc.Synonyms.Contains(targetName))
+            // TODO: add "did you mean..." and "try moving closer..."
+            if (possibleNPCs.Count() == 0)
             {
-                await IOService.Output.DisplayFailMessage($"There is no one named '{targetName}' here.");
-                return false;
+                await IOService.Output.WriteNonDialogueLine($"There is no-one named '{targetName}' here that you can talk to.");
+            }
+            else if (possibleNPCs.Count() > 1)
+            {
+                throw new InvalidOperationException($"There are multiple NPCs named {targetName} in {loc.Name} which can be talked to.");
             }
 
             // TODO: May cause an issue where this method returns true before the dialogue begins
-
-            var res = npc.TryGetBehaviour<TalkableBehaviour>().Result;
+            var res = possibleNPCs[0].TryGetBehaviour<TalkableBehaviour>().Result;
 
             if (res.Item1 && res.Item2 != null)
             {

@@ -31,25 +31,26 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
                 return false;
             }
             // TODO: add helper method to match names
-            List<BOCSObject> focusObject = location.ContainedObjects.FirstOrDefault(o => o.Name)
+            List<BOCSObject> focusObjects = location.ContainedObjects.Where(o => o.Name.Matches(objectName)).ToList();
 
-            (bool hasOpenCloseBehaviour, var openCloseBehaviour) = await location.FocusObject.TryGetBehaviour<IInteractable>();
-
-            if (hasOpenCloseBehaviour && openCloseBehaviour is ContainerBehaviour)
+            foreach (var obj in focusObjects)
             {
-                (bool hasLockUnlockBehaviour, var lockUnlockBehaviour) = await location.FocusObject.TryGetBehaviour<IInteractable>();
-                if (hasLockUnlockBehaviour && lockUnlockBehaviour is LockUnlockBehaviour)
+                (bool hasOpenCloseBehaviour, var openCloseBehaviour) = await obj.TryGetBehaviour<IInteractable>();
+
+                if (hasOpenCloseBehaviour && openCloseBehaviour is ContainerBehaviour)
                 {
-                    LockUnlockBehaviour lockUnlockBehaviour1 = (LockUnlockBehaviour)lockUnlockBehaviour;
-                    openCloseBehaviour.Interact(ObjectInteractionTypes.Close, player);
+                    (bool hasLockUnlockBehaviour, var lockUnlockBehaviour) = await obj.TryGetBehaviour<IInteractable>();
+                    if (hasLockUnlockBehaviour && lockUnlockBehaviour is LockUnlockBehaviour)
+                    {
+                        LockUnlockBehaviour lockUnlockBehaviour1 = (LockUnlockBehaviour)lockUnlockBehaviour;
+                        openCloseBehaviour.Interact(ObjectInteractionTypes.Close, player);
+                        return true;
+                    }
                 }
-                return false;
             }
-            else
-            {
-                await IOService.Output.DisplayFailMessage($"You cannot close that.");
-                return false;
-            }
+
+            await IOService.Output.DisplayFailMessage($"You cannot close that.");
+            return false;
         }
     }
 }
