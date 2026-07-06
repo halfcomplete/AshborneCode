@@ -234,6 +234,7 @@ namespace AshborneGame._Core.Game
         public void OnPlayerEnterLocation(Location location)
         {
             GameContext.TimeTracker.OnPlayerEnterLocation(location);
+            GameContext.AmbientTimeManager?.OnEnterLocation(location);
 
             if (GameContext.Player == null)
             {

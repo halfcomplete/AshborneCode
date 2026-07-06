@@ -1,5 +1,6 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Game;
+using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
@@ -25,7 +26,7 @@ namespace AshborneTests
             AppEnvironment app = new AppEnvironment();
             InkRunner inkRunner = new Mock<InkRunner>(gameStateManager, player, app).Object;
             QuestTracker questTracker = new QuestTracker();
-            GameContext.Initialise(player, gameStateManager, new Mock<DialogueService>(inkRunner).Object, inkRunner, new Mock<GameEngine>(new Mock<IInputHandler>().Object, new Mock<IOutputHandler>().Object, app).Object, new Mock<TimeTracker>(questTracker).Object);
+            GameContext.Initialise(player, gameStateManager, new Mock<DialogueService>(inkRunner).Object, inkRunner, new Mock<GameEngine>(new Mock<IInputHandler>().Object, new Mock<IOutputHandler>().Object, app).Object, new Mock<TimeTracker>(questTracker).Object, new AmbientTimeManager());
         }
     }
 

@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace AshborneGame._Core.Game.DescriptionHandling
 {
+    /// <summary>
+    /// Timed and random ambient text snippets for a location.
+    /// <see cref="FromDuration"/> keys are tick counts (1 tick = 1 second) that must elapse
+    /// before the corresponding line is output.
+    /// </summary>
     public class AmbientDescription
     {
         public Dictionary<int, string> FromDuration { get; private set; }

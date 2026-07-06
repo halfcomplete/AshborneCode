@@ -48,6 +48,7 @@ namespace AshborneGame._Core.Game.CommandHandling
             // Then check location custom commands
             if (player.CurrentLocation.CustomCommands.CheckForMatch(action, args).GetAwaiter().GetResult())
             {
+                GameContext.AmbientTimeManager?.OnPlayerCommandInput();
                 return true;
             }
 
@@ -60,6 +61,7 @@ namespace AshborneGame._Core.Game.CommandHandling
             ICommand command = _commands.FirstOrDefault(c => c.Key.Contains(action.ToLower())).Value;
             if (command != null && await command.TryExecute(args, player))
             {
+                GameContext.AmbientTimeManager?.OnPlayerCommandInput();
                 return true;
             }
 

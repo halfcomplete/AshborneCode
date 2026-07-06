@@ -14,12 +14,17 @@ namespace AshborneGame._Core.Game
 {
     public class TimeTracker
     {
+        /// <summary>
+        /// One in-game hour passes every 60 ticks. At the default 1000 ms tick interval, one in-game hour equals one real minute.
+        /// </summary>
+        public const int TicksPerHour = 60;
+
         private bool _tickRunning;
         private CancellationTokenSource _tickCancellation;
         private Task _tickTask;
 
         private Location? _currentLocation;
-        private double _secondsSinceLastHourAdvance = 0;
+        private int _ticksSinceLastHourAdvance;
         private int _ticksInCurrentLocation;
         // Tracks the total number of ticks spent in the current location, starting from when the player last entered it.
         private int _totalTicksInCurrentLocation;
@@ -28,7 +33,6 @@ namespace AshborneGame._Core.Game
 
         // Default to 1000ms per tick
         private int _tickInterval = 1000;
-        private readonly int _ticksRequiredToAdvanceHour = 60; // 60 ticks = 1 in-game hour; if tick interval is 1 second, then 1 in-game hour = 1 real minute
 
         private readonly QuestTracker _questTracker;
 
@@ -111,40 +115,35 @@ namespace AshborneGame._Core.Game
         {
             // For simplicity, we assume each tick represents 1 second of real time.
             // TODO: To support variable tick intervals, pass the actual time elapsed since the last tick as a parameter and use that instead of a fixed value.
-            var secondsSinceLastTick = 1;
+            _ticksSinceLastHourAdvance++;
 
-            _secondsSinceLastHourAdvance += secondsSinceLastTick;
-
-            // Check if the seconds since the last hour advance are enough to advance in-game time by at least one hour
-            int hoursPassed = (int)Math.Floor((double)_secondsSinceLastHourAdvance / (double)(_ticksRequiredToAdvanceHour * (_tickInterval/1000f)));
-
-            AdvanceTime(hoursPassed);
+            int hoursPassed = _ticksSinceLastHourAdvance / TicksPerHour;
+            if (hoursPassed > 0)
+            {
+                _ticksSinceLastHourAdvance -= hoursPassed * TicksPerHour;
+                AdvanceTime(hoursPassed);
+            }
 
             EventBus.Publish(new GameEvents.System.TickEvent(TotalInGameHours, hoursPassed));
 
-            TickLocationTimeTracking(hoursPassed);
+            TickLocationTimeTracking();
             _questTracker.TickQuestTimeTracking(hoursPassed);
         }
 
-        private void TickLocationTimeTracking(int hoursPassed)
+        private void TickLocationTimeTracking()
         {
-            // Ensure the player stayed in the same location during this tick
-            if (GameContext.Player.CurrentLocation == _currentLocation)
-            {
-                // If enough time has passed to advance at least one hour, do so and reset the counter
-                if (hoursPassed > 0)
-                {
-                    _totalTicksInCurrentLocation += hoursPassed * _ticksRequiredToAdvanceHour; // Increment total ticks in location based on hours passed
-                    _secondsSinceLastHourAdvance = 0; // Reset the counter after advancing time
+            if (GameContext.Player.CurrentLocation != _currentLocation || _currentLocation == null)
+                return;
 
-                    // Because we advanced time, check if any location time triggers should fire
-                    foreach (var trigger in _locationTimeTriggers)
-                    {
-                        if (trigger.CheckTrigger(_currentLocation, _totalTicksInCurrentLocation))
-                        {
-                            EventBus.Publish(trigger.EventToRaise);
-                        }
-                    }
+            _ticksInCurrentLocation++;
+            _totalTicksInCurrentLocation++;
+
+            foreach (var trigger in _locationTimeTriggers)
+            {
+                if (trigger.CheckTrigger(_currentLocation, _totalTicksInCurrentLocation))
+                {
+                    trigger.Effect?.Invoke();
+                    EventBus.Publish(trigger.EventToRaise);
                 }
             }
         }
@@ -210,12 +209,14 @@ namespace AshborneGame._Core.Game
             if (_currentLocation != null)
             {
                 if (!_locationDurations.ContainsKey(_currentLocation))
-                    _locationDurations[_currentLocation] = _ticksInCurrentLocation;
+                    _locationDurations[_currentLocation] = 0;
 
                 _locationDurations[_currentLocation] += _ticksInCurrentLocation;
             }
 
             _currentLocation = location;
+            _ticksInCurrentLocation = 0;
+            _totalTicksInCurrentLocation = 0;
 
             if (!_locationDurations.ContainsKey(_currentLocation))
                 _locationDurations[_currentLocation] = 0;
