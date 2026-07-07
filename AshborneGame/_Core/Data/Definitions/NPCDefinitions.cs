@@ -10,7 +10,7 @@ namespace AshborneGame._Core.Data.Definitions
         public static readonly BOCSObjectDefinition BoundOne =
             new(
                 DefinitionIDs.NPCs.BoundOne,
-                new("Bound One", ["prisoner"]),
+                new("Bound One", "a mysterious bound figure", ["prisoner"]),
                 "A mysterious figure...",
                 [
                     new TalkableBehaviour(null, "Act1_Scene1_Prisoner_Dialogue"),
@@ -20,7 +20,7 @@ namespace AshborneGame._Core.Data.Definitions
         public static readonly BOCSObjectDefinition Dummy =
             new(
                 DefinitionIDs.NPCs.Dummy,
-                new("Dummy NPC", ["stupid boy", "Ricky"], "a"),
+                new("Dummy NPC", "a simple dummy", ["stupid boy", "Ricky"]),
                 "He's a bit slow in the head...",
                 [
                     new TalkableBehaviour(null, "Act1_Scene1_Prisoner_Dialogue"),

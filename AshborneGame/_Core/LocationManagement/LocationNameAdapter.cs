@@ -60,7 +60,7 @@ namespace AshborneGame._Core.LocationManagement
                 if (Article == null) return ReferenceName;
                 else
                 {
-                    if (_parentLocation != null && _parentLocation.VisitCount == 0)
+                    if (_parentLocation != null && _parentLocation.VisitCount <= 1)
                     {
                         return FirstTimeDisplayName;
                     }

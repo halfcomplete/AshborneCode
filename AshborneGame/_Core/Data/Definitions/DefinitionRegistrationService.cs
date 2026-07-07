@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AshborneGame._Core.Data.BOCS;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,6 +31,11 @@ namespace AshborneGame._Core.Data.Definitions
         public void RegisterItemDefinitions(DefinitionRegistry registry)
         {
             registry.Register(ItemDefinitions.MirrorShard);
+            RegisterMasks(registry);
+        }
+
+        public void RegisterMasks(DefinitionRegistry registry)
+        {
             registry.Register(ItemDefinitions.Ossaneth);
         }
 

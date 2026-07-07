@@ -208,8 +208,9 @@ namespace AshborneGame._Core.Game
 
         public void ForcePlayerMask(string maskName)
         {
-            _player.EquippedItems["face"] = null;
-            _player.EquippedItems["face"] = Masks[maskName];
+            Console.WriteLine("[GameStateManager] Forcing player to wear mask:" + maskName);
+            Console.WriteLine("Masks:" + string.Join(", ", Masks.Keys));
+            _player.EquipItem(Masks[maskName], "face");
             _player.Inventory.TryAddItem(Masks[maskName]);
 
             if (!OperatingSystem.IsBrowser())
@@ -217,7 +218,11 @@ namespace AshborneGame._Core.Game
                 return;
             }
 
-            if (maskName == MaskNameConstants.Ossaneth) GameContext.InkRunner.StartOssanethTimer.Invoke();
+            if (maskName == MaskNameConstants.Ossaneth)
+            {
+                Console.WriteLine("[GameStateManager] Player is wearing Ossaneth mask. Starting Ossaneth timer.");
+                GameContext.InkRunner.StartOssanethTimer.Invoke();
+            }
             else GameContext.InkRunner.StopOssanethTimer.Invoke();
         }
 
@@ -233,10 +238,7 @@ namespace AshborneGame._Core.Game
 
         public void OnPlayerEnterLocation(Location location)
         {
-            foreach (var obj in location.ContainedObjects)
-            {
-                obj.Name.Seen = true;
-            }
+            
 
             GameContext.TimeTracker.OnPlayerEnterLocation(location);
             GameContext.AmbientTimeManager?.OnEnterLocation(location);

@@ -1,22 +1,23 @@
+using AshborneGame._Core.CognitiveSystem.EmotionSystem;
+using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehaviours;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours;
+using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
+using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Game.Events;
+using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Enums;
+using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
-using AshborneGame._Core.Globals.Interfaces;
-using AshborneGame._Core.Game.DescriptionHandling;
-using AshborneGame._Core.Globals.Constants;
 using System.Net.Mail;
-using AshborneGame._Core.CognitiveSystem.EmotionSystem;
-using AshborneGame._Core.Data.IDSystem;
-using AshborneGame._Core.Data.BOCS;
-using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
-using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehaviours;
+using static AshborneGame._Core.Data.IDSystem.DefinitionIDs;
 
 namespace AshborneGame._Core._Player
 {
@@ -204,6 +205,11 @@ namespace AshborneGame._Core._Player
                 await IOService.Output.WriteNonDialogueLine(
                     CurrentLocation.GetDescription(this, GameContext.GameState));
             }
+
+            foreach (var obj in newLocation.ContainedObjects)
+            {
+                obj.Name.Seen = true;
+            }
         }
 
         /// <summary>
@@ -223,6 +229,11 @@ namespace AshborneGame._Core._Player
 
             await IOService.Output.WriteNonDialogueLine(
                 $"You are back at {location.Name.DisplayName}.\n");
+
+            foreach (var obj in location.ContainedObjects)
+            {
+                obj.Name.Seen = true;
+            }
         }
 
         public async Task MoveTo(Scene scene)
@@ -258,6 +269,11 @@ namespace AshborneGame._Core._Player
             {
                 await IOService.Output.WriteNonDialogueLine(
                     location.GetDescription(this, GameContext.GameState));
+
+                foreach (var obj in location.ContainedObjects)
+                {
+                    obj.Name.Seen = true;
+                }
             }
         }
 

@@ -48,9 +48,13 @@ namespace AshborneGame._Core.Game
             var movementService = new MovementService(locationRegistry);
             
             GameContext.Initialise(player, gameState, _dialogueService, inkRunner, this, timeTracker, ambientTimeManager, movementService, definitionRegistry, instanceRegistry, locationRegistry);
+            
             GameContext.WorldBuilder.Initialise(locationRegistry, definitionRegistry, GameContext.BOCSFactory);
 
             // TODO: initialise masks through the new definition system
+            var ossaneth = GameContext.BOCSFactory.Create(DefinitionIDs.Items.Masks.Ossaneth);
+
+            gameState.Masks["Ossaneth"] = ossaneth;
 
             var firstLocationID = DefinitionIDs.Locations.Prologue.PrologueStart;
 

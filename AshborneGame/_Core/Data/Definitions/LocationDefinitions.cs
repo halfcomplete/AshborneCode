@@ -164,7 +164,7 @@ namespace AshborneGame._Core.Data.Definitions
                         "You enter the Hall of Mirrors again. Nothing seems to have changed, but you think that the reflections are diverging further and further away from your real self.",
                         "For the fourth time, you enter the Hall of Mirrors. The reflections are increasingly clearer in some mirrors, while gone in others. For the first time, there are cracked mirrors dotted along the silver-lined hallway."),
                     new SensoryDescription(),
-                    new AmbientDescription().AddTimeBased(12, "You stand still. Your reflections do not.")
+                    new AmbientDescription().AddTimeBased(22, "You stand still. Your reflections do not.")
                 ),
                 [],
                 new CustomCommandHandler().AddCustomCommand(
@@ -184,7 +184,7 @@ namespace AshborneGame._Core.Data.Definitions
             public static LocationDefinition MirrorShardSublocation = new(
                 DefinitionIDs.Locations.Dreamspace.MirrorShardSublocation,
                 DefinitionIDs.Scenes.OssanethsDomain,
-                new LocationNameAdapter("mirror shard", "a mirror shard", new List<string> { "shard", "mirror shard", "shard of glass", "shard of mirror", "shard of a mirror" }),
+                new LocationNameAdapter("mirror shard", "a shard of mirror lying on the floor", new List<string> { "shard", "mirror shard", "shard of glass", "shard of mirror", "shard of a mirror" }),
                 new DescriptionComposer(
                     new LookDescription("You look at the shard. It is a small piece of a broken mirror, but it seems to reflect deeper than a normal mirror. You can see your reflection, but it feels... empty.",
                         "You look at the shard again. It still feels empty, but you can't shake the feeling that it is important."),

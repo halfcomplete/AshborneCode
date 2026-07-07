@@ -507,6 +507,9 @@ public partial class Home : ComponentBase, IDisposable
         if (line.Contains(OutputConstants.TypewriterStartMarker) && line.Contains(OutputConstants.TypewriterEndMarker))
             return OutputLineType.Typewriter;
         
+        if (line.Contains(OutputConstants.ForceMaskMarker))
+            return OutputLineType.ForceMask;
+
         if (line.Trim().StartsWith("[") && line.Contains("]") && line.Trim().Length > 2)
             return OutputLineType.DialogueChoice;
 
