@@ -260,7 +260,9 @@ namespace AshborneGame._Core.LocationManagement
                 }
                 sb.AppendLine($"- {child.Name.DisplayName}");
             }
-            
+
+            sb.Length -= Environment.NewLine.Length;
+
             return sb.ToString();
         }
     }

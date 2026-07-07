@@ -8,9 +8,12 @@ using System.Threading.Tasks;
 
 namespace AshborneGame._Core.Data.BOCS
 {
-    public class ObjectNameAdapter : INameAdapter
+    public class ObjectNameAdapter
     {
         public string ReferenceName { get; }
+        public string FirstTimeDisplayName { get; }
+
+        public bool Seen { get; set; } = false;
 
         private string? _article;
 
@@ -31,15 +34,21 @@ namespace AshborneGame._Core.Data.BOCS
             get
             {
                 if (Article == null) return ReferenceName;
-                else return Article + " " + ReferenceName;
+                else
+                {
+                    if (Seen) return Article + " " + ReferenceName;
+                    else
+                        return FirstTimeDisplayName;
+                }
             }
         }
 
         public List<string> Synonyms { get; private set; }
 
-        public ObjectNameAdapter(string reference, List<string> synonyms, string? article = "the")
+        public ObjectNameAdapter(string reference, string firstTimeDisplayName, List<string> synonyms, string? article = "the")
         {
             ReferenceName = reference;
+            FirstTimeDisplayName = firstTimeDisplayName;
             Article = article;
             Synonyms = synonyms;
         }
@@ -77,7 +86,7 @@ namespace AshborneGame._Core.Data.BOCS
 
         public ObjectNameAdapter DeepClone()
         {
-            return new ObjectNameAdapter(ReferenceName, new(Synonyms), Article);
+            return new ObjectNameAdapter(ReferenceName, FirstTimeDisplayName, new(Synonyms), Article);
         }
     }
 }

@@ -103,7 +103,7 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             else
             {
                 string displayName = player.CurrentLocation.Name.DisplayName;
-                description.Append($"You go back to {displayName}. It hasn't changed since you last came.");
+                description.Append($"You once again arrive at {displayName}. It hasn't changed since you last came.");
             }
 
             // Add ambient snippets if available

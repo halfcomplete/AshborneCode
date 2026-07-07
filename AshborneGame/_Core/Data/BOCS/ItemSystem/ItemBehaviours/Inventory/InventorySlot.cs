@@ -1,4 +1,5 @@
 ﻿using AshborneGame._Core.Data.BOCS;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
@@ -12,10 +13,10 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
         {
             get
             {
-                var (res, b) = Item.TryGetBehaviour<ItemBehaviour>().Result;
+                var (res, b) = Item.TryGetBehaviour<IStorable>().Result;
                 if (!res || b == null)
                 {
-                    throw new Exception($"Item {Item.Name} doesn't have ItemBehaviour attached.");
+                    throw new Exception($"Item {Item.Name} doesn't have IStorable attached.");
                 }
                 return Quantity >= b.StackLimit;
             }
@@ -23,10 +24,10 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
 
         public InventorySlot(BOCSObject item, int quantity = 1)
         {
-            var (res, b) = item.TryGetBehaviour<ItemBehaviour>().Result;
+            var (res, b) = item.TryGetBehaviour<IStorable>().Result;
             if (!res || b == null)
             {
-                throw new Exception($"Item {item.Name} doesn't have ItemBehaviour attached.");
+                throw new Exception($"Item {item.Name} doesn't have IStorable attached.");
             }
 
             Item = item ?? throw new ArgumentNullException(nameof(item));
@@ -40,10 +41,10 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
         /// <returns></returns>
         public int Add(int amount)
         {
-            var (res, b) = Item.TryGetBehaviour<ItemBehaviour>().Result;
+            var (res, b) = Item.TryGetBehaviour<IStorable>().Result;
             if (!res || b == null)
             {
-                throw new Exception($"Item {Item.Name} doesn't have ItemBehaviour attached.");
+                throw new Exception($"Item {Item.Name} doesn't have IStorable attached.");
             }
             int space = b.StackLimit - Quantity;
             int toAdd = Math.Min(space, amount);

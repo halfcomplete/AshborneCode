@@ -79,7 +79,7 @@ namespace AshborneGame._Core._Player
         public Player()
         {
             _name = "Hero"; // Default name
-            var descriptor = new LocationNameAdapter("test location");
+            var descriptor = new LocationNameAdapter("test location", "a test location");
             // Use unique ID to avoid registry collisions in tests
             // HACK: fix the def id
             CurrentLocation = new Location(
@@ -123,7 +123,7 @@ namespace AshborneGame._Core._Player
         public Player(string name)
         {
             _name = name;
-            var descriptor = new LocationNameAdapter("Placeholder");
+            var descriptor = new LocationNameAdapter("Placeholder", "a placeholder");
             // Use unique ID to avoid registry collisions in tests
             Inventory = new Inventory();
             PsychologicalState = new(_definitionID);

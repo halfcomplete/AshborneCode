@@ -21,7 +21,7 @@ namespace AshborneGame._Core.Data.Definitions
             public static LocationDefinition PrologueStart = new(
                 DefinitionIDs.Locations.Prologue.PrologueStart,
                 DefinitionIDs.Scenes.Prologue,
-                new LocationNameAdapter("Prologue Start"),
+                new LocationNameAdapter("Prologue Start", "where it all began"),
                 new DescriptionComposer(
                     new LookDescription(
                         "You find yourself in a dimly lit room, the walls adorned with ancient tapestries.",
@@ -45,7 +45,7 @@ namespace AshborneGame._Core.Data.Definitions
             public static LocationDefinition EyePlatform = new(
                 DefinitionIDs.Locations.Dreamspace.EyePlatform,
                 DefinitionIDs.Scenes.OssanethsDomain,
-                new LocationNameAdapter("Eye Platform"),
+                new LocationNameAdapter("Eye Platform", "an eye-shaped platform"),
                 new DescriptionComposer(
                     new LookDescription(
                         "You glance around uneasily. The eye you stand on is unblinking and unmoving. Black clouds cover the sky, and the occasional lightning flashes are bright white against an otherwise dull and dark background.",
@@ -127,7 +127,7 @@ namespace AshborneGame._Core.Data.Definitions
             public static LocationDefinition PlatformEdge = new(
                 DefinitionIDs.Locations.Dreamspace.PlatformEdge,
                 DefinitionIDs.Scenes.OssanethsDomain,
-                new LocationNameAdapter("platform edge", new List<string> { "edge", "side" }),
+                new LocationNameAdapter("platform edge", "the platform edge", new List<string> { "edge", "side" }),
                 new DescriptionComposer(
                     new LookDescription(
                         "Peering over the edge, the void stretches endlessly. Fragments warp and twist as if reality itself is bending.",
@@ -152,7 +152,7 @@ namespace AshborneGame._Core.Data.Definitions
             public static LocationDefinition HallOfMirrors = new(
                 DefinitionIDs.Locations.Dreamspace.HallOfMirrors,
                 DefinitionIDs.Scenes.OssanethsDomain,
-                new LocationNameAdapter("Hall of Mirrors", new List<string> { "hall" }),
+                new LocationNameAdapter("Hall of Mirrors", "the Hall of Mirrors", new List<string> { "hall" }),
                 new DescriptionComposer(
                     new LookDescription(
                         "You look around the hall. Everywhere, your reflection stares right back at you, each mirror containing an infinite universe of you's.",
@@ -184,11 +184,11 @@ namespace AshborneGame._Core.Data.Definitions
             public static LocationDefinition MirrorShardSublocation = new(
                 DefinitionIDs.Locations.Dreamspace.MirrorShardSublocation,
                 DefinitionIDs.Scenes.OssanethsDomain,
-                new LocationNameAdapter("Mirror Shard", new List<string> { "shard", "mirror shard", "shard of glass", "shard of mirror", "shard of a mirror" }),
+                new LocationNameAdapter("mirror shard", "a mirror shard", new List<string> { "shard", "mirror shard", "shard of glass", "shard of mirror", "shard of a mirror" }),
                 new DescriptionComposer(
                     new LookDescription("You look at the shard. It is a small piece of a broken mirror, but it seems to reflect deeper than a normal mirror. You can see your reflection, but it feels... empty.",
                         "You look at the shard again. It still feels empty, but you can't shake the feeling that it is important."),
-                    new VisitDescription("You walk up to the shard of mirror. It is small and broken, but it seems to reflect deeper than a normal mirror can. Perhaps storing it for later will be beneficial.\n",
+                    new VisitDescription("You walk up to the shard of mirror. It is small and broken, but it seems to reflect deeper than a normal mirror can. Perhaps storing it for later will be beneficial.",
                         "You walk up to the shard again. It still feels empty, but you can't shake the feeling that it is important.",
                         "You go to the shard again. It still feels empty, but you can't shake the feeling that it is important."),
                     new SensoryDescription("The shard lies still on the ground.", "It is eerily quiet here.")

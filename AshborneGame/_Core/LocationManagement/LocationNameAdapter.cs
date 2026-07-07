@@ -5,22 +5,24 @@ namespace AshborneGame._Core.LocationManagement
     /// <summary>
     /// Supports flexible naming for parsing, immersion, and varied prose.
     /// </summary>
-    public class LocationNameAdapter : INameAdapter
+    public class LocationNameAdapter
     {
         /// <summary>
         /// The core name of the location (e.g., "Dusty Armoury").
         /// </summary>
         public string ReferenceName { get; }
 
-        /// <summary>
-        /// Article to use (e.g., "the").
-        /// </summary>
-        private string _article;
+        public string FirstTimeDisplayName { get; }
 
         /// <summary>
         /// Article to use (e.g., "the").
         /// </summary>
-        public string Article
+        private string? _article;
+
+        /// <summary>
+        /// Article to use (e.g., "the").
+        /// </summary>
+        public string? Article
         {
             get
             {
@@ -51,7 +53,21 @@ namespace AshborneGame._Core.LocationManagement
         /// <summary>
         /// Display name (e.g., "the Dusty Armoury").
         /// </summary>
-        public string DisplayName => $"{Article} {ReferenceName}";
+        public string DisplayName
+        {
+            get
+            {
+                if (Article == null) return ReferenceName;
+                else
+                {
+                    if (_parentLocation != null && _parentLocation.VisitCount == 0)
+                    {
+                        return FirstTimeDisplayName;
+                    }
+                    return Article + " " + ReferenceName;
+                }
+            }
+        }
 
         /// <summary>
         /// List of synonyms for parsing and matching.
@@ -61,11 +77,12 @@ namespace AshborneGame._Core.LocationManagement
         private Location _parentLocation;
 
         /// <summary>
-        /// Creates a new LocationDescriptor.
+        /// Creates a new LocationNameAdapter.
         /// </summary>
-        public LocationNameAdapter(string referenceName, List<string>? synonyms = null, string article = "the")
+        public LocationNameAdapter(string referenceName, string firstTimeDisplayName, List<string>? synonyms = null, string article = "the")
         {
             ReferenceName = referenceName;
+            FirstTimeDisplayName = firstTimeDisplayName;
             Synonyms = synonyms ?? new List<string>();
             Article = article;
         }

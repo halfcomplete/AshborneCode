@@ -233,6 +233,11 @@ namespace AshborneGame._Core.Game
 
         public void OnPlayerEnterLocation(Location location)
         {
+            foreach (var obj in location.ContainedObjects)
+            {
+                obj.Name.Seen = true;
+            }
+
             GameContext.TimeTracker.OnPlayerEnterLocation(location);
             GameContext.AmbientTimeManager?.OnEnterLocation(location);
 

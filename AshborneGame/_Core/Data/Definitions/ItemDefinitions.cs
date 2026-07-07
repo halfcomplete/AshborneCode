@@ -22,7 +22,7 @@ namespace AshborneGame._Core.Data.Definitions
         public static BOCSObjectDefinition Ossaneth = 
             new(
                 DefinitionIDs.Items.Masks.Ossaneth,
-                new("Ossaneth", [], null),
+                new("Ossaneth", "a void-black mask", [], null),
                 "A strange, void-black object of unknown origins",
                 [
                     new ItemBehaviour(1, ItemTypes.Equipment, ItemQualities.Legendary),
@@ -35,7 +35,7 @@ namespace AshborneGame._Core.Data.Definitions
         public static BOCSObjectDefinition MirrorShard =
             new(
                 DefinitionIDs.Items.Magic.MirrorShard,
-                new("Mirror Shard", ["shard", "mirror", "shard of mirror", "piece of mirror", "mirror piece"]),
+                new("Mirror Shard", "a shard from a mirror", ["shard", "mirror", "shard of mirror", "piece of mirror", "mirror piece"]),
                 "A small, sharp mirror shard from Ossaneth's Domain.",
                 [
                     new ItemBehaviour(1, ItemTypes.Consumable, ItemQualities.Rare),
