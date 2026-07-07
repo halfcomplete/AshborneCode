@@ -5,6 +5,38 @@ $blazorProjectPath = "D:\C# Projects\AshborneCode\AshborneWASM"
 $publishOutputPath = "D:\C# Projects\AshborneCode\publish"
 $deployRepoPath    = "D:\C# Projects\Ashborne"
 
+# Generate build information
+Write-Host "`n[INFO] Generating build information..."
+
+$buildTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+
+# Try to get current git commit
+try {
+    $commit = git -C (Split-Path $blazorProjectPath -Parent) rev-parse --short HEAD
+}
+catch {
+    $commit = "unknown"
+}
+
+$buildInfoPath = Join-Path $blazorProjectPath "BuildInfo.g.cs"
+
+$buildInfo = @"
+namespace AshborneWASM;
+
+public static class BuildInfo
+{
+    public const string BuildTime = "$buildTime";
+    public const string Commit = "$commit";
+}
+"@
+
+Set-Content -Path $buildInfoPath -Value $buildInfo -Encoding UTF8
+
+Write-Host "[INFO] Generated BuildInfo.g.cs"
+Write-Host "[INFO] Build time: $buildTime"
+Write-Host "[INFO] Commit: $commit"
+
+
 # Publish Blazor project
 Write-Host "`n[INFO] Publishing Blazor app..."
 dotnet publish $blazorProjectPath -c Release -o $publishOutputPath /p:RunAOTCompilation=false /p:PublishTrimmed=false
@@ -14,14 +46,18 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
+
 # Clean up index.html and set <base href> for GitHub Pages
 $indexHtmlPath = Join-Path $publishOutputPath "wwwroot\index.html"
+
 # Remove integrity attributes as no external assets are used
 (Get-Content $indexHtmlPath) -replace ' integrity="[^"]+"', '' | Set-Content $indexHtmlPath
 Write-Host "[INFO] Removed integrity attributes from index.html"
+
 # Set <base href> to /Ashborne/ for GitHub Pages
 (Get-Content $indexHtmlPath) -replace '<base href="/" />', '<base href="/Ashborne/" />' | Set-Content $indexHtmlPath
 Write-Host "[INFO] Set <base href> to /Ashborne/ for GitHub Pages"
+
 
 # Remove service worker files
 $serviceWorkerFiles = @(
@@ -37,6 +73,7 @@ foreach ($file in $serviceWorkerFiles) {
         Write-Host "[INFO] Removed: $file"
     }
 }
+
 
 # Copy published files to GitHub Pages repo
 $source = Join-Path $publishOutputPath "wwwroot"
@@ -61,16 +98,19 @@ Get-ChildItem -Path $destination -Recurse -Force |
     Where-Object { $_.FullName -notlike "$destination\.git*" } |
     Remove-Item -Force -Recurse
 
+
 # Copy new files in
 Copy-Item -Path "$source\*" -Destination $destination -Recurse -Force
+
 
 # Git commit and push
 Write-Host "`n[INFO] Committing and pushing to GitHub Pages..."
 
 Set-Location $deployRepoPath
+
 git add .
 
-$commitMessage = "Deploy from publish on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+$commitMessage = "Deploy Ashborne build $buildTime"
 git commit -m "$commitMessage"
 git push
 
@@ -79,17 +119,20 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-Write-Host "`n[SUCCESS] Deployment complete! Visit: https://halfcomplete.github.io/Ashborne/"
 
+Write-Host "`n[SUCCESS] Deployment complete! Visit: https://halfcomplete.github.io/Ashborne/"
 
 # Revert <base href> in SOURCE index.html to local (/)
 $sourceIndexHtmlPath = Join-Path $blazorProjectPath "wwwroot\index.html"
+
 if (Test-Path $sourceIndexHtmlPath) {
     (Get-Content $sourceIndexHtmlPath) -replace '<base href="/Ashborne/" />', '<base href="/" />' | Set-Content $sourceIndexHtmlPath
     Write-Host "[INFO] Reverted <base href> in SOURCE index.html to / for local development."
-} else {
+}
+else {
     Write-Warning "[WARNING] Source index.html not found at $sourceIndexHtmlPath."
 }
+
 
 # Return to AshborneCode root
 Set-Location (Split-Path $blazorProjectPath -Parent)
