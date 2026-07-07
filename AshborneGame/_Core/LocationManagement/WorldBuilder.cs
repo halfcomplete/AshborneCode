@@ -7,6 +7,7 @@ using AshborneGame._Core.Data.Definitions;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Game.CommandHandling;
+using AshborneGame._Core.Globals.Constants;
 
 namespace AshborneGame._Core.LocationManagement
 {
@@ -73,6 +74,7 @@ namespace AshborneGame._Core.LocationManagement
                 }
 
                 parentLocation.AddChild(childLocation);
+                childLocation.AddExit(new Exit(parentLocation.DefinitionID, DirectionConstants.Back));
             }
 
             foreach (var exitDefinition in LocationDefinitionGraph.Exits)

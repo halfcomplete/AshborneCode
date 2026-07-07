@@ -218,8 +218,6 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             // Increment the look count
             Look.LookCount++;
 
-            description.Append("\n");
-
             return description.ToString();
         }
     }

@@ -139,7 +139,7 @@ namespace AshborneGame._Core.Data.Definitions
                     new SensoryDescription(
                         "The air smells sharper here, like it's... metallic.",
                         "A low hum vibrates through your chest, syncing with your heartbeat."),
-                    new AmbientDescription().AddTimeBased(15, "A shadow flickers at the edge of your vision, gone when you turn.")
+                    new AmbientDescription().AddTimeBased(20, "A shadow flickers at the edge of your vision, gone when you turn.")
                 ),
                 new(),
                 new CustomCommandHandler().AddCustomCommand(
@@ -195,7 +195,7 @@ namespace AshborneGame._Core.Data.Definitions
                 ),
                 [],
                 new CustomCommandHandler().AddCustomCommand(
-                    new CustomCommandPhrasing(["pick up", "take", "grab"], ["shard", "mirror shard", "shard of glass", "shard of mirror", "shard of a mirror"]),
+                    new CustomCommandPhrasing(["pick up the", "take the", "grab the"], ["shard", "mirror shard", "shard of glass", "shard of mirror", "shard of a mirror"]),
                     () => "You pick up the shard. It feels cold and heavy in your hand.",
                     () =>
                     {

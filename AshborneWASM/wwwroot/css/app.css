@@ -264,6 +264,22 @@ body {
     font-variant: small-caps;
     box-shadow: 0 2px 12px 0 rgba(0,0,0,0.12);
     z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 3rem;
+}
+
+.divider {
+    opacity: 0.75;
+}
+
+.scene-label {
+
+}
+
+.act-label {
+
 }
 
 .scene-header-text {

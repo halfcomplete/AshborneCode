@@ -159,11 +159,18 @@ namespace AshborneGame._Core.LocationManagement
         /// <summary>
         /// Adds a traversable exit from this location.
         /// </summary>
-        public void AddExit(Exit exit)
+        public bool AddExit(Exit exit)
         {
             ArgumentNullException.ThrowIfNull(exit);
 
+            if (_exits.Any(e => e.Direction.Equals(exit.Direction, StringComparison.OrdinalIgnoreCase) && e.TargetLocation.Equals(exit.TargetLocation)))
+            {
+                return false;
+            }
+
             _exits.Add(exit);
+
+            return true;
         }
 
         /// <summary>
@@ -212,9 +219,10 @@ namespace AshborneGame._Core.LocationManagement
         public string GetExits()
         {
             var sb = new StringBuilder();
+            List<DefinitionID> listedLocationIDs = new();
             if (Exits.Count == 0)
             {
-                sb.AppendLine("\nThere are no exits from here.");
+                sb.Append("There are no exits from here.");
                 if (Children.Count == 0) 
                 { 
                     sb.Append(" There is also nothing of note here."); 
@@ -226,28 +234,33 @@ namespace AshborneGame._Core.LocationManagement
             }
             else 
             { 
-                sb.AppendLine("From here you can go:"); 
+                sb.Append("From here you can go:\n"); 
                 foreach (var exit in Exits) 
                 { 
-                    if (DirectionConstants.CardinalDirections.Contains(exit.Direction)) 
-                    { 
-                        // TODO: fix?
-                        if (!GameContext.LocationRegistry.TryGetLocationByDefinitionID(exit.TargetLocation, out var loc))
-                        {
-                            throw new KeyNotFoundException($"Definition ID {exit.TargetLocation} not found.");
-                        }
-                        sb.AppendLine($"- {exit.Direction} to {loc?.Name.DisplayName}"); 
-                    } 
-                } 
-                if (Children.Count > 0) 
-                { 
-                    sb.AppendLine("\n You can also go to:"); 
-                } 
+                    // TODO: fix?
+                    if (!GameContext.LocationRegistry.TryGetLocationByDefinitionID(exit.TargetLocation, out var loc))
+                    {
+                        throw new KeyNotFoundException($"Definition ID {exit.TargetLocation} not found.");
+                    }
+                    sb.AppendLine($"- {exit.Direction} to {loc?.Name.DisplayName}"); 
+                    listedLocationIDs.Add(exit.TargetLocation);
+                }
             }
+
+            if (Children.Count > 0 && !Children.All(child => listedLocationIDs.Contains(child.DefinitionID)))
+            {
+                sb.AppendLine("\nYou can also go to:");
+            }
+
             foreach (var child in Children) 
             {
-                sb.AppendLine($"- {child.Name.DisplayName}"); 
+                if (listedLocationIDs.Contains(child.DefinitionID))
+                {
+                    continue;
+                }
+                sb.AppendLine($"- {child.Name.DisplayName}");
             }
+            
             return sb.ToString();
         }
     }

@@ -13,7 +13,7 @@ namespace AshborneGame._Core.Data.Definitions
         public static IReadOnlyList<ExitDefinition> Exits =
         [
             new(DefinitionIDs.Locations.Dreamspace.EyePlatform, DefinitionIDs.Locations.Dreamspace.HallOfMirrors, DirectionConstants.East),
-            new(DefinitionIDs.Locations.Dreamspace.EyePlatform, DefinitionIDs.Locations.Dreamspace.PlatformEdge, DirectionConstants.Forward)
+            new(DefinitionIDs.Locations.Dreamspace.EyePlatform, DefinitionIDs.Locations.Dreamspace.PlatformEdge, DirectionConstants.Forward),
         ];
 
         public static readonly IReadOnlyList<ParentChildDefinition> Hierarchy =

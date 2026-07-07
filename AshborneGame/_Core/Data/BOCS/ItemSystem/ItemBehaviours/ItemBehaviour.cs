@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
 using AshborneGame._Core.Globals.Enums;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours
 {
-    public class ItemBehaviour : Behaviour
+    public class ItemBehaviour : Behaviour, IStorable
     {
         /// <summary>
         /// Gets the maximum number of this item that can be stacked in a single inventory slot.

@@ -35,8 +35,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
         /// </summary>
         public bool TryAddItem(BOCSObject item, int count = 1)
         {
-            var res = item.TryGetBehaviour<ItemBehaviour>().GetAwaiter().GetResult();
-            ItemBehaviour b;
+            var res = item.TryGetBehaviour<IStorable>().GetAwaiter().GetResult();
+            IStorable b;
 
             if (res.Item1 && res.Item2 != null)
             {

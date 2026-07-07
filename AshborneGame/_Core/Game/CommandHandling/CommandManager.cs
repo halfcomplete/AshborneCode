@@ -65,6 +65,7 @@ namespace AshborneGame._Core.Game.CommandHandling
                 return true;
             }
 
+            await IOService.Output.DisplayFailMessage("Invalid command. Please try again or type 'help' for assistance.");
             return false;
         }
 

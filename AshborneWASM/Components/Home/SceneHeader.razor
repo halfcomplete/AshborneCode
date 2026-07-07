@@ -1,12 +1,22 @@
-<div class="scene-header">
-    @if (!string.IsNullOrWhiteSpace(HeaderText))
-    {
-        <span class="scene-header-text">
-            @HeaderText
-        </span>
-    }
-</div>
+@if (!string.IsNullOrEmpty(ActLabel))
+{
+    <div class="scene-header">
+        <span class="act-label">@ActLabel</span>
+        <span class="divider">•</span>
+        <span class="scene-label">@SceneName</span>
+    </div>
+}
+else
+{
+    <div class="scene-header">
+        <span>@SceneName</span>
+    </div>
+}
 
 @code {
-    [Parameter] public string? HeaderText { get; set; }
+    [Parameter]
+    public string ActLabel { get; set; } = string.Empty;
+
+    [Parameter]
+    public string SceneName { get; set; } = string.Empty;
 }

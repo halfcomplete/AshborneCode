@@ -178,7 +178,8 @@ public partial class Home : ComponentBase, IDisposable
 
     static private (bool coloured, string hexColour) isNextLineColoured = (false, "FFFFFF");
 
-    private string SceneHeaderText => BuildSceneHeaderText();
+    private string ActLabel => BuildActLabel();
+    private string SceneName => GameContext.Player?.CurrentScene.DisplayName ?? "";
 
     private bool ShowOssanethSigil => GameContext.Player?.EquippedItems["face"]?.Name.Matches(MaskNameConstants.Ossaneth) ?? false;
 
@@ -1171,7 +1172,7 @@ public partial class Home : ComponentBase, IDisposable
             }
             try
             {
-                await IOService.Output.WriteNonDialogueLine($"> {userInput}");
+                await IOService.Output.WriteNonDialogueLine($"\n> {userInput}");
                 string command = userInput.Trim();
 #if DEBUG
                 await IOService.Output.DisplayDebugMessage($"[DEBUG] Executing command: '{command}'");
@@ -1449,32 +1450,20 @@ public partial class Home : ComponentBase, IDisposable
         return sb.ToString();
     }
 
-    private string BuildSceneHeaderText()
+    private string BuildActLabel()
     {
         if (GameContext.Player?.CurrentScene == null || GameContext.GameState == null)
         {
             return string.Empty;
         }
 
-        int actNo = 1;
+        int actNo = 0;
         GameContext.GameState.TryGetCounter(StateKeys.Counters.Player.CurrentActNo, out actNo);
-        string actLabel = "PART " + IntToRomanConversionService.IntToRoman(actNo);
-        var scene = GameContext.Player.CurrentScene;
-        int sceneNo = 1;
-        GameContext.GameState.TryGetCounter(StateKeys.Counters.Player.CurrentSceneNo, out sceneNo);
-        string sceneLabel;
-        string final;
-        if (sceneNo != 0)
+        string actLabel = "ACT " + IntToRomanConversionService.IntToRoman(actNo);
+        if (actNo == 0)
         {
-            sceneLabel = IntToRomanConversionService.IntToRoman(sceneNo);
-            final = $"{actLabel}: CHAPTER {sceneLabel} — {scene.DisplayName.ToUpper()}";
+            return "";
         }
-        else
-        {
-            sceneLabel = string.Empty;
-            final = $"{scene.DisplayName.ToUpper()}";
-        }
-
-        return final;
+        return actLabel;
     }
 }

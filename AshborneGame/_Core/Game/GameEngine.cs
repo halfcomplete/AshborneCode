@@ -39,7 +39,7 @@ namespace AshborneGame._Core.Game
 
             Player player = new Player("Hero");
             var gameState = new GameStateManager(player);
-            gameState.SetCounter(StateKeys.Counters.Player.CurrentActNo, 1);
+            gameState.SetCounter(StateKeys.Counters.Player.CurrentActNo, 0);
             var inkRunner = new InkRunner(gameState, player, appEnvironment);
             _dialogueService = new DialogueService(inkRunner);
             var questTracker = new QuestTracker();
@@ -105,6 +105,7 @@ namespace AshborneGame._Core.Game
             GameContext.LocationRegistry.TryGetLocationByDefinitionID(DefinitionIDs.Locations.Dreamspace.EyePlatform, out var location);
 
             await GameContext.Player.SetupMoveTo(location, location.Scene, true);
+            GameContext.GameState.SetCounter(StateKeys.Counters.Player.CurrentActNo, 1);
             // Description is now handled inside SetupMoveTo
         }
 
@@ -395,6 +396,7 @@ namespace AshborneGame._Core.Game
             await IOService.Output.DisplayDebugMessage("Game world initialised.");
         }
 
+        // console version (NOT the Blazor version, which uses ReceiveCommand instead and is in Home.razor.cs)
         public async Task StartGameLoop(Player player, GameStateManager gameState)
         {
             await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_{_startingSceneSection}");
@@ -466,12 +468,7 @@ namespace AshborneGame._Core.Game
             var splitInput = input.Split(' ').ToList();
             var action = CommandManager.ExtractAction(splitInput, out List<string> args);
 
-            bool isValidCommand = await CommandManager.TryExecute(action, args, GameContext.Player);
-
-            if (!isValidCommand)
-            {
-                await IOService.Output.DisplayFailMessage("Invalid command. Please try again or type 'help' for assistance.");
-            }
+            await CommandManager.TryExecute(action, args, GameContext.Player);
         }
 
         public void Stop()
