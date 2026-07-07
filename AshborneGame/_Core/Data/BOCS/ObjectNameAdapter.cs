@@ -22,7 +22,6 @@ namespace AshborneGame._Core.Data.BOCS
             }
             set
             {
-                ArgumentNullException.ThrowIfNullOrWhiteSpace(value);
                 _article = value;
             }
         }

@@ -19,14 +19,14 @@ namespace AshborneGame._Core.Data.Definitions
     {
         // TODO: clarify what each 'description' format is meant to be
         // TODO: add various interjection triggers for Ossaneth
-        public static BOCSObjectDefinition Mask = 
+        public static BOCSObjectDefinition Ossaneth = 
             new(
                 DefinitionIDs.Items.Masks.Ossaneth,
                 new("Ossaneth", [], null),
                 "A strange, void-black object of unknown origins",
                 [
                     new ItemBehaviour(1, ItemTypes.Equipment, ItemQualities.Legendary),
-                    new EquippableBehaviour(new (["face"])),
+                    new EquippableBehaviour(["face"]),
                     new InspectableBehaviour("The mask is heavy with history, power, and owners.", ItemQualities.Legendary),
                     new MaskInterjectionBehaviour(GameContext.GameState),
                 ]

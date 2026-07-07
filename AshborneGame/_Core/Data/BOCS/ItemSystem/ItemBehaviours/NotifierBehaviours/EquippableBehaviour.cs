@@ -15,9 +15,11 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
 
         public EquippableBehaviour(List<string> equippableSlots, int timesEquipped = 0)
         {
-            if (EquippableSlots == null || EquippableSlots.Count == 0)
+            ArgumentNullException.ThrowIfNull(equippableSlots);
+
+            if (equippableSlots.Count == 0)
             {
-                throw new ArgumentException("Body parts cannot be null or empty.", nameof(EquippableSlots));
+                throw new ArgumentException("Body parts cannot be empty.", nameof(equippableSlots));
             }
 
             EquippableSlots = equippableSlots;
@@ -74,7 +76,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
 
         public override Behaviour DeepClone()
         {
-            return new EquippableBehaviour(EquippableSlots, TimesEquipped);
+            return new EquippableBehaviour(new(EquippableSlots), TimesEquipped);
         }
     }
 }
