@@ -18,13 +18,21 @@ namespace AshborneGame._Core.Globals.Constants
             North, South, East, West
         ];
 
-        public static IReadOnlyDictionary<string, string> CardinalDirectionOppositesMap =
+        public static IReadOnlyDictionary<string, string> DirectionOppositesMap =
         new Dictionary<string, string>
         {
             { North, South },
             { South, North },
             { East, West },
-            { West, East }
+            { West, East },
+            { Forward, Back  },
+            { Back, Forward },
+            { Up, Down },
+            { Down, Up },
+            { Left, Right },
+            { Right, Left },
+            { In, Out },
+            { Out, In }
         };
 
         public const string Back = "back";
@@ -35,13 +43,14 @@ namespace AshborneGame._Core.Globals.Constants
         public const string Right = "right";
 
         public const string In = "in";
+        public const string Out = "out";
         public const string Through = "through";
 
         public static IReadOnlyCollection<string> AllDirections =
         [
             North, South, East, West,
             Back, Up, Down, Forward, Left, Right,
-            In, Through
+            In, Out, Through
         ];
     }
 }

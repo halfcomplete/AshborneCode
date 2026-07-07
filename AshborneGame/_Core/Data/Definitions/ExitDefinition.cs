@@ -24,7 +24,7 @@ namespace AshborneGame._Core.Data.Definitions
         /// </summary>
         public Exit FromTo()
         {
-            return new Exit(from, DirectionConstants.CardinalDirectionOppositesMap[direction]);
+            return new Exit(from, DirectionConstants.DirectionOppositesMap[direction]);
         }
     }
 }

@@ -14,7 +14,7 @@ namespace AshborneWASM
 
             // Detect environment and configure base URL
             bool isGithubPages = builder.HostEnvironment.BaseAddress.Contains("github.io");
-            
+
             // Register environment configuration
             builder.Services.AddSingleton(new AppEnvironment
             {
@@ -23,6 +23,8 @@ namespace AshborneWASM
                     ? "https://halfcomplete.github.io/Ashborne/"
                     : builder.HostEnvironment.BaseAddress
             });
+
+            Console.WriteLine($"Build Time: {BuildInfo.BuildTime}\nBuild Commit: {BuildInfo.Commit}");
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             await builder.Build().RunAsync();

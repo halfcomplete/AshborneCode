@@ -152,6 +152,7 @@ namespace AshborneGame._Core.Game.DescriptionHandling
                     _isInputPaused = true;
                     _isPaused = true;
                     descriptionToTrigger = desc;
+                    _ambientDescription.FromDuration.Remove(_ticksSinceReset);
                 }
             }
 

@@ -100,9 +100,11 @@ namespace AshborneGame._Core.Game
 
             await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_{_startingSceneSection}");
 
-            Console.WriteLine("[GameEngine] Initial intro dialogue completed. Starting Ossaneth's Domain intro dialogue");
+            Console.WriteLine("[GameEngine] Initial intro dialogue completed.");
 
-            await GameContext.Player.SetupMoveTo(_firstLocation, _firstScene);
+            GameContext.LocationRegistry.TryGetLocationByDefinitionID(DefinitionIDs.Locations.Dreamspace.EyePlatform, out var location);
+
+            await GameContext.Player.SetupMoveTo(location, location.Scene, true);
             // Description is now handled inside SetupMoveTo
         }
 
@@ -399,7 +401,9 @@ namespace AshborneGame._Core.Game
 
             await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_Ossaneth_Domain_Intro");
 
-            await IOService.Output.WriteNonDialogueLine(player.CurrentLocation.GetDescription(player, gameState));
+            GameContext.LocationRegistry.TryGetLocationByDefinitionID(DefinitionIDs.Locations.Dreamspace.EyePlatform, out var location);
+
+            await player.SetupMoveTo(location, location.Scene, true);
 
             GameContext.TimeTracker.StartTickLoop();
             _isRunning = true;

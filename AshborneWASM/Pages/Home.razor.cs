@@ -131,12 +131,11 @@ public partial class Home : ComponentBase, IDisposable
     private int introPhase = 0;
     private string introText = "";
     private bool introFading = false;
-    private const int IntroDelayMs = 2000; // 2 seconds
-    private const int IntroFadeDurationMs = 880; // 800 ms
-    private const int Phase1DurationMs = 5000; // 5 seconds for phase 1
-    private const int Phase2DurationMs = 3000; // 3 seconds for phase 2
-    private const int Phase3DurationMs = 4000; // 4 seconds for phase 3
-    private const int FinalPhaseDurationMs = 5000; // 5 seconds for final phase enlargement
+    private const int IntroFadeDurationMs = 88; // 880 ms
+    private const int Phase1DurationMs = 500; // 5 seconds for phase 1
+    private const int Phase2DurationMs = 300; // 3 seconds for phase 2
+    private const int Phase3DurationMs = 400; // 4 seconds for phase 3
+    private const int FinalPhaseDurationMs = 500; // 5 seconds for final phase enlargement
 
     // Output queue for all output (lines, pauses, typewriter)
     private Queue<string> outputQueue = new Queue<string>();
