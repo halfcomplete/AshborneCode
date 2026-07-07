@@ -582,7 +582,10 @@ namespace AshborneGame._Core.Game
 
             for (int h = 0; h < hours; h++)
             {
-                _gameState.TimeTracker.Tick();
+                for (int s = 0; s < 60; s++)
+                {
+                    _gameState.TimeTracker.Tick();
+                }
             }
             
             return null;
