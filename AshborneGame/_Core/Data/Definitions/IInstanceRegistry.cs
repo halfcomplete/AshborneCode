@@ -14,7 +14,7 @@ namespace AshborneGame._Core.Data.Definitions
         void Unregister(BOCSObject obj);
 
         BOCSObject Get(InstanceID id);
-        bool TryGet(InstanceID id, out BOCSObject obj);
+        bool TryGet(InstanceID id, out BOCSObject? obj);
 
         IEnumerable<BOCSObject> GetByDefinition(DefinitionID id);
 

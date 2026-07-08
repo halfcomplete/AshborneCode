@@ -48,9 +48,9 @@ namespace AshborneGame._Core.Data.Definitions
             return obj;
         }
 
-        public bool TryGet(InstanceID id, out BOCSObject obj)
+        public bool TryGet(InstanceID id, out BOCSObject? obj)
         {
-            return _byInstance.TryGetValue(id, out obj!);
+            return _byInstance.TryGetValue(id, out obj);
         }
 
         public IEnumerable<BOCSObject> GetByDefinition(DefinitionID id)
