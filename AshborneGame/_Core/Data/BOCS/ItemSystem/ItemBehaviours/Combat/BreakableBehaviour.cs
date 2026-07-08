@@ -1,6 +1,10 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
+using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
+using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
+using System.Text.Json;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Combat
 {
@@ -33,6 +37,22 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Combat
         public override BreakableBehaviour DeepClone()
         {
             return new BreakableBehaviour(MaxDurability) { Durability = Durability };
+        }
+
+
+        private record SaveData(int Durability, int MaxDurability);
+
+        public override BehaviourSaveData? GetSaveState(SaveLoadContext context)
+        {
+            return new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement((new SaveData(Durability, MaxDurability))));
+        }
+
+        public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
+        {
+            SaveData save = JsonSerializer.Deserialize<SaveData>(data.State) ?? throw new InvalidDataException("Failed to deserialise BreakableBehaviour save data.");
+
+            Durability = save.Durability;
+            MaxDurability = save.MaxDurability;
         }
     }
 }
