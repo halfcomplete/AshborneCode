@@ -9,8 +9,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
     internal class OnUseHealPlayerBehaviour : Behaviour, IActOnUse
     {
         public bool ConsumeOnUse { get; set; }
-        public int HealAmount { get; private set; }
-        public OnUseHealPlayerBehaviour(int healAmount, bool consumeOnUse = true)
+        public double HealAmount { get; private set; }
+        public OnUseHealPlayerBehaviour(double healAmount, bool consumeOnUse = true)
         {
             HealAmount = healAmount;
             ConsumeOnUse = consumeOnUse;

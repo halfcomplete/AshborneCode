@@ -1,12 +1,15 @@
-﻿using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities.MaskBehaviourModules;
-using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
+﻿using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities.MaskBehaviourModules;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Globals.Services;
+using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.OtherBehaviours
@@ -101,7 +104,6 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.OtherBehaviours
             return passesEvent && passesState;
         }
 
-        // TODO: state manager deep clone????
         public override MaskInterjectionBehaviour DeepClone()
         {
             var clone = new MaskInterjectionBehaviour(_stateManager);

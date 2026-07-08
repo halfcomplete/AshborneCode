@@ -9,9 +9,11 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Combat
     public class OnEnemyUseDealDamageBehaviour : Behaviour, IUsable, ICanDamage
     {
         public int BaseDamage { get; set; }
+        public double BaseDamage { get; set; }
         public bool ConsumeOnUse { get; private set; }
 
         public OnEnemyUseDealDamageBehaviour(int baseDamage, bool consumeOnUse = false)
+        public OnEnemyUseDealDamageBehaviour(double baseDamage, bool consumeOnUse = false)
         {
             BaseDamage = baseDamage;
             ConsumeOnUse = consumeOnUse;

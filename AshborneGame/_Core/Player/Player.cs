@@ -327,12 +327,12 @@ namespace AshborneGame._Core._Player
             (bool hasAttackableBehaviour, var attackableBehaviour) = await npc.TryGetBehaviour<ICanBeAttacked>();
             if (hasAttackableBehaviour && attackableBehaviour != null)
             {
-                float damage = 0;
+                double damage = 0;
                 var (baseStrength, bonusStrength, totalStrength) = Stats.GetStat(PlayerStatType.Strength);
                 (bool hasDamageBehaviour, var damageBehaviour) = await npc.TryGetBehaviour<ICanDamage>();
                 if (EquippedItems.TryGetValue("hand", out var weapon) && weapon != null && hasDamageBehaviour && damageBehaviour != null)
                 {
-                    damage = (float)(damageBehaviour.BaseDamage + totalStrength * 0.5); // Example damage calculation
+                    damage = damageBehaviour.BaseDamage + totalStrength * 0.5; // Example damage calculation
                     await IOService.Output.WriteNonDialogueLine($"You attack {npc.Name} with {weapon.Name} for {damage} damage.");
                 }
                 else
@@ -368,18 +368,18 @@ namespace AshborneGame._Core._Player
             }
         }
 
-        public async void ChangeHealth(int amount)
+        public async void ChangeHealth(double amount)
         {
-            (int baseHealth, _, _) = Stats.GetStat(PlayerStatType.Health);
-            (_, _, int totalMaxHealth) = Stats.GetStat(PlayerStatType.MaxHealth);
+            (double baseHealth, _, _) = Stats.GetStat(PlayerStatType.Health);
+            (_, _, double totalMaxHealth) = Stats.GetStat(PlayerStatType.MaxHealth);
             Stats.SetBase(PlayerStatType.Health, Math.Clamp(baseHealth + amount, 0, totalMaxHealth));
             await IOService.Output.WriteNonDialogueLine($"You have been healed by {amount} points.");
         }
 
-        public async void SetHealth(int amount)
+        public async void SetHealth(double amount)
         {
-            (int baseHealth, _, _) = Stats.GetStat(PlayerStatType.Health);
-            (_, _, int totalMaxHealth) = Stats.GetStat(PlayerStatType.MaxHealth);
+            (double baseHealth, _, _) = Stats.GetStat(PlayerStatType.Health);
+            (_, _, double totalMaxHealth) = Stats.GetStat(PlayerStatType.MaxHealth);
             Stats.SetBase(PlayerStatType.Health, Math.Clamp(baseHealth, 0, totalMaxHealth));
             await IOService.Output.WriteNonDialogueLine($"Your health has been set to {amount} points.");
         }

@@ -1,9 +1,12 @@
 ﻿using AshborneGame._Core._Player;
-using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
+using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
+using System.Text.Json;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehaviours
 {
@@ -77,6 +80,23 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
         public override Behaviour DeepClone()
         {
             return new EquippableBehaviour(new(EquippableSlots), TimesEquipped);
+        }
+
+
+        private record SaveData(List<string> EquippableSlots, int TimesEquipped, bool IsEquipped);
+
+        public override BehaviourSaveData? GetSaveState(SaveLoadContext context)
+        {
+            return new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement((new SaveData(EquippableSlots, TimesEquipped, IsEquipped))));
+        }
+
+        public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
+        {
+            SaveData save = JsonSerializer.Deserialize<SaveData>(data.State) ?? throw new InvalidDataException("Failed to deserialise EquippableBehaviour save data.");
+
+            EquippableSlots = save.EquippableSlots;
+            TimesEquipped = save.TimesEquipped;
+            IsEquipped = save.IsEquipped;
         }
     }
 }

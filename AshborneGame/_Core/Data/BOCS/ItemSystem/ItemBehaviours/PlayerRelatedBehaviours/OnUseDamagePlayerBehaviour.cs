@@ -9,8 +9,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
     internal class OnUseDamagePlayerBehaviour : Behaviour, IActOnUse
     {
         public bool ConsumeOnUse { get; set; }
-        public int DamageAmount { get; private set; }
-        public OnUseDamagePlayerBehaviour(int damageAmount, bool consumeOnUse = true)
+        public double DamageAmount { get; private set; }
+        public OnUseDamagePlayerBehaviour(double damageAmount, bool consumeOnUse = true)
         {
             DamageAmount = damageAmount;
             ConsumeOnUse = consumeOnUse;

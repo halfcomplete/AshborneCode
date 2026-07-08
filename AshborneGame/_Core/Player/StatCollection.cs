@@ -45,13 +45,13 @@ namespace AshborneGame._Core._Player
         /// Gets the base, bonus, and total value of a specific stat.
         /// </summary>
         /// <exception cref="ArgumentException"></exception>
-        public (int, int, int) GetStat(PlayerStatType type)
+        public (double, double, double) GetStat(PlayerStatType type)
         {
             if (_stats.TryGetValue(type, out var statHolder))
             {
-                int baseValue = statHolder.BaseValue;
-                int bonusValue = statHolder.BonusValue;
-                int totalValue = statHolder.Total;
+                double baseValue = statHolder.BaseValue;
+                double bonusValue = statHolder.BonusValue;
+                double totalValue = statHolder.Total;
 
                 return (baseValue, bonusValue, totalValue);
             }
@@ -117,44 +117,44 @@ namespace AshborneGame._Core._Player
             return true;
         }
 
-        public void SetBase(string statName, int value)
+        public void SetBase(string statName, double value)
         {
             if (TryGetStatTypeByName(statName, out var statType)) _stats[statType].SetBase(value);
         }
-        public void ChangeBase(string statName, int amount)
+        public void ChangeBase(string statName, double amount)
         {
             if (TryGetStatTypeByName(statName, out var statType)) _stats[statType].SetBase(_stats[statType].BaseValue + amount);
         }
 
-        public void AddBonus(string statName, int bonus)
+        public void AddBonus(string statName, double bonus)
         {
             if (TryGetStatTypeByName(statName, out var statType)) _stats[statType].AddBonus(bonus);
         }
 
-        public void RemoveBonus(string statName, int bonus)
+        public void RemoveBonus(string statName, double bonus)
         {
             if (TryGetStatTypeByName(statName, out var statType)) _stats[statType].RemoveBonus(bonus);
         }
 
-        public void SetBase(PlayerStatType type, int value)
+        public void SetBase(PlayerStatType type, double value)
         {
             if (type == PlayerStatType.NA) return;
             _stats[type].SetBase(value);
         }
 
-        public void ChangeBase(PlayerStatType type, int amount)
+        public void ChangeBase(PlayerStatType type, double amount)
         {
             if (type == PlayerStatType.NA) return;
             _stats[type].SetBase(_stats[type].BaseValue + amount);
         }
 
-        public void AddBonus(PlayerStatType type, int bonus)
+        public void AddBonus(PlayerStatType type, double bonus)
         {
             if (type == PlayerStatType.NA) return;
             _stats[type].AddBonus(bonus);
         }
 
-        public void RemoveBonus(PlayerStatType type, int bonus)
+        public void RemoveBonus(PlayerStatType type, double bonus)
         {
             if (type == PlayerStatType.NA) return;
             _stats[type].RemoveBonus(bonus);

@@ -2,7 +2,10 @@
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
+using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
 using System;
+using System.Text.Json;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehaviours
 {
@@ -26,6 +29,17 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
         public override UsableBehaviour DeepClone()
         {
             return new UsableBehaviour();
+        }
+
+
+        public override BehaviourSaveData? GetSaveState(SaveLoadContext context)
+        {
+            return null;
+        }
+
+        public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
+        {
+            // No state to load for this behaviour
         }
     }
 }

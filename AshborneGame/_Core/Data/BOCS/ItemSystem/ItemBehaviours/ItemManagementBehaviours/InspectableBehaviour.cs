@@ -1,7 +1,10 @@
 ﻿using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
+using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
 using System;
+using System.Text.Json;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.ItemManagementBehaviours
 {
@@ -46,6 +49,23 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.ItemManagementB
             {
                 IsInspected = IsInspected,
             };
+        }
+
+
+        private record SaveData(string? InspectDesc, ItemQualities Rarity, bool IsInspected);
+
+        public override BehaviourSaveData? GetSaveState(SaveLoadContext context)
+        {
+            return new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement((new SaveData(_inspectDesc, _rarity, IsInspected))));
+        }
+
+        public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
+        {
+            SaveData save = JsonSerializer.Deserialize<SaveData>(data.State) ?? throw new InvalidDataException("Failed to deserialise InspectableBehaviour save data.");
+
+            _inspectDesc = save.InspectDesc;
+            _rarity = save.Rarity;
+            IsInspected = save.IsInspected;
         }
     }
 }

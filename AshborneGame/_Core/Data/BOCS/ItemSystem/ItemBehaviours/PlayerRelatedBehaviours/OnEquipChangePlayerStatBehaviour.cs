@@ -9,9 +9,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
     internal class OnEquipChangePlayerStatBehaviour : Behaviour, IActOnEquip
     {
         public PlayerStatType StatType { get; set; }
-        public int ChangeAmount { get; set; }
+        public double ChangeAmount { get; set; }
 
-        public OnEquipChangePlayerStatBehaviour(PlayerStatType statType, int changeAmount)
+        public OnEquipChangePlayerStatBehaviour(PlayerStatType statType, double changeAmount)
         {
             StatType = statType;
             ChangeAmount = changeAmount;

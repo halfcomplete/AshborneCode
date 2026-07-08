@@ -17,9 +17,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
         /// <summary>
         /// How much the player's health will change when this component is used.
         /// </summary>
-        public int ChangeAmount { get; private set; }
+        public double ChangeAmount { get; private set; }
 
-        public OnUseChangePlayerStatBehaviour(int changeAmount, PlayerStatType statType, bool consumeOnUse = true)
+        public OnUseChangePlayerStatBehaviour(double changeAmount, PlayerStatType statType, bool consumeOnUse = true)
         {
             ChangeAmount = changeAmount;
             ConsumeOnUse = consumeOnUse;
@@ -29,7 +29,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
         public async void OnUse(Player player)
         {
             await IOService.Output.WriteNonDialogueLine($"You use the item to change your {StatType} by {ChangeAmount}.");
-
+            // TODO: add support for other stat types in the future
             switch (StatType)
             {
                 case PlayerStatType.Health:

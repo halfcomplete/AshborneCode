@@ -2,10 +2,10 @@
 {
     public sealed class ObjectNameSaveData
     {
-        public string ReferenceName { get; set; }
-        public string FirstTimeDisplayName { get; set; }
+        public string ReferenceName { get; set; } = null!;
+        public string FirstTimeDisplayName { get; set; } = null!;
         public bool Seen { get; set; }
         public string? Article { get; set; }
-        public List<string> Synonyms { get; set; }
+        public List<string> Synonyms { get; set; } = new();
     }
 }
