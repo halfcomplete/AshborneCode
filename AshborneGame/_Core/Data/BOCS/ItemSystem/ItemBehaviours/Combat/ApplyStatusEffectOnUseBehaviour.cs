@@ -11,8 +11,6 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Combat
 {
     public class ApplyStatusEffectOnUseBehaviour : Behaviour, IUsable
     {
-        private record SaveData(StatusEffectTypes StatusEffectType, bool ConsumeOnUse);
-
         public StatusEffectTypes StatusEffectType { get; private set; }
         public bool ConsumeOnUse { get; private set; }
 
@@ -35,6 +33,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Combat
         {
             return new ApplyStatusEffectOnUseBehaviour(StatusEffectType, ConsumeOnUse);
         }
+
+
+        private record SaveData(StatusEffectTypes StatusEffectType, bool ConsumeOnUse);
 
         public override BehaviourSaveData? GetSaveState(SaveLoadContext context)
         {
