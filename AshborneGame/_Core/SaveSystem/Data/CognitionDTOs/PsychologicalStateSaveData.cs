@@ -13,5 +13,12 @@ namespace AshborneGame._Core.SaveSystem.Data.CognitionDTOs
         public Dictionary<InstanceID, Attitude> Relationships { get; set; } = new(); // InstanceID keys
         public MemoryProfileSaveData Memory { get; set; } = null!;
         public PersonalityProfile Personality { get; set; } = null!;
+
+        public PsychologicalStateSaveData(Dictionary<InstanceID, Attitude> relationships, MemoryProfileSaveData memory, PersonalityProfile personality)
+        {
+            Relationships = relationships;
+            Memory = memory;
+            Personality = personality;
+        }
     }
 }

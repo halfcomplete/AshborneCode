@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AshborneGame._Core.CognitiveSystem.MemorySystem;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
+using AshborneGame._Core.SaveSystem.Data.CognitionDTOs;
 
 namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
 {
