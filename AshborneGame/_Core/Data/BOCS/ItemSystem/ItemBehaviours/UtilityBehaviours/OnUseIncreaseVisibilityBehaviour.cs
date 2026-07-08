@@ -1,5 +1,5 @@
 ﻿using AshborneGame._Core._Player;
-using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
 using AshborneGame._Core.Game;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviours

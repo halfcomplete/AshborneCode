@@ -1,6 +1,6 @@
 using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.Data.BOCS;
-using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehaviours;
 using AshborneGame._Core.Data.BOCS.NPCSystem;

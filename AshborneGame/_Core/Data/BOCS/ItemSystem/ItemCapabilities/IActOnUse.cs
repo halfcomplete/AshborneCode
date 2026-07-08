@@ -1,7 +1,7 @@
 ﻿
 using AshborneGame._Core._Player;
 
-namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules
+namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities
 {
     /// <summary>
     /// A subscriber-type module that is implemented by Behaviours which need to know when their parent object is used in order to function.

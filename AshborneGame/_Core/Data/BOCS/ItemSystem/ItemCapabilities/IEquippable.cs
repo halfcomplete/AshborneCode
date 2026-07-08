@@ -2,7 +2,7 @@
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 
-namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules
+namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities
 {
     public interface IEquippable
     {

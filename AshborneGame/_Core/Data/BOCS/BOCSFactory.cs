@@ -1,4 +1,4 @@
-using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
 using AshborneGame._Core.Data.Definitions;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Globals.Enums;

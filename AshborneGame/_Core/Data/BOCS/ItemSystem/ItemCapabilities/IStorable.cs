@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules
+namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities
 {
     public interface IStorable
     {

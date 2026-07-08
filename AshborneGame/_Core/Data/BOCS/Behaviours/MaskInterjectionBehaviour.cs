@@ -1,4 +1,4 @@
-﻿using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules.MaskBehaviourModules;
+﻿using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities.MaskBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Game.Events;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules.MaskBehaviourModules
+namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities.MaskBehaviourModules
 {
     internal interface IMask
     {

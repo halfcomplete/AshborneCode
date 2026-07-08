@@ -1,7 +1,7 @@
 ﻿
 using AshborneGame._Core._Player;
 
-namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules
+namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities
 {
     public interface IUsable
     {

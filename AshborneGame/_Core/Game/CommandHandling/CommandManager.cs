@@ -1,6 +1,6 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS;
-using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviourModules.MaskBehaviourModules;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities.MaskBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Game.CommandHandling.Commands;
 using AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands;
