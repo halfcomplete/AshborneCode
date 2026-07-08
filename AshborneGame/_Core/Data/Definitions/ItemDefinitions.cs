@@ -25,7 +25,7 @@ namespace AshborneGame._Core.Data.Definitions
                 new("Ossaneth", "a void-black mask", [], null),
                 "A strange, void-black object of unknown origins",
                 [
-                    new ItemBehaviour(1, ItemTypes.Equipment, ItemQualities.Legendary),
+                    new StorableBehaviour(1, ItemTypes.Equipment, ItemQualities.Legendary),
                     new EquippableBehaviour(["face"]),
                     new InspectableBehaviour("The mask is heavy with history, power, and owners.", ItemQualities.Legendary),
                     new MaskInterjectionBehaviour(GameContext.GameState),
@@ -38,7 +38,7 @@ namespace AshborneGame._Core.Data.Definitions
                 new("Mirror Shard", "a shard from a mirror", ["shard", "mirror", "shard of mirror", "piece of mirror", "mirror piece"]),
                 "A small, sharp mirror shard from Ossaneth's Domain.",
                 [
-                    new ItemBehaviour(1, ItemTypes.Consumable, ItemQualities.Rare),
+                    new StorableBehaviour(1, ItemTypes.Consumable, ItemQualities.Rare),
                     new InspectableBehaviour("You hold the shard up to your face and feel a strange emptiness inside you. Light faintly glints off it as you turn it around in your hand.", ItemQualities.Rare),
                     new UsableBehaviour(),
                     new OnUseChangePlayerStatBehaviour(20, PlayerStatType.MaxHealth, true),

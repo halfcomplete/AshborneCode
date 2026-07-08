@@ -7,7 +7,7 @@ using AshborneGame._Core.Globals.Enums;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours
 {
-    public class ItemBehaviour : Behaviour, IStorable
+    public class StorableBehaviour : Behaviour, IStorable
     {
         /// <summary>
         /// Gets the maximum number of this item that can be stacked in a single inventory slot.
@@ -56,13 +56,13 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours
         /// </remarks>
         public ItemQualities Quality { get; }
 
-        public ItemBehaviour(int stackLimit, ItemTypes itemType, ItemQualities itemQuality)
+        public StorableBehaviour(int stackLimit, ItemTypes itemType, ItemQualities itemQuality)
         {
             StackLimit = stackLimit;
             ItemType = itemType;
             Quality = itemQuality;
         }
 
-        public override ItemBehaviour DeepClone() => new(StackLimit, ItemType, Quality);
+        public override StorableBehaviour DeepClone() => new(StackLimit, ItemType, Quality);
     }
 }

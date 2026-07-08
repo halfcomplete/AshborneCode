@@ -164,7 +164,7 @@ public class BOCSObject
 
     #endregion Behaviours
 
-    public bool IsItem() => HasBehaviours<ItemBehaviour>();
+    public bool IsItem() => HasBehaviours<StorableBehaviour>();
 
     // TODO: Make more exact
     public bool IsNPC() => HasBehaviours<TalkableBehaviour>();

@@ -45,7 +45,7 @@ namespace AshborneTests
                 "Test Sword",
                 "A test sword for testing purposes",
                 ["Cloud"],
-                [new ItemBehaviour(1, AshborneGame._Core.Globals.Enums.ItemTypes.Weapon, AshborneGame._Core.Globals.Enums.ItemQualities.Uncommon)]
+                [new StorableBehaviour(1, AshborneGame._Core.Globals.Enums.ItemTypes.Weapon, AshborneGame._Core.Globals.Enums.ItemQualities.Uncommon)]
             );
         
         public static BOCSObjectDefinition TestChest = 
