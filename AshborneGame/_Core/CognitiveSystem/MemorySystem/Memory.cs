@@ -14,11 +14,6 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
     public class Memory
     {
         /// <summary>
-        /// A unique ID for the Memory.
-        /// </summary>
-        public InstanceID ID { get; init; }
-
-        /// <summary>
         /// The NPC that owns this Memory.
         /// </summary>
         public DefinitionID Owner { get; init; }
@@ -110,7 +105,6 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
         public Memory(DefinitionID owner, double intensity, double strength, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
         {
-            ID = new();
             Owner = owner;
             Intensity = intensity;
             Strength = strength;
