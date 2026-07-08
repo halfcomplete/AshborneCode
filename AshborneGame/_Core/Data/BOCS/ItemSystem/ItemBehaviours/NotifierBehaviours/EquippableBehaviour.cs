@@ -85,14 +85,18 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
 
         private record SaveData(List<string> EquippableSlots, int TimesEquipped, bool IsEquipped);
 
-        public override BehaviourSaveData? GetSaveState(SaveLoadContext context)
+        public override BehaviourSaveData GetSaveState(SaveLoadContext context)
         {
             return new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement((new SaveData(EquippableSlots, TimesEquipped, IsEquipped))));
         }
 
         public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
         {
-            SaveData save = JsonSerializer.Deserialize<SaveData>(data.State) ?? throw new InvalidDataException("Failed to deserialise EquippableBehaviour save data.");
+            if (data.State.HasValue == false)
+            {
+                throw new InvalidDataException("EquippableBehaviour save data is missing state.");
+            }
+            SaveData save = JsonSerializer.Deserialize<SaveData>(data.State.Value) ?? throw new InvalidDataException("Failed to deserialise EquippableBehaviour save data.");
 
             EquippableSlots = save.EquippableSlots;
             TimesEquipped = save.TimesEquipped;

@@ -37,14 +37,18 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Combat
 
         private record SaveData(StatusEffectTypes StatusEffectType, bool ConsumeOnUse);
 
-        public override BehaviourSaveData? GetSaveState(SaveLoadContext context)
+        public override BehaviourSaveData GetSaveState(SaveLoadContext context)
         {
             return new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement((new SaveData(StatusEffectType, ConsumeOnUse))));
         }
 
         public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
         {
-            SaveData save = JsonSerializer.Deserialize<SaveData>(data.State) ?? throw new InvalidDataException("Failed to deserialise ApplyStatusEffectOnUseBehaviour save data.");
+            if (data.State.HasValue == false)
+            {
+                throw new InvalidDataException("ApplyStatusEffectOnUseBehaviour save data is missing state.");
+            }
+            SaveData save = JsonSerializer.Deserialize<SaveData>(data.State.Value) ?? throw new InvalidDataException("Failed to deserialise ApplyStatusEffectOnUseBehaviour save data.");
 
             StatusEffectType = save.StatusEffectType;
             ConsumeOnUse = save.ConsumeOnUse;

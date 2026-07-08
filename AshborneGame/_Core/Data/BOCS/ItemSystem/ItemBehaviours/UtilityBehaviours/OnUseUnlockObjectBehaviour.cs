@@ -9,6 +9,8 @@ using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
 using System;
 using System.Collections.Generic;
+using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviours
 {
@@ -48,6 +50,25 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviou
         public override OnUseUnlockObjectBehaviour DeepClone()
         {
             return new OnUseUnlockObjectBehaviour([.. UnlockableObjectIDs], ConsumeOnUse);
+        }
+
+
+        private record SaveData(List<DefinitionID> UnlockableObjectIDs, bool ConsumeOnUse);
+
+        public override BehaviourSaveData GetSaveState(SaveLoadContext context)
+        {
+            return new BehaviourSaveData(SaveId, System.Text.Json.JsonSerializer.SerializeToElement(new SaveData(UnlockableObjectIDs, ConsumeOnUse)));
+        }
+
+        public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
+        {
+            if (data.State.HasValue == false)
+            {
+                throw new InvalidDataException("OnUseUnlockObjectBehaviour save data is missing state.");
+            }
+            SaveData save = System.Text.Json.JsonSerializer.Deserialize<SaveData>(data.State.Value) ?? throw new InvalidDataException("Failed to deserialise OnUseUnlockObjectBehaviour save data.");
+            UnlockableObjectIDs = save.UnlockableObjectIDs;
+            ConsumeOnUse = save.ConsumeOnUse;
         }
     }
 }

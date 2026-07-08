@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
 using AshborneGame._Core.Globals.Enums;
+using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours
 {
@@ -24,7 +27,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours
         /// 10 for potions
         /// </example>
         /// </remarks>
-        public int StackLimit { get; } = 1;
+        public int StackLimit { get; private set; } = 1;
 
         /// <summary>
         /// Gets the type of the item, which determines its behavior and restrictions.
@@ -38,7 +41,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours
         /// - Consumables: Can be used and stacked
         /// - Keys: Special items for unlocking
         /// </remarks>
-        public ItemTypes ItemType { get; } = ItemTypes.Consumable;
+        public ItemTypes ItemType { get; private set; } = ItemTypes.Consumable;
 
         /// <summary>
         /// Gets the quality level of the item. Only applies to weapons.
@@ -54,7 +57,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours
         /// - Mythic: Extremely powerful
         /// - Legendary: Best possible quality
         /// </remarks>
-        public ItemQualities Quality { get; }
+        public ItemQualities Quality { get; private set; }
 
         public StorableBehaviour(int stackLimit, ItemTypes itemType, ItemQualities itemQuality)
         {
@@ -64,5 +67,26 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours
         }
 
         public override StorableBehaviour DeepClone() => new(StackLimit, ItemType, Quality);
+
+
+        private record SaveData(int StackLimit, ItemTypes ItemType, ItemQualities Quality);
+
+        public override BehaviourSaveData GetSaveState(SaveLoadContext context)
+        {
+            return new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement(new SaveData(StackLimit, ItemType, Quality)));
+        }
+
+        public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
+        {
+            if (data.State.HasValue == false)
+            {
+                throw new InvalidDataException("StorableBehaviour save data is missing state.");
+            }
+            SaveData save = JsonSerializer.Deserialize<SaveData>(data.State.Value) ?? throw new InvalidDataException("Failed to deserialise StorableBehaviour save data.");
+
+            StackLimit = save.StackLimit;
+            ItemType = save.ItemType;
+            Quality = save.Quality;
+        }
     }
 }

@@ -10,9 +10,9 @@ namespace AshborneGame._Core.SaveSystem.Data.BOCSDTOs
     public sealed class BehaviourSaveData
     {
         public string BehaviourId { get; set; } = null!;            // stable string key
-        public JsonElement State { get; set; }              // behaviour-owned payload
+        public JsonElement? State { get; set; }              // behaviour-owned payload
 
-        public BehaviourSaveData(string behaviourId, JsonElement state)
+        public BehaviourSaveData(string behaviourId, JsonElement? state)
         {
             BehaviourId = behaviourId;
             State = state;

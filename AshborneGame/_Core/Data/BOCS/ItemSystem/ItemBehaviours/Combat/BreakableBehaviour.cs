@@ -49,7 +49,11 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Combat
 
         public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
         {
-            SaveData save = JsonSerializer.Deserialize<SaveData>(data.State) ?? throw new InvalidDataException("Failed to deserialise BreakableBehaviour save data.");
+            if (data.State.HasValue == false)
+            {
+                throw new InvalidDataException("BreakableBehaviour save data is missing state.");
+            }
+            SaveData save = JsonSerializer.Deserialize<SaveData>(data.State.Value) ?? throw new InvalidDataException("Failed to deserialise BreakableBehaviour save data.");
 
             Durability = save.Durability;
             MaxDurability = save.MaxDurability;
