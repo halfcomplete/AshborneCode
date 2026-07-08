@@ -1,4 +1,6 @@
-﻿using System;
+﻿using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,5 +13,13 @@ namespace AshborneGame._Core.Data.BOCS
         public BOCSObject Owner { get; internal set; } = null!;
 
         public abstract Behaviour DeepClone();
+
+        // Stable ID for save/load and migrations. Default: CLR full name.
+        public virtual string SaveId => GetType().FullName!;
+
+        // Return null to omit from save (stateless behaviours)
+        public virtual BehaviourSaveData? GetSaveState(SaveLoadContext context) => null;
+
+        public virtual void LoadSaveState(BehaviourSaveData data, SaveLoadContext context) { }
     }
 }
