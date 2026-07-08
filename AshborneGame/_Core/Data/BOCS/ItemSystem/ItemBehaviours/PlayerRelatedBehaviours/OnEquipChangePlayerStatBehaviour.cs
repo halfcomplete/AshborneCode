@@ -38,23 +38,23 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
         }
 
 
-        private record SaveData(string Message, bool ConsumeOnUse);
+        private record SaveData(PlayerStatType StatType, double ChangeAmount);
 
         public override BehaviourSaveData GetSaveState(SaveLoadContext context)
         {
-            return new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement(new SaveData(message, ConsumeOnUse)));
+            return new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement(new SaveData(StatType, ChangeAmount)));
         }
 
         public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
         {
             if (data.State.HasValue == false)
             {
-                throw new InvalidDataException("OnUseLogMessage save data is missing state.");
+                throw new InvalidDataException("OnEquipChangePlayerStatBehaviour save data is missing state.");
             }
-            SaveData save = JsonSerializer.Deserialize<SaveData>(data.State.Value) ?? throw new InvalidDataException("Failed to deserialise OnUseLogMessage save data.");
+            SaveData save = JsonSerializer.Deserialize<SaveData>(data.State.Value) ?? throw new InvalidDataException("Failed to deserialise OnEquipChangePlayerStatBehaviour save data.");
 
-            message = save.Message;
-            ConsumeOnUse = save.ConsumeOnUse;
+            StatType = save.StatType;
+            ChangeAmount = save.ChangeAmount;
         }
     }
 }

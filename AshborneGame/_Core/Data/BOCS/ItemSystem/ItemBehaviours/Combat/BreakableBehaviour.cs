@@ -42,7 +42,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Combat
 
         private record SaveData(int Durability, int MaxDurability);
 
-        public override BehaviourSaveData? GetSaveState(SaveLoadContext context)
+        public override BehaviourSaveData GetSaveState(SaveLoadContext context)
         {
             return new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement((new SaveData(Durability, MaxDurability))));
         }

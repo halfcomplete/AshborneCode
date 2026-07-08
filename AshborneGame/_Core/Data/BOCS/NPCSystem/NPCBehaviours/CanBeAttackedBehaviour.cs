@@ -1,6 +1,9 @@
 ﻿using AshborneGame._Core.Data.BOCS.NPCSystem.NPCCapabilities;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
+using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
+using System.Text.Json;
 
 namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
 {
@@ -56,6 +59,25 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
         public override CanBeAttackedBehaviour DeepClone()
         {
             return new CanBeAttackedBehaviour(MaxHealth) { Health = Health };
+        }
+
+
+        private record SaveData(double Health, double MaxHealth);
+
+        public override BehaviourSaveData GetSaveState(SaveLoadContext context)
+        {
+            return new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement((new SaveData(Health, MaxHealth))));
+        }
+
+        public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
+        {
+            if (data.State.HasValue == false)
+            {
+                throw new InvalidDataException("CanBeAttackedBehaviour save data is missing state.");
+            }
+            SaveData save = JsonSerializer.Deserialize<SaveData>(data.State.Value) ?? throw new InvalidDataException("Failed to deserialise CanBeAttackedBehaviour save data.");
+            Health = save.Health;
+            MaxHealth = save.MaxHealth;
         }
     }
 }

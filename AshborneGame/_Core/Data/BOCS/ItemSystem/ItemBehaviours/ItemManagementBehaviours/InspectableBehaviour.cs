@@ -54,14 +54,18 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.ItemManagementB
 
         private record SaveData(string? InspectDesc, ItemQualities Rarity, bool IsInspected);
 
-        public override BehaviourSaveData? GetSaveState(SaveLoadContext context)
+        public override BehaviourSaveData GetSaveState(SaveLoadContext context)
         {
             return new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement((new SaveData(_inspectDesc, _rarity, IsInspected))));
         }
 
         public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
         {
-            SaveData save = JsonSerializer.Deserialize<SaveData>(data.State) ?? throw new InvalidDataException("Failed to deserialise InspectableBehaviour save data.");
+            if (data.State.HasValue == false)
+            {
+                throw new InvalidDataException("InspectableBehaviour save data is missing state.");
+            }
+            SaveData save = JsonSerializer.Deserialize<SaveData>(data.State.Value) ?? throw new InvalidDataException("Failed to deserialise InspectableBehaviour save data.");
 
             _inspectDesc = save.InspectDesc;
             _rarity = save.Rarity;
