@@ -27,6 +27,12 @@
     <None Include="_Core\Game\CommandHandling\Commands\BaseCommands\BaseInventoryCommand.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="_Core\SaveSystem\Loading\" />
+    <Folder Include="_Core\SaveSystem\Migration\" />
+    <Folder Include="_Core\SaveSystem\Saving\" />
+  </ItemGroup>
+
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
   <Import Project="InkAutoInclude.targets" />
 
