@@ -4,7 +4,7 @@ using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehaviours;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
-using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
+using AshborneGame._Core.Data.BOCS.NPCSystem.NPCCapabilities;
 using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviourModules;
 using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours;
 using AshborneGame._Core.Data.IDSystem;

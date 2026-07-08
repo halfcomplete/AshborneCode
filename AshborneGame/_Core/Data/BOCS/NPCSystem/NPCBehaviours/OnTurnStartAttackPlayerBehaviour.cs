@@ -1,7 +1,7 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
-using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
+using AshborneGame._Core.Data.BOCS.NPCSystem.NPCCapabilities;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;

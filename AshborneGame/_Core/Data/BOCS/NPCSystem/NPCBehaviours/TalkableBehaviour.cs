@@ -1,6 +1,6 @@
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
-using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
+using AshborneGame._Core.Data.BOCS.NPCSystem.NPCCapabilities;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Services;
 using System;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace AshborneGame._Core.Data.BOCS.Behaviours
+namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
 {
     public class TalkableBehaviour : Behaviour, ITalkable
     {

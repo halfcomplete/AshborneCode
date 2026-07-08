@@ -1,5 +1,5 @@
 ﻿using AshborneGame._Core._Player;
-using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
+using AshborneGame._Core.Data.BOCS.NPCSystem.NPCCapabilities;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.Game.CommandHandling.Commands.BaseCommands;

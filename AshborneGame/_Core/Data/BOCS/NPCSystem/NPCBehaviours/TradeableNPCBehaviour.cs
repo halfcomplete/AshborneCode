@@ -1,5 +1,5 @@
 ﻿using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
-using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
+using AshborneGame._Core.Data.BOCS.NPCSystem.NPCCapabilities;
 
 namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
 {

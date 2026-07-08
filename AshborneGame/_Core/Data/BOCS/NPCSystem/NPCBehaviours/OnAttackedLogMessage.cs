@@ -1,4 +1,4 @@
-﻿using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviourModules;
+﻿using AshborneGame._Core.Data.BOCS.NPCSystem.NPCCapabilities;
 using AshborneGame._Core.Globals.Services;
 
 namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
