@@ -1,5 +1,6 @@
 using AshborneGame._Core.CognitiveSystem.MemorySystem;
 using AshborneGame._Core.Game.Events;
+using System.Text.Json.Serialization;
 
 namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
 {
@@ -12,6 +13,8 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
         public double InitialAmount { get; init; }
 
         public MemoryParticipant Target { get; init; }
+
+        [JsonIgnore]
         public Memory? ParentMemory { get; init; }
 
         /// <summary>
