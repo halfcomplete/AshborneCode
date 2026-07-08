@@ -42,7 +42,17 @@ namespace AshborneGame._Core.SaveSystem.Serialisation
 
         public T? TryResolveObject<T>(InstanceID? id) where T : class
         {
+            if (id == null)
+            {
+                return null;
+            }
 
+            if (!InstanceRegistry.TryGet(id.Value, out var obj))
+            {
+                return null;
+            }
+
+            return obj as T;
         }
     }
 }
