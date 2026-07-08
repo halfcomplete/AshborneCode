@@ -31,7 +31,7 @@ namespace AshborneGame._Core.Data.BOCS
         {
             var definition = _definitionRegistry.Get<BOCSObjectDefinition>(definitionId);
 
-            var gameObject = new BOCSObject(definition.Name.DeepClone(), definition.Description, definitionId);
+            var gameObject = new BOCSObject(definition.Name.DeepClone(), definition.Description, definitionId, InstanceID.New());
 
             var behavioursD = CreateBehaviours(definition.BehaviourPrototypes);
 

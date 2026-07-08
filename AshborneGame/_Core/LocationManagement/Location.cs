@@ -101,7 +101,7 @@ namespace AshborneGame._Core.LocationManagement
             _containedObjects = objects;
             _exits = exits;
             DefinitionID = definitionID;
-            InstanceID = new();
+            InstanceID = InstanceID.New();
         }
 
         public Location(LocationNameAdapter name, DefinitionID definitionID)
