@@ -6,6 +6,7 @@ using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
 using System.Runtime.CompilerServices;
+using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
 
 namespace AshborneGame._Core.Data.BOCS;
 
