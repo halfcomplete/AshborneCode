@@ -1,5 +1,4 @@
-﻿using AshborneGame._Core.Data.BOCS.Behaviours;
-using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
+﻿using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
