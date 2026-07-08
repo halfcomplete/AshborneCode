@@ -1,0 +1,17 @@
+﻿using AshborneGame._Core.CognitiveSystem.EmotionSystem;
+using AshborneGame._Core.Data.IDSystem;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AshborneGame._Core.SaveSystem.Data.CognitionDTOs
+{
+    public sealed class PsychologicalStateSaveData
+    {
+        public Dictionary<InstanceID, Attitude> Relationships { get; set; } = new(); // InstanceID keys
+        public MemoryProfileSaveData Memory { get; set; } = null!;
+        public PersonalityProfile Personality { get; set; } = null!;
+    }
+}
