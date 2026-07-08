@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviourModules
+namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectCapabilities
 {
     internal interface IExit
     {

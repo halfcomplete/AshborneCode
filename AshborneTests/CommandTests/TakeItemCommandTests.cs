@@ -3,7 +3,7 @@ using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCCapabilities;
 using AshborneGame._Core.Globals.Enums;
-using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviourModules;
+using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectCapabilities;
 using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours;
 
 namespace AshborneTests.CommandTests

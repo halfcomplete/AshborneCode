@@ -1,4 +1,4 @@
-﻿using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviourModules;
+﻿using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectCapabilities;
 using AshborneGame._Core.LocationManagement;
 
 namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours

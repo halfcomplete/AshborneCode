@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Game;
-using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviourModules;
+using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectCapabilities;
 
 namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 {
