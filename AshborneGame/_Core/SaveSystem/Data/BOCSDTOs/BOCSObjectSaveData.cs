@@ -11,7 +11,7 @@ namespace AshborneGame._Core.SaveSystem.Data.BOCSDTOs
     {
         public InstanceID InstanceId { get; set; }                // required, stable
         public DefinitionID? DefinitionId { get; set; }           // optional metadata only
-        public ObjectNameSaveData Name { get; set; } = null!        // serializable name adapter state
+        public ObjectNameSaveData Name { get; set; } = null!;        // serializable name adapter state
         public string Description { get; set; } = null!;
         public List<BehaviourSaveData> Behaviours { get; set; } = new();
     }
