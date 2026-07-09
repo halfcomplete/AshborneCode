@@ -174,12 +174,13 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         public static Memory LoadFromSaveData(MemorySaveData saveData)
         {
             IMemorySource cause = IMemorySource.LoadFromSaveData(saveData.Cause);
+
             return new Memory(
                 saveData.Intensity,
                 saveData.Strength,
                 cause,
                 saveData.EmotionModifiers,
-                new(saveData.MemoryTags),
+                new HashSet<MemoryTag>(saveData.MemoryTags),
                 saveData.HourCreatedAt,
                 saveData.HourLastReinforcedAt
             );

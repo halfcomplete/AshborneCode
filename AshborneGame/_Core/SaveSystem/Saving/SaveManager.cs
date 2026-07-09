@@ -8,12 +8,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace AshborneGame._Core.SaveSystem.Saving
 {
-    public class SaveDataCollecter
+    public class SaveManager
     {
+        public void SaveGame(IInstanceRegistry instanceRegistry, IDefinitionRegistry definitionRegistry, ILocationRegistry locationRegistry, Player player, GameStateManager gameState, InkRunner inkRunner)
+        {
+            SaveGameData data = CollectSaveData(new SaveLoadContext(), player, gameState, instanceRegistry, locationRegistry, inkRunner);
+
+            WriteSaveDataToFile("savegame.json", data);
+        }
+
         public SaveGameData CollectSaveData(SaveLoadContext context, Player player, GameStateManager gameState, IInstanceRegistry instanceRegistry, ILocationRegistry locationRegistry, InkRunner inkRunner)
         {
             SaveGameData saveData = new SaveGameData();
@@ -24,6 +33,20 @@ namespace AshborneGame._Core.SaveSystem.Saving
             saveData.Locations = locationRegistry.GetLocations().Select(loc => loc.GetSaveData()).ToList();
             saveData.InkStoryStateJson = inkRunner.Story?.ToJson() ?? throw new ArgumentNullException("CollectSaveData failed: Ink story is null");
             return saveData;
+        }
+
+        public void WriteSaveDataToFile(string filePath, SaveGameData saveData)
+        {
+            var options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase, // camelCase keys
+                WriteIndented = true,                              // Human-readable format
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) } // Handle enums as strings
+            };
+
+            string json = JsonSerializer.Serialize(saveData, options);
+            File.WriteAllText(filePath, json);
         }
     }
 }

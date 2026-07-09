@@ -10,6 +10,7 @@ using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
+using AshborneGame._Core.SaveSystem.Data.LocationDTO;
 
 namespace AshborneGame._Core.LocationManagement
 {
@@ -17,8 +18,7 @@ namespace AshborneGame._Core.LocationManagement
     /// Represents a navigable region of the game world.
     ///
     /// Locations form a recursive hierarchy describing the world's spatial
-    /// structure. Every location has a unique runtime identity
-    /// (<see cref="InstanceID"/>) and an immutable definition identity
+    /// structure. Every location has a unique compiletime identity
     /// (<see cref="DefinitionID"/>).
     ///
     /// Unlike <see cref="BOCSObject"/>, Locations are not composition-based.
@@ -32,11 +32,6 @@ namespace AshborneGame._Core.LocationManagement
     /// </summary>
     public class Location
     {
-        /// <summary>
-        /// Unique runtime identifier for this specific location instance.
-        /// </summary>
-        public InstanceID InstanceID { get; }
-
         /// <summary>
         /// Immutable identifier of the definition this location was created from.
         /// </summary>
@@ -101,7 +96,6 @@ namespace AshborneGame._Core.LocationManagement
             _containedObjects = objects;
             _exits = exits;
             DefinitionID = definitionID;
-            InstanceID = InstanceID.New();
         }
 
         public Location(LocationNameAdapter name, DefinitionID definitionID)
@@ -264,6 +258,18 @@ namespace AshborneGame._Core.LocationManagement
             sb.Length -= Environment.NewLine.Length;
 
             return sb.ToString();
+        }
+
+
+        public LocationSaveData GetSaveData()
+        {
+            return new LocationSaveData
+            {
+                DefinitionId = DefinitionID,
+                VisitCount = VisitCount,
+                ChildDefinitionIds = Children.Select(c => c.DefinitionID).ToList(),
+                ContainedObjectInstanceIds = ContainedObjects.Select(o => o.InstanceID).ToList(),
+            };
         }
     }
 }
