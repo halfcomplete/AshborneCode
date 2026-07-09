@@ -65,8 +65,8 @@ namespace AshborneGame._Core._Player
         /// Gets the base, bonus and total value of a player stat by name.
         /// </summary>
         /// <param name="statName"></param>
-        /// <returns>(int baseValue, int bonusValue, int totalValue)</returns>
-        public bool GetStat(string statName, out (int, int, int) stat)
+        /// <returns>(double baseValue, double bonusValue, double totalValue)</returns>
+        public bool GetStat(string statName, out (double, double, double) stat)
         {
             stat = (0, 0, 0);
             if (TryGetStatTypeByName(statName, out var statType)) stat = GetStat(statType);
