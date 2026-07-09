@@ -14,16 +14,21 @@ using System.Threading.Tasks;
 
 namespace AshborneGame._Core.SaveSystem.Saving
 {
-    public class SaveManager
+    public static class SaveManager
     {
-        public void SaveGame(IInstanceRegistry instanceRegistry, IDefinitionRegistry definitionRegistry, ILocationRegistry locationRegistry, Player player, GameStateManager gameState, InkRunner inkRunner)
+        public static string SerialiseSaveData(IInstanceRegistry instanceRegistry, IDefinitionRegistry definitionRegistry, ILocationRegistry locationRegistry, Player player, GameStateManager gameState, InkRunner inkRunner)
         {
             SaveGameData data = CollectSaveData(new SaveLoadContext(), player, gameState, instanceRegistry, locationRegistry, inkRunner);
 
-            WriteSaveDataToFile("savegame.json", data);
+            return Serialise(data);
         }
 
-        public SaveGameData CollectSaveData(SaveLoadContext context, Player player, GameStateManager gameState, IInstanceRegistry instanceRegistry, ILocationRegistry locationRegistry, InkRunner inkRunner)
+        public static string SerialiseSaveData()
+        {
+            return SerialiseSaveData(GameContext.InstanceRegistry, GameContext.DefinitionRegistry, GameContext.LocationRegistry, GameContext.Player, GameContext.GameState, GameContext.InkRunner);
+        }
+
+        public static SaveGameData CollectSaveData(SaveLoadContext context, Player player, GameStateManager gameState, IInstanceRegistry instanceRegistry, ILocationRegistry locationRegistry, InkRunner inkRunner)
         {
             SaveGameData saveData = new SaveGameData();
             saveData.Metadata = new SaveMetadata { Version = SaveGameData.CurrentVersion, SavedAt = DateTime.Now };
@@ -35,7 +40,7 @@ namespace AshborneGame._Core.SaveSystem.Saving
             return saveData;
         }
 
-        public void WriteSaveDataToFile(string filePath, SaveGameData saveData)
+        public static string Serialise(SaveGameData saveData)
         {
             var options = new JsonSerializerOptions
             {
@@ -45,8 +50,7 @@ namespace AshborneGame._Core.SaveSystem.Saving
                 Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) } // Handle enums as strings
             };
 
-            string json = JsonSerializer.Serialize(saveData, options);
-            File.WriteAllText(filePath, json);
+            return JsonSerializer.Serialize(saveData, options);
         }
     }
 }

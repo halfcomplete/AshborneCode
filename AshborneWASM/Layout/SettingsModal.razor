@@ -1,4 +1,5 @@
 @using AshborneGame._Core.Globals.Constants
+@inject IJSRuntime JS
 
 @if (IsOpen)
 {
@@ -47,9 +48,7 @@
 
     void SaveGame()
     {
-        // TODO: Call your save game code here.
-        // Example:
-        // SaveManager.SaveGame();
+        AshborneGame._Core.SaveSystem.Saving.SaveManager.SerialiseSaveData();
     }
 
     async Task Close()
