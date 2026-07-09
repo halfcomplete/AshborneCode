@@ -101,6 +101,29 @@ input[type="range"] {
     background: #bfae8e;
     color: #23201b;
 }
+.settings-action-btn {
+    margin-top: 2rem;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    background: linear-gradient(135deg, #5d4a2f, #7a6543);
+    color: #f8eecb;
+    border: 1px solid #bfae8e;
+    border-radius: 10px;
+    font-family: 'AnonymousPro-Regular', monospace;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.settings-action-btn:hover {
+    background: linear-gradient(135deg, #736044, #917953);
+    border-color: #e4d3b3;
+    box-shadow: 0 0 10px rgba(191, 174, 142, 0.35);
+}
+
+.settings-action-btn:active {
+    transform: scale(0.98);
+}
 @font-face {
     font-family: 'IMFellEnglishSC';
     src: url('../visual/fonts/IMFellEnglishSC-Regular.ttf') format('truetype');

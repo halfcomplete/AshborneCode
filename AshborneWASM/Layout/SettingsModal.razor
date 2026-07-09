@@ -5,13 +5,22 @@
     <div class="settings-overlay" @onclick="Close">
         <div class="settings-modal" @onclick:stopPropagation>
             <button class="close-btn" @onclick="Close">✕</button>
+
             <h2>Settings</h2>
+
             <div class="slider-group">
                 <label for="typeSpeed">Type Speed: @($"{TypeSpeedMultiplier:0.0}x")</label>
-                <input type="range" id="typeSpeed" min="0.5" max="3" step="0.1"
+                <input type="range" id="typeSpeed"
+                       min="0.5"
+                       max="3"
+                       step="0.1"
                        value="@TypeSpeedMultiplier"
                        @oninput="OnSliderChanged" />
             </div>
+
+            <button class="settings-action-btn" @onclick="SaveGame">
+                Save Game
+            </button>
         </div>
     </div>
 }
@@ -34,6 +43,13 @@
             TypeSpeedMultiplier = val;
             OutputConstants.SetTypeSpeedMultiplier(val);
         }
+    }
+
+    void SaveGame()
+    {
+        // TODO: Call your save game code here.
+        // Example:
+        // SaveManager.SaveGame();
     }
 
     async Task Close()
