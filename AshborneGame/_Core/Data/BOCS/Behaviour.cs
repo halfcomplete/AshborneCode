@@ -14,6 +14,7 @@ namespace AshborneGame._Core.Data.BOCS
 
         public abstract Behaviour DeepClone();
 
+
         // Stable ID for save/load and migrations. Default: CLR full name.
         public virtual string SaveId => GetType().FullName!;
 

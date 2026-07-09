@@ -69,5 +69,10 @@ namespace AshborneGame._Core.Data.Definitions
 
             return Enumerable.Empty<BOCSObject>();
         }
+
+        public IEnumerable<BOCSObject> GetAll()
+        {
+            return _byInstance.Values;
+        }
     } 
 }

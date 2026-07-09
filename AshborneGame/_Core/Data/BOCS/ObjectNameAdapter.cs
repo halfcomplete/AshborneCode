@@ -1,4 +1,6 @@
 ﻿using AshborneGame._Core.Globals.Interfaces;
+using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -87,6 +89,25 @@ namespace AshborneGame._Core.Data.BOCS
         public ObjectNameAdapter DeepClone()
         {
             return new ObjectNameAdapter(ReferenceName, FirstTimeDisplayName, new(Synonyms), Article);
+        }
+
+
+        public ObjectNameSaveData GetSaveData()
+        {
+            return new ObjectNameSaveData(ReferenceName, FirstTimeDisplayName, Seen, Article, Synonyms);
+        }
+
+        public static ObjectNameAdapter LoadFromSaveData(ObjectNameSaveData data)
+        {
+            if (data == null)
+            {
+                throw new InvalidDataException("ObjectNameAdapter save data is missing state.");
+            }
+            
+            return new ObjectNameAdapter(data.ReferenceName, data.FirstTimeDisplayName, data.Synonyms, data.Article)
+            {
+                Seen = data.Seen
+            };
         }
     }
 }

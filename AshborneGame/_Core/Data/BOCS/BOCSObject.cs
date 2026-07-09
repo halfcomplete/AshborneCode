@@ -6,6 +6,8 @@ using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
 using System.Runtime.CompilerServices;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
+using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
 
 namespace AshborneGame._Core.Data.BOCS;
 
@@ -200,4 +202,27 @@ public class BOCSObject
     public bool IsNPC() => HasBehaviours<TalkableBehaviour>();
 
     public bool IsObject() => !(IsItem() || IsNPC());
+
+
+    public BOCSObjectSaveData GetSaveData(SaveLoadContext context)
+    {
+        var behavioursSaveData = ByBehaviour.Select(b => b.GetSaveData(context)).ToList();
+        return new BOCSObjectSaveData(InstanceID, DefinitionID, Name.GetSaveData(), Description, behavioursSaveData);
+    }
+
+    public static BOCSObject LoadFromSaveData(BOCSObjectSaveData saveData, SaveLoadContext context)
+    {
+        if (saveData == null)
+        {
+            throw new InvalidOperationException("Failed to deserialize BOCSObject save data.");
+        }
+
+        var bocsObject = new BOCSObject(ObjectNameAdapter.LoadFromSaveData(saveData.Name), saveData.Description, saveData.DefinitionID, saveData.InstanceID);
+        foreach (var behaviourSaveData in saveData.Behaviours)
+        {
+            var behaviour = Behavio(behaviourSaveData, context);
+            bocsObject.AddBehaviour(behaviour.GetType(), behaviour);
+        }
+        return bocsObject;
+    }
 }

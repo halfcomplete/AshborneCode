@@ -18,6 +18,6 @@ namespace AshborneGame._Core.Data.Definitions
 
         IEnumerable<BOCSObject> GetByDefinition(DefinitionID id);
 
-
+        IEnumerable<BOCSObject> GetAll();
     }
 }
