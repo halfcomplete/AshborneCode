@@ -2,6 +2,8 @@
 using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectCapabilities;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;
+using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
 
 namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 {
@@ -57,6 +59,23 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
         public override LockUnlockBehaviour DeepClone()
         {
             return new LockUnlockBehaviour(IsLocked);
+        }
+
+        private record SaveData(bool IsLocked);
+
+        public override BehaviourSaveData GetSaveData(SaveLoadContext context)
+        {
+            return new BehaviourSaveData(SaveId, System.Text.Json.JsonSerializer.SerializeToElement(new SaveData(IsLocked)));
+        }
+
+        public override void LoadSaveData(BehaviourSaveData data, SaveLoadContext context)
+        {
+            if (data.State.HasValue == false)
+            {
+                throw new InvalidDataException("LockUnlockBehaviour save data is missing state.");
+            }
+            SaveData save = System.Text.Json.JsonSerializer.Deserialize<SaveData>(data.State.Value) ?? throw new InvalidDataException("Failed to deserialise LockUnlockBehaviour save data.");
+            IsLocked = save.IsLocked;
         }
     }
 }

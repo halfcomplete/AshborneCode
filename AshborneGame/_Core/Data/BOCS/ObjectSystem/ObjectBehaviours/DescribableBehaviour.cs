@@ -4,6 +4,8 @@ using System.Linq;
 using AshborneGame._Core._Player;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectCapabilities;
+using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
 
 namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 {
@@ -50,6 +52,19 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
         public override DescribableBehaviour DeepClone()
         {
             return new DescribableBehaviour(new(Conditions));
+        }
+
+
+        // TODO: make this serialisable by using data-driven conditions and descriptions, rather than code-driven
+        //       This is also required to serialise Quests, which are currently not serialisable due to their use of code-driven conditions and descriptions
+        public override BehaviourSaveData GetSaveData(SaveLoadContext context)
+        {
+            throw new NotImplementedException("DescribableBehaviour does not support saving yet.");
+        }
+
+        public override void LoadSaveData(BehaviourSaveData data, SaveLoadContext context)
+        {
+            throw new NotImplementedException("DescribableBehaviour does not support loading yet.");
         }
     }
 }

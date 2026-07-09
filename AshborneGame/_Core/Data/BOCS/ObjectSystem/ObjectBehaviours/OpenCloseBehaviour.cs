@@ -6,6 +6,8 @@ using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
+using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
 
 namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 {
@@ -93,6 +95,24 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
         public override OpenCloseBehaviour DeepClone()
         {
             return new OpenCloseBehaviour(IsOpen);
+        }
+
+
+        private record SaveData(bool IsOpen);
+
+        public override BehaviourSaveData GetSaveData(SaveLoadContext context)
+        {
+            return new BehaviourSaveData(SaveId, System.Text.Json.JsonSerializer.SerializeToElement(new SaveData(IsOpen)));
+        }
+
+        public override void LoadSaveData(BehaviourSaveData data, SaveLoadContext context)
+        {
+            if (data.State.HasValue == false)
+            {
+                throw new InvalidDataException("OpenCloseBehaviour save data is missing state.");
+            }
+            SaveData save = System.Text.Json.JsonSerializer.Deserialize<SaveData>(data.State.Value) ?? throw new InvalidDataException("Failed to deserialise OpenCloseBehaviour save data.");
+            IsOpen = save.IsOpen;
         }
     }
 }
