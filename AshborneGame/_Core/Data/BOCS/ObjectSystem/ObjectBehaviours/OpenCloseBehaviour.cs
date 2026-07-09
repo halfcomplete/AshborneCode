@@ -38,7 +38,7 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 
         private async void Open(Player player)
         {
-            var behaviours = Owner.GetAllBehaviours<IInteractable>();
+            var behaviours = Owner.GetAllBehavioursOfType<IInteractable>();
 
             if (behaviours.FirstOrDefault(s => s.GetType() == typeof(LockUnlockBehaviour)) is LockUnlockBehaviour lockBehaviour && lockBehaviour.IsLocked)
             {
@@ -56,7 +56,7 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
             await IOService.Output.DisplayDebugMessage($"Behaviours available for {Owner.Name}: {string.Join(", ", behaviours.Select(b => b.GetType().Name))}", ConsoleMessageTypes.INFO);
             await IOService.Output.WriteNonDialogueLine($"You open the {Owner.Name}.");
             
-            if (Owner.GetAllBehaviours<IHasInventory>().FirstOrDefault(s => s.GetType() == typeof(ContainerBehaviour)) is ContainerBehaviour containerBehaviour)
+            if (Owner.GetAllBehavioursOfType<IHasInventory>().FirstOrDefault(s => s.GetType() == typeof(ContainerBehaviour)) is ContainerBehaviour containerBehaviour)
             {
                 player.OpenedInventory = containerBehaviour.Inventory;
                 (bool isEmpty, string contents) = await containerBehaviour.Inventory.GetInventoryContents(player: null);

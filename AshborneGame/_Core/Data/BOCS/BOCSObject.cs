@@ -183,7 +183,7 @@ public class BOCSObject
     /// </summary>
     /// <typeparam name="T">The module to retrieve.</typeparam>
     /// <returns>An IEnumerable containing a reference to all the Behaviours implementing the module T.</returns>
-    public IEnumerable<T> GetAllBehaviours<T>() where T : class
+    public IEnumerable<T> GetAllBehavioursOfType<T>() where T : class
     {
         if (ByModule.TryGetValue(typeof(T), out var behaviours))
         {

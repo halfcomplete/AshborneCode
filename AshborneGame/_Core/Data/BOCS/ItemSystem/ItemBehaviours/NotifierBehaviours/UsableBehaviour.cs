@@ -19,7 +19,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
         public async void Use(Player player, string? target = null)
         {
             // Iterate through all behaviours that implement IActOnUse and call their Use method
-            foreach (var behaviour in Owner.GetAllBehaviours<IActOnUse>())
+            foreach (var behaviour in Owner.GetAllBehavioursOfType<IActOnUse>())
             {
                 await IOService.Output.DisplayDebugMessage($"Using behaviour {behaviour.GetType().Name} on item {Owner.Name}.", ConsoleMessageTypes.INFO);
                 behaviour.OnUse(player);

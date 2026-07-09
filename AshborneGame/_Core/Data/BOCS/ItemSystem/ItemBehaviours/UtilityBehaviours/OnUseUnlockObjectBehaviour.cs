@@ -33,7 +33,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviou
 
             foreach (var obj in targetObjects)
             {
-                var bs = obj.GetAllBehaviours<IInteractable>().ToList();
+                var bs = obj.GetAllBehavioursOfType<IInteractable>().ToList();
                 foreach (var b in bs)
                 {
                     // TODO: bad practice?

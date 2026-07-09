@@ -40,7 +40,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             await IOService.Output.DisplayDebugMessage($"Parsed Input for 'use': {string.Join(" ", args)}", ConsoleMessageTypes.INFO); // Debugging output
             await IOService.Output.DisplayDebugMessage($"Using item: {obj.Name}", ConsoleMessageTypes.INFO); // Debugging output
 
-            List<IUsable> usable = obj.GetAllBehaviours<IUsable>().ToList();
+            List<IUsable> usable = obj.GetAllBehavioursOfType<IUsable>().ToList();
             foreach (var u in usable)
             {
                 u.Use(player);

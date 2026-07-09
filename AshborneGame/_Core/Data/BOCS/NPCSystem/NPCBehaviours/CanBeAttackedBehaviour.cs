@@ -32,10 +32,10 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
         {
             Health -= damage;
 
-            if (Owner.GetAllBehaviours<IActOnAttacked>().Any())
+            if (Owner.GetAllBehavioursOfType<IActOnAttacked>().Any())
             {
                 await IOService.Output.DisplayDebugMessage($"The enemy {Owner.Name} has been attacked and took {damage} damage.", ConsoleMessageTypes.INFO);
-                foreach (var behaviour in Owner.GetAllBehaviours<IActOnAttacked>())
+                foreach (var behaviour in Owner.GetAllBehavioursOfType<IActOnAttacked>())
                 {
                     behaviour.OnAttacked();
                 }

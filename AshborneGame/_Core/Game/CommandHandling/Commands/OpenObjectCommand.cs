@@ -39,7 +39,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
 
             await IOService.Output.DisplayDebugMessage($"You are trying to open {objectName}.");
             await IOService.Output.DisplayDebugMessage($"The object has the following behaviours: {string.Join(", ", allObjectsWithB.Select(b => b.GetType().Name))}.");
-            if (!allObjectsWithB.Any(b => b.GetAllBehaviours<IInteractable>().ToList().Any(b => b.GetType() == typeof(OpenCloseBehaviour))))
+            if (!allObjectsWithB.Any(b => b.GetAllBehavioursOfType<IInteractable>().ToList().Any(b => b.GetType() == typeof(OpenCloseBehaviour))))
             {
                 await IOService.Output.DisplayFailMessage($"You can't open that.");
                 return false;
