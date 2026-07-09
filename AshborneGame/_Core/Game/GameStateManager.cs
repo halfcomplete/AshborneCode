@@ -8,6 +8,7 @@ using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Data.BOCS;
+using AshborneGame._Core.SaveSystem.Data;
 
 namespace AshborneGame._Core.Game
 {
@@ -20,7 +21,6 @@ namespace AshborneGame._Core.Game
         public Dictionary<string, bool> Flags { get; private set; } = new();
         public Dictionary<string, int> Counters { get; private set; } = new();
         public Dictionary<string, string> Labels { get; private set; } = new();
-        public Dictionary<string, object> Variables { get; private set; } = new();
         public Dictionary<string, BOCSObject> Masks { get; private set; } = new();
 
         public TimeTracker TimeTracker { get; private set; }
@@ -145,35 +145,6 @@ namespace AshborneGame._Core.Game
         public bool HasLabel(GameStateKey<string> key) => Labels.Keys.Contains(key);
 
         public bool RemoveLabel(GameStateKey<string> key) => Labels.Remove(key);
-
-        #endregion
-
-        #region Variables
-        public void SetVariable(GameStateKey<object> key, object value) => Variables[key] = value;
-
-        /// <summary>
-        /// Attempts to get the value of the variable.
-        /// </summary>
-        /// <returns>The value if successful, null otherwise.</returns>
-        public object? TryGetVariable(GameStateKey<object> key) =>
-            Variables.TryGetValue(key, out var value) ? value : null;
-
-        /// <summary>
-        /// Attempts to get the value of variable provided it is the target 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public T? GetVariable<T>(GameStateKey<object> key)
-        {
-            if (Variables.TryGetValue(key, out var value) && value is T typedValue)
-                return typedValue;
-            return default;
-        }
-
-        public bool HasVariable(GameStateKey<object> key) => Variables.ContainsKey(key);
-
-        public void RemoveVariable(GameStateKey<object> key) => Variables.Remove(key);
 
         #endregion
         
@@ -331,13 +302,33 @@ namespace AshborneGame._Core.Game
         {
             Flags.Clear();
             Counters.Clear();
-            Variables.Clear();
+            Labels.Clear();
+            Masks.Clear();
         }
 
         public override string ToString()
         {
-            return $"[Flags: {Flags.Count}, Counters: {Counters.Count}, Variables: {Variables.Count}]";
+            return $"[Flags: {Flags.Count}, Counters: {Counters.Count}, Labels: {Labels.Count}, Masks: {Masks.Count}]";
         }
         #endregion
+    
+        
+        public GameStateSaveData GetSaveData()
+        {
+            Dictionary<string, InstanceID> masks = new();
+
+            foreach (var kvp in Masks)
+            {
+                masks[kvp.Key] = kvp.Value.InstanceID;
+            }
+
+            return new GameStateSaveData
+            {
+                Flags = new Dictionary<string, bool>(Flags),
+                Counters = new Dictionary<string, int>(Counters),
+                Labels = new Dictionary<string, string>(Labels),
+                Masks = masks
+            };
+        }
     }
 }

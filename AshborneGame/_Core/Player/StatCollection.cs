@@ -1,4 +1,5 @@
 ﻿using AshborneGame._Core.Globals.Enums;
+using AshborneGame._Core.SaveSystem.Data.PlayerDTOs;
 using System.Text;
 using System.Xml.Linq;
 
@@ -168,6 +169,21 @@ namespace AshborneGame._Core._Player
                 sb.AppendLine(string.Format("{0, -10} {1, -3} ({2} + {3})", stat.Type + ":", stat.Total, stat.BaseValue, stat.BonusValue));
             }
             return sb.ToString();
+        }
+
+
+        public StatCollectionSaveData GetSaveData()
+        {
+            var saveData = new StatCollectionSaveData();
+            foreach (var stat in _stats.Values)
+            {
+                saveData.Stats[stat.Type] = new StatHolderSaveData
+                {
+                    BaseValue = stat.BaseValue,
+                    BonusValue = stat.BonusValue
+                };
+            }
+            return saveData;
         }
     }
 }

@@ -11,7 +11,7 @@ namespace AshborneGame._Core.SaveSystem.Data.PlayerDTOs
     public class StatHolderSaveData
     {
         public PlayerStatType Type { get; set; }
-        public int BaseValue { get; set; }
-        public int BonusValue { get; set; }
+        public double BaseValue { get; set; }
+        public double BonusValue { get; set; }
     }
 }

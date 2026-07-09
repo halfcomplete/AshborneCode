@@ -367,10 +367,6 @@ namespace AshborneGame._Core.Game
             _story.BindExternalFunction("hasLabel", (string key) => ExternalHasLabel(key));
             _story.BindExternalFunction("removeLabel", (string key) => ExternalRemoveLabel(key));
 
-            // --- Variables ---
-            _story.BindExternalFunction("setVar", (string key, string value) => ExternalSetVar(key, value));
-            _story.BindExternalFunction("getVar", (string key) => ExternalGetVar(key));
-
             // --- Inventory ---
             _story.BindExternalFunction("playerHas", (string itemName) => ExternalPlayerHas(itemName));
 
@@ -525,20 +521,6 @@ namespace AshborneGame._Core.Game
                 throw new Exception($"Cannot remove non-existent label '{key}'.");
             _gameState.RemoveLabel(validatedKey);
             return null;
-        }
-
-        // Variables are not registered in InkStateKeyRegistry as they are more dynamic and cannot (and should not) be pre-validated or used in Ink.
-        public object ExternalSetVar(string key, string value)
-        {
-            var varKey = new GameStateKey<object>(key);
-            _gameState.SetVariable(varKey, value);
-            return null;
-        }
-
-        public object ExternalGetVar(string key)
-        {
-            var varKey = new GameStateKey<object>(key);
-            return _gameState.TryGetVariable(varKey) ?? throw new Exception($"Variable '{key}' does not exist.");
         }
 
         public object ExternalPlayerHas(string itemName)

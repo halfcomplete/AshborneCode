@@ -12,6 +12,7 @@ namespace AshborneGame._Core.SaveSystem.Data.PlayerDTOs
     public sealed class PlayerSaveData
     {
         public InstanceID InstanceId { get; set; }
+        public DefinitionID DefinitionId { get; set; }
         public DefinitionID CurrentLocationDefinitionId { get; set; }
         public DefinitionID CurrentSceneDefinitionId { get; set; }
         public DefinitionID? PreviousLocationDefinitionId { get; set; }

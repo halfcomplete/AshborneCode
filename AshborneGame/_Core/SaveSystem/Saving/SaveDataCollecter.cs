@@ -3,6 +3,7 @@ using AshborneGame._Core.Data.Definitions;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.SaveSystem.Data;
+using AshborneGame._Core.SaveSystem.Serialisation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,13 +14,13 @@ namespace AshborneGame._Core.SaveSystem.Saving
 {
     public class SaveDataCollecter
     {
-        public SaveGameData CollectSaveData(Player player, GameStateManager gameState, IInstanceRegistry instanceRegistry, ILocationRegistry locationRegistry, InkRunner inkRunner)
+        public SaveGameData CollectSaveData(SaveLoadContext context, Player player, GameStateManager gameState, IInstanceRegistry instanceRegistry, ILocationRegistry locationRegistry, InkRunner inkRunner)
         {
             SaveGameData saveData = new SaveGameData();
             saveData.Metadata = new SaveMetadata { Version = SaveGameData.CurrentVersion, SavedAt = DateTime.Now };
             saveData.Player = player.GetSaveData();
             saveData.GameState = gameState.GetSaveData();
-            saveData.Objects = instanceRegistry.GetAll().Select(obj => obj.()).ToList();
+            saveData.Objects = instanceRegistry.GetAll().Select(obj => obj.GetSaveData(context)).ToList();
             saveData.Locations = locationRegistry.GetLocations().Select(loc => loc.GetSaveData()).ToList();
             saveData.InkStoryStateJson = inkRunner.Story?.ToJson() ?? throw new ArgumentNullException("CollectSaveData failed: Ink story is null");
             return saveData;

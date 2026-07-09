@@ -18,6 +18,7 @@ using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
 using System.Net.Mail;
 using static AshborneGame._Core.Data.IDSystem.DefinitionIDs;
+using AshborneGame._Core.SaveSystem.Data.PlayerDTOs;
 
 namespace AshborneGame._Core._Player
 {
@@ -382,6 +383,26 @@ namespace AshborneGame._Core._Player
             (_, _, double totalMaxHealth) = Stats.GetStat(PlayerStatType.MaxHealth);
             Stats.SetBase(PlayerStatType.Health, Math.Clamp(baseHealth, 0, totalMaxHealth));
             await IOService.Output.WriteNonDialogueLine($"Your health has been set to {amount} points.");
+        }
+
+
+        public PlayerSaveData GetSaveData()
+        {
+            return new PlayerSaveData
+            {
+                InstanceId = _instanceID,
+                DefinitionId = _definitionID,
+                CurrentLocationDefinitionId = CurrentLocation.DefinitionID,
+                CurrentSceneDefinitionId = CurrentScene.DefinitionID,
+                PreviousLocationDefinitionId = PreviousLocation?.DefinitionID,
+                Inventory = Inventory.GetSaveData(),
+                EquippedItems = EquippedItems.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.InstanceID),
+                Stats = Stats.GetSaveData(),
+                PsychologicalState = PsychologicalState.GetSaveData(),
+                CurrentNpcInteractionInstanceId = CurrentNPCInteraction?.InstanceID,
+                CurrentMaskInstanceId = CurrentMask?.InstanceID,
+                Visibility = Visibility
+            };
         }
     }
 }
