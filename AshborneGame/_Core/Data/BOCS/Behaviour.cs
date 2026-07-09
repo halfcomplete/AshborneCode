@@ -15,8 +15,8 @@ namespace AshborneGame._Core.Data.BOCS
         public abstract Behaviour DeepClone();
 
 
-        // Stable ID for save/load and migrations. Default: CLR full name.
-        public virtual string SaveId => GetType().FullName!;
+        // Stable ID for save/load and migrations.
+        public abstract string SaveId { get; }
 
         // Return null to omit from save (stateless behaviours)
         public abstract BehaviourSaveData GetSaveData(SaveLoadContext context);

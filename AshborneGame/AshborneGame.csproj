@@ -28,9 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="_Core\SaveSystem\Loading\" />
     <Folder Include="_Core\SaveSystem\Migration\" />
-    <Folder Include="_Core\SaveSystem\Saving\" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>

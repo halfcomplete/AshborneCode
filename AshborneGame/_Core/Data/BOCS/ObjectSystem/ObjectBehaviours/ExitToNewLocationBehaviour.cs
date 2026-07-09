@@ -8,6 +8,8 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 {
     internal class ExitToNewLocationBehaviour : Behaviour, IExit
     {
+        public override string SaveId => "exitToNewLocation";
+
         public Location Location { get; set; }
 
         public ExitToNewLocationBehaviour(Location location)

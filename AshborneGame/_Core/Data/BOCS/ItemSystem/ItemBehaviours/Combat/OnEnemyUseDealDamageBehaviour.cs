@@ -11,6 +11,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Combat
 {
     public class OnEnemyUseDealDamageBehaviour : Behaviour, IUsable, ICanDamage
     {
+        public override string SaveId => "onEnemyUseDealDamage";
         public double BaseDamage { get; set; }
         public bool ConsumeOnUse { get; private set; }
 

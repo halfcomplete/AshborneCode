@@ -7,6 +7,8 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
 {
     public class TradeableNPCBehaviour : Behaviour, IHasInventory
     {
+        public override string SaveId => "tradeable";
+
         public Inventory Inventory { get; private set; } = new Inventory();
 
         public bool IsTradeable { get; set; } = true;

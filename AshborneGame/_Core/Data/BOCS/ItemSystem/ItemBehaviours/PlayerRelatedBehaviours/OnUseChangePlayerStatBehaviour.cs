@@ -14,6 +14,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
     /// </summary>
     internal class OnUseChangePlayerStatBehaviour : Behaviour, IActOnUse
     {
+        public override string SaveId => "onUseChangePlayerStat";
+
         public PlayerStatType StatType;
         public bool ConsumeOnUse { get; set; }
 

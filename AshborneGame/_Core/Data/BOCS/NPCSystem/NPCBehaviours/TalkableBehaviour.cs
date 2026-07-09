@@ -15,6 +15,8 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
 {
     public class TalkableBehaviour : Behaviour, ITalkable
     {
+        public override string SaveId => "talkable";
+
         /// <summary>
         /// The default greeting that will be said if there is no valid dialogue file to initiate.
         /// </summary>

@@ -11,6 +11,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
 {
     internal class OnEquipChangePlayerStatBehaviour : Behaviour, IActOnEquip
     {
+        public override string SaveId => "onEquipChangePlayerStat";
+
         public PlayerStatType StatType { get; set; }
         public double ChangeAmount { get; set; }
 

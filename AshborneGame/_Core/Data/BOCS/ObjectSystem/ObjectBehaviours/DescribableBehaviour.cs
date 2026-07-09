@@ -14,6 +14,8 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
     /// </summary>
     public class DescribableBehaviour : Behaviour, IDescribable
     {
+        public override string SaveId => "describable";
+
         /// <summary>
         /// List of (condition, description) pairs.
         /// </summary>

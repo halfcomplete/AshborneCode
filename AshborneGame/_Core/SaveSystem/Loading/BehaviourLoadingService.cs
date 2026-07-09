@@ -1,8 +1,11 @@
 ﻿using AshborneGame._Core.Data.BOCS;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Combat;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.ItemManagementBehaviours;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehaviours;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.OtherBehaviours;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBehaviours;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviours;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
 using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours;
 using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
@@ -17,32 +20,47 @@ namespace AshborneGame._Core.SaveSystem.Loading
 {
     public static class BehaviourLoadingService
     {
-        public static IReadOnlyDictionary<string, Type> BehaviourTypeMap = new Dictionary<string, Type>()
+        public static IReadOnlyDictionary<string, Func<Behaviour>> BehaviourFactories = new Dictionary<string, Func<Behaviour>>()
         {
-            ["cognitive"] = typeof(CognitiveBehaviour),
-            ["talkable"] = typeof(TalkableBehaviour),
-            ["breakable"] = typeof(BreakableBehaviour),
-            ["inspectable"] = typeof(InspectableBehaviour),
-            ["equippable"] = typeof(EquippableBehaviour),
-            ["usable"] = typeof(UsableBehaviour),
-            ["maskInterjection"] = typeof(MaskInterjectionBehaviour),
-            ["tradeableNPC"] = typeof(TradeableNPCBehaviour),
-            ["container"] = typeof(ContainerBehaviour),
-            ["describable"] = typeof(DescribableBehaviour),
-            ["lockUnlock"] = typeof(LockUnlockBehaviour),
-            ["openClose"] = typeof(OpenCloseBehaviour),
-            ["applyStatusEffectOnUse"] = typeof(ApplyStatusEffectOnUseBehaviour),
+            ["cognitive"] = () => new CognitiveBehaviour(new(new())),
+            ["talkable"] = () => new TalkableBehaviour(null),
+            ["breakable"] = () => new BreakableBehaviour(),
+            ["inspectable"] = () => new InspectableBehaviour(null, Globals.Enums.ItemQualities.None),
+            ["equippable"] = () => new EquippableBehaviour([]),
+            ["usable"] = () => new UsableBehaviour(),
+            ["storable"] = () => new StorableBehaviour(0, Globals.Enums.ItemTypes.None, Globals.Enums.ItemQualities.None),
+            ["tradeableNPC"] = () => new TradeableNPCBehaviour(),
+
+            ["maskInterjection"] = () => new MaskInterjectionBehaviour(null!),
+            
+            ["applyStatusEffectOnUse"] = () => new ApplyStatusEffectOnUseBehaviour(Globals.Enums.StatusEffectTypes.None),
+            ["onUseChangePlayerStat"] = () => new OnUseChangePlayerStatBehaviour(0, Globals.Enums.PlayerStatType.NA, false),
+            ["onEnemyUseDealDamage"] = () => new OnEnemyUseDealDamageBehaviour(0),
+            ["onPlayerUseDealDamage"] = () => new OnPlayerUseDealDamageBehaviour(0),
+            ["onUseLogMessage"] = () => new OnUseLogMessage(""),
+            ["onEquipChangePlayerStat"] = () => new OnEquipChangePlayerStatBehaviour(Globals.Enums.PlayerStatType.NA, 0),
+            ["onUseChangePlayerStat"] = () => new OnUseChangePlayerStatBehaviour(0, Globals.Enums.PlayerStatType.NA, false),
+            ["onUseIncreaseVisibility"] = () => new OnUseIncreaseVisibilityBehaviour(0),
+            ["onUseUnlockObject"] = () => new OnUseUnlockObjectBehaviour(null!),
+
+            ["exitToNewLocation"] = () => new ExitToNewLocationBehaviour(null!),
+            ["lockUnlock"] = () => new LockUnlockBehaviour(),
+            ["openClose"] = () => new OpenCloseBehaviour(),
+            ["container"] = () => new ContainerBehaviour(),
+            ["describable"] = () => new DescribableBehaviour(),
         };
 
         public static Behaviour LoadFromSaveData(BehaviourSaveData saveData, SaveLoadContext context)
         {
-            Type behaviourType = BehaviourTypeMap.GetValueOrDefault(saveData.BehaviourId) ?? throw new InvalidDataException($"Failed to find type {saveData.BehaviourId} for behaviour loading.");
-            if (!typeof(Behaviour).IsAssignableFrom(behaviourType))
+            if (!BehaviourFactories.TryGetValue(saveData.BehaviourId, out var factory))
             {
-                throw new InvalidDataException($"Type {saveData.BehaviourId} is not a subclass of Behaviour.");
+                throw new InvalidDataException($"Behaviour ID '{saveData.BehaviourId}' is not in BehaviourFactories.");
             }
-            Behaviour behaviour = (Behaviour)Activator.CreateInstance(behaviourType) ?? throw new InvalidDataException($"Failed to create instance of type {saveData.BehaviourId} for behaviour loading.");
+
+            Behaviour behaviour = factory();
+
             behaviour.LoadSaveData(saveData, context);
+
             return behaviour;
         }
 

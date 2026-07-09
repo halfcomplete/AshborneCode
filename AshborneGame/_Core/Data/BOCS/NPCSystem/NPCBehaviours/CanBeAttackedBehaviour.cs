@@ -13,6 +13,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
     /// </summary>
     public class CanBeAttackedBehaviour : Behaviour, ICanBeAttacked
     {
+        public override string SaveId => "canBeAttacked";
         public double Health { get; set; }
         public double MaxHealth { get; set; }
 

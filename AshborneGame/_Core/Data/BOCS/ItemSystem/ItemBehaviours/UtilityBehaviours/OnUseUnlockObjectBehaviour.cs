@@ -16,6 +16,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviou
 {
     public class OnUseUnlockObjectBehaviour : Behaviour, IActOnUse, IUnlocksTarget
     {
+        public override string SaveId => "onUseUnlockObject";
+
         public bool ConsumeOnUse { get; set; }
 
         public List<DefinitionID> UnlockableObjectIDs { get; private set; }

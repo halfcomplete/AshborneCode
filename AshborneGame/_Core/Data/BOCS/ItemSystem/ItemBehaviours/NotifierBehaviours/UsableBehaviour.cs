@@ -16,6 +16,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
     /// </summary>
     public class UsableBehaviour : Behaviour, IUsable
     {
+        public override string SaveId => "usable";
+
         public async void Use(Player player, string? target = null)
         {
             // Iterate through all behaviours that implement IActOnUse and call their Use method

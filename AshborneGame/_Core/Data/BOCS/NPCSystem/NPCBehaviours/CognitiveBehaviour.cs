@@ -12,6 +12,8 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
 {
     public class CognitiveBehaviour : Behaviour
     {
+        public override string SaveId => "cognitive";
+
         public PsychologicalState PsychologicalState { get; init; }
 
         public CognitiveBehaviour(PsychologicalState psychologicalState)

@@ -16,6 +16,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.OtherBehaviours
 {
     public class MaskInterjectionBehaviour : Behaviour
     {
+        public override string SaveId => "maskInterjection";
+
         /// <summary>
         /// A trigger that can respond to strongly-typed game events.
         /// </summary>

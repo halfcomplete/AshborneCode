@@ -10,6 +10,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Combat
 {
     public class BreakableBehaviour : Behaviour, IBreakable
     {
+        public override string SaveId => "breakable";
         public int Durability { get; set; }
         public int MaxDurability { get; set; }
 
@@ -22,6 +23,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Combat
             MaxDurability = maxDurability;
             Durability = maxDurability;
         }
+
+        public BreakableBehaviour() : this(100) { } // Default max durability
 
         // TODO: remove async void
         public async void OnBreak(Player player)

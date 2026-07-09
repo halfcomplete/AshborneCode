@@ -9,6 +9,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviou
 {
     internal class OnUseIncreaseVisibilityBehaviour : Behaviour, IActOnUse
     {
+        public override string SaveId => "onUseIncreaseVisibility";
+
         private int _visibilityIncreaseAmount = 3;
         public bool ConsumeOnUse { get; set; }
         public OnUseIncreaseVisibilityBehaviour(int visibilityIncrease, bool consumeOnUse = true)

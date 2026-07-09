@@ -11,6 +11,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Combat
 {
     public class ApplyStatusEffectOnUseBehaviour : Behaviour, IUsable
     {
+        public override string SaveId => "applyStatusEffectOnUse";
         public StatusEffectTypes StatusEffectType { get; private set; }
         public bool ConsumeOnUse { get; private set; }
 

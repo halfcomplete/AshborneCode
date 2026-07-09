@@ -9,6 +9,8 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 {
     public class LockUnlockBehaviour : Behaviour, IInteractable
     {
+        public override string SaveId => "lockUnlock";
+
         public bool IsLocked { get; private set; } = false;
 
         public LockUnlockBehaviour(bool initialState = false)

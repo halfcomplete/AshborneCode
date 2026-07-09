@@ -13,9 +13,11 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 {
     public class OpenCloseBehaviour: Behaviour, IInteractable
     {
+        public override string SaveId => "openClose";
+
         public bool IsOpen { get; private set; } = false;
 
-        public OpenCloseBehaviour(bool isOpenInitially)
+        public OpenCloseBehaviour(bool isOpenInitially = false)
         {
             IsOpen = isOpenInitially;
         }

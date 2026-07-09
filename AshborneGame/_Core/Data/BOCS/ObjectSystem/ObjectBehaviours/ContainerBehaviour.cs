@@ -11,6 +11,8 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
 {
     public class ContainerBehaviour : Behaviour, IHasInventory
     {
+        public override string SaveId => "container";
+
         public Inventory Inventory { get; private set; } = new Inventory();
 
         // TODO: deep clone inventory? and constructor?

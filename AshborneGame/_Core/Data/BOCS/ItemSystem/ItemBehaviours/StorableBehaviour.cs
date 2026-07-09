@@ -12,6 +12,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours
 {
     public class StorableBehaviour : Behaviour, IStorable
     {
+        public override string SaveId => "storable";
         /// <summary>
         /// Gets the maximum number of this item that can be stacked in a single inventory slot.
         /// Default is 1 for most items, but can be higher for consumables like potions or materials.

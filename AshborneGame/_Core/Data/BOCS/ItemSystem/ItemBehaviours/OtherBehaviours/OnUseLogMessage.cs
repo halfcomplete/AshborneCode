@@ -10,6 +10,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.OtherBehaviours
 {
     internal class OnUseLogMessage : Behaviour, IActOnUse
     {
+        public override string SaveId => "onUseLogMessage";
+
         public bool ConsumeOnUse { get; set; } = false;
         private string message;
 

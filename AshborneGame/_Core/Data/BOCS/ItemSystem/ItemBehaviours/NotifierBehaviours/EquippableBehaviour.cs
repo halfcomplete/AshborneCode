@@ -12,6 +12,8 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
 {
     public class EquippableBehaviour : Behaviour, IEquippable
     {
+        public override string SaveId => "equippable";
+
         public List<string> EquippableSlots { get; set; }
         public int TimesEquipped { get; set; }
         public bool IsEquipped { get; set; }

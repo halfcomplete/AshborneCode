@@ -10,6 +10,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.ItemManagementB
 {
     public class InspectableBehaviour : Behaviour, IInspectable
     {
+        public override string SaveId => "inspectable";
         private ItemQualities _rarity;
         private string? _inspectDesc;
         public bool IsInspected { get; private set; } = false;
