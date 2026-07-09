@@ -82,6 +82,7 @@ public class BOCSObject
 
         // Add the behavior to the list
         ByModule[type].Add(behaviour);
+        ByBehaviour.Add(behaviour);
 
         if (type == typeof(IUsable))
         {
@@ -109,6 +110,22 @@ public class BOCSObject
     /// </remarks>
     /// <typeparam name="T">The module type (key) that will be removed.</typeparam>
     public void RemoveBehaviour<T>() where T : class => ByModule.Remove(typeof(T));
+
+    public void RemoveBehaviour(Behaviour behaviour)
+    {
+        if (behaviour == null) throw new ArgumentNullException(nameof(behaviour));
+        // Remove from ByModule
+        foreach (var key in ByModule.Keys.ToList())
+        {
+            ByModule[key].Remove(behaviour);
+            if (ByModule[key].Count == 0)
+            {
+                ByModule.Remove(key);
+            }
+        }
+        // Remove from ByBehaviour
+        ByBehaviour.Remove(behaviour);
+    }
 
     /// <summary>
     /// Tries to retrieve the first Behaviour registered in this BOCSGameObject that implements the given module.
@@ -146,7 +163,20 @@ public class BOCSObject
         return (false, null);
     }
 
+    public bool TryGetBehaviour<T>(out T behaviour) where T : Behaviour
+    {
+        if (ByBehaviour.FirstOrDefault() is T foundBehaviour)
+        {
+            behaviour = foundBehaviour;
+            return true;
+        }
+        behaviour = null!;
+        return false;
+    }
+
     public bool HasBehaviours<T>() where T : class => ByModule.ContainsKey(typeof(T)) && ByModule[typeof(T)].Count > 0;
+
+    public bool HasBehaviour<T>() where T : Behaviour => ByBehaviour.Any(b => b is T);
 
     /// <summary>
     /// Retrieves all Behaviours implementing the given module.
