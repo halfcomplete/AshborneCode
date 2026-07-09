@@ -30,7 +30,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
                 throw new InvalidDataException("TradeableNPCBehaviour save data is missing state.");
             }
             SaveData save = System.Text.Json.JsonSerializer.Deserialize<SaveData>(data.State.Value) ?? throw new InvalidDataException("Failed to deserialise TradeableNPCBehaviour save data.");
-            Inventory.LoadSaveData(save.InventorySaveData);
+            Inventory.LoadSaveData(save.InventorySaveData, context);
             IsTradeable = save.IsTradeable;
         }
     }

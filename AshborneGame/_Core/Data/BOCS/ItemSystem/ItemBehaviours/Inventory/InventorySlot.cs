@@ -1,6 +1,9 @@
 ﻿using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
+using AshborneGame._Core.Game;
+using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
 {
@@ -65,6 +68,21 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
         }
 
         public bool IsEmpty => Quantity <= 0;
-    }
 
+
+        public InventorySlotSaveData GetSaveData()
+        {
+            return new InventorySlotSaveData{ ItemInstanceId = Item.InstanceID, Quantity = Quantity };
+        }
+
+        public static InventorySlot LoadFromSaveData(InventorySlotSaveData data, SaveLoadContext context)
+        {
+            var item = context.ResolveObject(data.ItemInstanceId);
+            if (item == null)
+            {
+                throw new InvalidDataException($"No item found for InstanceID: {data.ItemInstanceId}");
+            }
+            return new InventorySlot(item, data.Quantity);
+        }
+    }
 }

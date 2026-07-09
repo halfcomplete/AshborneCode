@@ -6,6 +6,8 @@ using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Services;
 using System.Text;
+using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
 
 namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
 {
@@ -208,6 +210,23 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
                     destinationInventory.TryAddItem(slot.Item, slot.Quantity);
                     originInventory.TryRemoveItem(slot.Item, slot.Quantity);
                 }
+            }
+        }
+
+
+        public InventorySaveData GetSaveData()
+        {
+            var slotSaveDataList = _slots.Select(slot => slot.GetSaveData()).ToList();
+            return new InventorySaveData{ Slots = slotSaveDataList };
+        }
+
+        public void LoadSaveData(InventorySaveData saveData, SaveLoadContext context)
+        {
+            _slots.Clear();
+            foreach (var slotSaveData in saveData.Slots)
+            {
+                var slot = InventorySlot.LoadFromSaveData(slotSaveData, context);
+                _slots.Add(slot);
             }
         }
     }
