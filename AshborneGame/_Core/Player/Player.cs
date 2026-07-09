@@ -19,6 +19,7 @@ using AshborneGame._Core.LocationManagement;
 using System.Net.Mail;
 using static AshborneGame._Core.Data.IDSystem.DefinitionIDs;
 using AshborneGame._Core.SaveSystem.Data.PlayerDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
 
 namespace AshborneGame._Core._Player
 {
@@ -103,14 +104,14 @@ namespace AshborneGame._Core._Player
 
             Inventory = new Inventory();
             PsychologicalState = new(_definitionID);
-		}
+        }
 
-		/// <summary>
-		/// Initialises a new instance of the Player class with a default name.
-		/// </summary>
-		/// <param name="startingLocation">The location where the player starts.</param>
-		/// <exception cref="ArgumentNullException">Thrown when startingLocation is null.</exception>
-		public Player(Location startingLocation)
+        /// <summary>
+        /// Initialises a new instance of the Player class with a default name.
+        /// </summary>
+        /// <param name="startingLocation">The location where the player starts.</param>
+        /// <exception cref="ArgumentNullException">Thrown when startingLocation is null.</exception>
+        public Player(Location startingLocation)
         {
             _name = "Hero"; // Default name
             CurrentLocation = startingLocation ?? throw new ArgumentNullException(nameof(startingLocation));
@@ -403,6 +404,43 @@ namespace AshborneGame._Core._Player
                 CurrentMaskInstanceId = CurrentMask?.InstanceID,
                 Visibility = Visibility
             };
+        }
+
+        public void LoadFromSaveData(PlayerSaveData saveData, SaveLoadContext context)
+        {
+            _instanceID = saveData.InstanceId;
+            _definitionID = saveData.DefinitionId;
+            GameContext.LocationRegistry.TryGetLocationByDefinitionID(saveData.CurrentLocationDefinitionId, out var currentLocation);
+
+            if (currentLocation == null)
+            {
+                throw new InvalidDataException("Load failed: Current location not found.");
+            }
+
+            CurrentLocation = currentLocation;
+            CurrentScene = CurrentLocation.Scene;
+
+            if (saveData.PreviousLocationDefinitionId.HasValue)
+            {
+                PreviousLocation = GameContext.LocationRegistry.TryGetLocationByDefinitionID(saveData.PreviousLocationDefinitionId.Value, out var previousLocation)
+                    ? previousLocation : throw new InvalidDataException("Load failed: Previous location not found.");
+            }
+
+            Inventory.LoadSaveData(saveData.Inventory, context);
+            EquippedItems = saveData.EquippedItems.ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value.HasValue ? GameContext.InstanceRegistry.Get(kvp.Value.Value) : null
+            );
+
+            Stats.LoadSaveData(saveData.Stats);
+            PsychologicalState.LoadSaveData(saveData.PsychologicalState);
+            CurrentNPCInteraction = saveData.CurrentNpcInteractionInstanceId.HasValue
+                ? GameContext.InstanceRegistry.Get(saveData.CurrentNpcInteractionInstanceId.Value)
+                : null;
+            CurrentMask = saveData.CurrentMaskInstanceId.HasValue
+                ? GameContext.InstanceRegistry.Get(saveData.CurrentMaskInstanceId.Value)
+                : null;
+            Visibility = saveData.Visibility;
         }
     }
 }

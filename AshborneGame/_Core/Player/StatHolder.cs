@@ -9,10 +9,11 @@ namespace AshborneGame._Core._Player
         public double BonusValue { get; private set; } = 0;
         public double Total => BaseValue + BonusValue;
 
-        public StatHolder(PlayerStatType statType, double initialValue = 0)
+        public StatHolder(PlayerStatType statType, double initialValue = 0, double initialBonus = 0)
         {
             Type = statType;
             BaseValue = initialValue;
+            BonusValue = initialBonus;
         }
 
         public void SetBase(double value)

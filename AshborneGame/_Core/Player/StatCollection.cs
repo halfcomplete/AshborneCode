@@ -185,5 +185,14 @@ namespace AshborneGame._Core._Player
             }
             return saveData;
         }
+
+        public void LoadSaveData(StatCollectionSaveData saveData)
+        {
+            foreach (var kvp in saveData.Stats)
+            {
+                _stats.Clear();
+                _stats[kvp.Key] = new StatHolder(kvp.Key, kvp.Value.BaseValue, kvp.Value.BonusValue);
+            }
+        }
     }
 }
