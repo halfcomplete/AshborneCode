@@ -29,12 +29,12 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.UtilityBehaviou
 
         private record SaveData(int VisibilityIncreaseAmount, bool ConsumeOnUse);
 
-        public override BehaviourSaveData GetSaveState(SaveLoadContext context)
+        public override BehaviourSaveData GetSaveData(SaveLoadContext context)
         {
             return new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement(new SaveData(_visibilityIncreaseAmount, ConsumeOnUse)));
         }
 
-        public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
+        public override void LoadSaveData(BehaviourSaveData data, SaveLoadContext context)
         {
             if (data.State.HasValue == false)
             {

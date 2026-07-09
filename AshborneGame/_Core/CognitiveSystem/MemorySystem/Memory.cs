@@ -8,16 +8,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.SaveSystem.Data.CognitionDTOs;
 
 namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 {
     public class Memory
     {
-        /// <summary>
-        /// The NPC that owns this Memory.
-        /// </summary>
-        public DefinitionID Owner { get; init; }
-
         private double _intensity;
 
         /// <summary>
@@ -58,9 +54,9 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// Differs from Intensity as it essentially simulates the NPC's tendency to forget memories over time.
         /// Constrained from 0 (the NPC has forgotten the Memory) to 1 (the Memory is fresh in the NPC's mind).
         /// </remarks>
-        public double Strength 
-        { 
-            get => _strength; 
+        public double Strength
+        {
+            get => _strength;
             set
             {
                 _strength = Math.Clamp(value, GetStrengthFloorBasedOnIntensity(Intensity), 1.0);
@@ -100,12 +96,11 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// </summary>
         public int HourLastReinforcedAt { get; private set; }
 
-        public Memory(DefinitionID owner, double intensity, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
-        : this(owner, intensity, 1.0, cause, emotionModifiers, tags, hourCreatedAt, hourLastReinforcedAt) { }
+        public Memory(double intensity, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
+        : this(intensity, 1.0, cause, emotionModifiers, tags, hourCreatedAt, hourLastReinforcedAt) { }
 
-        public Memory(DefinitionID owner, double intensity, double strength, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
+        public Memory(double intensity, double strength, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
         {
-            Owner = owner;
             Intensity = intensity;
             Strength = strength;
             Cause = cause;
@@ -122,7 +117,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
         public static double GetStrengthFloorBasedOnIntensity(double intensity)
         {
-            return (double)Math.Min(1.0, Math.Max(0.0, Math.Pow(intensity, 3.0)/2.0));
+            return (double)Math.Min(1.0, Math.Max(0.0, Math.Pow(intensity, 3.0) / 2.0));
         }
 
         public void Reinforce(int currentTotalInGameHours)
@@ -133,7 +128,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         public int GetAgeInHours(int currentTotalInGameHours) => currentTotalInGameHours - HourCreatedAt;
 
         public int GetHoursSinceLastReinforce(int currentTotalInGameHours) => currentTotalInGameHours - HourLastReinforcedAt;
-        
+
         public bool Matches(MemoryQuery query)
         {
             if (query.Tags != null && !query.Tags.IsSubsetOf(Tags))
@@ -174,6 +169,34 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             }
 
             return true;
+        }
+
+        public static Memory LoadFromSaveData(MemorySaveData saveData)
+        {
+            IMemorySource cause = IMemorySource.LoadFromSaveData(saveData.Cause);
+            return new Memory(
+                saveData.Intensity,
+                saveData.Strength,
+                cause,
+                saveData.EmotionModifiers,
+                new(saveData.MemoryTags),
+                saveData.HourCreatedAt,
+                saveData.HourLastReinforcedAt
+            );
+        }
+
+        public MemorySaveData GetSaveData()
+        {
+            return new MemorySaveData
+            {
+                Intensity = Intensity,
+                Strength = Strength,
+                Cause = Cause.GetSaveData(),
+                EmotionModifiers = EmotionModifiers,
+                MemoryTags = Tags.ToList(),
+                HourCreatedAt = HourCreatedAt,
+                HourLastReinforcedAt = HourLastReinforcedAt
+            };
         }
     }
 }

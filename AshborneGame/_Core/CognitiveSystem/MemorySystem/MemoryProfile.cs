@@ -4,6 +4,8 @@ using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags;
 using System.Diagnostics;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Data.Definitions;
+using AshborneGame._Core.SaveSystem.Data.CognitionDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
 
 namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 {
@@ -25,7 +27,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             EventBus.Subscribe<IMemorableGameEvent>(e => ReceiveMemorableEvent(e));
         }
 
-        public MemoryProfile(DefinitionID ownerID, PersonalityProfile personality, Dictionary<DefinitionID, Attitude> relationships) 
+        public MemoryProfile(DefinitionID ownerID, PersonalityProfile personality, Dictionary<DefinitionID, Attitude> relationships)
             : this(ownerID, personality, relationships, new List<Memory>()) { }
 
         #region Receiving Memories
@@ -73,7 +75,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
             List<EmotionModifier> finalModifiers = CombineLikeEmotionModifiers(accumulatedModifiers);
 
-            Memory newMemory = new(_ownerID, intensity, source, finalModifiers, def.Tags, source.CurrentTotalHours, source.CurrentTotalHours);
+            Memory newMemory = new(intensity, source, finalModifiers, def.Tags, source.CurrentTotalHours, source.CurrentTotalHours);
 
             AddMemory(newMemory);
             ApplyMemoryInfluenceToRelationships(newMemory);
@@ -179,7 +181,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
             return mod with { InitialAmount = newInitialAmount };
         }
-        
+
         private Dictionary<EmotionPotential, EmotionAccumulator> ApplyPersonalityReactionsToEmotionModifiers(MemoryDefinition def, Dictionary<EmotionPotential, EmotionAccumulator> initialPotentials)
         {
             // Loop over each MemoryTag in the given MemoryDefinition
@@ -224,7 +226,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
             return initialPotentials;
         }
-        
+
         /// <summary>
         /// Answers the question: "Given the current TotalMult of an EmotionAccumulator, the influence
         /// a certain PersonalityTrait has on this NPC, and the multiplier that the PersonalityReaction has, what should the new TotalMult be?"
@@ -234,7 +236,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// </remarks>
         private static double CalculateEmotionAccumulatorTotalMult(double currentTotalMult, double personalityTraitInfluence, double reactionMult)
         {
-            return currentTotalMult * (1 + personalityTraitInfluence * Math.Abs(reactionMult-1));
+            return currentTotalMult * (1 + personalityTraitInfluence * Math.Abs(reactionMult - 1));
         }
 
         #endregion Receiving Memories
@@ -498,7 +500,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
             return mods;
         }
-        
+
         private bool ShouldReceiveMemorySource(IMemorySource source)
         {
             return source.Participants.Any(participant => participant.EntityId == _ownerID);
@@ -625,7 +627,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                     {
                         // figure out who in the list of participants satisfies the rule's memory role
                         List<MemoryParticipant> targetParticipants = source.Participants.Where(p => p.Roles.Contains(rule.Role)).ToList();
-                        
+
                         // loop over each participant who is affected by that rule
                         // (e.g, loop over every participant who was a Target)
                         // figure out, for each participant, if we have a relationship with them
@@ -689,5 +691,25 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         }
 
         #endregion Initial Memory Calculations
+
+
+        public MemoryProfileSaveData GetSaveData()
+        {
+            List<MemorySaveData> memorySaveDataList = _memories.Select(m => m.GetSaveData()).ToList();
+            return new MemoryProfileSaveData
+            {
+                Memories = memorySaveDataList
+            };
+        }
+
+        public void LoadSaveData(MemoryProfileSaveData saveData)
+        {
+            _memories.Clear();
+            foreach (var memorySaveData in saveData.Memories)
+            {
+                Memory memory = Memory.LoadFromSaveData(memorySaveData);
+                _memories.Add(memory);
+            }
+        }
     }
 }

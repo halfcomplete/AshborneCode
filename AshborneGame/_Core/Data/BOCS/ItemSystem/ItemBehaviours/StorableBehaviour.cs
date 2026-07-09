@@ -71,12 +71,12 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours
 
         private record SaveData(int StackLimit, ItemTypes ItemType, ItemQualities Quality);
 
-        public override BehaviourSaveData GetSaveState(SaveLoadContext context)
+        public override BehaviourSaveData GetSaveData(SaveLoadContext context)
         {
             return new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement(new SaveData(StackLimit, ItemType, Quality)));
         }
 
-        public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
+        public override void LoadSaveData(BehaviourSaveData data, SaveLoadContext context)
         {
             if (data.State.HasValue == false)
             {

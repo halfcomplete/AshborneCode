@@ -25,5 +25,15 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
                 PersonalityTraits.Add(trait, 0.0);
             }
         }
+
+
+        public void LoadSaveData(PersonalityProfile saveData)
+        {
+            PersonalityTraits.Clear();
+            foreach (var trait in saveData.PersonalityTraits)
+            {
+                PersonalityTraits.Add(trait.Key, trait.Value);
+            }
+        }
     }
 }

@@ -64,12 +64,12 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
 
         private record SaveData(double Health, double MaxHealth);
 
-        public override BehaviourSaveData GetSaveState(SaveLoadContext context)
+        public override BehaviourSaveData GetSaveData(SaveLoadContext context)
         {
             return new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement((new SaveData(Health, MaxHealth))));
         }
 
-        public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
+        public override void LoadSaveData(BehaviourSaveData data, SaveLoadContext context)
         {
             if (data.State.HasValue == false)
             {

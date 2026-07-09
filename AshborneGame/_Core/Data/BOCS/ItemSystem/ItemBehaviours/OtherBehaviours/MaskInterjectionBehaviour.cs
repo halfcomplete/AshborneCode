@@ -115,13 +115,13 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.OtherBehaviours
         }
 
 
-        public override BehaviourSaveData GetSaveState(SaveLoadContext context)
+        public override BehaviourSaveData GetSaveData(SaveLoadContext context)
         {
             // This behaviour does not have any state to save.
             return new BehaviourSaveData(SaveId, null);
         }
 
-        public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
+        public override void LoadSaveData(BehaviourSaveData data, SaveLoadContext context)
         {
             return; // No state to load
         }

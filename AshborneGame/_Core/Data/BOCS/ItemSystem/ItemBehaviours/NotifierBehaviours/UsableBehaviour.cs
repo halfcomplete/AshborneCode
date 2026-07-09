@@ -32,12 +32,12 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.NotifierBehavio
         }
 
 
-        public override BehaviourSaveData GetSaveState(SaveLoadContext context)
+        public override BehaviourSaveData GetSaveData(SaveLoadContext context)
         {
             return new BehaviourSaveData(SaveId, null);
         }
 
-        public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
+        public override void LoadSaveData(BehaviourSaveData data, SaveLoadContext context)
         {
             // No state to load for this behaviour
         }

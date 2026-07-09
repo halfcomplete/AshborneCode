@@ -1,5 +1,5 @@
 {
-    "workbench.colorTheme": "Ayu Mirage",
+    "workbench.colorTheme": "Ayu Light",
     "dotnet-test-explorer.testProjectPath": "**/AshborneTests.csproj",
     "todohighlight.isEnable": true,
     "todohighlight.include": [

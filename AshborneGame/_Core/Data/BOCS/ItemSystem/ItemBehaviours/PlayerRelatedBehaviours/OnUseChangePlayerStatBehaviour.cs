@@ -54,12 +54,12 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.PlayerRelatedBe
 
         private record SaveData(double ChangeAmount, PlayerStatType StatType, bool ConsumeOnUse);
 
-        public override BehaviourSaveData GetSaveState(SaveLoadContext context)
+        public override BehaviourSaveData GetSaveData(SaveLoadContext context)
         {
             return new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement(new SaveData(ChangeAmount, StatType, ConsumeOnUse)));
         }
 
-        public override void LoadSaveState(BehaviourSaveData data, SaveLoadContext context)
+        public override void LoadSaveData(BehaviourSaveData data, SaveLoadContext context)
         {
             if (data.State.HasValue == false)
             {

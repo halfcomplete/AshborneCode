@@ -18,8 +18,8 @@ namespace AshborneGame._Core.Data.BOCS
         public virtual string SaveId => GetType().FullName!;
 
         // Return null to omit from save (stateless behaviours)
-        public abstract BehaviourSaveData GetSaveState(SaveLoadContext context);
+        public abstract BehaviourSaveData GetSaveData(SaveLoadContext context);
 
-        public abstract void LoadSaveState(BehaviourSaveData data, SaveLoadContext context);
+        public abstract void LoadSaveData(BehaviourSaveData data, SaveLoadContext context);
     }
 }

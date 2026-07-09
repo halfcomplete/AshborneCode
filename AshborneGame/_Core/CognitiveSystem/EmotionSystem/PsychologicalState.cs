@@ -7,6 +7,7 @@ using AshborneGame._Core.CognitiveSystem.MemorySystem;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.SaveSystem.Data.CognitionDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
 
 namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
 {
@@ -78,6 +79,19 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
         {
             // TODO: deepclone personality and memory?
             return new PsychologicalState(new(Relationships), new(_ownerID, Personality, Relationships), new());
+        }
+
+
+        public PsychologicalStateSaveData GetSaveData()
+        {
+            return new PsychologicalStateSaveData(Relationships, Memory.GetSaveData(), Personality);
+        }
+
+        public void LoadSaveData(PsychologicalStateSaveData data)
+        {
+            Relationships = data.Relationships;
+            Memory.LoadSaveData(data.Memory);
+            Personality.LoadSaveData(data.Personality);
         }
     }
 }
