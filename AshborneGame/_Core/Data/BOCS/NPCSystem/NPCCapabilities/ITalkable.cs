@@ -8,8 +8,8 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCCapabilities
 {
     internal interface ITalkable
     {
-        public string? Greeting { get; }
-        public string? DialogueFileName { get; init; }
+        public string? Greeting { get; set; }
+        public string? DialogueFileName { get; set; }
 
         virtual async Task Talk() { }
     }

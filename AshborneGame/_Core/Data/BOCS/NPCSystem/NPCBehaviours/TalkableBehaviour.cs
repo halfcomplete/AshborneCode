@@ -3,6 +3,8 @@ using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCCapabilities;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Services;
+using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,12 +18,12 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
         /// <summary>
         /// The default greeting that will be said if there is no valid dialogue file to initiate.
         /// </summary>
-        public string? Greeting { get; }
+        public string? Greeting { get; set; }
 
         /// <summary>
         /// The file name of this NPC's dialogue file (not the full path, which is parsed from the file name).
         /// </summary>
-        public string? DialogueFileName { get; init; }
+        public string? DialogueFileName { get; set; }
 
 
         public TalkableBehaviour(string? greeting, string? dialogueFile = null)
@@ -60,6 +62,25 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
         public override TalkableBehaviour DeepClone()
         {
             return new TalkableBehaviour(Greeting, DialogueFileName);
+        }
+
+
+        private record SaveData(string? Greeting, string? DialogueFileName);
+
+        public override BehaviourSaveData GetSaveData(SaveLoadContext context)
+        {
+            return new BehaviourSaveData(SaveId, System.Text.Json.JsonSerializer.SerializeToElement(new SaveData(Greeting, DialogueFileName)));
+        }
+
+        public override void LoadSaveData(BehaviourSaveData data, SaveLoadContext context)
+        {
+            if (data.State.HasValue == false)
+            {
+                throw new InvalidDataException("TalkableBehaviour save data is missing state.");
+            }
+            SaveData save = System.Text.Json.JsonSerializer.Deserialize<SaveData>(data.State.Value) ?? throw new InvalidDataException("Failed to deserialise TalkableBehaviour save data.");
+            Greeting = save.Greeting;
+            DialogueFileName = save.DialogueFileName;
         }
     }
 }
