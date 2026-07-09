@@ -15,6 +15,12 @@ namespace AshborneGame._Core.SaveSystem.Serialisation
         public IInstanceRegistry InstanceRegistry { get; }
         public ILocationRegistry LocationRegistry { get; }
 
+        public SaveLoadContext(IInstanceRegistry instanceRegistry, ILocationRegistry locationRegistry)
+        {
+            InstanceRegistry = instanceRegistry;
+            LocationRegistry = locationRegistry;
+        }
+
         // Save: object -> ID
         public InstanceID ToId(BOCSObject obj) => obj.InstanceID;
         public DefinitionID ToId(Location loc) => loc.DefinitionID;

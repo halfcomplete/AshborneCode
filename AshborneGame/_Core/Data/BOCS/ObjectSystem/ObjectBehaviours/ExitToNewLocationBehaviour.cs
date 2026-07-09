@@ -22,11 +22,11 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
             return new ExitToNewLocationBehaviour(Location);
         }
 
-        private record SaveData(InstanceID LocationId);
+        private record SaveData(DefinitionID LocationId);
 
         public override BehaviourSaveData GetSaveData(SaveLoadContext context)
         {
-            return new BehaviourSaveData(SaveId, System.Text.Json.JsonSerializer.SerializeToElement(new SaveData(Location.InstanceID)));
+            return new BehaviourSaveData(SaveId, System.Text.Json.JsonSerializer.SerializeToElement(new SaveData(Location.DefinitionID)));
         }
 
         public override void LoadSaveData(BehaviourSaveData data, SaveLoadContext context)
@@ -36,7 +36,7 @@ namespace AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours
                 throw new InvalidDataException("ExitToNewLocationBehaviour save data is missing state.");
             }
             SaveData save = System.Text.Json.JsonSerializer.Deserialize<SaveData>(data.State.Value) ?? throw new InvalidDataException("Failed to deserialise ExitToNewLocationBehaviour save data.");
-            context.LocationRegistry.TryGetLocationByInstanceID(save.LocationId, out var location);
+            context.LocationRegistry.TryGetLocationByDefinitionID(save.LocationId, out var location);
             if (location == null)
             {
                 throw new InvalidDataException($"Failed to find location with ID {save.LocationId} when loading ExitToNewLocationBehaviour save data.");

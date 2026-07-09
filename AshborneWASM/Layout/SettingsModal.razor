@@ -46,9 +46,12 @@
         }
     }
 
-    void SaveGame()
+    async Task SaveGame()
     {
-        AshborneGame._Core.SaveSystem.Saving.SaveManager.SerialiseSaveData();
+        string saveData = AshborneGame._Core.SaveSystem.Saving.SaveManager.SerialiseSaveData();
+
+        // save to local storage
+        await JS.InvokeVoidAsync("localStorage.setItem", "AshborneSave", saveData);
     }
 
     async Task Close()

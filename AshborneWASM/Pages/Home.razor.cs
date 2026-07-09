@@ -1,6 +1,7 @@
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Enums;
+using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame.WebPort;
@@ -318,62 +319,13 @@ public partial class Home : ComponentBase, IDisposable
 
     protected override void OnInitialized()
     {
+        // setup appenv
         Instance = this;
         if (AppEnv == null)
         {
             throw new InvalidOperationException("AppEnvironment is not injected.");
         }
-#if DEBUG
-        var outputHandler = new WebOutputHandler(
-        async line => EnqueueOutput(line),
-        async line => EnqueueOutput($"{OutputConstants.DefaultTypeSpeed * OutputConstants.NonDialogueOutputSpeedMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}"),
-        async (type, msg) => Console.WriteLine($"[{type}]: {msg}")
-        );
-#else
-    var outputHandler = new WebOutputHandler(
-    async line => EnqueueOutput(line),
-    async line => EnqueueOutput($"{OutputConstants.DefaultNonDialogueOutputSpeed / OutputConstants.TypeSpeedMultiplier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}")
-    );
-#endif
 
-        var inputHandler = new WebInputHandler(
-            async (prompt) => await GetPlayerInputFromUIAsync(prompt),
-            async (choiceCount) => await GetDialogueChoice(choiceCount)
-        );
-
-        engine = new GameEngine(inputHandler, outputHandler, AppEnv);
-
-        // Wire up callbacks for dialogue and player input
-        if (GameContext.DialogueService != null)
-        {
-            GameContext.DialogueService.SetPlayerInputCallback(async (useDefaultPrompt) => await GetPlayerInputFromUIAsync(playerInputPrompt));
-            GameContext.DialogueService.OnDialogueComplete += async () =>
-            {
-                Console.WriteLine("[Home] DialogueComplete fired (subscription present)");
-                Console.WriteLine($"[Home] LastDialogueKey='{GameContext.DialogueService.LastDialogueKey}' CurrentDialogueKey='{GameContext.DialogueService.CurrentDialogueKey}'");
-                await TryTriggerOutroSequenceAsync();
-            };
-            GameContext.DialogueService.DialogueStart += async () =>
-            {
-                isInDialogue = true;
-                isAwaitingPlayerInput = false;
-                userInput = "";
-                await InvokeAsync(StateHasChanged);
-            };
-        }
-
-        if (GameContext.InkRunner != null)
-        {
-            GameContext.InkRunner.OnDialogueEnd += () =>
-            {
-                isInDialogue = false;
-                isAwaitingPlayerInput = false;
-                userInput = "";
-                InvokeAsync(StateHasChanged);
-            };
-            GameContext.InkRunner.StartOssanethTimer += StartOssanethSigilTimer;
-            GameContext.InkRunner.StopOssanethTimer += () => ossanethSigilTimer?.Dispose();
-        }
 
         // Do NOT start the game loop here; it will be started after fade.
     }
@@ -1219,7 +1171,7 @@ public partial class Home : ComponentBase, IDisposable
         }
     }
 
-    private async void BeginGame()
+    private async Task BeginGame()
     {
         isIntroTransitioning = true;
         isFading = true;
@@ -1239,9 +1191,67 @@ public partial class Home : ComponentBase, IDisposable
         await Task.Delay(50); // Brief delay to ensure fade-in animation triggers
         introTextFading = false; // Trigger fade-in
         StateHasChanged();
+        await InitialiseGameWorld();
         await StartIntroSequence();
         await engine.StartGameLoopAsync();
         StateHasChanged();
+    }
+
+    private async Task InitialiseGameWorld()
+    {
+#if DEBUG
+        var outputHandler = new WebOutputHandler(
+        async line => EnqueueOutput(line),
+        async line => EnqueueOutput($"{OutputConstants.DefaultTypeSpeed * OutputConstants.NonDialogueOutputSpeedMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}"),
+        async (type, msg) => Console.WriteLine($"[{type}]: {msg}")
+        );
+#else
+    var outputHandler = new WebOutputHandler(
+    async line => EnqueueOutput(line),
+    async line => EnqueueOutput($"{OutputConstants.DefaultNonDialogueOutputSpeed / OutputConstants.TypeSpeedMultiplier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}")
+    );
+#endif
+
+        var inputHandler = new WebInputHandler(
+            async (prompt) => await GetPlayerInputFromUIAsync(prompt),
+            async (choiceCount) => await GetDialogueChoice(choiceCount)
+        );
+
+        ArgumentNullException.ThrowIfNull(AppEnv, nameof(AppEnv));
+
+        engine = new GameEngine(inputHandler, outputHandler, AppEnv);
+
+        // Wire up callbacks for dialogue and player input
+        if (GameContext.DialogueService != null)
+        {
+            GameContext.DialogueService.SetPlayerInputCallback(async (useDefaultPrompt) => await GetPlayerInputFromUIAsync(playerInputPrompt));
+            GameContext.DialogueService.OnDialogueComplete += async () =>
+            {
+                Console.WriteLine("[Home] DialogueComplete fired (subscription present)");
+                Console.WriteLine($"[Home] LastDialogueKey='{GameContext.DialogueService.LastDialogueKey}' CurrentDialogueKey='{GameContext.DialogueService.CurrentDialogueKey}'");
+                await TryTriggerOutroSequenceAsync();
+            };
+            GameContext.DialogueService.DialogueStart += async () =>
+            {
+                isInDialogue = true;
+                isAwaitingPlayerInput = false;
+                userInput = "";
+                await InvokeAsync(StateHasChanged);
+            };
+        }
+
+        if (GameContext.InkRunner != null)
+        {
+            GameContext.InkRunner.OnDialogueEnd += () =>
+            {
+                isInDialogue = false;
+                isAwaitingPlayerInput = false;
+                userInput = "";
+                InvokeAsync(StateHasChanged);
+            };
+            GameContext.InkRunner.StartOssanethTimer += StartOssanethSigilTimer;
+            GameContext.InkRunner.StopOssanethTimer += () => ossanethSigilTimer?.Dispose();
+        }
     }
 
     private async Task StartIntroSequence()
@@ -1279,6 +1289,19 @@ public partial class Home : ComponentBase, IDisposable
         await Task.Delay(IntroFadeDurationMs);
         introPhase = 0;
         isFinalPhase = false;
+        StateHasChanged();
+    }
+
+    private async Task ContinueGame()
+    {
+        isIntroTransitioning = true;
+        isFading = true;
+        StateHasChanged();
+        await Task.Delay(FadeDurationMs); // Let title screen fully fade out
+        hasIntroStarted = true;
+        isFading = false;
+        StateHasChanged();
+        await engine.StartGameLoopAsync();
         StateHasChanged();
     }
 

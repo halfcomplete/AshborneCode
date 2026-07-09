@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
 using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
 using AshborneGame._Core.SaveSystem.Serialisation;
+using AshborneGame._Core.SaveSystem.Loading;
 
 namespace AshborneGame._Core.Data.BOCS;
 
@@ -220,7 +221,7 @@ public class BOCSObject
         var bocsObject = new BOCSObject(ObjectNameAdapter.LoadFromSaveData(saveData.Name), saveData.Description, saveData.DefinitionID, saveData.InstanceID);
         foreach (var behaviourSaveData in saveData.Behaviours)
         {
-            var behaviour = Behavio(behaviourSaveData, context);
+            var behaviour = BehaviourLoadingService.LoadFromSaveData(behaviourSaveData, context);
             bocsObject.AddBehaviour(behaviour.GetType(), behaviour);
         }
         return bocsObject;

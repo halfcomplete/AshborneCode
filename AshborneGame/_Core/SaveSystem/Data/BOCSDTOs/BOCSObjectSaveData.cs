@@ -16,7 +16,7 @@ namespace AshborneGame._Core.SaveSystem.Data.BOCSDTOs
         public string Description { get; set; } = null!;
         public List<BehaviourSaveData> Behaviours { get; set; } = new();
 
-        public BOCSObjectSaveData(InstanceID instanceID, DefinitionID? definitionID, ObjectNameSaveData name, string description, List<BehaviourSaveData> behaviours)
+        public BOCSObjectSaveData(InstanceID instanceID, DefinitionID definitionID, ObjectNameSaveData name, string description, List<BehaviourSaveData> behaviours)
         {
             InstanceID = instanceID;
             DefinitionID = definitionID;

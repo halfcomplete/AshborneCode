@@ -23,20 +23,16 @@ namespace AshborneGame._Core.Game
         private string _startingSceneNo = "Scene1";
         private string _startingSceneSection = "Intro_Dialogue";
 
-        private Location _firstLocation;
-        private Scene _firstScene;
-        public GameEngine(IInputHandler input, IOutputHandler output, AppEnvironment appEnvironment)
+        public GameEngine(IInputHandler input, IOutputHandler output, AppEnvironment appEnvironment, bool fromSave = false)
         {
             IOService.Initialise(input, output);
 
             var definitionRegistry = new DefinitionRegistry();
-            var instanceRegistry = new InstanceRegistry();
             var definitionRegistrationService = new DefinitionRegistrationService();
-
-            var locationRegistry = new LocationRegistry();
-
             definitionRegistrationService.RegisterAllDefinitions(definitionRegistry);
-
+            var instanceRegistry = new InstanceRegistry();
+            var locationRegistry = new LocationRegistry();
+            
             Player player = new Player("Hero");
             var gameState = new GameStateManager(player);
             gameState.SetCounter(StateKeys.Counters.Player.CurrentActNo, 0);
@@ -48,20 +44,9 @@ namespace AshborneGame._Core.Game
             var movementService = new MovementService(locationRegistry);
             
             GameContext.Initialise(player, gameState, _dialogueService, inkRunner, this, timeTracker, ambientTimeManager, movementService, definitionRegistry, instanceRegistry, locationRegistry);
-            
-            GameContext.WorldBuilder.Initialise(locationRegistry, definitionRegistry, GameContext.BOCSFactory);
 
             // TODO: initialise masks through the new definition system
-            var ossaneth = GameContext.BOCSFactory.Create(DefinitionIDs.Items.Masks.Ossaneth);
-
-            gameState.Masks["Ossaneth"] = ossaneth;
-
-            var firstLocationID = DefinitionIDs.Locations.Prologue.PrologueStart;
-
-            _firstLocation = GameContext.LocationRegistry.TryGetLocationByDefinitionID(firstLocationID, out var loc) ? loc : throw new InvalidOperationException($"Location '{firstLocationID}' not found.");
-            _firstScene = _firstLocation.Scene ?? throw new InvalidOperationException($"Location '{_firstLocation.DefinitionID}' does not have a scene.");
-
-            player.SetupMoveTo(_firstLocation, _firstScene, false).GetAwaiter().GetResult();
+            
             _dialogueService.DialogueStart += async () =>
             {
                 _dialogueRunning = true;
@@ -71,8 +56,37 @@ namespace AshborneGame._Core.Game
                 _dialogueRunning = false;
             };
             
-            InitialiseGameWorld(player);
+            if (!fromSave)
+            {
+                InitialiseGameWorld(player, gameState, locationRegistry, definitionRegistry, GameContext.BOCSFactory);
+            }
+            else
+            {
+                
+            }
         }
+
+        private void InitialiseGameWorld(Player player, GameStateManager gameState, ILocationRegistry locationRegistry, IDefinitionRegistry definitionRegistry, BOCSFactory factory)
+        {
+            GameContext.WorldBuilder.Initialise(locationRegistry, definitionRegistry, factory);
+
+            var ossaneth = GameContext.BOCSFactory.Create(DefinitionIDs.Items.Masks.Ossaneth);
+
+            gameState.Masks["Ossaneth"] = ossaneth;
+
+            var firstLocationID = DefinitionIDs.Locations.Prologue.PrologueStart;
+
+            if (!GameContext.LocationRegistry.TryGetLocationByDefinitionID(firstLocationID, out Location? loc) || loc == null)
+            {
+                throw new InvalidOperationException($"Location '{firstLocationID}' not found.");
+            }
+
+            var _firstLocation = loc;
+            var _firstScene = _firstLocation.Scene ?? throw new InvalidOperationException($"Location '{_firstLocation.DefinitionID}' does not have a scene.");
+
+            player.SetupMoveTo(_firstLocation, _firstScene, false).GetAwaiter().GetResult();
+        }
+
 
         /// <summary>
         /// Starts a dialogue from a non-dialogue context.
@@ -95,6 +109,7 @@ namespace AshborneGame._Core.Game
             await StartGameLoop(GameContext.Player, GameContext.GameState);
         }
 
+        // blazor version (NOT the console version, which uses StartGameLoop instead and is in Program.cs)
         public async Task StartGameLoopAsync()
         {
             _isRunning = true;
@@ -102,6 +117,12 @@ namespace AshborneGame._Core.Game
             // Initialise the game state
             GameContext.TimeTracker.StartTickLoop();
 
+            
+            // Description is now handled inside SetupMoveTo
+        }
+
+        public async Task StartNewGameAsnyc()
+        {
             await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_{_startingSceneSection}");
 
             Console.WriteLine("[GameEngine] Initial intro dialogue completed.");
@@ -110,7 +131,7 @@ namespace AshborneGame._Core.Game
 
             await GameContext.Player.SetupMoveTo(location, location.Scene, true);
             GameContext.GameState.SetCounter(StateKeys.Counters.Player.CurrentActNo, 1);
-            // Description is now handled inside SetupMoveTo
+            await StartGameLoopAsync();
         }
 
         /*
@@ -385,21 +406,7 @@ namespace AshborneGame._Core.Game
         */
 
 
-        private async void InitialiseGameWorld(Player player)
-        {
-            //var torch = ItemFactory.CreateLightSourceEquipment("torch", "A small torch that lights up the area.", new List<string> { "hand", "offhand" }, ItemQualities.None, -1, 32);
-            //var damagePotion = ItemFactory.CreateHealthPotion("damage potion", -20);
-            //var scroll = ItemFactory.CreateMagicScroll("mysterious scroll", "A scroll with ancient runes", "You read the scroll and feel a surge of power");
-
-            //player.Inventory.AddItem(torch, 1);
-
-            //player.Inventory.AddItem(ItemFactory.CreateHealthPotion("health potion", 20), 5);
-            //player.Inventory.AddItem(damagePotion, 5);
-            //player.Inventory.AddItem(scroll, 1);
-
-            await IOService.Output.DisplayDebugMessage("Game world initialised.");
-        }
-
+        
         // console version (NOT the Blazor version, which uses ReceiveCommand instead and is in Home.razor.cs)
         public async Task StartGameLoop(Player player, GameStateManager gameState)
         {

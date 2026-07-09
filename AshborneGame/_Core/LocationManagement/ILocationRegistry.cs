@@ -12,7 +12,6 @@ namespace AshborneGame._Core.LocationManagement
         void RegisterLocation(Location location);
         void RegisterScene(Scene scene);
         bool TryGetLocationByDefinitionID(DefinitionID definitionID, out Location? location);
-        bool TryGetLocationByInstanceID(InstanceID instanceID, out Location? location);
         bool TryGetSceneByDefinitionID(DefinitionID definitionID, out Scene? scene);
         IReadOnlyList<DefinitionID> GetLocationIDs();
         IReadOnlyList<Location> GetLocations();

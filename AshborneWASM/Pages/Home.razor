@@ -27,7 +27,8 @@
     {
         <TitleScreen IsFading="@isFading"
                      IsIntroTransitioning="@isIntroTransitioning"
-                     OnBegin="@BeginGame" />
+                     OnBegin="@BeginGame"
+                     OnContinue="@ContinueGame" />
     }
     @if (introPhase > 0 || isIntroTransitioning)
     {

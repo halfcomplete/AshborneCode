@@ -11,6 +11,7 @@ using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.SaveSystem.Data.LocationDTO;
+using AshborneGame._Core.SaveSystem.Serialisation;
 
 namespace AshborneGame._Core.LocationManagement
 {
@@ -62,14 +63,12 @@ namespace AshborneGame._Core.LocationManagement
         /// <summary>
         /// Child locations contained within this location.
         /// </summary>
-        public IReadOnlyList<Location> Children => _children;
-        private readonly List<Location> _children = new();
+        public List<Location> Children { get; private set; } = new();
 
         /// <summary>
         /// Runtime objects currently contained within this location.
         /// </summary>
-        public IReadOnlyList<BOCSObject> ContainedObjects => _containedObjects;
-        private readonly List<BOCSObject> _containedObjects = new();
+        public List<BOCSObject> ContainedObjects { get; private set; } = new();
 
         /// <summary>
         /// Traversable connections originating from this location.
@@ -92,8 +91,8 @@ namespace AshborneGame._Core.LocationManagement
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             DescriptionComposer = composer ?? throw new ArgumentNullException(nameof(composer));
-            _children = children;
-            _containedObjects = objects;
+            Children = children;
+            ContainedObjects = objects;
             _exits = exits;
             DefinitionID = definitionID;
         }
@@ -117,7 +116,7 @@ namespace AshborneGame._Core.LocationManagement
                     $"Location '{child.Name.ReferenceName}' already has a parent.");
 
             child.Parent = this;
-            _children.Add(child);
+            Children.Add(child);
         }
 
         public void RemoveChild(Location child)
@@ -127,7 +126,7 @@ namespace AshborneGame._Core.LocationManagement
                 throw new InvalidOperationException(
                     $"Location '{child.Name.ReferenceName}' is not a child of '{Name.ReferenceName}'.");
             child.Parent = null;
-            _children.Remove(child);
+            Children.Remove(child);
         }
 
         /// <summary>
@@ -137,7 +136,7 @@ namespace AshborneGame._Core.LocationManagement
         {
             ArgumentNullException.ThrowIfNull(obj);
 
-            _containedObjects.Add(obj);
+            ContainedObjects.Add(obj);
         }
 
         /// <summary>
@@ -147,7 +146,7 @@ namespace AshborneGame._Core.LocationManagement
         {
             ArgumentNullException.ThrowIfNull(obj);
 
-            return _containedObjects.Remove(obj);
+            return ContainedObjects.Remove(obj);
         }
 
         /// <summary>
@@ -270,6 +269,62 @@ namespace AshborneGame._Core.LocationManagement
                 ChildDefinitionIds = Children.Select(c => c.DefinitionID).ToList(),
                 ContainedObjectInstanceIds = ContainedObjects.Select(o => o.InstanceID).ToList(),
             };
+        }
+
+        public void LoadSaveData(LocationSaveData saveData, SaveLoadContext context)
+        {
+            if (saveData.DefinitionId != DefinitionID)
+            {
+                throw new InvalidOperationException($"Mismatched DefinitionID when loading Location save data. Expected {DefinitionID}, got {saveData.DefinitionId}.");
+            }
+
+            VisitCount = saveData.VisitCount;
+
+            if (saveData.ParentDefinitionId.HasValue)
+            {
+                if (!context.LocationRegistry.TryGetLocationByDefinitionID(saveData.ParentDefinitionId.Value, out var parent))
+                {
+                    throw new InvalidOperationException($"Failed to find parent location with DefinitionID {saveData.ParentDefinitionId.Value} when loading Location save data.");
+                }
+                Parent = parent;
+            }
+            else
+            {
+                Parent = null;
+            }
+
+            if (saveData.ContainedObjectInstanceIds != null)
+            {
+                ContainedObjects.Clear();
+                foreach (var instanceId in saveData.ContainedObjectInstanceIds)
+                {
+                    if (context.InstanceRegistry.TryGet(instanceId, out var obj) && obj != null)
+                    {
+                        ContainedObjects.Add(obj);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Failed to find object with InstanceID {instanceId} when loading Location save data.");
+                    }
+                }
+            }
+
+            Children.Clear();
+
+            foreach (var child in saveData.ChildDefinitionIds)
+            {
+                if (!context.LocationRegistry.TryGetLocationByDefinitionID(child, out var loc))
+                {
+                    throw new InvalidOperationException($"Failed to find location with DefinitionID {child} when loading Location save data.");
+                }
+
+                if (loc.Parent != null && loc.Parent != this)
+                {
+                    throw new InvalidOperationException($"Location with DefinitionID {child} already has a different parent when loading Location save data.");
+                }
+
+                Children.Add(loc);
+            }
         }
     }
 }

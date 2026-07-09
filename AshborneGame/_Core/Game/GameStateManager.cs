@@ -9,6 +9,7 @@ using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.SaveSystem.Data;
+using AshborneGame._Core.SaveSystem.Serialisation;
 
 namespace AshborneGame._Core.Game
 {
@@ -329,6 +330,25 @@ namespace AshborneGame._Core.Game
                 Labels = new Dictionary<string, string>(Labels),
                 Masks = masks
             };
+        }
+
+        public void LoadSaveData(GameStateSaveData data, SaveLoadContext context)
+        {
+            Flags = new Dictionary<string, bool>(data.Flags);
+            Counters = new Dictionary<string, int>(data.Counters);
+            Labels = new Dictionary<string, string>(data.Labels);
+            Masks.Clear();
+            foreach (var kvp in data.Masks)
+            {
+                if (context.InstanceRegistry.TryGet(kvp.Value, out var obj) && obj != null)
+                {
+                    Masks[kvp.Key] = obj;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Failed to load mask '{kvp.Key}' with InstanceID '{kvp.Value}'. Object not found in InstanceRegistry.");
+                }
+            }
         }
     }
 }

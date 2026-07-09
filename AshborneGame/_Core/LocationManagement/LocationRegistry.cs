@@ -10,7 +10,6 @@ namespace AshborneGame._Core.LocationManagement
     public class LocationRegistry : ILocationRegistry
     {
         private readonly Dictionary<DefinitionID, Location> _byDefinitionID = [];
-        private readonly Dictionary<InstanceID, DefinitionID> _byInstanceID = [];
 
         private readonly Dictionary<DefinitionID, Scene> _scenes = [];
 
@@ -24,7 +23,6 @@ namespace AshborneGame._Core.LocationManagement
             }
 
             _byDefinitionID[location.DefinitionID] = location;
-            _byInstanceID[location.InstanceID] = location.DefinitionID;
         }
 
         public void RegisterScene(Scene scene)
@@ -47,31 +45,6 @@ namespace AshborneGame._Core.LocationManagement
             }
 
             return _byDefinitionID.TryGetValue(id, out location);
-        }
-
-        public bool TryGetLocationByInstanceID(InstanceID id, out Location? location)
-        {
-            if (string.IsNullOrWhiteSpace(id.Value.ToString()))
-            {
-                throw new ArgumentException("InstanceID cannot be null or whitespace.", nameof(id));
-            }
-
-            if (!_byInstanceID.TryGetValue(id, out var locationID))
-            {
-                // because this is a TryGet, return false
-                location = null;
-                return false;
-            }
-
-            if (!_byDefinitionID.TryGetValue(locationID, out location))
-            {
-                // This shouldn't happen unless something has fundamentally gone wrong with the location registration
-                // Therefore throw an error
-                // TODO: maybe not throw an error? idk
-                throw new ArgumentException("DefinitionID not mapped to a Location.", nameof(locationID));
-            }
-
-            return true;
         }
 
         public bool TryGetSceneByDefinitionID(DefinitionID id, out Scene? scene)
