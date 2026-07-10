@@ -1213,7 +1213,7 @@ public partial class Home : ComponentBase, IDisposable
 
         InitialiseGameWorld();
         await StartIntroSequence();
-        await engine.StartGameLoopAsync();
+        await engine.StartNewGameAsnyc();
         StateHasChanged();
     }
 
