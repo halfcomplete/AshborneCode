@@ -15,7 +15,7 @@ namespace AshborneGame._Core.SaveSystem.Data
         public SaveMetadata Metadata { get; set; } = null!;
         public PlayerSaveData Player { get; set; } = null!;
         public GameStateSaveData GameState { get; set; } = null!;
-        public List<BOCSObjectSaveData> Objects { get; set; } = new();
+        public List<BOCSObjectSaveData> BOCSObjects { get; set; } = new();
         public List<LocationSaveData> Locations { get; set; } = new();
         public string InkStoryStateJson { get; set; } = null!;      // Ink dialogue state blob
     }

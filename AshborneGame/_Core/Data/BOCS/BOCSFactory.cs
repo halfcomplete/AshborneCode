@@ -29,6 +29,7 @@ namespace AshborneGame._Core.Data.BOCS
         /// <returns></returns>
         public BOCSObject Create(DefinitionID definitionId)
         {
+            Console.WriteLine("Creating BOCSObject with DefinitionID: " + definitionId.Value);
             var definition = _definitionRegistry.Get<BOCSObjectDefinition>(definitionId);
 
             var gameObject = new BOCSObject(definition.Name.DeepClone(), definition.Description, definitionId, InstanceID.New());
@@ -48,8 +49,9 @@ namespace AshborneGame._Core.Data.BOCS
             return gameObject;
         }
 
-        public BOCSObject Clone(BOCSObject source)
+        public async Task<BOCSObject> Clone(BOCSObject source)
         {
+            await IOService.Output.DisplayDebugMessage($"Cloning BOCSObject: {source.Name} ({source.InstanceID})");
             var clone = new BOCSObject(source.Name.DeepClone(), source.Description, source.DefinitionID);
 
             foreach (var (behaviourType, behaviours) in source.ByModule)

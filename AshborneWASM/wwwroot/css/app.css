@@ -699,9 +699,39 @@ input {
     letter-spacing: 0.08em;
 }
 
-.begin-button:hover, .begin-button:focus {
-    transform: scale(1.04);
-    outline: none;
+    .begin-button:hover, .begin-button:focus {
+        transform: scale(1.04);
+        outline: none;
+    }
+
+.continue-button {
+    font-family: 'AnonymousPro-Regular', serif;
+    font-size: 2rem;
+    padding: 0.8rem 3.5rem;
+    background: linear-gradient(90deg, #bfae8e 60%, #8c7c5a 100%);
+    color: #23201b;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px #0006;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+}
+
+    .continue-button:hover, .continue-button:focus {
+        background: linear-gradient(90deg, #bfae8e 60%, #8c7c5a 100%);
+        color: #23201b;
+        transform: scale(1.04);
+        outline: none;
+    }
+
+.begin-button,
+.continue-button {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .game-content {

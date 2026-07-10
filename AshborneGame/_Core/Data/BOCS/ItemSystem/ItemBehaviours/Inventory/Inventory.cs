@@ -67,10 +67,18 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
             }
 
             // Create new stacks
+            // TODO: figure out how to handle stack splitting and instance IDs
             while (remaining > 0)
             {
                 int toAdd = Math.Min(b.StackLimit, remaining);
-                var newItem = GameContext.BOCSFactory.Clone(item);
+                var newItem = item;
+
+                if (toAdd < remaining)
+                {
+                    // If we need to create a new stack, we should clone the item to ensure each stack is a separate instance.
+                    // However if we only need to add one more stack, we can use the original item instance with the same instance ID.
+                    newItem = GameContext.BOCSFactory.Clone(item).Result;
+                }
                 
                 _slots.Add(new InventorySlot(newItem, toAdd));
                 remaining -= toAdd;

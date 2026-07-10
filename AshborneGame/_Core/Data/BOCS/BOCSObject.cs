@@ -43,10 +43,10 @@ public class BOCSObject
     public List<Behaviour> ByBehaviour { get; private set; } = new();
 
 
-    public BOCSObject(ObjectNameAdapter name, string description, DefinitionID definitionID, InstanceID instanceID = new())
+    public BOCSObject(ObjectNameAdapter name, string description, DefinitionID definitionID, InstanceID? instanceID = null)
     {
         DefinitionID = definitionID;
-        InstanceID = instanceID;
+        InstanceID = instanceID ?? new(Guid.NewGuid());
 
         Name = name;
         Description = description;

@@ -293,7 +293,7 @@ namespace AshborneGame._Core.Game
             hallOfMirrors.AddCustomCommand(new CustomCommandPhrasing(["go", "go up", "walk", "walk up", "go closer", "walk closer"], ["to the shard", "to shard", "to the mirror shard", "to the shard of mirror"]),
                 () => "",
                 () => { GameContext.Player.MoveTo(mirrorShardSublocation); });
-
+            // bug: multiple instances of ossaneth being registered??
             mirrorShardSublocation.AddCustomCommand(new CustomCommandPhrasing(["pick up", "grab", "take", "get"], ["the shard", "shard", "the mirror shard", "the shard of mirror"]),
                 () => $"\nYou pick up the {mirrorShard.Name}. It is sharp and cold against your hand. Maybe it could be useful later.",
                 () =>

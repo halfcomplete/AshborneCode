@@ -37,7 +37,7 @@ namespace AshborneGame._Core.SaveSystem.Saving
             saveData.Metadata = new SaveMetadata { Version = SaveGameData.CurrentVersion, SavedAt = DateTime.Now };
             saveData.Player = player.GetSaveData();
             saveData.GameState = gameState.GetSaveData();
-            saveData.Objects = instanceRegistry.GetAll().Select(obj => obj.GetSaveData(context)).ToList();
+            saveData.BOCSObjects = instanceRegistry.GetAll().Select(obj => obj.GetSaveData(context)).ToList();
             saveData.Locations = locationRegistry.GetLocations().Select(loc => loc.GetSaveData()).ToList();
             saveData.InkStoryStateJson = inkRunner.Story?.state.ToJson() ?? throw new ArgumentNullException("CollectSaveData failed: Ink story is null");
             return saveData;
@@ -83,7 +83,7 @@ namespace AshborneGame._Core.SaveSystem.Saving
         private static void LoadInstanceRegistry(SaveGameData saveData, SaveLoadContext context)
         {
             // Load objects into the instance registry
-            foreach (var objData in saveData.Objects)
+            foreach (var objData in saveData.BOCSObjects)
             {
                 var obj = BOCSObject.LoadFromSaveData(objData, context);
                 context.InstanceRegistry.Register(obj);

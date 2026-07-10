@@ -16,6 +16,12 @@ namespace AshborneGame._Core.Data.Definitions
 
         public void Register(BOCSObject obj)
         {
+            Console.WriteLine("Registering instance: " + obj.InstanceID + " with DefinitionID: " + obj.DefinitionID);
+            if (_byInstance.ContainsKey(obj.InstanceID))
+            {
+                throw new InvalidOperationException($"Instance already registered: {obj.InstanceID}");
+            }
+
             _byInstance[obj.InstanceID] = obj;
 
             if (!_byDefinition.TryGetValue(obj.DefinitionID, out var set))
