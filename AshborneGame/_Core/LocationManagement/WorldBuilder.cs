@@ -38,24 +38,17 @@ namespace AshborneGame._Core.LocationManagement
 
             foreach (var locationDefinition in LocationDefinitions.All)
             {
+                // dependent on definition ID
                 var location = new Location(locationDefinition.Name, locationDefinition.DefinitionID);
                 location.SetDescriptionComposer(locationDefinition.DescriptionComposer);
-
-                foreach (var containedObjectDefinitionId in locationDefinition.ContainedObjects)
-                {
-                    var containedObject = factory.Create(containedObjectDefinitionId);
-                    location.AddObject(containedObject);
-                }
-
-                foreach (var (command, commandHandlers) in locationDefinition.CustomCommands.GetCommands())
-                {
-                    location.CustomCommands.AddCustomCommand(command, commandHandlers.Message, commandHandlers.Effect);
-                }
-
                 if (!scenesByDefinition.TryGetValue(locationDefinition.Scene, out var scene))
                 {
                     throw new KeyNotFoundException($"Definition ID {locationDefinition.Scene} not found in scenesByDefinition.");
                 }
+                InitialiseLocationCustomCommands(location, locationDefinition.CustomCommands);
+
+                // dependent on save data
+                InitialiseLocationContainedObjects(location, locationDefinition.ContainedObjects, factory);
 
                 scene.AddLocation(location);
                 locationsByDefinition[locationDefinition.DefinitionID] = location;
@@ -101,6 +94,48 @@ namespace AshborneGame._Core.LocationManagement
             foreach (var scene in scenesByDefinition.Values)
             {
                 registry.RegisterScene(scene);
+            }
+        }
+
+        /// <summary>
+        /// Creates a Location instance from a given DefinitionID.
+        /// This method ONLY initialises the Location's name, description composer, and custom commands. 
+        /// It does NOT initialise contained objects or parent-child relationships, which are dependent
+        /// on save data and the location hierarchy, respectively.
+        /// </summary>
+        /// <remarks>
+        /// Intended to be used in the first stage of loading.
+        /// </remarks>
+        /// <exception cref="KeyNotFoundException">Thrown when the location definition is not found.</exception>
+        public static Location CreateLocationFromDefinition(DefinitionID definitionID)
+        {
+            ArgumentNullException.ThrowIfNull(definitionID);
+            var locationDefinition = LocationDefinitions.All.FirstOrDefault(l => l.DefinitionID == definitionID);
+            if (locationDefinition == null)
+            {
+                throw new KeyNotFoundException($"Location definition '{definitionID}' was not found.");
+            }
+            var location = new Location(locationDefinition.Name, locationDefinition.DefinitionID);
+            location.SetDescriptionComposer(locationDefinition.DescriptionComposer);
+            InitialiseLocationCustomCommands(location, locationDefinition.CustomCommands);
+
+            return location;
+        }
+
+        private static void InitialiseLocationCustomCommands(Location location, CustomCommandHandler customCommands)
+        {
+            foreach (var (command, commandHandlers) in customCommands.GetCommands())
+            {
+                location.CustomCommands.AddCustomCommand(command, commandHandlers.Message, commandHandlers.Effect);
+            }
+        }
+
+        private static void InitialiseLocationContainedObjects(Location location, IReadOnlyList<DefinitionID> containedObjects, BOCSFactory factory)
+        {
+            foreach (var containedObjectDefinitionId in containedObjects)
+            {
+                var containedObject = factory.Create(containedObjectDefinitionId);
+                location.AddObject(containedObject);
             }
         }
 

@@ -69,32 +69,51 @@ namespace AshborneGame._Core.SaveSystem.Saving
 
         public static void LoadRegistries(SaveGameData saveData, SaveLoadContext context)
         {
-            LoadInstanceRegistry(saveData, context);
             LoadLocationRegistry(saveData, context);
+            LoadInstanceRegistry(saveData, context);
+            LoadLocationSaveData(saveData, context);
         }
 
         private static void LoadInstanceRegistry(SaveGameData saveData, SaveLoadContext context)
         {
-            IInstanceRegistry instanceRegistry = context.InstanceRegistry;
-
             // Load objects into the instance registry
             foreach (var objData in saveData.Objects)
             {
                 var obj = BOCSObject.LoadFromSaveData(objData, context);
-                instanceRegistry.Register(obj);
+                context.InstanceRegistry.Register(obj);
             }
         }
 
+        /// <summary>
+        /// Loads locations into the location registry. Does not fully load the save data 
+        /// into them as this is only part of the first stage of loading, when the aim is to make sure everything EXISTS.
+        /// </summary>
+        /// <param name="saveData"></param>
+        /// <param name="context"></param>
         private static void LoadLocationRegistry(SaveGameData saveData, SaveLoadContext context)
         {
-            ILocationRegistry locationRegistry = context.LocationRegistry;
+            // TODO: double check; is it possible for there not to be every single location detailed in the save data?
+            //       If so, we may need to handle missing locations by creating them from definitions, or logging a warning.
 
             // Load locations into the location registry
             foreach (var locData in saveData.Locations)
             {
                 // first build locations from definitions using WorldBuilder
                 // then load the save data into them
-                // locationRegistry.RegisterLocation(location);
+                // then register the location
+
+                var location = WorldBuilder.CreateLocationFromDefinition(locData.DefinitionId);
+
+                context.LocationRegistry.RegisterLocation(location);
+            }
+        }
+
+        private static void LoadLocationSaveData(SaveGameData saveData, SaveLoadContext context)
+        {
+            foreach (var locData in saveData.Locations)
+            {
+                var location = context.ResolveLocation(locData.DefinitionId);
+                location.LoadSaveData(locData, context);
             }
         }
 
