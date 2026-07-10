@@ -30,9 +30,10 @@ namespace AshborneGame._Core.Game
 
         private List<Quest> _quests = new List<Quest>();
 
-        public GameStateManager(Player player)
+        public GameStateManager(Player player, TimeTracker timeTracker)
         {
             _player = player;
+            TimeTracker = timeTracker;
         }
 
         public void InitialiseMasks(Dictionary<string, BOCSObject> masks)

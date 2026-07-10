@@ -37,13 +37,13 @@ namespace AshborneGame._Core.Game
             var locationRegistry = new LocationRegistry();
             
             Player player = new Player("Hero");
-            var gameState = new GameStateManager(player);
+            var timeTracker = new TimeTracker();
+            var gameState = new GameStateManager(player, timeTracker);
             gameState.SetCounter(StateKeys.Counters.Player.CurrentActNo, 0);
             var inkRunner = new InkRunner(gameState, player, appEnvironment);
             DialogueService = new DialogueService(inkRunner);
             InkRunner = inkRunner;
             var questTracker = new QuestTracker();
-            var timeTracker = new TimeTracker();
             var ambientTimeManager = new AmbientTimeManager();
             var movementService = new MovementService(locationRegistry);
             
