@@ -10,6 +10,8 @@ using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.QuestManagement;
+using AshborneGame._Core.SaveSystem.Data;
+using AshborneGame._Core.SaveSystem.Saving;
 
 namespace AshborneGame._Core.Game
 {
@@ -17,13 +19,14 @@ namespace AshborneGame._Core.Game
     {
         private bool _isRunning;
         private bool _dialogueRunning { get; set; }
-        private DialogueService _dialogueService;
+        public DialogueService DialogueService { get; private set; }
+        public InkRunner InkRunner { get; private set; }
 
         private string _startingActNo = "Act1";
         private string _startingSceneNo = "Scene1";
         private string _startingSceneSection = "Intro_Dialogue";
 
-        public GameEngine(IInputHandler input, IOutputHandler output, AppEnvironment appEnvironment, bool fromSave = false)
+        public GameEngine(IInputHandler input, IOutputHandler output, AppEnvironment appEnvironment, string? saveJson = null)
         {
             IOService.Initialise(input, output);
 
@@ -37,32 +40,33 @@ namespace AshborneGame._Core.Game
             var gameState = new GameStateManager(player);
             gameState.SetCounter(StateKeys.Counters.Player.CurrentActNo, 0);
             var inkRunner = new InkRunner(gameState, player, appEnvironment);
-            _dialogueService = new DialogueService(inkRunner);
+            DialogueService = new DialogueService(inkRunner);
+            InkRunner = inkRunner;
             var questTracker = new QuestTracker();
-            var timeTracker = new TimeTracker(questTracker);
+            var timeTracker = new TimeTracker();
             var ambientTimeManager = new AmbientTimeManager();
             var movementService = new MovementService(locationRegistry);
             
-            GameContext.Initialise(player, gameState, _dialogueService, inkRunner, this, timeTracker, ambientTimeManager, movementService, definitionRegistry, instanceRegistry, locationRegistry);
+            GameContext.Initialise(player, gameState, DialogueService, inkRunner, this, timeTracker, ambientTimeManager, movementService, definitionRegistry, instanceRegistry, locationRegistry);
 
             // TODO: initialise masks through the new definition system
             
-            _dialogueService.DialogueStart += async () =>
+            DialogueService.DialogueStart += async () =>
             {
                 _dialogueRunning = true;
             };
-            _dialogueService.OnDialogueComplete += async () =>
+            DialogueService.OnDialogueComplete += async () =>
             {
                 _dialogueRunning = false;
             };
             
-            if (!fromSave)
+            if (saveJson == null)
             {
                 InitialiseGameWorld(player, gameState, locationRegistry, definitionRegistry, GameContext.BOCSFactory);
             }
             else
             {
-                
+                SaveManager.LoadGame(saveJson, player, gameState, inkRunner);
             }
         }
 
@@ -100,7 +104,7 @@ namespace AshborneGame._Core.Game
                 return false;
             }
             await IOService.Output.DisplayDebugMessage($"{dialogueName} dialogue starting.", AshborneGame._Core.Globals.Enums.ConsoleMessageTypes.INFO);
-            await _dialogueService.StartDialogue(dialogueName);
+            await DialogueService.StartDialogue(dialogueName);
             return true;
         }
 
@@ -123,7 +127,7 @@ namespace AshborneGame._Core.Game
 
         public async Task StartNewGameAsnyc()
         {
-            await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_{_startingSceneSection}");
+            await DialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_{_startingSceneSection}");
 
             Console.WriteLine("[GameEngine] Initial intro dialogue completed.");
 
@@ -410,9 +414,9 @@ namespace AshborneGame._Core.Game
         // console version (NOT the Blazor version, which uses ReceiveCommand instead and is in Home.razor.cs)
         public async Task StartGameLoop(Player player, GameStateManager gameState)
         {
-            await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_{_startingSceneSection}");
+            await DialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_{_startingSceneSection}");
 
-            await _dialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_Ossaneth_Domain_Intro");
+            await DialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_Ossaneth_Domain_Intro");
 
             GameContext.LocationRegistry.TryGetLocationByDefinitionID(DefinitionIDs.Locations.Dreamspace.EyePlatform, out var location);
 

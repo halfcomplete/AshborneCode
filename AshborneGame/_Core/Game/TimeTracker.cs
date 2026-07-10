@@ -4,6 +4,7 @@ using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.QuestManagement;
+using AshborneGame._Core.SaveSystem.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,18 +35,11 @@ namespace AshborneGame._Core.Game
         // Default to 1000ms per tick
         private int _tickInterval = 1000;
 
-        private readonly QuestTracker _questTracker;
-
         /// <summary>
         /// Total in-game hours passed since the start of the game.
         /// Defaults to 6 (Dawn of Day 1).
         /// </summary>
         public int TotalInGameHours { get; private set; } = 6;
-
-        public TimeTracker(QuestTracker questTracker)
-        {
-            _questTracker = questTracker;
-        }
 
         public Globals.Enums.TimeOfDay CurrentTimeOfDay => CalculateTimeOfDay(TotalInGameHours);
 
@@ -127,7 +121,7 @@ namespace AshborneGame._Core.Game
             EventBus.Publish(new GameEvents.System.TickEvent(TotalInGameHours, hoursPassed));
 
             TickLocationTimeTracking();
-            _questTracker.TickQuestTimeTracking(hoursPassed);
+            //_questTracker.TickQuestTimeTracking(hoursPassed);
         }
 
         private void TickLocationTimeTracking()
@@ -230,5 +224,43 @@ namespace AshborneGame._Core.Game
         }
 
         #endregion Location Time Tracking
+    
+        public TimeTrackerSaveData GetSaveData()
+        {
+            return new TimeTrackerSaveData
+            {
+                CurrentLocation = _currentLocation?.DefinitionID,
+                TicksSinceLastHourAdvance = _ticksSinceLastHourAdvance,
+                TicksInCurrentLocation = _ticksInCurrentLocation,
+                TotalTicksInCurrentLocation = _totalTicksInCurrentLocation,
+                LocationDurations = _locationDurations.ToDictionary(kvp => kvp.Key.DefinitionID, kvp => kvp.Value),
+                LocationTimeTriggers = _locationTimeTriggers,
+                TotalInGameHours = TotalInGameHours
+            };
+        }
+
+        public static TimeTracker LoadFromSaveData(TimeTrackerSaveData saveData, ILocationRegistry locationRegistry)
+        {
+            var timeTracker = new TimeTracker();
+            timeTracker._ticksSinceLastHourAdvance = saveData.TicksSinceLastHourAdvance;
+            timeTracker._ticksInCurrentLocation = saveData.TicksInCurrentLocation;
+            timeTracker._totalTicksInCurrentLocation = saveData.TotalTicksInCurrentLocation;
+
+            timeTracker._locationDurations.Clear();
+
+            foreach (var kvp in saveData.LocationDurations)
+            {
+                if (locationRegistry.TryGetLocationByDefinitionID(kvp.Key, out var location) && location != null)
+                {
+                    timeTracker._locationDurations[location] = kvp.Value;
+                }
+            }
+
+            timeTracker._locationTimeTriggers = saveData.LocationTimeTriggers;
+            timeTracker.TotalInGameHours = saveData.TotalInGameHours;
+            timeTracker._currentLocation = locationRegistry.TryGetLocationByDefinitionID(saveData.CurrentLocation ?? new(), out var currentLocation) ? currentLocation : null;
+
+            return timeTracker;
+        }
     }
 }

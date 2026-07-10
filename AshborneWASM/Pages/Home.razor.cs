@@ -17,6 +17,9 @@ namespace AshborneWASM.Pages;
 
 public partial class Home : ComponentBase, IDisposable
 {
+    IInputHandler inputHandler;
+    IOutputHandler outputHandler;
+
     private bool blurOverlayEnabled = false;
     private bool isOutroActive = false;
     private bool isOutroFadingIn = false;
@@ -326,7 +329,23 @@ public partial class Home : ComponentBase, IDisposable
             throw new InvalidOperationException("AppEnvironment is not injected.");
         }
 
+#if DEBUG
+        outputHandler = new WebOutputHandler(
+        async line => EnqueueOutput(line),
+        async line => EnqueueOutput($"{OutputConstants.DefaultTypeSpeed * OutputConstants.NonDialogueOutputSpeedMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}"),
+        async (type, msg) => Console.WriteLine($"[{type}]: {msg}")
+        );
+#else
+    outputHandler = new WebOutputHandler(
+    async line => EnqueueOutput(line),
+    async line => EnqueueOutput($"{OutputConstants.DefaultNonDialogueOutputSpeed / OutputConstants.TypeSpeedMultiplier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}")
+    );
+#endif
 
+        inputHandler = new WebInputHandler(
+            async (prompt) => await GetPlayerInputFromUIAsync(prompt),
+            async (choiceCount) => await GetDialogueChoice(choiceCount)
+        );
         // Do NOT start the game loop here; it will be started after fade.
     }
 
@@ -1191,47 +1210,44 @@ public partial class Home : ComponentBase, IDisposable
         await Task.Delay(50); // Brief delay to ensure fade-in animation triggers
         introTextFading = false; // Trigger fade-in
         StateHasChanged();
-        await InitialiseGameWorld();
+
+        InitialiseGameWorld();
         await StartIntroSequence();
         await engine.StartGameLoopAsync();
         StateHasChanged();
     }
 
-    private async Task InitialiseGameWorld()
+    private void InitialiseGameWorld()
     {
-#if DEBUG
-        var outputHandler = new WebOutputHandler(
-        async line => EnqueueOutput(line),
-        async line => EnqueueOutput($"{OutputConstants.DefaultTypeSpeed * OutputConstants.NonDialogueOutputSpeedMultiplier * OutputConstants.DefaultDebugTypeSpeedModifier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}"),
-        async (type, msg) => Console.WriteLine($"[{type}]: {msg}")
-        );
-#else
-    var outputHandler = new WebOutputHandler(
-    async line => EnqueueOutput(line),
-    async line => EnqueueOutput($"{OutputConstants.DefaultNonDialogueOutputSpeed / OutputConstants.TypeSpeedMultiplier}{OutputConstants.TypewriterStartMarker}{line}{OutputConstants.TypewriterEndMarker}")
-    );
-#endif
-
-        var inputHandler = new WebInputHandler(
-            async (prompt) => await GetPlayerInputFromUIAsync(prompt),
-            async (choiceCount) => await GetDialogueChoice(choiceCount)
-        );
-
         ArgumentNullException.ThrowIfNull(AppEnv, nameof(AppEnv));
 
         engine = new GameEngine(inputHandler, outputHandler, AppEnv);
 
+        SubscribeToGameEvents();
+    }
+
+    private void InitialiseGameWorld(string saveJson)
+    {
+        ArgumentNullException.ThrowIfNull(AppEnv, nameof(AppEnv));
+
+        engine = new GameEngine(inputHandler, outputHandler, AppEnv, saveJson);
+
+        SubscribeToGameEvents();
+    }
+
+    private void SubscribeToGameEvents()
+    {
         // Wire up callbacks for dialogue and player input
-        if (GameContext.DialogueService != null)
+        if (engine.DialogueService != null)
         {
-            GameContext.DialogueService.SetPlayerInputCallback(async (useDefaultPrompt) => await GetPlayerInputFromUIAsync(playerInputPrompt));
-            GameContext.DialogueService.OnDialogueComplete += async () =>
+            engine.DialogueService.SetPlayerInputCallback(async (useDefaultPrompt) => await GetPlayerInputFromUIAsync(playerInputPrompt));
+            engine.DialogueService.OnDialogueComplete += async () =>
             {
                 Console.WriteLine("[Home] DialogueComplete fired (subscription present)");
-                Console.WriteLine($"[Home] LastDialogueKey='{GameContext.DialogueService.LastDialogueKey}' CurrentDialogueKey='{GameContext.DialogueService.CurrentDialogueKey}'");
+                Console.WriteLine($"[Home] LastDialogueKey='{engine.DialogueService.LastDialogueKey}' CurrentDialogueKey='{engine.DialogueService.CurrentDialogueKey}'");
                 await TryTriggerOutroSequenceAsync();
             };
-            GameContext.DialogueService.DialogueStart += async () =>
+            engine.DialogueService.DialogueStart += async () =>
             {
                 isInDialogue = true;
                 isAwaitingPlayerInput = false;
@@ -1239,18 +1255,26 @@ public partial class Home : ComponentBase, IDisposable
                 await InvokeAsync(StateHasChanged);
             };
         }
-
-        if (GameContext.InkRunner != null)
+        else
         {
-            GameContext.InkRunner.OnDialogueEnd += () =>
+            throw new ArgumentNullException(nameof(engine.DialogueService), "DialogueService is not initialised in GameContext.");
+        }
+
+        if (engine.InkRunner != null)
+        {
+            engine.InkRunner.OnDialogueEnd += () =>
             {
                 isInDialogue = false;
                 isAwaitingPlayerInput = false;
                 userInput = "";
                 InvokeAsync(StateHasChanged);
             };
-            GameContext.InkRunner.StartOssanethTimer += StartOssanethSigilTimer;
-            GameContext.InkRunner.StopOssanethTimer += () => ossanethSigilTimer?.Dispose();
+            engine.InkRunner.StartOssanethTimer += StartOssanethSigilTimer;
+            engine.InkRunner.StopOssanethTimer += () => ossanethSigilTimer?.Dispose();
+        }
+        else
+        {
+            throw new ArgumentNullException(nameof(engine.InkRunner), "InkRunner is not initialised in GameContext.");
         }
     }
 
@@ -1297,11 +1321,28 @@ public partial class Home : ComponentBase, IDisposable
         isIntroTransitioning = true;
         isFading = true;
         StateHasChanged();
-        await Task.Delay(FadeDurationMs); // Let title screen fully fade out
+
+        await Task.Delay(FadeDurationMs);
+
         hasIntroStarted = true;
         isFading = false;
         StateHasChanged();
+
+        string? saveJson = await JS.InvokeAsync<string?>(
+            "localStorage.getItem",
+            "AshborneSave");
+
+        if (string.IsNullOrWhiteSpace(saveJson))
+        {
+            // No save exists.
+            // You could show a message or simply start a new game.
+            return;
+        }
+
+        InitialiseGameWorld(saveJson);
+
         await engine.StartGameLoopAsync();
+
         StateHasChanged();
     }
 

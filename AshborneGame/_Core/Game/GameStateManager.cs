@@ -328,7 +328,8 @@ namespace AshborneGame._Core.Game
                 Flags = new Dictionary<string, bool>(Flags),
                 Counters = new Dictionary<string, int>(Counters),
                 Labels = new Dictionary<string, string>(Labels),
-                Masks = masks
+                Masks = masks,
+                TimeTracker = TimeTracker.GetSaveData()
             };
         }
 
@@ -349,6 +350,7 @@ namespace AshborneGame._Core.Game
                     throw new InvalidOperationException($"Failed to load mask '{kvp.Key}' with InstanceID '{kvp.Value}'. Object not found in InstanceRegistry.");
                 }
             }
+            TimeTracker = TimeTracker.LoadFromSaveData(data.TimeTracker, GameContext.LocationRegistry);
         }
     }
 }

@@ -7,6 +7,7 @@ namespace AshborneGame._Core.SaveSystem.Data
 {
     public class TimeTrackerSaveData
     {
+        public DefinitionID? CurrentLocation { get; set; }
         public int TicksSinceLastHourAdvance { get; set; }
         public int TicksInCurrentLocation { get; set; }
         public int TotalTicksInCurrentLocation { get; set; }

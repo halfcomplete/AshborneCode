@@ -55,9 +55,9 @@ namespace AshborneGame._Core.SaveSystem.Saving
             return JsonSerializer.Serialize(saveData, options);
         }
 
-        public static void CreateContextAndLoadRegistries(string json, Player player, GameStateManager gameState, InkRunner inkRunner)
+        public static void LoadGame(string saveJson, Player player, GameStateManager gameState, InkRunner inkRunner)
         {
-            SaveGameData saveData = Deserialise(json);
+            var saveData = Deserialise(saveJson);
             SaveLoadContext context = new SaveLoadContext(new InstanceRegistry(), new LocationRegistry());
 
             LoadRegistries(saveData, context);
