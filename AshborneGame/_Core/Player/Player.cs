@@ -312,6 +312,8 @@ namespace AshborneGame._Core._Player
             {
                 throw new InvalidOperationException("Item is not equippable.");
             }
+
+            CheckForOssanethTimer();
         }
 
         public void UnequipItem(string slot)
@@ -321,6 +323,18 @@ namespace AshborneGame._Core._Player
                 throw new ArgumentException($"Invalid equipment slot: {slot}. Valid slots are: {string.Join(", ", EquippedItems.Keys)}");
             }
             EquippedItems[slot.ToLower()] = null;
+        }
+
+        private void CheckForOssanethTimer()
+        {
+            if (EquippedItems["face"] != null && EquippedItems["face"]!.DefinitionID == DefinitionIDs.Items.Masks.Ossaneth)
+            {
+                GameContext.InkRunner.StartOssanethTimer.Invoke();
+            }
+            else
+            {
+                GameContext.InkRunner.StopOssanethTimer.Invoke();
+            }
         }
 
         // TODO: remove async void, check logic

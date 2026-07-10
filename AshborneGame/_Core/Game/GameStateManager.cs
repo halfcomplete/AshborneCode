@@ -184,18 +184,6 @@ namespace AshborneGame._Core.Game
             Console.WriteLine("Masks:" + string.Join(", ", Masks.Keys));
             _player.EquipItem(Masks[maskName], "face");
             _player.Inventory.TryAddItem(Masks[maskName]);
-
-            if (!OperatingSystem.IsBrowser())
-            {
-                return;
-            }
-
-            if (maskName == MaskNameConstants.Ossaneth)
-            {
-                Console.WriteLine("[GameStateManager] Player is wearing Ossaneth mask. Starting Ossaneth timer.");
-                GameContext.InkRunner.StartOssanethTimer.Invoke();
-            }
-            else GameContext.InkRunner.StopOssanethTimer.Invoke();
         }
 
         public bool PlayerHasMask(string maskName) => _player.Inventory.Slots.Any(s => s.Item.Name.Matches(maskName));

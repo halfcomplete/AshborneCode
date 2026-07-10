@@ -1270,7 +1270,7 @@ public partial class Home : ComponentBase, IDisposable
                 InvokeAsync(StateHasChanged);
             };
             engine.InkRunner.StartOssanethTimer += StartOssanethSigilTimer;
-            engine.InkRunner.StopOssanethTimer += () => ossanethSigilTimer?.Dispose();
+            engine.InkRunner.StopOssanethTimer += StopOssanethSigilTimer;
         }
         else
         {
@@ -1376,20 +1376,16 @@ public partial class Home : ComponentBase, IDisposable
         }, null, delay, System.Threading.Timeout.Infinite);
     }
 
+    private void StopOssanethSigilTimer()
+    {
+        isOssanethGifActive = false;
+        ossanethSigilTimer?.Dispose();
+        InvokeAsync(StateHasChanged);
+    }
+
     public override async Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);
-        // Defensive: restart timer if component is re-rendered and mask is equipped
-        if (ossanethSigilTimer == null && (GameContext.Player.EquippedItems["face"]?.Name.Matches(MaskNameConstants.Ossaneth) ?? false))
-        {
-            StartOssanethSigilTimer();
-        }
-        else if (GameContext.Player.EquippedItems["face"]?.Name.DoesNotMatch(MaskNameConstants.Ossaneth) ?? false)
-        {
-            isOssanethGifActive = false;
-            ossanethSigilTimer?.Dispose();
-            ossanethSigilTimer = null;
-        }
     }
 
     public void Dispose()
