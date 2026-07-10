@@ -36,12 +36,6 @@
         console.log('Hostname:', window.location.hostname);
         console.log('Pathname:', window.location.pathname);
         
-        // Force reload if we detect we're on GitHub Pages but still accessing localhost
-        if (window.location.hostname.endsWith('.github.io') && window.location.href.includes('localhost')) {
-            console.log('Detected localhost reference on GitHub Pages, forcing reload...');
-            window.location.reload(true);
-        }
-        
         // Clear any cached data
         if ('caches' in window) {
             caches.keys().then(function(names) {
@@ -51,10 +45,6 @@
                 }
             });
         }
-        
-        // Force clear localStorage and sessionStorage
-        localStorage.clear();
-        sessionStorage.clear();
         
         // Unregister any existing service workers
         if ('serviceWorker' in navigator) {
