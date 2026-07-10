@@ -157,9 +157,17 @@ namespace AshborneGame._Core.SaveSystem.Saving
         {
             var options = new JsonSerializerOptions
             {
-                PropertyNameCaseInsensitive = true, // Allow case-insensitive property matching
-                Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) } // Handle enums as strings
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase, // camelCase for property names
+                WriteIndented = true, // pretty print the JSON for readability
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, // ignore null values
+                Converters =
+                {
+                    new DefinitionIDJsonConverter(), // custom converter for DefinitionID
+                    new InstanceIDJsonConverter(), // custom converter for InstanceID
+                    new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) // handle enums as strings in camelCase
+                }
             };
+
             return JsonSerializer.Deserialize<SaveGameData>(json, options) ?? throw new InvalidOperationException("Deserialisation failed: Resulting SaveGameData is null.");
         }
     }
