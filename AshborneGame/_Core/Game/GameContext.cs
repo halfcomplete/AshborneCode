@@ -22,7 +22,6 @@ namespace AshborneGame._Core.Game
         public static GameEngine GameEngine { get; private set; }
         public static Random Random { get; } = new Random();
         public static BOCSFactory BOCSFactory { get; private set; }
-        public static WorldBuilder WorldBuilder { get; private set; }
         public static MovementService MovementService { get; private set; }
 
         public static void Initialise(Player player, GameStateManager gameState, DialogueService dialogueRunner, InkRunner inkRunner, GameEngine gameEngine, TimeTracker timeTracker, AmbientTimeManager ambientTimeManager, MovementService move, IDefinitionRegistry def, IInstanceRegistry inst, ILocationRegistry loc)
@@ -39,7 +38,6 @@ namespace AshborneGame._Core.Game
             LocationRegistry = loc;
             MovementService = move;
             BOCSFactory = new(DefinitionRegistry, InstanceRegistry);
-            WorldBuilder = new();
         }
     }
 }

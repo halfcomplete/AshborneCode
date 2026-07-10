@@ -13,7 +13,7 @@ namespace AshborneGame._Core.LocationManagement
 {
     public class WorldBuilder
     {
-        public void Initialise(ILocationRegistry registry, IDefinitionRegistry definitionRegistry, BOCSFactory factory)
+        public static void Initialise(ILocationRegistry registry, IDefinitionRegistry definitionRegistry, BOCSFactory factory)
         {
             ArgumentNullException.ThrowIfNull(registry);
 
@@ -104,7 +104,7 @@ namespace AshborneGame._Core.LocationManagement
             }
         }
 
-        public void RemoveParentChildRelationship(ILocationRegistry registry, DefinitionID parent, DefinitionID child)
+        public static void RemoveParentChildRelationship(ILocationRegistry registry, DefinitionID parent, DefinitionID child)
         {
             ArgumentNullException.ThrowIfNull(parent);
             ArgumentNullException.ThrowIfNull(child);

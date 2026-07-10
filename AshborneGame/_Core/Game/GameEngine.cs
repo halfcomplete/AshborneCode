@@ -68,7 +68,7 @@ namespace AshborneGame._Core.Game
 
         private void InitialiseGameWorld(Player player, GameStateManager gameState, ILocationRegistry locationRegistry, IDefinitionRegistry definitionRegistry, BOCSFactory factory)
         {
-            GameContext.WorldBuilder.Initialise(locationRegistry, definitionRegistry, factory);
+            WorldBuilder.Initialise(locationRegistry, definitionRegistry, factory);
 
             var ossaneth = GameContext.BOCSFactory.Create(DefinitionIDs.Items.Masks.Ossaneth);
 
