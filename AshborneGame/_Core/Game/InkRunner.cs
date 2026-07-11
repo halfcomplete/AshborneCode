@@ -54,7 +54,7 @@ namespace AshborneGame._Core.Game
             get => _currentSilentPath.Item2;
         }
 
-        public bool IsRunning => _story != null && _story.canContinue;
+        public bool IsRunning;
 
         public Action StartOssanethTimer;
         public Action StopOssanethTimer;
@@ -162,6 +162,7 @@ namespace AshborneGame._Core.Game
         /// </summary>
         public async Task RunAsync()
         {
+            IsRunning = true;
             await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: RunAsync entered at {DateTime.Now}, canContinue={_story?.canContinue}, currentChoices={_story?.currentChoices?.Count}", ConsoleMessageTypes.INFO);
             if (_story is null)
                 throw new InvalidOperationException("No Ink story loaded.");
@@ -326,6 +327,7 @@ namespace AshborneGame._Core.Game
                 {
                     await IOService.Output.DisplayDebugMessage("Returning from RunAsync().");
                     _hasPrintedDialogueEnd = false;
+                    IsRunning = false;
                     return;
                 }
             }
