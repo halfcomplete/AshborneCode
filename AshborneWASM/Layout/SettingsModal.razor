@@ -19,7 +19,7 @@
                        @oninput="OnSliderChanged" />
             </div>
 
-            <button class="settings-action-btn" @onclick="SaveGame">
+            <button class="settings-action-btn" @onclick="SaveGame" disabled="@(AshborneGame._Core.Game.GameContext.DialogueService?.IsRunning ?? false)">
                 Save Game
             </button>
         </div>
@@ -49,6 +49,8 @@
     async Task SaveGame()
     {
         string saveData = AshborneGame._Core.SaveSystem.Saving.SaveManager.SerialiseSaveData();
+
+        Console.WriteLine("save button clicked! save button is disabled: " + (AshborneGame._Core.Game.GameContext.DialogueService?.IsRunning ?? false));
 
         // save to local storage
         await JS.InvokeVoidAsync("localStorage.setItem", "AshborneSave", saveData);

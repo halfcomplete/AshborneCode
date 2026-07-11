@@ -1,5 +1,7 @@
 ﻿
 @inherits LayoutComponentBase
+@implements IDisposable
+@inject IJSRuntime JS
 @using AshborneGame._Core.Globals.Constants
 @using AshborneWASM.Layout
 
@@ -31,5 +33,30 @@
     {
         settingsOpen = open;
         OutputConstants.Paused = open;
+    }
+
+    private DotNetObjectReference<MainLayout>? objRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            objRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("registerEscapeKey", objRef);
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnEscapePressed()
+    {
+        Console.WriteLine("Escape key pressed, toggling settings.");
+        ToggleSettings();
+        await InvokeAsync(StateHasChanged);
+        return;
+    }
+
+    public void Dispose()
+    {
+        objRef?.Dispose();
     }
 }

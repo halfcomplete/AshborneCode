@@ -157,3 +157,14 @@ window.animateBlurOverlay = function (targetOpacity, durationSecs, fadeBackDurat
     console.log("[DEBUG] Starting requestAnimationFrame for fade-in");
     requestAnimationFrame(animateTo);
 };
+
+window.registerEscapeKey = function (dotNetRef) {
+    document.addEventListener("keydown", function (e) {
+        console.log("Pressed:", e.key);
+
+        if (e.key === "Escape") {
+            console.log("Escape!");
+            dotNetRef.invokeMethodAsync("OnEscapePressed");
+        }
+    });
+};

@@ -27,6 +27,25 @@
     background: #bfae8e;
     color: #23201b;
 }
+.settings-action-btn:disabled {
+    background: linear-gradient(135deg, #3f3b35, #56504a);
+    color: #9f9787;
+    border-color: #6a6257;
+    cursor: not-allowed;
+    box-shadow: none;
+    opacity: 0.75;
+}
+
+    .settings-action-btn:disabled:hover {
+        background: linear-gradient(135deg, #3f3b35, #56504a);
+        border-color: #6a6257;
+        box-shadow: none;
+        transform: none;
+    }
+
+    .settings-action-btn:disabled:active {
+        transform: none;
+    }
 /* Settings Modal and Overlay */
 .settings-overlay {
     position: fixed;
