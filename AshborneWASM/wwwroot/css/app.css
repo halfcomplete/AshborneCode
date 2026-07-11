@@ -46,6 +46,27 @@
     .settings-action-btn:disabled:active {
         transform: none;
     }
+
+.save-button-container {
+    width: 100%;
+    margin-top: 2rem;
+}
+
+.save-tooltip {
+    position: fixed;
+    z-index: 3000;
+    background: #23201b;
+    color: #f8eecb;
+    border: 1px solid #bfae8e;
+    border-radius: 8px;
+    padding: 0.5rem 0.8rem;
+    font-family: 'AnonymousPro-Regular', monospace;
+    font-size: 0.9rem;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    white-space: nowrap;
+}
+
 /* Settings Modal and Overlay */
 .settings-overlay {
     position: fixed;
@@ -121,7 +142,6 @@ input[type="range"] {
     color: #23201b;
 }
 .settings-action-btn {
-    margin-top: 2rem;
     width: 100%;
     padding: 0.9rem 1rem;
     background: linear-gradient(135deg, #5d4a2f, #7a6543);

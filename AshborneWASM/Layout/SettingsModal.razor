@@ -19,9 +19,25 @@
                        @oninput="OnSliderChanged" />
             </div>
 
-            <button class="settings-action-btn" @onclick="SaveGame" disabled="@(AshborneGame._Core.Game.GameContext.DialogueService?.IsRunning ?? false)">
-                Save Game
-            </button>
+            <div class="save-button-container"
+                 @onmouseenter="ShowSaveTooltip"
+                 @onmouseleave="HideSaveTooltip"
+                 @onmousemove="UpdateTooltipPosition">
+
+                <button class="settings-action-btn"
+                        @onclick="SaveGame"
+                        disabled="@IsSaveDisabled">
+                    Save Game
+                </button>
+
+                @if (showSaveTooltip && IsSaveDisabled)
+                {
+                    <div class="save-tooltip"
+                         style="left:@($"{tooltipX}px"); top:@($"{tooltipY}px")">
+                        Cannot save game while in a conversation.
+                    </div>
+                }
+            </div>
         </div>
     </div>
 }
@@ -60,5 +76,34 @@
     {
         OutputConstants.Paused = false;
         await IsOpenChanged.InvokeAsync(false);
+    }
+
+    bool showSaveTooltip = false;
+    double tooltipX;
+    double tooltipY;
+
+    bool IsSaveDisabled =>
+        AshborneGame._Core.Game.GameContext.DialogueService?.IsRunning ?? false;
+
+    void ShowSaveTooltip()
+    {
+        if (IsSaveDisabled)
+        {
+            showSaveTooltip = true;
+        }
+    }
+
+    void HideSaveTooltip()
+    {
+        showSaveTooltip = false;
+    }
+
+    void UpdateTooltipPosition(MouseEventArgs e)
+    {
+        if (IsSaveDisabled)
+        {
+            tooltipX = e.ClientX + 15;
+            tooltipY = e.ClientY + 15;
+        }
     }
 }
