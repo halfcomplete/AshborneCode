@@ -24,6 +24,8 @@ namespace AshborneGame._Core.Game
         public Dictionary<string, string> Labels { get; private set; } = new();
         public Dictionary<string, BOCSObject> Masks { get; private set; } = new();
 
+        public string GameText { get; set; } = "";
+
         public TimeTracker TimeTracker { get; private set; }
 
         private Player _player;
@@ -187,7 +189,7 @@ namespace AshborneGame._Core.Game
             _player.Inventory.TryAddItem(Masks[maskName]);
         }
 
-        public bool PlayerHasMask(string maskName) => _player.Inventory.Slots.Any(s => s.Item.Name.Matches(maskName));
+        public bool PlayerHasMask(string maskName) => _player.Inventory.GetItemCount(maskName) > 0;
 
         public bool PlayerWearingMask(string maskName)
         {
@@ -317,6 +319,7 @@ namespace AshborneGame._Core.Game
                 Flags = new Dictionary<string, bool>(Flags),
                 Counters = new Dictionary<string, int>(Counters),
                 Labels = new Dictionary<string, string>(Labels),
+                GameText = GameText,
                 Masks = masks,
                 TimeTracker = TimeTracker.GetSaveData()
             };
@@ -339,6 +342,7 @@ namespace AshborneGame._Core.Game
                     throw new InvalidOperationException($"Failed to load mask '{kvp.Key}' with InstanceID '{kvp.Value}'. Object not found in InstanceRegistry.");
                 }
             }
+            GameText = data.GameText;
             TimeTracker = TimeTracker.LoadFromSaveData(data.TimeTracker, GameContext.LocationRegistry);
         }
     }

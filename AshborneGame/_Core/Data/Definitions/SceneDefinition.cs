@@ -6,5 +6,5 @@ using AshborneGame._Core.Data.IDSystem;
 
 namespace AshborneGame._Core.Data.Definitions
 {
-    public record SceneDefinition(DefinitionID definition, string SceneName);
+    public record SceneDefinition(DefinitionID ID, string SceneName);
 }

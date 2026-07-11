@@ -48,9 +48,27 @@ public partial class Home : ComponentBase, IDisposable
     [Inject] public IJSRuntime JS { get; set; } = default!;
 
     private string userInput = "";
-    private string gameText = "";
+    private string GameText 
+    { 
+        get
+        {
+            if (GameContext.GameState == null)
+            {
+                return "";
+            }
+            return GameContext.GameState.GameText;
+        }
+        set
+        {
+            if (GameContext.GameState == null)
+            {
+                return;
+            }
+            GameContext.GameState.GameText = value;
+        }
+    }
     private GameEngine engine;
-    private bool _isInDialogue = true;
+    private bool _isInDialogue = false;
     private bool isInDialogue
     {
         get => _isInDialogue;
@@ -183,7 +201,7 @@ public partial class Home : ComponentBase, IDisposable
     static private (bool coloured, string hexColour) isNextLineColoured = (false, "FFFFFF");
 
     private string ActLabel => BuildActLabel();
-    private string SceneName => GameContext.Player?.CurrentScene.DisplayName ?? "";
+    private string SceneName => GameContext.Player?.CurrentScene?.DisplayName ?? "";
 
     private bool ShowOssanethSigil => GameContext.Player?.EquippedItems["face"]?.Name.Matches(MaskNameConstants.Ossaneth) ?? false;
 
@@ -454,13 +472,13 @@ public partial class Home : ComponentBase, IDisposable
         NewLine,
         Whitespace
     }
-    
+
     /// <summary>
     /// Determines and returns the type of a given output line. All types are from the OutputLineType enum.
     /// </summary>
     private async Task<OutputLineType> DetermineOutputLineType(string line)
     {
-        if (line == null) 
+        if (line == null)
             return OutputLineType.Invalid;
 
         if (line.Contains(OutputConstants.DialogueEndMarker))
@@ -477,7 +495,7 @@ public partial class Home : ComponentBase, IDisposable
 
         if (line.Contains(OutputConstants.TypewriterStartMarker) && line.Contains(OutputConstants.TypewriterEndMarker))
             return OutputLineType.Typewriter;
-        
+
         if (line.Contains(OutputConstants.ForceMaskMarker))
             return OutputLineType.ForceMask;
 
@@ -488,7 +506,7 @@ public partial class Home : ComponentBase, IDisposable
             return OutputLineType.Normal;
         else
             return OutputLineType.Whitespace;
-        
+
         return OutputLineType.Normal;
     }
 
@@ -518,7 +536,7 @@ public partial class Home : ComponentBase, IDisposable
                     isNextLineColoured = (false, "FFFFFF");
                 }
 
-                gameText += RenderGameText(line) + "<br />";
+                GameText += RenderGameText(line) + "<br />";
                 return false;
             case OutputLineType.Typewriter:
                 dialogueChoices.Clear();
@@ -564,11 +582,11 @@ public partial class Home : ComponentBase, IDisposable
                 {
                     await InvokeAsync(StateHasChanged);
                     await Task.Yield();
-    #if DEBUG
+#if DEBUG
                     await Task.Delay(Convert.ToInt32(Math.Round(ms * OutputConstants.DefaultDebugTypeSpeedModifier)));
-    #else
+#else
                         await Task.Delay(ms);
-    #endif
+#endif
                 }
                 else
                 {
@@ -579,13 +597,13 @@ public partial class Home : ComponentBase, IDisposable
                 return false; // Do not add pause marker to output buffer
             case OutputLineType.NewLine:
                 IOService.Output.DisplayDebugMessage($"Detected new line marker in line: {line}");
-                gameText += "<br>";
+                GameText += "<br>";
                 await InvokeAsync(StateHasChanged);
                 await AutoScrollToBottom();
                 await Task.Delay(OutputConstants.DefaultTypeSpeed * OutputConstants.NewLinePauseMultiplier);
                 return false; // Do not add new line marker to output buffer
             case OutputLineType.Whitespace:
-                gameText += "<br />";
+                GameText += "<br />";
                 return false;
         }
         await InvokeAsync(StateHasChanged);
@@ -809,7 +827,7 @@ public partial class Home : ComponentBase, IDisposable
         var finalSeparator = string.Empty;
         if (!string.IsNullOrEmpty(existing) && !existing.EndsWith("<br />"))
             finalSeparator = "<br />";
-        gameText = string.IsNullOrEmpty(existing)
+        GameText = string.IsNullOrEmpty(existing)
             ? typedBuilder.ToString()
             : existing + finalSeparator + typedBuilder.ToString();
 
@@ -821,7 +839,7 @@ public partial class Home : ComponentBase, IDisposable
     private async Task<(string existing, StringBuilder typedBuilder)> TypeCharacters(int ms, List<int>? characterSpeeds, List<(string text, bool isTag)> tokens)
     {
         // Prepare typing across tokens
-        var existing = gameText ?? string.Empty;
+        var existing = GameText ?? string.Empty;
         var typedBuilder = new StringBuilder();
         int globalCharIndex = 0;
 
@@ -841,7 +859,7 @@ public partial class Home : ComponentBase, IDisposable
                     var separator = string.Empty;
                     if (!string.IsNullOrEmpty(existing) && !existing.EndsWith("<br />"))
                         separator = "<br />";
-                    gameText = existing + separator + typedBuilder.ToString();
+                    GameText = existing + separator + typedBuilder.ToString();
                     await InvokeAsync(StateHasChanged);
                     await AutoScrollToBottom();
                     charsSinceLastUpdate = 0;
@@ -871,7 +889,7 @@ public partial class Home : ComponentBase, IDisposable
                     var separator = string.Empty;
                     if (!string.IsNullOrEmpty(existing) && !existing.EndsWith("<br />"))
                         separator = "<br />";
-                    gameText = existing + separator + typedBuilder.ToString();
+                    GameText = existing + separator + typedBuilder.ToString();
                     await InvokeAsync(StateHasChanged);
                     await AutoScrollToBottom();
                     charsSinceLastUpdate = 0;
@@ -1318,16 +1336,6 @@ public partial class Home : ComponentBase, IDisposable
 
     private async Task ContinueGame()
     {
-        isIntroTransitioning = true;
-        isFading = true;
-        StateHasChanged();
-
-        await Task.Delay(FadeDurationMs);
-
-        hasIntroStarted = true;
-        isFading = false;
-        StateHasChanged();
-
         string? saveJson = await JS.InvokeAsync<string?>(
             "localStorage.getItem",
             "AshborneSave");
@@ -1338,6 +1346,31 @@ public partial class Home : ComponentBase, IDisposable
             // You could show a message or simply start a new game.
             return;
         }
+
+        isIntroTransitioning = true;
+        isFading = true;
+        StateHasChanged();
+
+        await Task.Delay(FadeDurationMs);
+
+        hasIntroStarted = true;
+        isFading = false;
+        StateHasChanged();
+
+        introText = "ASHBORNE";
+        introTextFading = false;
+        isFinalPhase = true;
+        StateHasChanged();
+        await Task.Delay(FinalPhaseDurationMs);
+        // Fade out intro and start game
+        introFading = true;
+        StateHasChanged();
+        await Task.Delay(IntroFadeDurationMs);
+        introPhase = 0;
+        isFinalPhase = false;
+        StateHasChanged();
+
+
 
         InitialiseGameWorld(saveJson);
 

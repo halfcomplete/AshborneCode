@@ -20,12 +20,9 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
         /// <summary>
         /// Internal list of inventory slots.
         /// </summary>
-        private readonly List<InventorySlot> _slots = new();
+        private List<BOCSObject> _items = new();
 
-        /// <summary>
-        /// Public read-only view of the inventory slots.
-        /// </summary>
-        public IReadOnlyList<InventorySlot> Slots => _slots.AsReadOnly();
+        private Dictionary<string, List<BOCSObject>> _byReferenceName = new();
 
         /// <summary>
         /// Initializes a new empty inventory.
@@ -35,7 +32,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
         /// <summary>
         /// Adds an item to the inventory, stacking where possible.
         /// </summary>
-        public bool TryAddItem(BOCSObject item, int count = 1)
+        public bool TryAddItem(BOCSObject item)
         {
             var res = item.TryGetBehaviour<IStorable>().GetAwaiter().GetResult();
             IStorable b;
@@ -49,94 +46,67 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
                 return false;
             }
 
-            if (item == null)
-                throw new ArgumentNullException(nameof(item));
-            if (count <= 0)
-                throw new ArgumentException("Count must be greater than 0.", nameof(count));
+            ArgumentNullException.ThrowIfNull(nameof(item));
 
-            int remaining = count;
+            // Check if the item is already in the inventory
+            var existing = _items.FirstOrDefault(s => s.InstanceID == item.InstanceID);
 
-            // Fill existing stacks
-            foreach (var slot in _slots)
+            if (existing != null)
             {
-                if (slot.Item.Name.Matches(item.Name.ReferenceName) && !slot.IsFull)
-                {
-                    remaining = slot.Add(remaining);
-                    if (remaining <= 0) return true;
-                }
+                // If the item is already in the inventory, we can't add it again
+                return false;
             }
 
-            // Create new stacks
-            // TODO: figure out how to handle stack splitting and instance IDs
-            while (remaining > 0)
+            _items.Add(item);
+            if (!_byReferenceName.ContainsKey(item.Name))
             {
-                int toAdd = Math.Min(b.StackLimit, remaining);
-                var newItem = item;
-
-                if (toAdd < remaining)
-                {
-                    // If we need to create a new stack, we should clone the item to ensure each stack is a separate instance.
-                    // However if we only need to add one more stack, we can use the original item instance with the same instance ID.
-                    newItem = GameContext.BOCSFactory.Clone(item).Result;
-                }
-                
-                _slots.Add(new InventorySlot(newItem, toAdd));
-                remaining -= toAdd;
+                _byReferenceName[item.Name] = new List<BOCSObject>();
             }
-
+            _byReferenceName[item.Name].Add(item);
             return true;
         }
 
         public bool TryAddItem(DefinitionID definitionID, int count = 1)
         {
-            var item = GameContext.BOCSFactory.Create(definitionID);
-            if (item == null)
+            for (int i = 0; i < count; i++)
             {
-                throw new ArgumentException($"No item found for DefinitionID: {definitionID.Value}");
+                var item = GameContext.BOCSFactory.Create(definitionID);
+                if (item == null)
+                {
+                    throw new ArgumentException($"No item found for DefinitionID: {definitionID.Value}");
+                }
+                if (!TryAddItem(item))
+                {
+                    return false;
+                }
             }
-            return TryAddItem(item, count);
+            
+            return true;
         }
 
         /// <summary>
         /// Removes a quantity of an item from the inventory.
         /// </summary>
         /// <returns>True if the given obj is an item, false otherwise.</returns>
-        public async Task<bool> TryRemoveItem(BOCSObject obj, int count = 1)
+        public async Task<bool> TryRemoveItem(BOCSObject item)
         {
-            if (!obj.IsItem()) return false;
+            if (!item.IsItem()) return false;
 
-            if (obj == null)
-                throw new ArgumentNullException(nameof(obj));
-            if (count <= 0)
-                throw new ArgumentException("Count must be greater than 0.", nameof(count));
-
-            var relevantSlots = _slots
-                .Where(s => s.Item.Name.Matches(obj.Name.ReferenceName))
-                .OrderByDescending(s => s.Quantity)
-                .ToList();
-
-            int removed = 0;
-
-            foreach (var slot in relevantSlots)
+            if (item == null)
             {
-                if (removed >= count) break;
-
-                int needed = count - removed; // Tracks how many items left need to be removed
-                int prevQuantity = slot.Quantity; // Tracks how many items were originally in this current inventory slot
-                int left = slot.Remove(needed); // The number of items left
-                removed += prevQuantity - left; // Tracks how many items have been removed
-
-                if (slot.IsEmpty)
-                    _slots.Remove(slot); // Delete the inventory slot if it is empty
+                throw new ArgumentNullException(nameof(item));
             }
 
-            if (removed < count)
+            if (_items.Remove(item))
             {
-                // If we didn't find enough items to remove but still removed as many as possible
-                await IOService.Output.DisplayDebugMessage($"Not enough items to remove {count} of them!");
+                _byReferenceName[item.Name].Remove(item);
+                if (_byReferenceName[item.Name].Count == 0)
+                {
+                    _byReferenceName.Remove(item.Name);
+                }
+                return true;
             }
-
-            return true;
+            return false;
         }
 
         /// <summary>
@@ -144,9 +114,17 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
         /// </summary>
         public BOCSObject? GetItem(string itemName)
         {
-            return _slots
-                .Select(slot => slot.Item)
-                .FirstOrDefault(item => item.Name.Matches(itemName));
+            return _items.FirstOrDefault(s => s.Name.Matches(itemName));
+        }
+
+        public List<BOCSObject> GetItems(string itemName)
+        {
+            return _byReferenceName.GetValueOrDefault(itemName, new List<BOCSObject>());
+        }
+
+        public int GetItemCount(string itemName)
+        {
+            return _byReferenceName.TryGetValue(itemName, out var items) ? items.Count : 0;
         }
 
         /// <summary>
@@ -154,24 +132,23 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
         /// </summary>
         public async Task<(bool, string)> GetInventoryContents(Player player)
         {
-            if (_slots.Count == 0)
+            if (_items.Count == 0)
                 return (true, "");
 
             var sb = new StringBuilder();
 
             ArgumentNullException.ThrowIfNull(player);
 
-            foreach (var slot in _slots)
+            foreach (var kvp in _byReferenceName)
             {
-                var equipped = string.Empty;
-                var (hasBehaviour, equippableBehaviour) = await slot.Item.TryGetBehaviour<IEquippable>();
-                if (hasBehaviour && equippableBehaviour != null)
+                var definitionID = kvp.Key;
+                var items = kvp.Value;
+                if (items.Count > 0)
                 {
-                    // If the item is equippable, check if it's equipped
-                    equipped = equippableBehaviour.IsEquipped ? "(Equipped)" : "";
+                    var itemName = items[0].Name;
+                    var count = items.Count;
+                    sb.AppendLine($"{count} x {itemName}");
                 }
-                
-                sb.AppendLine($"{slot.Quantity} x {slot.Item.Name} - {slot.Item.Description} {equipped}");
             }
 
             return (false, sb.ToString());
@@ -194,15 +171,31 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
         /// <summary>
         /// Transfers items between two inventories.
         /// </summary>
-        public async void TransferItem(Inventory originInventory, Inventory destinationInventory, BOCSObject item, int count)
+        public async void TransferItem(Inventory originInventory, Inventory destinationInventory, BOCSObject item)
         {
             if (!item.IsItem())
             {
                 throw new ArgumentException($"Can't transfer {item.Name} between inventories as it's not an item!");
             }
-            await IOService.Output.DisplayDebugMessage($"Transferring {count} x {item.Name} from {originInventory.GetType().Name} to {destinationInventory.GetType().Name}.");
-            await originInventory.TryRemoveItem(item, count);
-            destinationInventory.TryAddItem(item, count);
+            await IOService.Output.DisplayDebugMessage($"Transferring {item.Name} from {originInventory.GetType().Name} to {destinationInventory.GetType().Name}.");
+            await originInventory.TryRemoveItem(item);
+            destinationInventory.TryAddItem(item);
+        }
+
+        public async void TransferItemsByName(Inventory originInventory, Inventory destinationInventory, string itemName, int quantity)
+        {
+            var item = originInventory.GetItem(itemName);
+            if (item == null)
+            {
+                throw new ArgumentException($"Item '{itemName}' not found in inventory.");
+            }
+            if (!item.IsItem())
+            {
+                throw new ArgumentException($"Can't transfer {item.Name} between inventories as it's not an item!");
+            }
+            await IOService.Output.DisplayDebugMessage($"Transferring {item.Name} from {originInventory.GetType().Name} to {destinationInventory.GetType().Name}.");
+            await originInventory.TryRemoveItem(item);
+            destinationInventory.TryAddItem(item);
         }
 
         public async void TransferAllItems(Inventory originInventory, Inventory destinationInventory)
@@ -210,31 +203,36 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
             await IOService.Output.DisplayDebugMessage($"Transferring all items from {originInventory.GetType().Name} to {destinationInventory.GetType().Name}.");
             
             var uneditedInventory = new Inventory();
-            uneditedInventory._slots.AddRange(originInventory.Slots.Select(slot => new InventorySlot(slot.Item, slot.Quantity)));
-            foreach (var slot in uneditedInventory.Slots)
+            uneditedInventory._items.AddRange(originInventory._items);
+            foreach (var item in uneditedInventory._items)
             {
-                if (!slot.IsEmpty)
-                {
-                    destinationInventory.TryAddItem(slot.Item, slot.Quantity);
-                    originInventory.TryRemoveItem(slot.Item, slot.Quantity);
-                }
+                destinationInventory.TryAddItem(item);
+                await originInventory.TryRemoveItem(item);
             }
         }
 
 
         public InventorySaveData GetSaveData()
         {
-            var slotSaveDataList = _slots.Select(slot => slot.GetSaveData()).ToList();
-            return new InventorySaveData{ Slots = slotSaveDataList };
+            return new InventorySaveData { Items = _items.Select(item => item.InstanceID).ToList() };
         }
 
         public void LoadSaveData(InventorySaveData saveData, SaveLoadContext context)
         {
-            _slots.Clear();
-            foreach (var slotSaveData in saveData.Slots)
+            _items.Clear();
+            _byReferenceName.Clear();
+            foreach (var instanceID in saveData.Items)
             {
-                var slot = InventorySlot.LoadFromSaveData(slotSaveData, context);
-                _slots.Add(slot);
+                var item = context.InstanceRegistry.Get(instanceID);
+                _items.Add(item);
+                if (_byReferenceName.ContainsKey(item.Name))
+                {
+                    _byReferenceName[item.Name].Add(item);
+                }
+                else
+                {
+                    _byReferenceName[item.Name] = new List<BOCSObject> { item };
+                }
             }
         }
     }

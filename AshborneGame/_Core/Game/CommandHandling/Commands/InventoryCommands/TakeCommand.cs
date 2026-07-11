@@ -17,20 +17,20 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
         {
             if (args.Count == 0)
             {
-                await IOService.Output.DisplayFailMessage("Take what? Specify an item and optionally a quantity (e.g. 'take 2 gold coin').");
+                await IOService.Output.DisplayFailMessage("Give what? Specify an item and optionally a quantity (e.g. 'give 3 gold coin').");
                 return false;
             }
 
-            
             Inventory? originInventory = await ResolveSourceInventory(player);
             Inventory destinationInventory = player.Inventory;
 
             if (originInventory == null)
             {
-                await IOService.Output.DisplayFailMessage("There is no open container or NPC inventory to take items from.");
+                await IOService.Output.DisplayFailMessage("You are not targeting a container or an NPC with an inventory.");
                 return false;
             }
 
+            // Get the target quantity of the item to give. 0 = invalid, -1 = all
             int quantity = ParseQuantity(ref args);
             string itemName = string.Join(" ", args).Trim();
 
@@ -45,64 +45,51 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
                     await IOService.Output.DisplayFailMessage("Invalid amount.");
                     return false;
                 }
-                
+            }
+
+            int count = originInventory.GetItemCount(itemName);
+            if (count == 0)
+            {
+                await IOService.Output.DisplayFailMessage($"You cannot give {itemName} because it is not in your inventory.");
+                return false;
             }
 
             if (quantity < 0)
             {
                 if (string.IsNullOrEmpty(itemName))
                 {
-                    TakeAllItems(player, originInventory, destinationInventory);
+                    return await TakeAllItems(player, originInventory, destinationInventory);
                 }
                 else
                 {
-
-                    BOCSObject? targetItem = originInventory.GetItem(itemName);
-                    if (targetItem == null)
-                    {
-                        await IOService.Output.DisplayFailMessage($"You cannot take {itemName} because it is not there.");
-                        return false;
-                    }
-
-                    TakeAllOfAnItem(originInventory, destinationInventory, targetItem);
+                    TakeAllOfAnItem(originInventory, destinationInventory, itemName);
+                    return true;
                 }
-
-                return true;
             }
 
             if (string.IsNullOrEmpty(itemName))
             {
-                await IOService.Output.DisplayFailMessage("Take what? Specify an item.");
+                await IOService.Output.DisplayFailMessage("Give what? Specify an item.");
                 return false;
             }
 
-            BOCSObject? item = originInventory.GetItem(itemName);
-            if (item == null)
-            {
-                await IOService.Output.DisplayFailMessage($"You cannot take {itemName} because it is not there.");
-                return false;
-            }
-
-            int availableCount = originInventory.Slots
-                .Where(slot => slot.Item.Name.Matches(item.Name.ReferenceName))
-                .Sum(slot => slot.Quantity);
-
+            // if we parsed 'all' as the quantity, we need to set it to the actual count of the item in the inventory
             if (quantity < 0)
             {
-                quantity = availableCount;
+                quantity = count;
             }
 
-            if (availableCount < quantity)
+            if (count < quantity)
             {
-                await IOService.Output.DisplayFailMessage($"There are not enough {itemName} to take {quantity}.");
+                await IOService.Output.DisplayFailMessage($"There are not enough '{itemName}' to take {quantity}.");
                 return false;
             }
 
-            originInventory.TransferItem(originInventory, destinationInventory, item, quantity);
-            await IOService.Output.WriteNonDialogueLine($"Successfully took {quantity} x {item.Name}.");
+            originInventory.TransferItemsByName(originInventory, destinationInventory, itemName, quantity);
+            await IOService.Output.WriteNonDialogueLine($"Successfully took {quantity} x {itemName}.");
 
             ShowInventorySummary(player, player.Inventory, "Your inventory now contains:");
-            ShowInventorySummary(player, originInventory, "The container / NPC now has:");
+            ShowInventorySummary(player, destinationInventory, "The opened container / NPC now has:");
 
             return true;
         }
@@ -121,19 +108,30 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
             return null;
         }
 
-        private async void TakeAllItems(Player player, Inventory origin, Inventory destination)
+        private async Task<bool> TakeAllItems(Player player, Inventory origin, Inventory destination)
         {
-            origin.TransferAllItems(origin, destination);
-            await IOService.Output.WriteNonDialogueLine("You took all available items.");
+            if (destination == null)
+            {
+                await IOService.Output.DisplayFailMessage("There is no opened container or NPC to give items to.");
+                return false;
+            }
 
-            ShowInventorySummary(player, destination, "Your inventory now contains:");
-            ShowInventorySummary(player, origin, "The container / NPC now has:");
+            origin.TransferAllItems(destination, origin);
+            await IOService.Output.WriteNonDialogueLine("You gave all your items.");
+
+            ShowInventorySummary(player, destination, "The opened container / NPC now has:");
+            ShowInventorySummary(player, origin, "Your inventory is now empty.");
+
+            return true;
         }
 
-        private void TakeAllOfAnItem(Inventory origin, Inventory destination, BOCSObject item)
+        private void TakeAllOfAnItem(Inventory origin, Inventory destination, string itemName)
         {
-            int count = origin.Slots.Where(s => s.Item.Name.Matches(item.Name)).Sum(s => s.Quantity);
-            origin.TransferItem(origin, destination, item, count);
+            int count = origin.GetItemCount(itemName);
+            if (count != 0)
+            {
+                origin.TransferItemsByName(origin, destination, itemName, count);
+            }
         }
     }
 }

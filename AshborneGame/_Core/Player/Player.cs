@@ -429,6 +429,8 @@ namespace AshborneGame._Core._Player
             Console.WriteLine("Locations in registry:");
             Console.WriteLine(string.Join(", ", context.LocationRegistry.GetLocations().Select(loc => loc.DefinitionID)));
 
+            Console.WriteLine("Current Location scene: " + (currentLocation?.Scene?.DisplayName ?? "null"));
+
             if (currentLocation == null)
             {
                 throw new InvalidDataException("Load failed: Current location not found.");

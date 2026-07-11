@@ -33,7 +33,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Combat
             if (Owner.IsItem())
             {
                 await IOService.Output.WriteNonDialogueLine($"{Owner.Name} has broken!");
-                await player.Inventory.TryRemoveItem(Owner, 1); // Remove the item from the player's inventory
+                await player.Inventory.TryRemoveItem(Owner); // Remove the item from the player's inventory
             }
         }
 

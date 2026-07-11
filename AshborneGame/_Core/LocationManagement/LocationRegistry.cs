@@ -25,13 +25,18 @@ namespace AshborneGame._Core.LocationManagement
             _byDefinitionID[location.DefinitionID] = location;
         }
 
+        /// <summary>
+        /// Registers a scene in the registry. If a scene with the same DefinitionID already exists, it will not be added again.
+        /// </summary>
+        /// <param name="scene"></param>
         public void RegisterScene(Scene scene)
         {
             ArgumentNullException.ThrowIfNull(scene);
 
             if (_scenes.ContainsKey(scene.DefinitionID))
             {
-                throw new InvalidOperationException($"Scene with DefinitionID '{scene.DefinitionID}' is already registered. The Scene's name is '{scene.DisplayName}'.");
+                Console.WriteLine($"Scene with DefinitionID '{scene.DefinitionID}' is already registered. The Scene's name is '{scene.DisplayName}'.");
+                return;
             }
 
             _scenes[scene.DefinitionID] = scene;

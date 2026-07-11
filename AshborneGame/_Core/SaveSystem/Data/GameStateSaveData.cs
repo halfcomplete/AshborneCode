@@ -13,7 +13,7 @@ namespace AshborneGame._Core.SaveSystem.Data
         public Dictionary<string, bool> Flags { get; set; } = new();
         public Dictionary<string, int> Counters { get; set; } = new();
         public Dictionary<string, string> Labels { get; set; } = new();
-        public Dictionary<string, JsonElement> Variables { get; set; } = new(); // typed JSON values
+        public string GameText { get; set; } = string.Empty;
         public Dictionary<string, InstanceID> Masks { get; set; } = new(); // mask name -> BOCSObject InstanceId
         public TimeTrackerSaveData TimeTracker { get; set; } = null!;
         // TODO: revamp quest system to be more data-driven and saveable

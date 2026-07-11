@@ -71,6 +71,8 @@ namespace AshborneGame._Core.SaveSystem.Saving
             LoadPlayerState(saveData.Player, context, player, gameState, inkRunner);
             LoadGameState(saveData.GameState, context, gameState);
             LoadInkStoryState(saveData.InkStoryStateJson, inkRunner);
+
+            Console.WriteLine("Game loaded successfully.");
         }
 
         public static void LoadRegistries(SaveGameData saveData, SaveLoadContext context)
@@ -108,9 +110,18 @@ namespace AshborneGame._Core.SaveSystem.Saving
                 // then load the save data into them
                 // then register the location
 
+                // note that this will also create the scene and register it with the scene registry, as part of the location creation process
+                // this is on a first-come-first-served basis, so if a scene is already registered, it won't be re-registered
+                // this means the first scene instance created for a given definition ID will be the one that is registered,
+                // and subsequent locations with the same scene definition will use their own scene instances, but the registered scene will be the first one created
+                // this is important to note because it means that if you have multiple locations with the same scene definition, they will not share the same scene instance, but will share the same registered scene
+                // this shouldn't be a problem because scenes are immutable and should not have any state that changes during gameplay, but it's worth noting in case it causes confusion later on
                 var location = WorldBuilder.CreateLocationFromDefinition(locData.DefinitionId);
 
                 context.LocationRegistry.RegisterLocation(location);
+
+
+                context.LocationRegistry.RegisterScene(location.Scene);
             }
         }
 

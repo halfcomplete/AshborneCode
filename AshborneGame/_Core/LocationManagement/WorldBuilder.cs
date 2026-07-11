@@ -99,7 +99,7 @@ namespace AshborneGame._Core.LocationManagement
 
         /// <summary>
         /// Creates a Location instance from a given DefinitionID.
-        /// This method ONLY initialises the Location's name, description composer, and custom commands. 
+        /// This method ONLY initialises the Location's name, description composer, custom commands and scene. 
         /// It does NOT initialise contained objects or parent-child relationships, which are dependent
         /// on save data and the location hierarchy, respectively.
         /// </summary>
@@ -117,9 +117,25 @@ namespace AshborneGame._Core.LocationManagement
             }
             var location = new Location(locationDefinition.Name, locationDefinition.DefinitionID);
             location.SetDescriptionComposer(locationDefinition.DescriptionComposer);
+
+            location.Scene = CreateSceneFromDefinition(GetSceneDefinition(locationDefinition.Scene));
+
             InitialiseLocationCustomCommands(location, locationDefinition.CustomCommands);
 
             return location;
+        }
+
+        public static SceneDefinition GetSceneDefinition(DefinitionID definitionID)
+        {
+            ArgumentNullException.ThrowIfNull(definitionID);
+            return SceneDefinitions.Definitions.GetValueOrDefault(definitionID) ?? throw new KeyNotFoundException($"Scene definition '{definitionID}' was not found.");
+        }
+
+        public static Scene CreateSceneFromDefinition(SceneDefinition sceneDefinition)
+        {
+            ArgumentNullException.ThrowIfNull(sceneDefinition);
+            var scene = new Scene(sceneDefinition.ID, sceneDefinition.SceneName);
+            return scene;
         }
 
         private static void InitialiseLocationCustomCommands(Location location, CustomCommandHandler customCommands)

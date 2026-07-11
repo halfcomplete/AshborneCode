@@ -47,6 +47,13 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
                 }
             }
 
+            int count = originInventory.GetItemCount(itemName);
+            if (count == 0)
+            {
+                await IOService.Output.DisplayFailMessage($"You cannot give {itemName} because it is not in your inventory.");
+                return false;
+            }
+
             if (quantity < 0)
             {
                 if (string.IsNullOrEmpty(itemName))
@@ -55,13 +62,7 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
                 }
                 else
                 {
-                    BOCSObject? targetItem = originInventory.GetItem(itemName);
-                    if (targetItem == null)
-                    {
-                        await IOService.Output.DisplayFailMessage($"You cannot give {itemName} because it is not in your inventory.");
-                        return false;
-                    }
-                    GiveAllOfAnItem(originInventory, destinationInventory, targetItem);
+                    GiveAllOfAnItem(originInventory, destinationInventory, itemName);
                     return true;
                 }
             }
@@ -72,30 +73,20 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
                 return false;
             }
 
-            BOCSObject? item = originInventory.GetItem(itemName);
-            if (item == null)
-            {
-                await IOService.Output.DisplayFailMessage($"You cannot give {itemName} because it is not in your inventory.");
-                return false;
-            }
-
-            int availableCount = originInventory.Slots
-                .Where(slot => slot.Item.Name.Matches(item.Name))
-                .Sum(slot => slot.Quantity);
-
+            // if we parsed 'all' as the quantity, we need to set it to the actual count of the item in the inventory
             if (quantity < 0)
             {
-                quantity = availableCount;
+                quantity = count;
             }
 
-            if (availableCount < quantity)
+            if (count < quantity)
             {
-                await IOService.Output.DisplayFailMessage($"You don't have enough {itemName} to give {quantity}.");
+                await IOService.Output.DisplayFailMessage($"You don't have enough of '{itemName}' to give {quantity}.");
                 return false;
             }
 
-            originInventory.TransferItem(originInventory, destinationInventory, item, quantity);
-            await IOService.Output.WriteNonDialogueLine($"Successfully gave {quantity} x {item.Name}.");
+            originInventory.TransferItemsByName(originInventory, destinationInventory, itemName, quantity);
+            await IOService.Output.WriteNonDialogueLine($"Successfully gave {quantity} x {itemName}.");
 
             ShowInventorySummary(player, player.Inventory, "Your inventory now contains:");
             ShowInventorySummary(player, destinationInventory, "The opened container / NPC now has:");
@@ -134,10 +125,13 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands.InventoryCommands
             return true;
         }
 
-        private void GiveAllOfAnItem(Inventory origin, Inventory destination, BOCSObject item)
+        private void GiveAllOfAnItem(Inventory origin, Inventory destination, string itemName)
         {
-            int count = origin.Slots.Where(s => s.Item.Name.Matches(item.Name)).Sum(s => s.Quantity);
-            origin.TransferItem(origin, destination, item, count);
+            int count = origin.GetItemCount(itemName);
+            if (count != 0)
+            {
+                origin.TransferItemsByName(origin, destination, itemName, count);
+            }
         }
     }
 }
