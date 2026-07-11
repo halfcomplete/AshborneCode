@@ -54,37 +54,8 @@ namespace AshborneGame._Core.LocationManagement
                 locationsByDefinition[locationDefinition.DefinitionID] = location;
             }
 
-            foreach (var parentChildDefinition in LocationDefinitionGraph.Hierarchy)
-            {
-                if (!locationsByDefinition.TryGetValue(parentChildDefinition.parent, out var parentLocation))
-                {
-                    throw new KeyNotFoundException($"Parent location definition '{parentChildDefinition.parent}' was not built.");
-                }
-
-                if (!locationsByDefinition.TryGetValue(parentChildDefinition.child, out var childLocation))
-                {
-                    throw new KeyNotFoundException($"Child location definition '{parentChildDefinition.child}' was not built.");
-                }
-
-                parentLocation.AddChild(childLocation);
-                childLocation.AddExit(new Exit(parentLocation.DefinitionID, DirectionConstants.Back));
-            }
-
-            foreach (var exitDefinition in LocationDefinitionGraph.Exits)
-            {
-                if (!locationsByDefinition.TryGetValue(exitDefinition.from, out var sourceLocation))
-                {
-                    throw new KeyNotFoundException($"Source location definition '{exitDefinition.from}' was not built.");
-                }
-
-                if (!locationsByDefinition.TryGetValue(exitDefinition.to, out var targetLocation))
-                {
-                    throw new KeyNotFoundException($"Target location definition '{exitDefinition.to}' was not built. Built definitions: {string.Join(", ", locationsByDefinition.Keys)}");
-                }
-
-                sourceLocation.AddExit(exitDefinition.FromFrom());
-                targetLocation.AddExit(exitDefinition.FromTo());
-            }
+            InitialiseLocationHierarchy(locationsByDefinition);
+            InitialiseLocationExits(locationsByDefinition);
 
             foreach (var location in locationsByDefinition.Values)
             {
@@ -152,6 +123,44 @@ namespace AshborneGame._Core.LocationManagement
             {
                 var containedObject = factory.Create(containedObjectDefinitionId);
                 location.AddObject(containedObject);
+            }
+        }
+
+        public static void InitialiseLocationHierarchy(Dictionary<DefinitionID, Location> locationsByDefinition)
+        {
+            foreach (var parentChildDefinition in LocationDefinitionGraph.Hierarchy)
+            {
+                if (!locationsByDefinition.TryGetValue(parentChildDefinition.parent, out var parentLocation))
+                {
+                    throw new KeyNotFoundException($"Parent location definition '{parentChildDefinition.parent}' was not built.");
+                }
+
+                if (!locationsByDefinition.TryGetValue(parentChildDefinition.child, out var childLocation))
+                {
+                    throw new KeyNotFoundException($"Child location definition '{parentChildDefinition.child}' was not built.");
+                }
+
+                parentLocation.AddChild(childLocation);
+                childLocation.AddExit(new Exit(parentLocation.DefinitionID, DirectionConstants.Back));
+            }
+        }
+
+        public static void InitialiseLocationExits(Dictionary<DefinitionID, Location> locationsByDefinition)
+        {
+            foreach (var exitDefinition in LocationDefinitionGraph.Exits)
+            {
+                if (!locationsByDefinition.TryGetValue(exitDefinition.from, out var sourceLocation))
+                {
+                    throw new KeyNotFoundException($"Source location definition '{exitDefinition.from}' was not built.");
+                }
+
+                if (!locationsByDefinition.TryGetValue(exitDefinition.to, out var targetLocation))
+                {
+                    throw new KeyNotFoundException($"Target location definition '{exitDefinition.to}' was not built. Built definitions: {string.Join(", ", locationsByDefinition.Keys)}");
+                }
+
+                sourceLocation.AddExit(exitDefinition.FromFrom());
+                targetLocation.AddExit(exitDefinition.FromTo());
             }
         }
 

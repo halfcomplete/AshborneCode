@@ -115,6 +115,9 @@ namespace AshborneGame._Core.LocationManagement
                 throw new InvalidOperationException(
                     $"Location '{child.Name.ReferenceName}' already has a parent.");
 
+            if (Children.Contains(child))
+                Console.WriteLine($"Location '{child.Name.ReferenceName}' is already a child of '{Name.ReferenceName}'.");
+
             child.Parent = this;
             Children.Add(child);
         }

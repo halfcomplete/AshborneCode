@@ -3,6 +3,7 @@ using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.Definitions;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
+using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.SaveSystem.Data;
 using AshborneGame._Core.SaveSystem.Data.PlayerDTOs;
@@ -19,19 +20,19 @@ namespace AshborneGame._Core.SaveSystem.Saving
 {
     public static class SaveManager
     {
-        public static string SerialiseSaveData(IInstanceRegistry instanceRegistry, IDefinitionRegistry definitionRegistry, ILocationRegistry locationRegistry, Player player, GameStateManager gameState, InkRunner inkRunner)
+        public static string SerialiseSaveData(IInstanceRegistry instanceRegistry, IDefinitionRegistry definitionRegistry, ILocationRegistry locationRegistry, Player player, GameStateManager gameState, InkRunner inkRunner, DialogueService dialogue)
         {
-            SaveGameData data = CollectSaveData(new SaveLoadContext(instanceRegistry, locationRegistry), player, gameState, instanceRegistry, locationRegistry, inkRunner);
+            SaveGameData data = CollectSaveData(new SaveLoadContext(instanceRegistry, locationRegistry), player, gameState, instanceRegistry, locationRegistry, inkRunner, dialogue);
 
             return Serialise(data);
         }
 
         public static string SerialiseSaveData()
         {
-            return SerialiseSaveData(GameContext.InstanceRegistry, GameContext.DefinitionRegistry, GameContext.LocationRegistry, GameContext.Player, GameContext.GameState, GameContext.InkRunner);
+            return SerialiseSaveData(GameContext.InstanceRegistry, GameContext.DefinitionRegistry, GameContext.LocationRegistry, GameContext.Player, GameContext.GameState, GameContext.InkRunner, GameContext.DialogueService);
         }
 
-        public static SaveGameData CollectSaveData(SaveLoadContext context, Player player, GameStateManager gameState, IInstanceRegistry instanceRegistry, ILocationRegistry locationRegistry, InkRunner inkRunner)
+        public static SaveGameData CollectSaveData(SaveLoadContext context, Player player, GameStateManager gameState, IInstanceRegistry instanceRegistry, ILocationRegistry locationRegistry, InkRunner inkRunner, DialogueService dialogue)
         {
             SaveGameData saveData = new SaveGameData();
             saveData.Metadata = new SaveMetadata { Version = SaveGameData.CurrentVersion, SavedAt = DateTime.Now };
@@ -39,7 +40,7 @@ namespace AshborneGame._Core.SaveSystem.Saving
             saveData.GameState = gameState.GetSaveData();
             saveData.BOCSObjects = instanceRegistry.GetAll().Select(obj => obj.GetSaveData(context)).ToList();
             saveData.Locations = locationRegistry.GetLocations().Select(loc => loc.GetSaveData()).ToList();
-            saveData.InkStoryStateJson = inkRunner.Story?.state.ToJson() ?? throw new ArgumentNullException("CollectSaveData failed: Ink story is null");
+            saveData.Dialogue = new DialogueSaveData { DialogueRunning = inkRunner.IsRunning, StoryJsonFileName = dialogue.CurrentDialogueKey, StoryStateJson = inkRunner.Story?.state.ToJson() };
             return saveData;
         }
 
@@ -61,7 +62,7 @@ namespace AshborneGame._Core.SaveSystem.Saving
             return JsonSerializer.Serialize(saveData, options);
         }
 
-        public static void LoadGame(string saveJson, Player player, GameStateManager gameState, InkRunner inkRunner, IInstanceRegistry instanceRegistry, ILocationRegistry locationRegistry)
+        public static void LoadGame(string saveJson, Player player, GameStateManager gameState, InkRunner inkRunner, IInstanceRegistry instanceRegistry, ILocationRegistry locationRegistry, DialogueService dialogue)
         {
             var saveData = Deserialise(saveJson);
             SaveLoadContext context = new SaveLoadContext(instanceRegistry, locationRegistry);
@@ -70,7 +71,20 @@ namespace AshborneGame._Core.SaveSystem.Saving
 
             LoadPlayerState(saveData.Player, context, player, gameState, inkRunner);
             LoadGameState(saveData.GameState, context, gameState);
-            LoadInkStoryState(saveData.InkStoryStateJson, inkRunner);
+
+            if (saveData.Dialogue.DialogueRunning)
+            {
+                if (string.IsNullOrEmpty(saveData.Dialogue.StoryJsonFileName))
+                {
+                    throw new InvalidOperationException("LoadGame failed: DialogueRunning is true but StoryJsonFileName is null or empty when DialogueRunning is true.");
+                }
+                if (string.IsNullOrEmpty(saveData.Dialogue.StoryStateJson))
+                {
+                    throw new InvalidOperationException("LoadGame failed: DialogueRunning is true but StoryStateJson is null or empty when DialogueRunning is true.");
+                }
+                LoadInkStoryState(saveData.Dialogue.StoryStateJson, saveData.Dialogue.StoryJsonFileName, inkRunner, dialogue);
+            }
+            
 
             Console.WriteLine("Game loaded successfully.");
         }
@@ -119,10 +133,11 @@ namespace AshborneGame._Core.SaveSystem.Saving
                 var location = WorldBuilder.CreateLocationFromDefinition(locData.DefinitionId);
 
                 context.LocationRegistry.RegisterLocation(location);
-
-
                 context.LocationRegistry.RegisterScene(location.Scene);
             }
+
+            WorldBuilder.InitialiseLocationHierarchy(context.LocationRegistry.GetLocations().ToDictionary(loc => loc.DefinitionID, loc => loc));
+            WorldBuilder.InitialiseLocationExits(context.LocationRegistry.GetLocations().ToDictionary(loc => loc.DefinitionID, loc => loc));
         }
 
         private static void LoadLocationSaveData(SaveGameData saveData, SaveLoadContext context)
@@ -154,14 +169,25 @@ namespace AshborneGame._Core.SaveSystem.Saving
             gameState.LoadSaveData(saveData, context);
         }
 
-        private static void LoadInkStoryState(string storyStateJson, InkRunner inkRunner)
+        private static void LoadInkStoryState(string storyStateJson, string storyJsonFileName, InkRunner inkRunner, DialogueService dialogue)
         {
             if (storyStateJson == null)
             {
                 throw new InvalidOperationException("LoadInkStoryState failed: InkStoryStateJson is null.");
             }
+            if (storyJsonFileName == null)
+            {
+                throw new InvalidOperationException("LoadInkStoryState failed: InkStoryJsonFileName is null.");
+            }
 
-            inkRunner.Story?.state.LoadJson(storyStateJson);
+            dialogue.StartDialogue(storyJsonFileName).Wait(); // Ensure the dialogue is started before loading the state
+
+            if (inkRunner.Story == null)
+            {
+                throw new InvalidOperationException("LoadInkStoryState failed: InkRunner.Story is null after starting dialogue.");
+            }
+
+            inkRunner.Story.state.LoadJson(storyStateJson);
         }
 
         public static SaveGameData Deserialise(string json)

@@ -66,7 +66,7 @@ namespace AshborneGame._Core.Game
             }
             else
             {
-                SaveManager.LoadGame(saveJson, player, gameState, inkRunner, instanceRegistry, locationRegistry);
+                SaveManager.LoadGame(saveJson, player, gameState, inkRunner, instanceRegistry, locationRegistry, DialogueService);
             }
         }
 

@@ -27,6 +27,8 @@ namespace AshborneGame._Core.LocationManagement
         /// <exception cref="InvalidOperationException"></exception>
         public async Task<bool> Move(Player player, List<string> args)
         {
+            Console.WriteLine("movement service _locationRegistry has:");
+            Console.WriteLine(string.Join(", ", _locationRegistry.GetLocations().Select(l => l.DefinitionID.ToString())));
             var current = player.CurrentLocation;
             var arguments = string.Join(" ", args).ToLowerInvariant();
 
@@ -71,6 +73,8 @@ namespace AshborneGame._Core.LocationManagement
                 await player.MoveTo(destination!);
                 return true;
             }
+
+            Console.WriteLine("no exits");
 
             return false;
         }
