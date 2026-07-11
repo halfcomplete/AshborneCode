@@ -424,7 +424,10 @@ namespace AshborneGame._Core._Player
         {
             _instanceID = saveData.InstanceId;
             _definitionID = saveData.DefinitionId;
-            GameContext.LocationRegistry.TryGetLocationByDefinitionID(saveData.CurrentLocationDefinitionId, out var currentLocation);
+            context.LocationRegistry.TryGetLocationByDefinitionID(saveData.CurrentLocationDefinitionId, out var currentLocation);
+
+            Console.WriteLine("Locations in registry:");
+            Console.WriteLine(string.Join(", ", context.LocationRegistry.GetLocations().Select(loc => loc.DefinitionID)));
 
             if (currentLocation == null)
             {
@@ -436,23 +439,23 @@ namespace AshborneGame._Core._Player
 
             if (saveData.PreviousLocationDefinitionId.HasValue)
             {
-                PreviousLocation = GameContext.LocationRegistry.TryGetLocationByDefinitionID(saveData.PreviousLocationDefinitionId.Value, out var previousLocation)
+                PreviousLocation = context.LocationRegistry.TryGetLocationByDefinitionID(saveData.PreviousLocationDefinitionId.Value, out var previousLocation)
                     ? previousLocation : throw new InvalidDataException("Load failed: Previous location not found.");
             }
 
             Inventory.LoadSaveData(saveData.Inventory, context);
             EquippedItems = saveData.EquippedItems.ToDictionary(
                 kvp => kvp.Key,
-                kvp => kvp.Value.HasValue ? GameContext.InstanceRegistry.Get(kvp.Value.Value) : null
+                kvp => kvp.Value.HasValue ? context.InstanceRegistry.Get(kvp.Value.Value) : null
             );
 
             Stats.LoadSaveData(saveData.Stats);
             PsychologicalState.LoadSaveData(saveData.PsychologicalState);
             CurrentNPCInteraction = saveData.CurrentNpcInteractionInstanceId.HasValue
-                ? GameContext.InstanceRegistry.Get(saveData.CurrentNpcInteractionInstanceId.Value)
+                ? context.InstanceRegistry.Get(saveData.CurrentNpcInteractionInstanceId.Value)
                 : null;
             CurrentMask = saveData.CurrentMaskInstanceId.HasValue
-                ? GameContext.InstanceRegistry.Get(saveData.CurrentMaskInstanceId.Value)
+                ? context.InstanceRegistry.Get(saveData.CurrentMaskInstanceId.Value)
                 : null;
             Visibility = saveData.Visibility;
         }

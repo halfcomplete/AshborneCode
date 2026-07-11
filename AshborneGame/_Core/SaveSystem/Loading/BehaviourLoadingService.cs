@@ -26,7 +26,7 @@ namespace AshborneGame._Core.SaveSystem.Loading
             ["talkable"] = () => new TalkableBehaviour(null),
             ["breakable"] = () => new BreakableBehaviour(),
             ["inspectable"] = () => new InspectableBehaviour(null, Globals.Enums.ItemQualities.None),
-            ["equippable"] = () => new EquippableBehaviour([]),
+            ["equippable"] = () => new EquippableBehaviour(["face"]),
             ["usable"] = () => new UsableBehaviour(),
             ["storable"] = () => new StorableBehaviour(0, Globals.Enums.ItemTypes.None, Globals.Enums.ItemQualities.None),
             ["tradeableNPC"] = () => new TradeableNPCBehaviour(),
