@@ -329,11 +329,11 @@ namespace AshborneGame._Core._Player
         {
             if (EquippedItems["face"] != null && EquippedItems["face"]!.DefinitionID == DefinitionIDs.Items.Masks.Ossaneth)
             {
-                GameContext.InkRunner.StartOssanethTimer.Invoke();
+                GameContext.InkRunner.StartOssanethTimer?.Invoke();
             }
             else
             {
-                GameContext.InkRunner.StopOssanethTimer.Invoke();
+                GameContext.InkRunner.StopOssanethTimer?.Invoke();
             }
         }
 
