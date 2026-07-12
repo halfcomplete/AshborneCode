@@ -13,7 +13,7 @@ using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.LocationManagement;
-using AshborneGame._Core.Data.Definitions;
+using AshborneGame._Core.Data.Definitions.Registries;
 
 namespace AshborneGame._Core.Game
 {

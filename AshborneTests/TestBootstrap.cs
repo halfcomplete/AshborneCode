@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.Definitions;
+using AshborneGame._Core.Data.Definitions.Registries;
 
 namespace AshborneTests
 {

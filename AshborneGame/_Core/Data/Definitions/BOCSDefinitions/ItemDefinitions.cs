@@ -13,7 +13,7 @@ using AshborneGame._Core.Game;
 using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Globals.Enums;
 
-namespace AshborneGame._Core.Data.Definitions
+namespace AshborneGame._Core.Data.Definitions.BOCSDefinitions
 {
     public static class ItemDefinitions
     {

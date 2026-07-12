@@ -1,8 +1,9 @@
 ﻿using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
+using AshborneGame._Core.Data.Definitions.BOCSDefinitions;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
 
-namespace AshborneGame._Core.Data.Definitions
+namespace AshborneGame._Core.Data.Definitions.LocationDefinitions
 {
     public static class NPCDefinitions
     {

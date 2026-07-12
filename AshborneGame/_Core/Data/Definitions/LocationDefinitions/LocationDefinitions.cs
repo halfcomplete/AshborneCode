@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AshborneGame._Core.Data.Definitions
+namespace AshborneGame._Core.Data.Definitions.LocationDefinitions
 {
     public static class LocationDefinitions
     {

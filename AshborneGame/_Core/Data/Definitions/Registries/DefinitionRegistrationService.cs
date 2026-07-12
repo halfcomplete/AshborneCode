@@ -1,11 +1,13 @@
 ﻿using AshborneGame._Core.Data.BOCS;
+using AshborneGame._Core.Data.Definitions.BOCSDefinitions;
+using AshborneGame._Core.Data.Definitions.LocationDefinitions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AshborneGame._Core.Data.Definitions
+namespace AshborneGame._Core.Data.Definitions.Registries
 {
     public class DefinitionRegistrationService
     {

@@ -1,5 +1,5 @@
 ﻿using AshborneGame._Core.Data.BOCS;
-using AshborneGame._Core.Data.Definitions;
+using AshborneGame._Core.Data.Definitions.Registries;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.LocationManagement;
 using System;

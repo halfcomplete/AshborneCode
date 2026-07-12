@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AshborneGame._Core.Data.Definitions
+namespace AshborneGame._Core.Data.Definitions.Registries
 {
     /// <summary>
     /// Registry for all the Definition IDs and their associated Definitions.

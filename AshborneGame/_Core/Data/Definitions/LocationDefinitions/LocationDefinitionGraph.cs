@@ -6,7 +6,7 @@ using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.LocationManagement;
 
-namespace AshborneGame._Core.Data.Definitions
+namespace AshborneGame._Core.Data.Definitions.LocationDefinitions
 {
     public static class LocationDefinitionGraph
     {

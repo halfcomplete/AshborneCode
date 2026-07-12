@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.Data.Definitions;
+using AshborneGame._Core.Data.Definitions.Registries;
 
 namespace AshborneGame._Core.Game.Events
 {
