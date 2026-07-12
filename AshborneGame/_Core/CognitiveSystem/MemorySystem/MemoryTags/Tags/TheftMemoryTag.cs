@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AshborneGame._Core.CognitiveSystem.AttitudeSystem;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem;
-using AshborneGame._Core.CognitiveSystem.EmotionSystem.AttitudeSystem;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
 using AshborneGame._Core.Globals.Enums;
 

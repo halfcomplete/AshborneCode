@@ -16,7 +16,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace AshborneGame._Core.SaveSystem.Saving
+namespace AshborneGame._Core.SaveSystem
 {
     public static class SaveManager
     {

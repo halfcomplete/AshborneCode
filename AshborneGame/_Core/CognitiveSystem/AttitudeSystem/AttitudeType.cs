@@ -1,4 +1,4 @@
-namespace AshborneGame._Core.CognitiveSystem.EmotionSystem.AttitudeSystem
+namespace AshborneGame._Core.CognitiveSystem.AttitudeSystem
 {
     public enum AttitudeFactor
     {

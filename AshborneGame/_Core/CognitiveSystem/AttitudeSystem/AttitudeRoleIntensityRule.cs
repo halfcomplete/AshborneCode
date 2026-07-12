@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AshborneGame._Core.CognitiveSystem.EmotionSystem.AttitudeSystem
+namespace AshborneGame._Core.CognitiveSystem.AttitudeSystem
 {
     public record AttitudeRoleIntensityRule
     {

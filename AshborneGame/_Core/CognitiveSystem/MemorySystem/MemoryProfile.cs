@@ -7,7 +7,7 @@ using AshborneGame._Core.Data.Definitions;
 using AshborneGame._Core.SaveSystem.Data.CognitionDTOs;
 using AshborneGame._Core.SaveSystem.Serialisation;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
-using AshborneGame._Core.CognitiveSystem.EmotionSystem.AttitudeSystem;
+using AshborneGame._Core.CognitiveSystem.AttitudeSystem;
 
 namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 {

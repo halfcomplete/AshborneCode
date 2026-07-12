@@ -1,5 +1,4 @@
-
-namespace AshborneGame._Core.CognitiveSystem.EmotionSystem.AttitudeSystem
+namespace AshborneGame._Core.CognitiveSystem.AttitudeSystem
 {
     public record AttitudeReaction(AttitudeFactor AttitudeFactor, double Add);
 }

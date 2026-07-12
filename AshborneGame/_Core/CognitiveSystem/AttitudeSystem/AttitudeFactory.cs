@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AshborneGame._Core.CognitiveSystem.EmotionSystem.AttitudeSystem
+namespace AshborneGame._Core.CognitiveSystem.AttitudeSystem
 {
     // TODO: model expectation violations; a hated NPC saving your life will have a much bigger impact on your attitude of them
     public static class AttitudeFactory

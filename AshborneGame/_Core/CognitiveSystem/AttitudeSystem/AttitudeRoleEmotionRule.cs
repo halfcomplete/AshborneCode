@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.CognitiveSystem.MemorySystem;
 
-namespace AshborneGame._Core.CognitiveSystem.EmotionSystem.AttitudeSystem
+namespace AshborneGame._Core.CognitiveSystem.AttitudeSystem
 {
     public record AttitudeRoleEmotionRule
     {

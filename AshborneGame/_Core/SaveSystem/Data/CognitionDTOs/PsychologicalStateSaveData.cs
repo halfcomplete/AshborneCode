@@ -1,12 +1,12 @@
 ﻿using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
 using AshborneGame._Core.Data.IDSystem;
-using AshborneGame._Core.CognitiveSystem.EmotionSystem.AttitudeSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AshborneGame._Core.CognitiveSystem.AttitudeSystem;
 
 namespace AshborneGame._Core.SaveSystem.Data.CognitionDTOs
 {

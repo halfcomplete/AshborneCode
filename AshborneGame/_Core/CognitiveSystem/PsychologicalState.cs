@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
-using AshborneGame._Core.CognitiveSystem.EmotionSystem.AttitudeSystem;
 using AshborneGame._Core.CognitiveSystem.MemorySystem;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.SaveSystem.Data.CognitionDTOs;
 using AshborneGame._Core.SaveSystem.Serialisation;
+using AshborneGame._Core.CognitiveSystem.AttitudeSystem;
 
-namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
+namespace AshborneGame._Core.CognitiveSystem
 {
     /// <summary>
     /// A class representing the entire psychological state of a character, encompassing relationships, feelings and emotions.
