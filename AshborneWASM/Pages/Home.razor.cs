@@ -520,6 +520,7 @@ public partial class Home : ComponentBase, IDisposable
                 await IOService.Output.DisplayDebugMessage("Reached null line in output queue, skipping.", ConsoleMessageTypes.ERROR);
                 return false;
             case OutputLineType.Normal:
+                Console.WriteLine("[DEBUG] ProcessOutputLine: Normal line detected: " + line);
                 // If the previous line indicated this line should be coloured, wrap any speech
                 // (quoted text) with the appropriate colour tag before rendering.
                 if (isNextLineColoured.coloured)
@@ -539,8 +540,9 @@ public partial class Home : ComponentBase, IDisposable
                 GameText += RenderGameText(line) + "<br />";
                 return false;
             case OutputLineType.Typewriter:
+                Console.WriteLine("[DEBUG] ProcessOutputLine: Typewriter line detected: " + line);
                 dialogueChoices.Clear();
-                await HandleSpeakerColouring(line);
+                line = await HandleSpeakerColouring(line);
                 await HandleTypewriterEffect(line);
 
                 return false;
@@ -940,15 +942,18 @@ public partial class Home : ComponentBase, IDisposable
         return tokens;
     }
 
-    private async Task HandleSpeakerColouring(string line)
+    private async Task<string> HandleSpeakerColouring(string line)
     {
         // If the previous line indicated this line should be coloured, wrap any speech
         // (quoted text) with the appropriate colour tag before rendering.
         if (isNextLineColoured.coloured)
         {
+            Console.WriteLine($"[DEBUG] Previous line indicated this line should be coloured with hex {isNextLineColoured.hexColour}. Applying colour to speech in line: {line}");
             try
             {
+                Console.WriteLine("[DEBUG] Applying colour to speech in line: " + line);
                 line = OutputConstants.SpeechRegex.Replace(line, m => $"<c={isNextLineColoured.hexColour}>{m.Value}</c={isNextLineColoured.hexColour}>");
+                Console.WriteLine("New line after applying colour: " + line);
             }
             catch (Exception ex)
             {
@@ -979,6 +984,7 @@ public partial class Home : ComponentBase, IDisposable
             }
         }
         await Task.CompletedTask;
+        return line;
     }
 
     /// <summary>
@@ -1452,7 +1458,6 @@ public partial class Home : ComponentBase, IDisposable
             var speakerName = match.Groups[1].Value;
             var colourHex = SpeakerColourPairs.SpeakerToColour.GetValueOrDefault(speakerName, "FFFFFF");
             IOService.Output.DisplayDebugMessage($"[DEBUG] ParseSpeakerTags: Speaker '{speakerName}' has colour #{colourHex}");
-
             Home.isNextLineColoured = (true, colourHex);
         }
 
