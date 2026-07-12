@@ -281,7 +281,7 @@ namespace AshborneGame._Core._Player
 
         // TODO: should not access equippable internal state
         // TODO: remove async
-        public async void EquipItem(BOCSObject item, string slot)
+        public async void EquipItem(BOCSObject item, string slot, bool hideMsg = false)
         {
             (bool hasEquippableBehaviour, var equippableBehaviour) = await item.TryGetBehaviour<IEquippable>();
             if (hasEquippableBehaviour && equippableBehaviour != null)
@@ -295,17 +295,26 @@ namespace AshborneGame._Core._Player
                 {
                     // If the slot is already occupied, unequip the current item
                     UnequipItem(slot);
-                    await IOService.Output.WriteNonDialogueLine($"You unequip the {_item.Name} from your {slot}.");
+                    if (!hideMsg)
+                    {
+                        await IOService.Output.WriteNonDialogueLine($"You unequip the {_item.Name} from your {slot}.");
+                    }
 
                     // Then equip the item in the specified slot
                     EquippedItems[slot.ToLower()] = item;
-                    await IOService.Output.WriteNonDialogueLine($"You equip the {item.Name} on your {slot}.");
+                    if (!hideMsg)
+                    {
+                        await IOService.Output.WriteNonDialogueLine($"You equip the {item.Name} on your {slot}.");
+                    }
                 }
                 else
                 {
                     // Equip the item in the specified slot
                     EquippedItems[slot.ToLower()] = item;
-                    await IOService.Output.WriteNonDialogueLine($"You equip the {item.Name} on your {slot}.");
+                    if (!hideMsg)
+                    {
+                        await IOService.Output.WriteNonDialogueLine($"You equip the {item.Name} on your {slot}.");
+                    }
                 }
             }
             else

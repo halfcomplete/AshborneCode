@@ -185,7 +185,7 @@ namespace AshborneGame._Core.Game
         {
             Console.WriteLine("[GameStateManager] Forcing player to wear mask:" + maskName);
             Console.WriteLine("Masks:" + string.Join(", ", Masks.Keys));
-            _player.EquipItem(Masks[maskName], "face");
+            _player.EquipItem(Masks[maskName], "face", true);
             _player.Inventory.TryAddItem(Masks[maskName]);
         }
 
