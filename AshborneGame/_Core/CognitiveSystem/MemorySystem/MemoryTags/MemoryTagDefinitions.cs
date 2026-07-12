@@ -1,3 +1,4 @@
+using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,12 +8,12 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
 {
     public static class MemoryTagDefinitions
     {
-        public static Dictionary<MemoryTag, IMemoryTag> Definitions = 
-            new Dictionary<MemoryTag, IMemoryTag> 
+        public static Dictionary<MemoryTagType, IMemoryTag> Definitions = 
+            new Dictionary<MemoryTagType, IMemoryTag> 
             {
-                [MemoryTag.Theft] = new TheftMemoryTag(),
-                [MemoryTag.Betrayal] = new BetrayalMemoryTag(),
-                [MemoryTag.Deception] = new DeceptionMemoryTag(),
+                [MemoryTagType.Theft] = new TheftMemoryTag(),
+                [MemoryTagType.Betrayal] = new BetrayalMemoryTag(),
+                [MemoryTagType.Deception] = new DeceptionMemoryTag(),
             };
     }
 }

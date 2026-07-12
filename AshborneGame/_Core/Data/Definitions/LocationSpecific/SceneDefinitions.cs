@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AshborneGame._Core.Data.IDSystem;
 
-namespace AshborneGame._Core.Data.Definitions.LocationDefinitions
+namespace AshborneGame._Core.Data.Definitions.LocationSpecific
 {
     public static class SceneDefinitions
     {

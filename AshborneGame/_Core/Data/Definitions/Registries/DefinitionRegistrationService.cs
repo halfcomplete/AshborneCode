@@ -1,6 +1,6 @@
 ﻿using AshborneGame._Core.Data.BOCS;
-using AshborneGame._Core.Data.Definitions.BOCSDefinitions;
-using AshborneGame._Core.Data.Definitions.LocationDefinitions;
+using AshborneGame._Core.Data.Definitions.BOCSSpecific;
+using AshborneGame._Core.Data.Definitions.LocationSpecific;
 using System;
 using System.Collections.Generic;
 using System.Linq;

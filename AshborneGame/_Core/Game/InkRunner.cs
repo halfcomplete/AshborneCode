@@ -14,6 +14,7 @@ using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.Data.Definitions.Registries;
+using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags;
 
 namespace AshborneGame._Core.Game
 {
@@ -577,7 +578,7 @@ namespace AshborneGame._Core.Game
 
         private object ExternalAddSyntheticMemory(string tagsCsv, float baseIntensity, DefinitionID locationID)
         {
-            HashSet<MemoryTag> tags = ParseMemoryTags(tagsCsv);
+            HashSet<MemoryTagType> tags = ParseMemoryTags(tagsCsv);
             MemoryDefinition memoryDefinition = new(baseIntensity, tags);
 
             GameContext.Player.PsychologicalState.Memory.ReceiveSyntheticMemory(
@@ -589,13 +590,13 @@ namespace AshborneGame._Core.Game
             return null;
         }
 
-        private static HashSet<MemoryTag> ParseMemoryTags(string tagsCsv)
+        private static HashSet<MemoryTagType> ParseMemoryTags(string tagsCsv)
         {
-            HashSet<MemoryTag> tags = new();
+            HashSet<MemoryTagType> tags = new();
 
             foreach (string tagText in tagsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
-                if (Enum.TryParse<MemoryTag>(tagText, true, out MemoryTag tag))
+                if (Enum.TryParse<MemoryTagType>(tagText, true, out MemoryTagType tag))
                 {
                     tags.Add(tag);
                 }

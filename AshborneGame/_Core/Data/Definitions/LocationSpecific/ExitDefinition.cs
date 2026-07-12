@@ -6,7 +6,7 @@ using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.LocationManagement;
 
-namespace AshborneGame._Core.Data.Definitions.LocationDefinitions
+namespace AshborneGame._Core.Data.Definitions.LocationSpecific
 {
     // TODO: make more general
     public record ExitDefinition(DefinitionID from, DefinitionID to, string direction)

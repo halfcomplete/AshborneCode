@@ -1,7 +1,6 @@
 using AshborneGame._Core.Globals.Enums;
-using AshborneGame._Core.CognitiveSystem;
 
-namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
+namespace AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality
 {
     /// <summary>
     /// Represents who this NPC is. Generally stable over time. Affects how a particular NPC reacts to certain MemoryTags and a Memory's final intensity.

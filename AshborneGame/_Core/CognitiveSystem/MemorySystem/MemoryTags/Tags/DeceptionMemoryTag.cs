@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem.AttitudeSystem;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
 using AshborneGame._Core.Globals.Enums;
 
-namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
+namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags
 {
     public class DeceptionMemoryTag : IMemoryTag
     {
-        public MemoryTag Type { get; } = MemoryTag.Deception;
+        public MemoryTagType Type { get; } = MemoryTagType.Deception;
 
         public MemoryTagDefinition Definition { get; } = 
             new MemoryTagDefinition(

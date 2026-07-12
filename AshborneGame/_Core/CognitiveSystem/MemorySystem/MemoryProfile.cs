@@ -6,6 +6,8 @@ using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Data.Definitions;
 using AshborneGame._Core.SaveSystem.Data.CognitionDTOs;
 using AshborneGame._Core.SaveSystem.Serialisation;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem.AttitudeSystem;
 
 namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 {
@@ -185,7 +187,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         private Dictionary<EmotionPotential, EmotionAccumulator> ApplyPersonalityReactionsToEmotionModifiers(MemoryDefinition def, Dictionary<EmotionPotential, EmotionAccumulator> initialPotentials)
         {
             // Loop over each MemoryTag in the given MemoryDefinition
-            foreach (MemoryTag tag in def.Tags)
+            foreach (MemoryTagType tag in def.Tags)
             {
                 // Get the reactions from each personality trait that this MemoryTag defines
                 Dictionary<PersonalityTrait, List<EmotionReaction>> PersonalityReactions = MemoryTagDefinitions.Definitions[tag].Definition.PersonalityEmotionModifiers;
@@ -410,7 +412,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
         public List<Memory> GetMemoriesByCause(IMemorySource cause) => _memories.Where(m => m.Cause == cause).ToList();
 
-        public List<Memory> GetMemoriesByTag(MemoryTag tag) => _memories.Where(m => m.Tags.Contains(tag)).ToList();
+        public List<Memory> GetMemoriesByTag(MemoryTagType tag) => _memories.Where(m => m.Tags.Contains(tag)).ToList();
 
         public List<Memory> GetMemoriesOrderedByStrength() => _memories.OrderByDescending(m => m.Strength).ToList();
 
@@ -484,11 +486,11 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// <param name="tags">The MemoryTags to parse and interpret.</param>
         /// <param name="currentTotalHours">The current total hours of the game.</param>
         /// <returns></returns>
-        private static Dictionary<EmotionPotential, EmotionAccumulator> GetInitialEmotionPotentials(HashSet<MemoryTag> tags)
+        private static Dictionary<EmotionPotential, EmotionAccumulator> GetInitialEmotionPotentials(HashSet<MemoryTagType> tags)
         {
             Dictionary<EmotionPotential, EmotionAccumulator> mods = new();
 
-            foreach (MemoryTag tag in tags)
+            foreach (MemoryTagType tag in tags)
             {
                 MemoryTagDefinition tagDefinition = MemoryTagDefinitions.Definitions[tag].Definition;
 
@@ -526,11 +528,11 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// their house burning down, then the intensity of the Memory (how significant that is to the NPC) would 
         /// decrease as they don't care.
         /// </remarks>
-        private static double GetAttitudeIntensityImpact(Dictionary<DefinitionID, Attitude> relationships, HashSet<MemoryTag> tags, List<MemoryParticipant> participants)
+        private static double GetAttitudeIntensityImpact(Dictionary<DefinitionID, Attitude> relationships, HashSet<MemoryTagType> tags, List<MemoryParticipant> participants)
         {
             double intensityImpact = 0.0;
 
-            foreach (MemoryTag tag in tags)
+            foreach (MemoryTagType tag in tags)
             {
                 var attitudeIntensityModifiers = MemoryTagDefinitions.Definitions[tag].Definition.AttitudeIntensityModifiers;
 
@@ -588,11 +590,11 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// Takes the personality an NPC has and the Memory tags of a memory and returns
         /// how much the Memory's intensity for this NPC should change because of the NPC's personality.
         /// </summary>
-        private double GetPersonalityIntensityImpact(PersonalityProfile personality, HashSet<MemoryTag> tags)
+        private double GetPersonalityIntensityImpact(PersonalityProfile personality, HashSet<MemoryTagType> tags)
         {
             double impact = 0;
 
-            foreach (MemoryTag tag in tags)
+            foreach (MemoryTagType tag in tags)
             {
                 MemoryTagDefinition tagDef = MemoryTagDefinitions.Definitions[tag].Definition;
 
@@ -617,7 +619,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             // is a key in the memory tag's AttitudeEmotionModifiers
             // Get the alignment with the attitude type
 
-            foreach (MemoryTag tag in source.MemoryDefinition.Tags)
+            foreach (MemoryTagType tag in source.MemoryDefinition.Tags)
             {
                 var attitudeEmotionModifiers = MemoryTagDefinitions.Definitions[tag].Definition.AttitudeEmotionModifiers;
 

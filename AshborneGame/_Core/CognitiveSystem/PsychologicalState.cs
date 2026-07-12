@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem.AttitudeSystem;
 using AshborneGame._Core.CognitiveSystem.MemorySystem;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;

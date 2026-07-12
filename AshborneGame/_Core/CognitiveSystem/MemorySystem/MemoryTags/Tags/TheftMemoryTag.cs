@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem.AttitudeSystem;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
 using AshborneGame._Core.Globals.Enums;
 
-namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
+namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags
 {
     public class TheftMemoryTag : IMemoryTag
     {
-        public MemoryTag Type { get; } = MemoryTag.Theft;
+        public MemoryTagType Type { get; } = MemoryTagType.Theft;
 
         public MemoryTagDefinition Definition { get; } = 
             new MemoryTagDefinition(

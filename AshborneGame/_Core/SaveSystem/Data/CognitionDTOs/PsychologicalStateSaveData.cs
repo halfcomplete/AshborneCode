@@ -1,5 +1,7 @@
 ﻿using AshborneGame._Core.CognitiveSystem.EmotionSystem;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
 using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem.AttitudeSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;

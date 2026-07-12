@@ -1,4 +1,3 @@
-using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
@@ -20,6 +19,7 @@ using System.Net.Mail;
 using static AshborneGame._Core.Data.IDSystem.DefinitionIDs;
 using AshborneGame._Core.SaveSystem.Data.PlayerDTOs;
 using AshborneGame._Core.SaveSystem.Serialisation;
+using AshborneGame._Core.CognitiveSystem;
 
 namespace AshborneGame._Core._Player
 {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
+namespace AshborneGame._Core.CognitiveSystem.EmotionSystem.AttitudeSystem
 {
     /// <summary>
     /// A class representing the attitude of a character towards another character.

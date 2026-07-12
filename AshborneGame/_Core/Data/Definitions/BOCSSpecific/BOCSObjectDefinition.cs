@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AshborneGame._Core.Data.Definitions.BOCSDefinitions
+namespace AshborneGame._Core.Data.Definitions.BOCSSpecific
 {
     public sealed class BOCSObjectDefinition : Definition
     {

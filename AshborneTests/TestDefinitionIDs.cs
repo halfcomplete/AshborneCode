@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
 using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours;
-using AshborneGame._Core.Data.Definitions.BOCSDefinitions;
+using AshborneGame._Core.Data.Definitions.BOCSSpecific;
 using AshborneGame._Core.Data.IDSystem;
 
 namespace AshborneTests
