@@ -16,7 +16,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AshborneGame._Core.SaveSystem.Loading
+namespace AshborneGame._Core.SaveSystem
 {
     public static class BehaviourLoadingService
     {
