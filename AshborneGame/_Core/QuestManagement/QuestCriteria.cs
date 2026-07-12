@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 namespace AshborneGame._Core.QuestManagement
 {
     // TODO: Add support for time-based criteria (e.g., "if 5 minutes have passed").
+    // TODO: Refactor to use a data-driven design where criteria templates are predefined and can be reused across multiple quests, rather than being defined inline for each quest.
     public class QuestCriteria
     {
         public Func<GameStateManager, bool> CriteriaFunction { get; private set; }
