@@ -41,6 +41,10 @@ namespace AshborneGame._Core.Globals.Constants
             @"""ev"",([^{]+),\{""x\(\)"":""([^""]*)"",""exArgs"":(\d)\}",
             RegexOptions.Compiled);
 
+        public static readonly Regex DialogueChoiceRegex = new(
+             @"^\[([0-9]+)\]\|\[([^\]]*)\]\|\[([^\]]*)\]\|\[([^\]]*)\]$",
+             RegexOptions.Compiled);
+
         /// <summary>
         /// Default type speed for Release builds in milliseconds per character.
         /// </summary>

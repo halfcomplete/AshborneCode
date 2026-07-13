@@ -105,8 +105,8 @@ public partial class Home : ComponentBase, IDisposable
         }
     }
 
-    private List<string> _dialogueChoices = new List<string>();
-    private List<string> dialogueChoices
+    private List<(bool enabled, string reason, string text)> _dialogueChoices = new List<(bool enabled, string reason, string text)>();
+    private List<(bool enabled, string reason, string text)> dialogueChoices
     {
         get => _dialogueChoices;
         set
@@ -615,11 +615,32 @@ public partial class Home : ComponentBase, IDisposable
 
     private async Task<bool> HandleDialogueChoiceLine(string line, int bracketEnd, int choiceNumber)
     {
-        await IOService.Output.DisplayDebugMessage($"[DEBUG] Detected dialogue choice in line: {line}");
-        string choiceText = line.Substring(bracketEnd + 1).Trim();
-        if (!string.IsNullOrWhiteSpace(choiceText))
+        await IOService.Output.DisplayDebugMessage($"[DEBUG] Detected dialogue choice in line: {line}", ConsoleMessageTypes.INFO);
+
+        (ChoiceState choiceState, string reason, string choiceText) = await ParseChoice(line);
+
+        await IOService.Output.DisplayDebugMessage($"[DEBUG] Choice {choiceNumber} parsed: State={choiceState}, Reason={reason}, Text={choiceText}", ConsoleMessageTypes.INFO);
+
+        if (choiceState == ChoiceState.Hidden)
         {
-            dialogueChoices.Add(choiceText);
+            await IOService.Output.DisplayDebugMessage(
+                $"[DEBUG] Choice {choiceNumber} is hidden. Reason: {reason}. Not adding to dialogueChoices. THIS SHOULD " +
+                $"NOT HAPPEN BECAUSE WE CHECKED IF IT'S HIDDEN BEFOREHAND. IT SHOULD BE STOPPED IN INKRUNNER BEFORE IT EVER COMES HERE.");
+            return false;
+        }
+
+        // Check if this choice is enabled or disabled
+        // If the chocie is disabled then hide it from the player and do not add it to the dialogueChoices list
+        if (choiceState == ChoiceState.Disabled)
+        {
+            await IOService.Output.DisplayDebugMessage($"[DEBUG] Choice {choiceNumber} is disabled. Reason: {reason}.");
+            dialogueChoices.Add((false, reason, choiceText));
+            await InvokeAsync(StateHasChanged);
+            await AutoScrollToBottom();
+        }
+        else if (!string.IsNullOrWhiteSpace(choiceText))
+        {
+            dialogueChoices.Add((true, "", choiceText));
             await InvokeAsync(StateHasChanged);
             await AutoScrollToBottom();
         }
@@ -686,6 +707,21 @@ public partial class Home : ComponentBase, IDisposable
         await InvokeAsync(StateHasChanged);
         await AutoScrollToBottom();
         return false;
+    }
+
+    private async Task<(ChoiceState choiceState, string reason, string choiceText)> ParseChoice(string str)
+    {
+        var match = OutputConstants.DialogueChoiceRegex.Match(str);
+        await IOService.Output.DisplayDebugMessage($"Match success: {match.Success}", ConsoleMessageTypes.INFO);
+        if (!match.Success)
+        {
+            throw new ArgumentException($"Invalid choice format: '{str}'", nameof(str));
+        }
+        var choiceState = (ChoiceState)Enum.Parse(typeof(ChoiceState), match.Groups[2].Value, true);
+        var reason = match.Groups[3].Value;
+        var choiceText = match.Groups[4].Value;
+        await IOService.Output.DisplayDebugMessage($"[DEBUG] ParseChoice: Parsed choice - State: " + choiceState + ", Reason: " + reason + ", Text: " + choiceText, ConsoleMessageTypes.INFO);
+        return (choiceState, reason, choiceText);
     }
 
     /// <summary>
