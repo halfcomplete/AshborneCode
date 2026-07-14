@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.Data.Definitions;
+using AshborneGame._Core.Data.Definitions.Registries;
 
 namespace AshborneGame._Core.Game.Events
 {
@@ -177,11 +178,11 @@ namespace AshborneGame._Core.Game.Events
         {
             string tagsCsv = GetDataOrDefault("memoryTags", GetDataOrDefault("tags", ""));
 
-            HashSet<MemoryTag> tags = ParseMemoryTags(tagsCsv);
+            HashSet<MemoryTagType> tags = ParseMemoryTags(tagsCsv);
 
             if (tags.Count == 0)
             {
-                tags = [MemoryTag.Theft];
+                tags = [MemoryTagType.Theft];
             }
 
             double baseIntensity = TryParseDouble(GetDataOrDefault("baseIntensity", "0.4")) ?? 0.4;
@@ -195,9 +196,9 @@ namespace AshborneGame._Core.Game.Events
         /// </summary>
         /// <param name="tagsCsv"></param>
         /// <returns></returns>
-        private static HashSet<MemoryTag> ParseMemoryTags(string tagsCsv)
+        private static HashSet<MemoryTagType> ParseMemoryTags(string tagsCsv)
         {
-            HashSet<MemoryTag> tags = new();
+            HashSet<MemoryTagType> tags = new();
 
             if (string.IsNullOrWhiteSpace(tagsCsv))
             {
@@ -206,7 +207,7 @@ namespace AshborneGame._Core.Game.Events
 
             foreach (string tagText in tagsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
-                if (Enum.TryParse<MemoryTag>(tagText, true, out MemoryTag tag) && MemoryTagDefinitions.Definitions.ContainsKey(tag))
+                if (Enum.TryParse<MemoryTagType>(tagText, true, out MemoryTagType tag) && MemoryTagDefinitions.Definitions.ContainsKey(tag))
                 {
                     tags.Add(tag);
                 }

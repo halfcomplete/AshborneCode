@@ -7,7 +7,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
 {
     public interface IMemoryTag
     {
-        public MemoryTag Type { get; }
+        public MemoryTagType Type { get; }
         public MemoryTagDefinition Definition { get; }
     }
 }

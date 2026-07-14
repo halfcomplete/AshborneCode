@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.SaveSystem.Data.CognitionDTOs;
+using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags;
 
 namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 {
@@ -84,7 +85,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// </summary>
         public List<EmotionModifier> EmotionModifiers { get; private set; }
 
-        public HashSet<MemoryTag> Tags { get; init; }
+        public HashSet<MemoryTagType> Tags { get; init; }
 
         /// <summary>
         /// The total in-game hours when this Memory was created.
@@ -96,10 +97,10 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// </summary>
         public int HourLastReinforcedAt { get; private set; }
 
-        public Memory(double intensity, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
+        public Memory(double intensity, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTagType> tags, int hourCreatedAt, int hourLastReinforcedAt)
         : this(intensity, 1.0, cause, emotionModifiers, tags, hourCreatedAt, hourLastReinforcedAt) { }
 
-        public Memory(double intensity, double strength, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTag> tags, int hourCreatedAt, int hourLastReinforcedAt)
+        public Memory(double intensity, double strength, IMemorySource cause, List<EmotionModifier> emotionModifiers, HashSet<MemoryTagType> tags, int hourCreatedAt, int hourLastReinforcedAt)
         {
             Intensity = intensity;
             Strength = strength;
@@ -180,7 +181,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                 saveData.Strength,
                 cause,
                 saveData.EmotionModifiers,
-                new HashSet<MemoryTag>(saveData.MemoryTags),
+                new HashSet<MemoryTagType>(saveData.MemoryTags),
                 saveData.HourCreatedAt,
                 saveData.HourLastReinforcedAt
             );

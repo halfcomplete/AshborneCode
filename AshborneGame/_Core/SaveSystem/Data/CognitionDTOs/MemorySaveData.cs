@@ -1,5 +1,5 @@
 ﻿using AshborneGame._Core.CognitiveSystem.EmotionSystem;
-using AshborneGame._Core.CognitiveSystem.MemorySystem;
+using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags;
 
 namespace AshborneGame._Core.SaveSystem.Data.CognitionDTOs
 {
@@ -9,7 +9,7 @@ namespace AshborneGame._Core.SaveSystem.Data.CognitionDTOs
         public double Strength { get; set; }
         public MemorySourceSaveData Cause { get; set; } = null!;
         public List<EmotionModifier> EmotionModifiers { get; set; } = new();
-        public List<MemoryTag> MemoryTags { get; set; } = new();
+        public List<MemoryTagType> MemoryTags { get; set; } = new();
         public int HourCreatedAt { get; set; }
         public int HourLastReinforcedAt { get; set; }
     }

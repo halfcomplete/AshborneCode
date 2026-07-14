@@ -1,4 +1,3 @@
-using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
@@ -20,6 +19,7 @@ using System.Net.Mail;
 using static AshborneGame._Core.Data.IDSystem.DefinitionIDs;
 using AshborneGame._Core.SaveSystem.Data.PlayerDTOs;
 using AshborneGame._Core.SaveSystem.Serialisation;
+using AshborneGame._Core.CognitiveSystem;
 
 namespace AshborneGame._Core._Player
 {
@@ -281,7 +281,7 @@ namespace AshborneGame._Core._Player
 
         // TODO: should not access equippable internal state
         // TODO: remove async
-        public async void EquipItem(BOCSObject item, string slot)
+        public async void EquipItem(BOCSObject item, string slot, bool hideMsg = false)
         {
             (bool hasEquippableBehaviour, var equippableBehaviour) = await item.TryGetBehaviour<IEquippable>();
             if (hasEquippableBehaviour && equippableBehaviour != null)
@@ -295,17 +295,26 @@ namespace AshborneGame._Core._Player
                 {
                     // If the slot is already occupied, unequip the current item
                     UnequipItem(slot);
-                    await IOService.Output.WriteNonDialogueLine($"You unequip the {_item.Name} from your {slot}.");
+                    if (!hideMsg)
+                    {
+                        await IOService.Output.WriteNonDialogueLine($"You unequip the {_item.Name} from your {slot}.");
+                    }
 
                     // Then equip the item in the specified slot
                     EquippedItems[slot.ToLower()] = item;
-                    await IOService.Output.WriteNonDialogueLine($"You equip the {item.Name} on your {slot}.");
+                    if (!hideMsg)
+                    {
+                        await IOService.Output.WriteNonDialogueLine($"You equip the {item.Name} on your {slot}.");
+                    }
                 }
                 else
                 {
                     // Equip the item in the specified slot
                     EquippedItems[slot.ToLower()] = item;
-                    await IOService.Output.WriteNonDialogueLine($"You equip the {item.Name} on your {slot}.");
+                    if (!hideMsg)
+                    {
+                        await IOService.Output.WriteNonDialogueLine($"You equip the {item.Name} on your {slot}.");
+                    }
                 }
             }
             else

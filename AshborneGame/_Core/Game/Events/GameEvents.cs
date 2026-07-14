@@ -6,6 +6,7 @@ using AshborneGame._Core.CognitiveSystem.MemorySystem;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Data.BOCS;
+using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags;
 
 namespace AshborneGame._Core.Game.Events
 {
@@ -96,7 +97,7 @@ namespace AshborneGame._Core.Game.Events
             /// <param name="location">The location where the item was stolen.</param>
             public sealed record StoleItemEvent(int CurrentTotalHours, BOCSObject target, BOCSObject item, List<MemoryParticipant> Participants, Location location) : IMemorableGameEvent
             {
-                public MemoryDefinition MemoryDefinition { get; } = new(0.4, [MemoryTag.Theft]);
+                public MemoryDefinition MemoryDefinition { get; } = new(0.4, [MemoryTagType.Theft]);
                 public DefinitionID LocationID { get; } = location.DefinitionID;
             }
         }

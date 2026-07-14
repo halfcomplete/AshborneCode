@@ -1,4 +1,4 @@
-using AshborneGame._Core.CognitiveSystem.EmotionSystem;
+using AshborneGame._Core.CognitiveSystem;
 
 namespace AshborneGame._Core.Globals.Interfaces
 {

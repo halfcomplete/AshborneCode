@@ -1,5 +1,6 @@
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
-using AshborneGame._Core.Data.Definitions;
+using AshborneGame._Core.Data.Definitions.BOCSSpecific;
+using AshborneGame._Core.Data.Definitions.Registries;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Services;

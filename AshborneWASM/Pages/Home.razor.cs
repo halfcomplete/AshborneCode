@@ -105,8 +105,8 @@ public partial class Home : ComponentBase, IDisposable
         }
     }
 
-    private List<string> _dialogueChoices = new List<string>();
-    private List<string> dialogueChoices
+    private List<(bool enabled, string reason, string text)> _dialogueChoices = new List<(bool enabled, string reason, string text)>();
+    private List<(bool enabled, string reason, string text)> dialogueChoices
     {
         get => _dialogueChoices;
         set
@@ -520,6 +520,7 @@ public partial class Home : ComponentBase, IDisposable
                 await IOService.Output.DisplayDebugMessage("Reached null line in output queue, skipping.", ConsoleMessageTypes.ERROR);
                 return false;
             case OutputLineType.Normal:
+                Console.WriteLine("[DEBUG] ProcessOutputLine: Normal line detected: " + line);
                 // If the previous line indicated this line should be coloured, wrap any speech
                 // (quoted text) with the appropriate colour tag before rendering.
                 if (isNextLineColoured.coloured)
@@ -539,8 +540,9 @@ public partial class Home : ComponentBase, IDisposable
                 GameText += RenderGameText(line) + "<br />";
                 return false;
             case OutputLineType.Typewriter:
+                Console.WriteLine("[DEBUG] ProcessOutputLine: Typewriter line detected: " + line);
                 dialogueChoices.Clear();
-                await HandleSpeakerColouring(line);
+                line = await HandleSpeakerColouring(line);
                 await HandleTypewriterEffect(line);
 
                 return false;
@@ -613,11 +615,32 @@ public partial class Home : ComponentBase, IDisposable
 
     private async Task<bool> HandleDialogueChoiceLine(string line, int bracketEnd, int choiceNumber)
     {
-        await IOService.Output.DisplayDebugMessage($"[DEBUG] Detected dialogue choice in line: {line}");
-        string choiceText = line.Substring(bracketEnd + 1).Trim();
-        if (!string.IsNullOrWhiteSpace(choiceText))
+        await IOService.Output.DisplayDebugMessage($"[DEBUG] Detected dialogue choice in line: {line}", ConsoleMessageTypes.INFO);
+
+        (ChoiceState choiceState, string reason, string choiceText) = await ParseChoice(line);
+
+        await IOService.Output.DisplayDebugMessage($"[DEBUG] Choice {choiceNumber} parsed: State={choiceState}, Reason={reason}, Text={choiceText}", ConsoleMessageTypes.INFO);
+
+        if (choiceState == ChoiceState.Hidden)
         {
-            dialogueChoices.Add(choiceText);
+            await IOService.Output.DisplayDebugMessage(
+                $"[DEBUG] Choice {choiceNumber} is hidden. Reason: {reason}. Not adding to dialogueChoices. THIS SHOULD " +
+                $"NOT HAPPEN BECAUSE WE CHECKED IF IT'S HIDDEN BEFOREHAND. IT SHOULD BE STOPPED IN INKRUNNER BEFORE IT EVER COMES HERE.");
+            return false;
+        }
+
+        // Check if this choice is enabled or disabled
+        // If the chocie is disabled then hide it from the player and do not add it to the dialogueChoices list
+        if (choiceState == ChoiceState.Disabled)
+        {
+            await IOService.Output.DisplayDebugMessage($"[DEBUG] Choice {choiceNumber} is disabled. Reason: {reason}.");
+            dialogueChoices.Add((false, reason, choiceText));
+            await InvokeAsync(StateHasChanged);
+            await AutoScrollToBottom();
+        }
+        else if (!string.IsNullOrWhiteSpace(choiceText))
+        {
+            dialogueChoices.Add((true, "", choiceText));
             await InvokeAsync(StateHasChanged);
             await AutoScrollToBottom();
         }
@@ -684,6 +707,21 @@ public partial class Home : ComponentBase, IDisposable
         await InvokeAsync(StateHasChanged);
         await AutoScrollToBottom();
         return false;
+    }
+
+    private async Task<(ChoiceState choiceState, string reason, string choiceText)> ParseChoice(string str)
+    {
+        var match = OutputConstants.DialogueChoiceRegex.Match(str);
+        await IOService.Output.DisplayDebugMessage($"Match success: {match.Success}", ConsoleMessageTypes.INFO);
+        if (!match.Success)
+        {
+            throw new ArgumentException($"Invalid choice format: '{str}'", nameof(str));
+        }
+        var choiceState = (ChoiceState)Enum.Parse(typeof(ChoiceState), match.Groups[2].Value, true);
+        var reason = match.Groups[3].Value;
+        var choiceText = match.Groups[4].Value;
+        await IOService.Output.DisplayDebugMessage($"[DEBUG] ParseChoice: Parsed choice - State: " + choiceState + ", Reason: " + reason + ", Text: " + choiceText, ConsoleMessageTypes.INFO);
+        return (choiceState, reason, choiceText);
     }
 
     /// <summary>
@@ -940,15 +978,18 @@ public partial class Home : ComponentBase, IDisposable
         return tokens;
     }
 
-    private async Task HandleSpeakerColouring(string line)
+    private async Task<string> HandleSpeakerColouring(string line)
     {
         // If the previous line indicated this line should be coloured, wrap any speech
         // (quoted text) with the appropriate colour tag before rendering.
         if (isNextLineColoured.coloured)
         {
+            Console.WriteLine($"[DEBUG] Previous line indicated this line should be coloured with hex {isNextLineColoured.hexColour}. Applying colour to speech in line: {line}");
             try
             {
+                Console.WriteLine("[DEBUG] Applying colour to speech in line: " + line);
                 line = OutputConstants.SpeechRegex.Replace(line, m => $"<c={isNextLineColoured.hexColour}>{m.Value}</c={isNextLineColoured.hexColour}>");
+                Console.WriteLine("New line after applying colour: " + line);
             }
             catch (Exception ex)
             {
@@ -979,6 +1020,7 @@ public partial class Home : ComponentBase, IDisposable
             }
         }
         await Task.CompletedTask;
+        return line;
     }
 
     /// <summary>
@@ -1452,7 +1494,6 @@ public partial class Home : ComponentBase, IDisposable
             var speakerName = match.Groups[1].Value;
             var colourHex = SpeakerColourPairs.SpeakerToColour.GetValueOrDefault(speakerName, "FFFFFF");
             IOService.Output.DisplayDebugMessage($"[DEBUG] ParseSpeakerTags: Speaker '{speakerName}' has colour #{colourHex}");
-
             Home.isNextLineColoured = (true, colourHex);
         }
 

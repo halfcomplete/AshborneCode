@@ -1,5 +1,6 @@
 using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.CognitiveSystem.MemorySystem;
+using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags;
 using AshborneGame._Core.Game.Events;
 
 namespace AshborneTests
@@ -63,7 +64,7 @@ namespace AshborneTests
 
             var memory = profile.ReceiveSyntheticMemory(
                 "ink:nightmare",
-                new MemoryDefinition(0.35, [MemoryTag.Betrayal]),
+                new MemoryDefinition(0.35, [MemoryTagType.Betrayal]),
                 12,
                 Guid.Empty);
 
@@ -80,7 +81,7 @@ namespace AshborneTests
 
             var syntheticCause = new SyntheticMemorySource(
                 14,
-                new MemoryDefinition(0.2, [MemoryTag.Theft]),
+                new MemoryDefinition(0.2, [MemoryTagType.Theft]),
                 [new MemoryParticipant(ownerId, [MemoryRole.Actor])],
                 Guid.Empty,
                 "ink:conversation");

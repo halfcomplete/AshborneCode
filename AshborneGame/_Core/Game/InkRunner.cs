@@ -13,7 +13,8 @@ using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
 using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.LocationManagement;
-using AshborneGame._Core.Data.Definitions;
+using AshborneGame._Core.Data.Definitions.Registries;
+using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags;
 
 namespace AshborneGame._Core.Game
 {
@@ -257,60 +258,73 @@ namespace AshborneGame._Core.Game
                     _canContinue = _story.canContinue;
                 }
 
+                // TODO: Handle choices that are hidden to the player
                 if (_story.currentChoices.Count > 0)
                 {
                     await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Enqueued choices at {DateTime.Now}", ConsoleMessageTypes.INFO);
                     for (int i = 0; i < _story.currentChoices.Count; i++)
                     {
                         var choice = _story.currentChoices[i];
-                        bool isEnabled = true;
+                        ChoiceState choiceState = ChoiceState.Enabled;
                         string reason = "";
+
+                        await IOService.Output.DisplayDebugMessage($"Choice tags: {string.Join(", ", choice.tags ?? new List<string>())}", ConsoleMessageTypes.INFO);
 
                         if (choice.tags != null)
                         {
                             foreach (var tag in choice.tags)
                             {
+                                await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Processing choice tag '{tag}'", ConsoleMessageTypes.INFO);
                                 if (tag.StartsWith("emotion:", StringComparison.OrdinalIgnoreCase))
                                 {
                                     var parts = tag.Substring(8);
                                     bool isLessThan = parts.Contains("<");
                                     bool isGreaterThan = parts.Contains(">");
                                     
-                                    /* TODO: Emotion constraint checking disabled - PsychologicalState.EmotionalState property not yet fully implemented
+                                    await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Emotion constraint detected. Parts='{parts}', isLessThan={isLessThan}, isGreaterThan={isGreaterThan}", ConsoleMessageTypes.INFO);
+
+                                    // TODO: Emotion constraint checking disabled - PsychologicalState.EmotionalState property not yet fully implemented
                                     if (isLessThan || isGreaterThan)
                                     {
+                                        
                                         char op = isLessThan ? '<' : '>';
                                         var emotionParts = parts.Split(op);
+                                        await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Split emotion parts. Parts='{string.Join(", ", emotionParts)}'", ConsoleMessageTypes.INFO);
                                         if (emotionParts.Length == 2 && 
                                             Enum.TryParse<EmotionType>(emotionParts[0], true, out var eType) && 
-                                            int.TryParse(emotionParts[1], out int targetVal))
+                                            double.TryParse(emotionParts[1], out double targetVal))
                                         {
-                                            float currentVal = _player.PsychologicalState.EmotionalState.GetCurrentEmotion(eType, _gameState.TimeTracker.TotalInGameHours);
+                                            double currentVal = _player.PsychologicalState.Memory.GetTotalEmotionIntensity(eType);
                                             
+                                            await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Checking emotion constraint. Emotion={eType}, CurrentVal={currentVal}, TargetVal={targetVal}, isLessThan={isLessThan}, isGreaterThan={isGreaterThan}", ConsoleMessageTypes.INFO);
+
                                             if (isLessThan && currentVal >= targetVal)
                                             {
-                                                isEnabled = false;
+                                                choiceState = ChoiceState.Disabled;
                                                 reason = $"You are too {EmotionToAdjective.GetEmotionDescriptor(eType)} to do this.";
                                             }
                                             else if (isGreaterThan && currentVal <= targetVal)
                                             {
-                                                isEnabled = false;
+                                                choiceState = ChoiceState.Disabled;
                                                 reason = $"You aren't {EmotionToAdjective.GetEmotionDescriptor(eType)} enough to do this.";
                                             }
                                         }
                                     }
-                                    */
                                 }
                             }
                         }
 
-                        if (isEnabled)
+                        switch (choiceState)
                         {
-                            await IOService.Output.WriteDialogueMarkerLine($"[{i + 1}] |[ENABLED]|[]|{choice.text}");
-                        }
-                        else
-                        {
-                            await IOService.Output.WriteDialogueMarkerLine($"[{i + 1}] |[DISABLED]|[{reason}]|{choice.text}");
+                            case ChoiceState.Enabled:
+                                await IOService.Output.WriteDialogueMarkerLine($"[{i + 1}]|[ENABLED]|[]|[{choice.text}]");
+                                break;
+                            case ChoiceState.Disabled:
+                                await IOService.Output.WriteDialogueMarkerLine($"[{i + 1}]|[DISABLED]|[{reason}]|[{choice.text}]");
+                                break;
+                            case ChoiceState.Hidden:
+                                // Do not display hidden choices
+                                break;
                         }
                     }
 
@@ -577,7 +591,7 @@ namespace AshborneGame._Core.Game
 
         private object ExternalAddSyntheticMemory(string tagsCsv, float baseIntensity, DefinitionID locationID)
         {
-            HashSet<MemoryTag> tags = ParseMemoryTags(tagsCsv);
+            HashSet<MemoryTagType> tags = ParseMemoryTags(tagsCsv);
             MemoryDefinition memoryDefinition = new(baseIntensity, tags);
 
             GameContext.Player.PsychologicalState.Memory.ReceiveSyntheticMemory(
@@ -589,13 +603,13 @@ namespace AshborneGame._Core.Game
             return null;
         }
 
-        private static HashSet<MemoryTag> ParseMemoryTags(string tagsCsv)
+        private static HashSet<MemoryTagType> ParseMemoryTags(string tagsCsv)
         {
-            HashSet<MemoryTag> tags = new();
+            HashSet<MemoryTagType> tags = new();
 
             foreach (string tagText in tagsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
-                if (Enum.TryParse<MemoryTag>(tagText, true, out MemoryTag tag))
+                if (Enum.TryParse<MemoryTagType>(tagText, true, out MemoryTagType tag))
                 {
                     tags.Add(tag);
                 }

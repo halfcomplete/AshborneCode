@@ -1,0 +1,99 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
+using AshborneGame._Core.CognitiveSystem.MemorySystem;
+using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.Game;
+using AshborneGame._Core.SaveSystem.Data.CognitionDTOs;
+using AshborneGame._Core.SaveSystem.Serialisation;
+using AshborneGame._Core.CognitiveSystem.AttitudeSystem;
+
+namespace AshborneGame._Core.CognitiveSystem
+{
+    /// <summary>
+    /// A class representing the entire psychological state of a character, encompassing relationships, feelings and emotions.
+    /// </summary>
+    public sealed class PsychologicalState
+    {
+        private readonly DefinitionID _ownerID;
+
+        /// <summary>
+        /// Represents the mapping of character or entity identifiers to their corresponding attitudes in the
+        /// relationship system.
+        /// </summary>
+        /// <remarks>Each key in the dictionary is a unique identifier for a character or entity, and the
+        /// associated value indicates the current attitude toward that entity. This collection can be used to track and
+        /// update relationship states dynamically during gameplay.</remarks>
+        public Dictionary<DefinitionID, Attitude> Relationships = new Dictionary<DefinitionID, Attitude>();
+
+        public MemoryProfile Memory { get; init; }
+
+        public PersonalityProfile Personality { get; init; } = new();
+        
+        public PsychologicalState(DefinitionID ownerID)
+        {
+            _ownerID = ownerID;
+            Memory = new(_ownerID, Personality, Relationships);
+        }
+
+        public PsychologicalState(Dictionary<DefinitionID, Attitude> relationships, MemoryProfile memory, PersonalityProfile personality)
+        {
+            Relationships = relationships;
+            Memory = memory;
+            Personality = personality;
+        }
+
+        /// <summary>
+        /// Adds a relationship to this psychological state. If a relationship with the same entityId already exists, it will be updated with the new attitude. This method allows for dynamic management of relationships, enabling characters to form new connections or modify existing ones based on in-game interactions and events.
+        /// </summary>
+        /// <param name="entityId">The unique identifier of the character or entity.</param>
+        /// <param name="attitude">The attitude to associate with the specified entity.</param>
+        public void AddRelationship(DefinitionID entityId, Attitude attitude)
+        {
+            Relationships[entityId] = attitude;
+        }
+
+        /// <summary>
+        /// Removes the relationship associated with the specified entity identifier.
+        /// </summary>
+        /// <param name="entityId">The unique identifier of the entity whose relationship is to be removed. Cannot be null.</param>
+        public void RemoveRelationship(DefinitionID entityId)
+        {
+            Relationships.Remove(entityId);
+        }
+
+        /// <summary>
+        /// Attempts to retrieve the attitude associated with the specified entity identifier.
+        /// </summary>
+        /// <param name="entityId">The unique identifier of the entity whose relationship attitude is to be retrieved.</param>
+        /// <param name="attitude">When this method returns, contains the attitude associated with the specified entity identifier, if found;
+        /// otherwise, <see langword="null"/>. This parameter is passed uninitialized.</param>
+        /// <returns>true if the relationship attitude for the specified entity identifier was found; otherwise, false.</returns>
+        public bool TryGetRelationship(DefinitionID entityId, out Attitude? attitude)
+        {
+            return Relationships.TryGetValue(entityId, out attitude);
+        }
+
+        public PsychologicalState DeepClone()
+        {
+            // TODO: deepclone personality and memory?
+            return new PsychologicalState(new(Relationships), new(_ownerID, Personality, Relationships), new());
+        }
+
+
+        public PsychologicalStateSaveData GetSaveData()
+        {
+            return new PsychologicalStateSaveData(Relationships, Memory.GetSaveData(), Personality);
+        }
+
+        public void LoadSaveData(PsychologicalStateSaveData data)
+        {
+            Relationships = data.Relationships;
+            Memory.LoadSaveData(data.Memory);
+            Personality.LoadSaveData(data.Personality);
+        }
+    }
+}

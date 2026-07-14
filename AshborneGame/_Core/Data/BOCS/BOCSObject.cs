@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
 using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
 using AshborneGame._Core.SaveSystem.Serialisation;
-using AshborneGame._Core.SaveSystem.Loading;
+using AshborneGame._Core.SaveSystem;
 
 namespace AshborneGame._Core.Data.BOCS;
 
