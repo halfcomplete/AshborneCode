@@ -11,7 +11,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
 {
     public record MemoryTagDefinition
     {
-        public Dictionary<EmotionType, (MemoryRole role, double value)> BaseEmotionalModifiers { get; init; }
+        public Dictionary<EmotionType, (MemoryRole role, double value)> BaseEmotionPotentials { get; init; }
 
         /// <summary>
         /// A Dictionary where the Key is each personality trait and the value is a list of personality reactions that define the effect that personality trait has on each emotion if this memory tag is on the memory.
@@ -47,7 +47,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
             Dictionary<RelationshipType, List<AttitudeRoleEmotionRule>>? attitudeEmotionModifiers = null,
             Dictionary<PersonalityTrait, double>? personalityIntensityModifiers = null)
         {
-            BaseEmotionalModifiers = baseEmotionalModifiers;
+            BaseEmotionPotentials = baseEmotionalModifiers;
             AttitudeEmotionModifiers = attitudeEmotionModifiers ?? new();
             PersonalityEmotionModifiers = personalityEmotionModifiers;
             AttitudeIntensityModifiers = attitudeIntensityModifiers;

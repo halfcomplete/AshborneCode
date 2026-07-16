@@ -494,7 +494,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             {
                 MemoryTagDefinition tagDefinition = MemoryTagDefinitions.Definitions[tag].Definition;
 
-                foreach (var (emotion, (role, value)) in tagDefinition.BaseEmotionalModifiers)
+                foreach (var (emotion, (role, value)) in tagDefinition.BaseEmotionPotentials)
                 {
                     mods[new EmotionPotential(emotion, role, value)] = new EmotionAccumulator();
                 }
