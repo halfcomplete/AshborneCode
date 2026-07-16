@@ -553,7 +553,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                             {
                                 // for each attitude type, check if the given attitude actually aligns with that attitude type
                                 double alignment = Math.Abs(GetAttitudeAlignmentWithAttitudeType(attitude, attitudeType));
-                                intensityImpact += rule.Weight * alignment;
+                                intensityImpact += rule.Intensity * alignment;
                             }
                         }
                     }

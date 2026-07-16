@@ -11,14 +11,14 @@ namespace AshborneGame._Core.CognitiveSystem.AttitudeSystem
         public MemoryRole Role { get; init; }
 
         /// <summary>
-        /// How strongly this role is affected by the attitude (0 to 1).
+        /// How strongly this role is affected by the attitude (-1 to 1).
         /// </summary>
-        public double Weight { get; init; }
+        public double Intensity { get; init; }
 
         public AttitudeRoleIntensityRule(MemoryRole role, double intensity)
         {
             Role = role;
-            Weight = intensity;
+            Intensity = intensity;
         }
     }
 }
