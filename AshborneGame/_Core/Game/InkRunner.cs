@@ -294,7 +294,7 @@ namespace AshborneGame._Core.Game
                                             Enum.TryParse<EmotionType>(emotionParts[0], true, out var eType) && 
                                             double.TryParse(emotionParts[1], out double targetVal))
                                         {
-                                            double currentVal = _player.PsychologicalState.Memory.GetTotalEmotionIntensity(eType);
+                                            double currentVal = _player.PsychologicalState.MemoryEmotion.GetTotalEmotionIntensity(eType);
                                             
                                             await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Checking emotion constraint. Emotion={eType}, CurrentVal={currentVal}, TargetVal={targetVal}, isLessThan={isLessThan}, isGreaterThan={isGreaterThan}", ConsoleMessageTypes.INFO);
 
@@ -594,7 +594,7 @@ namespace AshborneGame._Core.Game
             HashSet<MemoryTagType> tags = ParseMemoryTags(tagsCsv);
             MemoryDefinition memoryDefinition = new(baseIntensity, tags);
 
-            GameContext.Player.PsychologicalState.Memory.ReceiveSyntheticMemory(
+            GameContext.Player.PsychologicalState.MemoryEmotion.ReceiveSyntheticMemory(
                 memoryDefinition,
                 _gameState.TimeTracker.TotalInGameHours,
                 locationID

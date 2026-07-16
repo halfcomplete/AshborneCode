@@ -29,20 +29,20 @@ namespace AshborneGame._Core.CognitiveSystem
         /// update relationship states dynamically during gameplay.</remarks>
         public Dictionary<DefinitionID, Attitude> Relationships = new Dictionary<DefinitionID, Attitude>();
 
-        public MemoryProfile Memory { get; init; }
+        public MemoryEmotionProfile MemoryEmotion { get; init; }
 
         public PersonalityProfile Personality { get; init; } = new();
         
         public PsychologicalState(DefinitionID ownerID)
         {
             _ownerID = ownerID;
-            Memory = new(_ownerID, Personality, Relationships);
+            MemoryEmotion = new(_ownerID, Personality, Relationships);
         }
 
-        public PsychologicalState(Dictionary<DefinitionID, Attitude> relationships, MemoryProfile memory, PersonalityProfile personality)
+        public PsychologicalState(Dictionary<DefinitionID, Attitude> relationships, MemoryEmotionProfile memory, PersonalityProfile personality)
         {
             Relationships = relationships;
-            Memory = memory;
+            MemoryEmotion = memory;
             Personality = personality;
         }
 
@@ -86,13 +86,13 @@ namespace AshborneGame._Core.CognitiveSystem
 
         public PsychologicalStateSaveData GetSaveData()
         {
-            return new PsychologicalStateSaveData(Relationships, Memory.GetSaveData(), Personality);
+            return new PsychologicalStateSaveData(Relationships, MemoryEmotion.GetSaveData(), Personality);
         }
 
         public void LoadSaveData(PsychologicalStateSaveData data)
         {
             Relationships = data.Relationships;
-            Memory.LoadSaveData(data.Memory);
+            MemoryEmotion.LoadSaveData(data.Memory);
             Personality.LoadSaveData(data.Personality);
         }
     }

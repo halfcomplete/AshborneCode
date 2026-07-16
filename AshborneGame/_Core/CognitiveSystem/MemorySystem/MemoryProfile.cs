@@ -11,14 +11,14 @@ using AshborneGame._Core.CognitiveSystem.AttitudeSystem;
 
 namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 {
-    public class MemoryProfile
+    public class MemoryEmotionProfile
     {
         private DefinitionID _ownerID;
         private PersonalityProfile _personality;
         private Dictionary<DefinitionID, Attitude> _relationships;
         private List<Memory> _memories;
 
-        public MemoryProfile(DefinitionID ownerID, PersonalityProfile personality, Dictionary<DefinitionID, Attitude> relationships, List<Memory> memories)
+        public MemoryEmotionProfile(DefinitionID ownerID, PersonalityProfile personality, Dictionary<DefinitionID, Attitude> relationships, List<Memory> memories)
         {
             _ownerID = ownerID;
             _personality = personality;
@@ -29,7 +29,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             EventBus.Subscribe<IMemorableGameEvent>(e => ReceiveMemorableEvent(e));
         }
 
-        public MemoryProfile(DefinitionID ownerID, PersonalityProfile personality, Dictionary<DefinitionID, Attitude> relationships)
+        public MemoryEmotionProfile(DefinitionID ownerID, PersonalityProfile personality, Dictionary<DefinitionID, Attitude> relationships)
             : this(ownerID, personality, relationships, new List<Memory>()) { }
 
         #region Receiving Memories

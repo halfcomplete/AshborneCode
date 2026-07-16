@@ -129,7 +129,7 @@ namespace AshborneGame._Core.Game.Events
                     targetParticipants.Add(new MemoryParticipant(entityId, [MemoryRole.Actor]));
                 }
 
-                entity.PsychologicalState.Memory.ReceiveSyntheticMemory(
+                entity.PsychologicalState.MemoryEmotion.ReceiveSyntheticMemory(
                     memoryDefinition,
                     currentTotalHours,
                     locationID,

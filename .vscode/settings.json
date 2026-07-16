@@ -1,5 +1,5 @@
 {
-    "workbench.colorTheme": "Ayu Light",
+    "workbench.colorTheme": "Bearded Theme Arc",
     "dotnet-test-explorer.testProjectPath": "**/AshborneTests.csproj",
     "todohighlight.isEnable": true,
     "todohighlight.include": [
