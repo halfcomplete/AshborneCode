@@ -301,7 +301,7 @@ namespace AshborneGame._Core.LocationManagement
                 ContainedObjects.Clear();
                 foreach (var instanceId in saveData.ContainedObjectInstanceIds)
                 {
-                    if (context.InstanceRegistry.TryGet(instanceId, out var obj) && obj != null)
+                    if (context.TryGet(instanceId, out var obj) && obj != null)
                     {
                         ContainedObjects.Add(obj);
                     }

@@ -457,16 +457,16 @@ namespace AshborneGame._Core._Player
             Inventory.LoadSaveData(saveData.Inventory, context);
             EquippedItems = saveData.EquippedItems.ToDictionary(
                 kvp => kvp.Key,
-                kvp => kvp.Value.HasValue ? context.InstanceRegistry.Get(kvp.Value.Value) : null
+                kvp => kvp.Value.HasValue ? context.Get(kvp.Value.Value) : null
             );
 
             Stats.LoadSaveData(saveData.Stats);
             PsychologicalState.LoadSaveData(saveData.PsychologicalState);
             CurrentNPCInteraction = saveData.CurrentNpcInteractionInstanceId.HasValue
-                ? context.InstanceRegistry.Get(saveData.CurrentNpcInteractionInstanceId.Value)
+                ? context.Get(saveData.CurrentNpcInteractionInstanceId.Value)
                 : null;
             CurrentMask = saveData.CurrentMaskInstanceId.HasValue
-                ? context.InstanceRegistry.Get(saveData.CurrentMaskInstanceId.Value)
+                ? context.Get(saveData.CurrentMaskInstanceId.Value)
                 : null;
             Visibility = saveData.Visibility;
         }

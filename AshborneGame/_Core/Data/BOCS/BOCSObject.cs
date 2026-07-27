@@ -211,6 +211,39 @@ public class BOCSObject
         return new BOCSObjectSaveData(InstanceID, DefinitionID, Name.GetSaveData(), Description, behavioursSaveData);
     }
 
+    /// <summary>
+    /// Returns a new BOCSObject using the given save data. Does not load behaviours.
+    /// </summary>
+    /// <param name="saveData"></param>
+    /// <param name="context"></param>
+    /// <returns></returns>
+    public static BOCSObject LoadTemporaryObject(BOCSObjectSaveData saveData, SaveLoadContext context)
+    {
+        var bocsObject = new BOCSObject(ObjectNameAdapter.LoadFromSaveData(saveData.Name), saveData.Description, saveData.DefinitionID, saveData.InstanceID);
+        return bocsObject;
+    }
+
+    /// <summary>
+    /// Takes a BOCSObject and a list of behaviours to load into it.
+    /// </summary>
+    /// <param name="bocsObject"></param>
+    /// <param name="behaviours"></param>
+    public static void LoadBehavioursIntoObject(BOCSObject bocsObject, List<BehaviourSaveData> behaviours, SaveLoadContext context)
+    {
+        foreach (var behaviourSaveData in behaviours)
+        {
+            var behaviour = BehaviourLoadingService.LoadFromSaveData(behaviourSaveData, context);
+            bocsObject.AddBehaviour(behaviour.GetType(), behaviour);
+        }
+    }
+
+    /// <summary>
+    /// Returns a new BOCSObject using the given save data. Loads behaviours.
+    /// </summary>
+    /// <param name="saveData"></param>
+    /// <param name="context"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public static BOCSObject LoadFromSaveData(BOCSObjectSaveData saveData, SaveLoadContext context)
     {
         if (saveData == null)

@@ -94,15 +94,30 @@ namespace AshborneGame._Core.SaveSystem
             LoadLocationRegistry(saveData, context);
             LoadInstanceRegistry(saveData, context);
             LoadLocationSaveData(saveData, context);
+            LoadInstanceSaveData(context);
         }
 
         private static void LoadInstanceRegistry(SaveGameData saveData, SaveLoadContext context)
         {
-            // Load objects into the instance registry
+            // Load temporary objects into the instance registry
+            // This makes sure that each object actually EXISTS before the rest of the loading is done
             foreach (var objData in saveData.BOCSObjects)
             {
-                var obj = BOCSObject.LoadFromSaveData(objData, context);
-                context.InstanceRegistry.Register(obj);
+                var obj = BOCSObject.LoadTemporaryObject(objData, context);
+                context.Register(obj, objData.Behaviours);
+            }
+        }
+
+        private static void LoadInstanceSaveData(SaveLoadContext context)
+        {
+            foreach (var objectInstance in context.GetAll())
+            {
+                if (!context.TryGetBehaviourSaveData(objectInstance.InstanceID, out var behaviours) || behaviours == null)
+                {
+                    throw new KeyNotFoundException($"Failed to get behaviour save data from InstanceID {objectInstance.InstanceID}");
+                }
+
+                BOCSObject.LoadBehavioursIntoObject(objectInstance, behaviours, context);
             }
         }
 
