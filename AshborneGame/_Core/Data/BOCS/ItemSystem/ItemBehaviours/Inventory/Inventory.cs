@@ -223,7 +223,7 @@ namespace AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory
             _byReferenceName.Clear();
             foreach (var instanceID in saveData.Items)
             {
-                var item = context._instanceRegistry.Get(instanceID);
+                var item = context.Get(instanceID);
                 _items.Add(item);
                 if (_byReferenceName.ContainsKey(item.Name))
                 {
