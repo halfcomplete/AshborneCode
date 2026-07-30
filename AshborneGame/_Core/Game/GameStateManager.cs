@@ -333,7 +333,7 @@ namespace AshborneGame._Core.Game
             Masks.Clear();
             foreach (var kvp in data.Masks)
             {
-                if (context._instanceRegistry.TryGet(kvp.Value, out var obj) && obj != null)
+                if (context.TryGet(kvp.Value, out var obj) && obj != null)
                 {
                     Masks[kvp.Key] = obj;
                 }
