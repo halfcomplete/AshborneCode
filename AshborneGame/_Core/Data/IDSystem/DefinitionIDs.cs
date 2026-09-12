@@ -25,6 +25,15 @@ namespace AshborneGame._Core.Data.IDSystem
                 public static readonly DefinitionID PlatformEdge = new("Locations.Dreamspace.PlatformEdge");
             }
 
+            public static class OssuaryOfEyes
+            {
+                public static readonly DefinitionID GreatHall = new("Locations.OssuaryOfEyes.GreatHall");
+                public static readonly DefinitionID Archive = new("Locations.OssuaryOfEyes.Archive");
+                public static readonly DefinitionID Kitchen = new("Locations.OssuaryOfEyes.Kitchen");
+                public static readonly DefinitionID CloisterGardens = new("Locations.OssuaryOfEyes.CloisterGardens");
+                public static readonly DefinitionID Observatory = new("Locations.OssuaryOfEyes.Observatory");
+            }
+
             public static class Prologue
             {
                 public static readonly DefinitionID PrologueStart = new("Locations.Prologue.PrologueStart");
@@ -34,6 +43,7 @@ namespace AshborneGame._Core.Data.IDSystem
         public static class Scenes
         {
             public static readonly DefinitionID OssanethsDomain = new("Locations.Scenes.OssanethsDomain");
+            public static readonly DefinitionID OssuaryOfEyes = new("Locations.Scenes.OssuaryOfEyes");
             public static readonly DefinitionID Prologue = new("Locations.Scenes.Prologue");
         }
 

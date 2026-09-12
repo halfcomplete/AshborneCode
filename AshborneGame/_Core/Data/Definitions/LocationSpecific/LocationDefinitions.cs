@@ -9,12 +9,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AshborneGame._Core.Data.Definitions.LocationSpecific
 {
     public static class LocationDefinitions
     {
-        public static IReadOnlyList<LocationDefinition> All { get; } = [Prologue.PrologueStart, Dreamspace.EyePlatform, Dreamspace.PlatformEdge, Dreamspace.HallOfMirrors, Dreamspace.MirrorShardSublocation];
+        public static IReadOnlyList<LocationDefinition> All { get; } = 
+        [
+            Prologue.PrologueStart, 
+            Dreamspace.EyePlatform, Dreamspace.PlatformEdge, Dreamspace.HallOfMirrors, Dreamspace.MirrorShardSublocation,
+
+        ];
 
         public static class Prologue
         {
@@ -203,6 +209,62 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                         WorldBuilder.RemoveParentChildRelationship(GameContext.LocationRegistry, DefinitionIDs.Locations.Dreamspace.HallOfMirrors, DefinitionIDs.Locations.Dreamspace.MirrorShardSublocation);
                     }
                 )
+            );
+        }
+
+        /// <summary>
+        /// <b>Description</b>
+        /// <para>
+        /// The Ossuary of Eyes is an ancient stone monastery standing in a valley that does not appear on any map. It is surrounded by white fog rather than walls. No gate marks its entrance, and no road leads away from it. The buildings are constructed from pale limestone darkened by centuries of damp, their roofs clad with weathered slate. Tall windows admit a cool grey light regardless of the hour.
+        /// </para>
+        /// <para>
+        /// The place feels inhabited rather than abandoned. Fires burn. Bread is baked. Gardens are tended. Laundry dries in the courtyard.
+        /// </para>
+        /// Nobody seems surprised that the world beyond the fog cannot be reached.
+        /// Only the player finds that strange.
+        /// </summary>
+        /// <remarks>
+        /// <b>Children:</b>
+        /// <list type="bullet">
+        /// <item>Great Hall</item>
+        /// <item>Archive</item>
+        /// <item>Kitchen</item>
+        /// <item>Cloister Garden</item>
+        /// <item>Dormitory</item>
+        /// <item>Cellars</item>
+        /// <item>Observatory</item>
+        /// </list>
+        /// </remarks>
+        public static class OssuaryOfEyes
+        {
+            public static LocationDefinition GreatHall = new(
+                DefinitionIDs.Locations.OssuaryOfEyes.GreatHall,
+                DefinitionIDs.Scenes.OssuaryOfEyes,
+                new LocationNameAdapter("Great Hall", "the Great Hall"),
+                new DescriptionComposer(
+                    new LookDescription(
+                        "You look around the Great Hall. The long tables are set for a feast, but no one is present. The chandeliers hang low, their candles flickering.",
+                        "You look around the Great Hall again. The tables remain set, but the air feels heavier now."
+                    ),
+                    new VisitDescription(
+                        "The heavy oak doors swing inward with little resistance. Warm air carrying the smell of fresh bread and woodsmoke greets you immediately, " +
+                        "so ordinary that it almost makes you forget the impossible place you awoke in. Long trestle tables fill most of the hall, their surfaces " +
+                        "worn smooth by countless meals. Candles burn low in iron holders suspended above them, their wax having dripped so many times that it has " +
+                        "formed pale stalactites along the metal.\r\n\r\nMen and women speak quietly over breakfast. Someone laughs at a joke you did not hear. Another " +
+                        "carefully repairs a torn sleeve with needle and thread. At the far end of the hall, a large hearth crackles beneath a soot-blackened chimney, " +
+                        "while an elderly steward quietly notes something in a leather ledger before looking up to acknowledge your arrival with nothing more than a polite " +
+                        "nod.\r\n\r\nNobody rushes towards you.\r\n\r\nNobody seems frightened.\r\n\r\nThey simply make room at the nearest table, as though they had expected you.",
+                        "You return to the Great Hall. The silence is almost deafening.",
+                        "Once again, you are in the Great Hall. The emptiness is palpable."
+                    ),
+                    new SensoryDescription(
+                        "The scent of old wood and wax fills the air.",
+                        "A distant echo of footsteps seems to follow you."
+                    ),
+                    new AmbientDescription().AddTimeBased(15, "The candles flicker, casting dancing shadows on the walls.")
+                ),
+                objects: [],
+                customCommands: new()
             );
         }
     }
