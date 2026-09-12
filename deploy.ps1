@@ -108,17 +108,27 @@ Write-Host "`n[INFO] Committing and pushing to GitHub Pages..."
 
 Set-Location $deployRepoPath
 
-git add .
-
-$commitMessage = "Deploy Ashborne build $buildTime"
-git commit -m "$commitMessage"
-git push
+git add -A
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "[ERROR] Git push failed. Check remote connection or conflicts."
+    Write-Error "[ERROR] git add failed. Aborting deployment."
     exit $LASTEXITCODE
 }
 
+$commitMessage = "Deploy Ashborne build $buildTime"
+git commit -m "$commitMessage"
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "[ERROR] git commit failed. Aborting deployment."
+    exit $LASTEXITCODE
+}
+
+git push
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "[ERROR] git push failed. Aborting deployment."
+    exit $LASTEXITCODE
+}
 
 Write-Host "`n[SUCCESS] Deployment complete! Visit: https://halfcomplete.github.io/Ashborne/"
 
