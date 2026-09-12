@@ -1,6 +1,6 @@
+using AshborneGame._Core.Globals.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using AshborneGame._Core.Globals.Services;
 
 namespace AshborneWASM
 {

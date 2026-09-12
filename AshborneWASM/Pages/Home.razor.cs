@@ -3,15 +3,12 @@ using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Enums;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
-using AshborneGame._Core.LocationManagement;
 using AshborneGame.WebPort;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
-using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Timers;
 
 namespace AshborneWASM.Pages;
 
@@ -48,8 +45,8 @@ public partial class Home : ComponentBase, IDisposable
     [Inject] public IJSRuntime JS { get; set; } = default!;
 
     private string userInput = "";
-    private string GameText 
-    { 
+    private string GameText
+    {
         get
         {
             if (GameContext.GameState == null)

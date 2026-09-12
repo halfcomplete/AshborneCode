@@ -15,11 +15,6 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
     public class LocationDefinition : Definition
     {
         /// <summary>
-        /// Unique runtime identifier for this specific location instance.
-        /// </summary>
-        public InstanceID InstanceID { get; init; }
-
-        /// <summary>
         /// Immutable identifier of this definition.
         /// </summary>
         public DefinitionID DefinitionID { get; init; }
