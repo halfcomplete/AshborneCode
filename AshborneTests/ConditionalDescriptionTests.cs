@@ -18,7 +18,8 @@ public class ConditionalDescriptionTests : IsolatedTestBase
         Func<Player, GameStateManager, bool> predicate = (player, gameState) => true;
         var conditionalDescription = ConditionalDescription.StartNew().If(predicate);
         var player = new Player();
-        var gameState = new GameStateManager(player);
+        var timeTracker = new TimeTracker();
+        var gameState = new GameStateManager(player, timeTracker);
 
         // Assert
         Assert.True(conditionalDescription.Predicate!.Invoke(player, gameState));
@@ -43,7 +44,8 @@ public class ConditionalDescriptionTests : IsolatedTestBase
         Func<Player, GameStateManager, bool> predicate = (player, gameState) => true;
         var conditionalDescription = ConditionalDescription.StartNew().IfNot(predicate);
         var player = new Player();
-        var gameState = new GameStateManager(player);
+        var timeTracker = new TimeTracker();
+        var gameState = new GameStateManager(player, timeTracker);
 
         // Assert
         Assert.False(conditionalDescription.Predicate!.Invoke(player, gameState));
