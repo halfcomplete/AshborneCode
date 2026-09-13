@@ -224,7 +224,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                         "You look around the Waking Chamber again. The carvings seem to shift subtly, as if alive."
                     ),
                     new VisitDescription(
-                        "You awaken in the Waking Chamber. The air is thick with anticipation, and you feel a sense of déjà vu.",
+                        "For a few moments, there is nothing but darkness and the sound of your own breathing. Then your eyes adjust. You are lying in a circular chamber of black stone, surrounded by walls that disappear into darkness above you. A thin layer of water covers the floor around your body, perfectly still except where your breathing disturbs it.\r\n\r\nThere is no obvious entrance behind you.\r\n\r\nThree sealed archways stand around the chamber. A fourth passage remains open, leading into darkness.",
                         "You return to the Waking Chamber. The atmosphere remains unchanged, but you feel a growing unease."
                     ),
                     new SensoryDescription(
