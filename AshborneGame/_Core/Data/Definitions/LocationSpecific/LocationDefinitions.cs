@@ -214,30 +214,40 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
 
         public static class OssuaryOfEyes
         {
-            public static Definition WakingChamber = new(
+            public static LocationDefinition WakingChamber = new(
                 DefinitionIDs.Locations.OssuaryOfEyes.WakingChamber,
                 DefinitionIDs.Scenes.OssuaryOfEyes,
                 new LocationNameAdapter("Waking Chamber", "the Waking Chamber"),
                 new DescriptionComposer(
                     new LookDescription(
-                        "You look around the Waking Chamber. The walls are adorned with intricate carvings, and a soft light emanates from an unknown source.",
-                        "You look around the Waking Chamber again. The carvings seem to shift subtly, as if alive."
+                        "You take a look around. The chamber is circular and austere, built from dark stone worn smooth by time. A shallow pool covers much of the floor. At the centre, an enormous eye has been carved into the stone.",
+                        "You examine the chamber once more. The stone is old, but the room is not abandoned. Someone has swept the edges of the floor. A small basin contains clear, fresh water, and the remains of several candles sit neatly against the wall. Even the debris beneath the collapsed masonry has been pushed into an orderly pile. The eye beneath your feet remains closed.",
+                        "You look around the chamber again. There is little left to discover, but one detail continues to trouble you. The carved eye is slightly deeper than the surrounding stone, as though something once rested inside it - or as though it was carved from the inside outward. For a moment, you have the uncomfortable impression that it is waiting."
                     ),
                     new VisitDescription(
-                        "For a few moments, there is nothing but darkness and the sound of your own breathing. Then your eyes adjust. You are lying in a circular chamber of black stone, surrounded by walls that disappear into darkness above you. A thin layer of water covers the floor around your body, perfectly still except where your breathing disturbs it.\r\n\r\nThere is no obvious entrance behind you.\r\n\r\nThree sealed archways stand around the chamber. A fourth passage remains open, leading into darkness.",
-                        "You return to the Waking Chamber. The atmosphere remains unchanged, but you feel a growing unease."
+                        "For a few moments, there is nothing but darkness and the sound of your own breathing. Then, seemingly from the depths of your mind, a flat voice emerges." + 
+                        "\n\n\"You have awoken.\" A simple statement, nothing more, nothing less. " + 
+                        "Then your eyes adjust. You are lying in a circular chamber of black stone, surrounded by walls that disappear into darkness above you. A thin layer of water covers the floor around your body, perfectly still except where your breathing disturbs it.",
+                        "You return to the chamber where you first awoke. The room is exactly as you remember it: black stone, shallow water, somewhat eerie atmosphere. But you notice other things now. The candles have been cleaned. The basin has been refilled. Someone has been taking care of this room.",
+                        "Yet again, you return to the chamber of your arrival. It no longer feels entirely unfamiliar. Your footsteps disturb the thin layer of water, and the sound travels farther than it should through the stone. The eye carved into the floor remains closed. You are beginning to suspect that the chamber is not as empty as it first appeared.",
+                        "You return to the chamber again. Nothing appears to have changed: the water lies still and the candles remain unlit."
                     ),
                     new SensoryDescription(
-                        "The scent of incense fills the air, mingling with the faint aroma of old parchment.",
-                        "A distant hum resonates through the chamber, vibrating through your very bones."
+                        "The black stone reflects the faintest traces of light, giving the chamber a dim, colourless sheen.",
+                        "A distant hum resonates through the chamber, vibrating through your very bones.",
+                        "The stone beneath your feet is cold enough to numb your toes, while the shallow water is strangely warmer than the air.",
+                        "The air smells faintly of wet stone, extinguished candles and something older that you cannot identify.",
+                        "The air leaves a faint mineral taste on your tongue, as though you have been breathing beside deep underground water."
                     ),
-                    new AmbientDescription().AddTimeBased(15, "The light flickers, casting dancing shadows on the walls.")
+                    new AmbientDescription()
+                    .AddTimeBased(15, "A single drop of water falls somewhere beyond the walls, followed by a long silence.")
                 ),
                 [],
                 new CustomCommandHandler()
             );
 
-            public static Definition KeepersQuarters = new(
+            /*
+            public static LocationDefinition KeepersQuarters = new(
                 DefinitionIDs.Locations.OssuaryOfEyes.KeepersQuarters,
                 DefinitionIDs.Scenes.OssuaryOfEyes,
                 new LocationNameAdapter("Keeper's Quarters", "the Keeper's Quarters"),
@@ -260,7 +270,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 new CustomCommandHandler()
             );
 
-            public static Definition HallOfLostThoughts = new(
+            public static LocationDefinition HallOfLostThoughts = new(
                 DefinitionIDs.Locations.OssuaryOfEyes.HallOfLostThoughts,
                 DefinitionIDs.Scenes.OssuaryOfEyes,
                 new LocationNameAdapter("Hall of Lost Thoughts", "the Hall of Lost Thoughts"),
@@ -283,7 +293,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 new CustomCommandHandler()
             );
 
-            public static Definition CloisterGardens = new(
+            public static LocationDefinition CloisterGardens = new(
                 DefinitionIDs.Locations.OssuaryOfEyes.CloisterGardens,
                 DefinitionIDs.Scenes.OssuaryOfEyes,
                 new LocationNameAdapter("Cloister Gardens", "the Cloister Gardens"),
@@ -306,7 +316,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 new CustomCommandHandler()
             );
 
-            public static Definition LowerVault = new(
+            public static LocationDefinition LowerVault = new(
                 DefinitionIDs.Locations.OssuaryOfEyes.LowerVault,
                 DefinitionIDs.Scenes.OssuaryOfEyes,
                 new LocationNameAdapter("Lower Vault", "the Lower Vault"),
@@ -329,7 +339,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 new CustomCommandHandler()
             );
 
-            public static Definition CentralOssuary = new(
+            public static LocationDefinition CentralOssuary = new(
                 DefinitionIDs.Locations.OssuaryOfEyes.CentralOssuary,
                 DefinitionIDs.Scenes.OssuaryOfEyes,
                 new LocationNameAdapter("Central Ossuary", "the Central Ossuary"),
@@ -352,7 +362,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 new CustomCommandHandler()
             );
 
-            public static Definition Scriptorium = new(
+            public static LocationDefinition Scriptorium = new(
                 DefinitionIDs.Locations.OssuaryOfEyes.Scriptorium,
                 DefinitionIDs.Scenes.OssuaryOfEyes,
                 new LocationNameAdapter("Scriptorium", "the Scriptorium"),
@@ -375,7 +385,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 new CustomCommandHandler()
             );
 
-            public static Definition Observatory = new(
+            public static LocationDefinition Observatory = new(
                 DefinitionIDs.Locations.OssuaryOfEyes.Observatory,
                 DefinitionIDs.Scenes.OssuaryOfEyes,
                 new LocationNameAdapter("Observatory", "the Observatory"),
@@ -397,6 +407,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 [],
                 new CustomCommandHandler()
             );
+            */
         }
     }
 }
