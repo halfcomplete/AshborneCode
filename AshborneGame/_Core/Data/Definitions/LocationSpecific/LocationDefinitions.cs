@@ -212,59 +212,190 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
             );
         }
 
-        /// <summary>
-        /// <b>Description</b>
-        /// <para>
-        /// The Ossuary of Eyes is an ancient stone monastery standing in a valley that does not appear on any map. It is surrounded by white fog rather than walls. No gate marks its entrance, and no road leads away from it. The buildings are constructed from pale limestone darkened by centuries of damp, their roofs clad with weathered slate. Tall windows admit a cool grey light regardless of the hour.
-        /// </para>
-        /// <para>
-        /// The place feels inhabited rather than abandoned. Fires burn. Bread is baked. Gardens are tended. Laundry dries in the courtyard.
-        /// </para>
-        /// Nobody seems surprised that the world beyond the fog cannot be reached.
-        /// Only the player finds that strange.
-        /// </summary>
-        /// <remarks>
-        /// <b>Children:</b>
-        /// <list type="bullet">
-        /// <item>Great Hall</item>
-        /// <item>Archive</item>
-        /// <item>Kitchen</item>
-        /// <item>Cloister Garden</item>
-        /// <item>Dormitory</item>
-        /// <item>Cellars</item>
-        /// <item>Observatory</item>
-        /// </list>
-        /// </remarks>
         public static class OssuaryOfEyes
         {
-            public static LocationDefinition GreatHall = new(
-                DefinitionIDs.Locations.OssuaryOfEyes.GreatHall,
+            public static Definition WakingChamber = new(
+                DefinitionIDs.Locations.OssuaryOfEyes.WakingChamber,
                 DefinitionIDs.Scenes.OssuaryOfEyes,
-                new LocationNameAdapter("Great Hall", "the Great Hall"),
+                new LocationNameAdapter("Waking Chamber", "the Waking Chamber"),
                 new DescriptionComposer(
                     new LookDescription(
-                        "You look around the Great Hall. The long tables are set for a feast, but no one is present. The chandeliers hang low, their candles flickering.",
-                        "You look around the Great Hall again. The tables remain set, but the air feels heavier now."
+                        "You look around the Waking Chamber. The walls are adorned with intricate carvings, and a soft light emanates from an unknown source.",
+                        "You look around the Waking Chamber again. The carvings seem to shift subtly, as if alive."
                     ),
                     new VisitDescription(
-                        "The heavy oak doors swing inward with little resistance. Warm air carrying the smell of fresh bread and woodsmoke greets you immediately, " +
-                        "so ordinary that it almost makes you forget the impossible place you awoke in. Long trestle tables fill most of the hall, their surfaces " +
-                        "worn smooth by countless meals. Candles burn low in iron holders suspended above them, their wax having dripped so many times that it has " +
-                        "formed pale stalactites along the metal.\r\n\r\nMen and women speak quietly over breakfast. Someone laughs at a joke you did not hear. Another " +
-                        "carefully repairs a torn sleeve with needle and thread. At the far end of the hall, a large hearth crackles beneath a soot-blackened chimney, " +
-                        "while an elderly steward quietly notes something in a leather ledger before looking up to acknowledge your arrival with nothing more than a polite " +
-                        "nod.\r\n\r\nNobody rushes towards you.\r\n\r\nNobody seems frightened.\r\n\r\nThey simply make room at the nearest table, as though they had expected you.",
-                        "You return to the Great Hall. The silence is almost deafening.",
-                        "Once again, you are in the Great Hall. The emptiness is palpable."
+                        "You awaken in the Waking Chamber. The air is thick with anticipation, and you feel a sense of déjà vu.",
+                        "You return to the Waking Chamber. The atmosphere remains unchanged, but you feel a growing unease."
                     ),
                     new SensoryDescription(
-                        "The scent of old wood and wax fills the air.",
-                        "A distant echo of footsteps seems to follow you."
+                        "The scent of incense fills the air, mingling with the faint aroma of old parchment.",
+                        "A distant hum resonates through the chamber, vibrating through your very bones."
                     ),
-                    new AmbientDescription().AddTimeBased(15, "The candles flicker, casting dancing shadows on the walls.")
+                    new AmbientDescription().AddTimeBased(15, "The light flickers, casting dancing shadows on the walls.")
                 ),
-                objects: [],
-                customCommands: new()
+                [],
+                new CustomCommandHandler()
+            );
+
+            public static Definition KeepersQuarters = new(
+                DefinitionIDs.Locations.OssuaryOfEyes.KeepersQuarters,
+                DefinitionIDs.Scenes.OssuaryOfEyes,
+                new LocationNameAdapter("Keeper's Quarters", "the Keeper's Quarters"),
+                new DescriptionComposer(
+                    new LookDescription(
+                        "You look around the Keeper's Quarters. The room is filled with ancient tomes and artifacts, each telling a story of a bygone era.",
+                        "You look around the Keeper's Quarters again. The artifacts seem to whisper secrets, though you cannot understand them."
+                    ),
+                    new VisitDescription(
+                        "You enter the Keeper's Quarters. The air is thick with history, and you feel a weight of knowledge pressing down on you.",
+                        "You return to the Keeper's Quarters. The atmosphere remains heavy, and you feel a sense of foreboding."
+                    ),
+                    new SensoryDescription(
+                        "The scent of old books and wax fills the air.",
+                        "A faint scratching sound echoes through the room, as if something unseen is moving."
+                    ),
+                    new AmbientDescription().AddTimeBased(20, "The shadows in the room seem to shift and dance, as if alive.")
+                ),
+                [],
+                new CustomCommandHandler()
+            );
+
+            public static Definition HallOfLostThoughts = new(
+                DefinitionIDs.Locations.OssuaryOfEyes.HallOfLostThoughts,
+                DefinitionIDs.Scenes.OssuaryOfEyes,
+                new LocationNameAdapter("Hall of Lost Thoughts", "the Hall of Lost Thoughts"),
+                new DescriptionComposer(
+                    new LookDescription(
+                        "You look around the Hall of Lost Thoughts. The walls are lined with mirrors, each reflecting a different version of yourself.",
+                        "You look around the Hall of Lost Thoughts again. The reflections seem to shift and change, as if they are alive."
+                    ),
+                    new VisitDescription(
+                        "You enter the Hall of Lost Thoughts. The air is thick with confusion, and you feel a sense of disorientation.",
+                        "You return to the Hall of Lost Thoughts. The atmosphere remains unsettling, and you feel a growing sense of unease."
+                    ),
+                    new SensoryDescription(
+                        "The scent of damp stone fills the air.",
+                        "A low hum resonates through the hall, vibrating through your very being."
+                    ),
+                    new AmbientDescription().AddTimeBased(25, "The mirrors seem to ripple and distort, as if reality itself is bending.")
+                ),
+                [],
+                new CustomCommandHandler()
+            );
+
+            public static Definition CloisterGardens = new(
+                DefinitionIDs.Locations.OssuaryOfEyes.CloisterGardens,
+                DefinitionIDs.Scenes.OssuaryOfEyes,
+                new LocationNameAdapter("Cloister Gardens", "the Cloister Gardens"),
+                new DescriptionComposer(
+                    new LookDescription(
+                        "You look around the Cloister Gardens. The gardens are lush and vibrant, filled with exotic plants and flowers.",
+                        "You look around the Cloister Gardens again. The plants seem to sway and move, as if they are alive."
+                    ),
+                    new VisitDescription(
+                        "You enter the Cloister Gardens. The air is filled with the scent of blooming flowers, and you feel a sense of peace.",
+                        "You return to the Cloister Gardens. The atmosphere remains serene, but you feel a growing sense of unease."
+                    ),
+                    new SensoryDescription(
+                        "The scent of fresh flowers fills the air.",
+                        "A gentle breeze rustles through the leaves, creating a soothing sound."
+                    ),
+                    new AmbientDescription().AddTimeBased(30, "The sunlight filters through the trees, casting dappled shadows on the ground.")
+                ),
+                [],
+                new CustomCommandHandler()
+            );
+
+            public static Definition LowerVault = new(
+                DefinitionIDs.Locations.OssuaryOfEyes.LowerVault,
+                DefinitionIDs.Scenes.OssuaryOfEyes,
+                new LocationNameAdapter("Lower Vault", "the Lower Vault"),
+                new DescriptionComposer(
+                    new LookDescription(
+                        "You look around the Lower Vault. The room is dimly lit, filled with ancient relics and artifacts.",
+                        "You look around the Lower Vault again. The relics seem to whisper secrets, though you cannot understand them."
+                    ),
+                    new VisitDescription(
+                        "You enter the Lower Vault. The air is thick with history, and you feel a weight of knowledge pressing down on you.",
+                        "You return to the Lower Vault. The atmosphere remains heavy, and you feel a sense of foreboding."
+                    ),
+                    new SensoryDescription(
+                        "The scent of old stone and dust fills the air.",
+                        "A faint scratching sound echoes through the room, as if something unseen is moving."
+                    ),
+                    new AmbientDescription().AddTimeBased(30, "The shadows in the room seem to shift and dance, as if alive.")
+                ),
+                [],
+                new CustomCommandHandler()
+            );
+
+            public static Definition CentralOssuary = new(
+                DefinitionIDs.Locations.OssuaryOfEyes.CentralOssuary,
+                DefinitionIDs.Scenes.OssuaryOfEyes,
+                new LocationNameAdapter("Central Ossuary", "the Central Ossuary"),
+                new DescriptionComposer(
+                    new LookDescription(
+                        "You look around the Central Ossuary. The room is filled with ancient relics and bones, each telling a story of a long-forgotten past.",
+                        "You look around the Central Ossuary again. The relics seem to whisper secrets, though you cannot understand them."
+                    ),
+                    new VisitDescription(
+                        "You enter the Central Ossuary. The air is thick with history, and you feel a weight of knowledge pressing down on you.",
+                        "You return to the Central Ossuary. The atmosphere remains heavy, and you feel a sense of foreboding."
+                    ),
+                    new SensoryDescription(
+                        "The scent of old bones and incense fills the air.",
+                        "A faint scratching sound echoes through the room, as if something unseen is moving."
+                    ),
+                    new AmbientDescription().AddTimeBased(35, "The shadows in the room seem to shift and dance, as if alive.")
+                ),
+                [],
+                new CustomCommandHandler()
+            );
+
+            public static Definition Scriptorium = new(
+                DefinitionIDs.Locations.OssuaryOfEyes.Scriptorium,
+                DefinitionIDs.Scenes.OssuaryOfEyes,
+                new LocationNameAdapter("Scriptorium", "the Scriptorium"),
+                new DescriptionComposer(
+                    new LookDescription(
+                        "You look around the Scriptorium. The room is filled with ancient manuscripts and scrolls, each containing knowledge from a bygone era.",
+                        "You look around the Scriptorium again. The manuscripts seem to whisper secrets, though you cannot understand them."
+                    ),
+                    new VisitDescription(
+                        "You enter the Scriptorium. The air is thick with history, and you feel a weight of knowledge pressing down on you.",
+                        "You return to the Scriptorium. The atmosphere remains heavy, and you feel a sense of foreboding."
+                    ),
+                    new SensoryDescription(
+                        "The scent of old parchment fills the air.",
+                        "A faint scratching sound echoes through the room, as if something unseen is moving."
+                    ),
+                    new AmbientDescription().AddTimeBased(40, "The shadows in the room seem to shift and dance, as if alive.")
+                ),
+                [],
+                new CustomCommandHandler()
+            );
+
+            public static Definition Observatory = new(
+                DefinitionIDs.Locations.OssuaryOfEyes.Observatory,
+                DefinitionIDs.Scenes.OssuaryOfEyes,
+                new LocationNameAdapter("Observatory", "the Observatory"),
+                new DescriptionComposer(
+                    new LookDescription(
+                        "You look around the Observatory. The room is filled with telescopes and star charts, each pointing to the heavens above.",
+                        "You look around the Observatory again. The stars seem to twinkle more brightly, as if they are alive."
+                    ),
+                    new VisitDescription(
+                        "You enter the Observatory. The air is filled with the scent of old books and the faint hum of machinery.",
+                        "You return to the Observatory. The atmosphere remains serene, but you feel a growing sense of unease."
+                    ),
+                    new SensoryDescription(
+                        "The scent of old books and metal fills the air.",
+                        "A low hum resonates through the room, vibrating through your very being."
+                    ),
+                    new AmbientDescription().AddTimeBased(45, "The telescopes seem to shift and move, as if they are alive.")
+                ),
+                [],
+                new CustomCommandHandler()
             );
         }
     }

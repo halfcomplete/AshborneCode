@@ -12,14 +12,17 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
     {
         public static IReadOnlyList<ExitDefinition> Exits =
         [
-            new(DefinitionIDs.Locations.Dreamspace.EyePlatform, DefinitionIDs.Locations.Dreamspace.HallOfMirrors, DirectionConstants.East),
-            new(DefinitionIDs.Locations.Dreamspace.EyePlatform, DefinitionIDs.Locations.Dreamspace.PlatformEdge, DirectionConstants.Forward),
+            new(DefinitionIDs.Locations.OssuaryOfEyes.WakingChamber, DefinitionIDs.Locations.OssuaryOfEyes.HallOfLostThoughts, DirectionConstants.East),
+            new(DefinitionIDs.Locations.OssuaryOfEyes.WakingChamber, DefinitionIDs.Locations.OssuaryOfEyes.KeepersQuarters, DirectionConstants.North),
+            new(DefinitionIDs.Locations.OssuaryOfEyes.KeepersQuarters, DefinitionIDs.Locations.OssuaryOfEyes.CloisterGardens, DirectionConstants.East),
+            new(DefinitionIDs.Locations.OssuaryOfEyes.HallOfLostThoughts, DefinitionIDs.Locations.OssuaryOfEyes.CloisterGardens, DirectionConstants.North),
+            new(DefinitionIDs.Locations.OssuaryOfEyes.CloisterGardens, DefinitionIDs.Locations.OssuaryOfEyes.CentralOssuary, DirectionConstants.North),
+            new(DefinitionIDs.Locations.OssuaryOfEyes.CentralOssuary, DefinitionIDs.Locations.OssuaryOfEyes.Observatory, DirectionConstants.North),
+            new(DefinitionIDs.Locations.OssuaryOfEyes.CentralOssuary, DefinitionIDs.Locations.OssuaryOfEyes.Scriptorium, DirectionConstants.East),
         ];
 
         public static readonly IReadOnlyList<ParentChildDefinition> Hierarchy =
         [
-            new(DefinitionIDs.Locations.Dreamspace.EyePlatform, DefinitionIDs.Locations.Dreamspace.PlatformEdge),
-            new(DefinitionIDs.Locations.Dreamspace.HallOfMirrors, DefinitionIDs.Locations.Dreamspace.MirrorShardSublocation),
         ];
     }
 }

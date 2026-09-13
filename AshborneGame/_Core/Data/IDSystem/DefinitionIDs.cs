@@ -27,11 +27,14 @@ namespace AshborneGame._Core.Data.IDSystem
 
             public static class OssuaryOfEyes
             {
-                public static readonly DefinitionID GreatHall = new("Locations.OssuaryOfEyes.GreatHall");
-                public static readonly DefinitionID Archive = new("Locations.OssuaryOfEyes.Archive");
-                public static readonly DefinitionID Kitchen = new("Locations.OssuaryOfEyes.Kitchen");
-                public static readonly DefinitionID CloisterGardens = new("Locations.OssuaryOfEyes.CloisterGardens");
                 public static readonly DefinitionID Observatory = new("Locations.OssuaryOfEyes.Observatory");
+                public static readonly DefinitionID CentralOssuary = new("Locations.OssuaryOfEyes.CentralOssuary");
+                public static readonly DefinitionID HallOfLostThoughts = new("Locations.OssuaryOfEyes.HallOfLostThoughts");
+                public static readonly DefinitionID CloisterGardens = new("Locations.OssuaryOfEyes.CloisterGardens");
+                public static readonly DefinitionID WakingChamber = new("Locations.OssuaryOfEyes.WakingChamber");
+                public static readonly DefinitionID KeepersQuarters = new("Locations.OssuaryOfEyes.KeepersQuarters");
+                public static readonly DefinitionID Scriptorium = new("Locations.OssuaryOfEyes.Scriptorium");
+                public static readonly DefinitionID LowerVault = new("Locations.OssuaryOfEyes.LowerVault");
             }
 
             public static class Prologue
