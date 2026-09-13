@@ -15,17 +15,23 @@ namespace AshborneGame._Core.Game.DescriptionHandling
     {
         public Dictionary<int, string> FromDuration { get; private set; }
         public List<string> FromRandom { get; private set; }
+        public List<string> FromRandomTimeBased { get; private set; }
 
         public AmbientDescription()
         {
             FromDuration = new();
             FromRandom = new();
+            FromRandomTimeBased = new();
         }
 
-        public AmbientDescription(Dictionary<int, string> fromDuration, List<string>? fromRandom = null)
+        public AmbientDescription(
+            Dictionary<int, string> fromDuration,
+            List<string>? fromRandom = null,
+            List<string>? fromRandomTimeBased = null)
         {
             FromDuration = fromDuration;
             FromRandom = fromRandom ?? new();
+            FromRandomTimeBased = fromRandomTimeBased ?? new();
         }
 
         public string GetSnippetFromRandom()
@@ -44,6 +50,12 @@ namespace AshborneGame._Core.Game.DescriptionHandling
         public AmbientDescription AddRandom(string desc)
         {
             FromRandom.Add(desc);
+            return this;
+        }
+
+        public AmbientDescription AddRandomTimeBased(string desc)
+        {
+            FromRandomTimeBased.Add(desc);
             return this;
         }
     }

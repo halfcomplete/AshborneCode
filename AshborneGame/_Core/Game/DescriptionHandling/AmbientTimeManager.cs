@@ -10,10 +10,20 @@ namespace AshborneGame._Core.Game.DescriptionHandling
     /// </summary>
     public class AmbientTimeManager : IDisposable
     {
+        private const int RandomDelayMinimumTicks = 15;
+        private const int RandomDelayMaximumTicks = 25;
+        private const int MinimumAmbientSpacingTicks = 5;
+
         private AmbientDescription? _ambientDescription;
+        private readonly Random _random;
+        private readonly HashSet<int> _triggeredFixedTimes = new();
+        private readonly List<string> _unusedRandomTimedDescriptions = new();
 
         private int _ticksSinceReset;
         private int _hoursPassedSinceReset;
+        private double? _nextRandomTimedDescriptionAt;
+        private double _randomDelayMultiplier;
+        private int? _lastAmbientDescriptionTick;
         private bool _isActive;
         private bool _isPaused;
         private bool _isTypewriterActive;
@@ -36,8 +46,9 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             get { lock (_lock) { return _hoursPassedSinceReset; } }
         }
 
-        public AmbientTimeManager()
+        public AmbientTimeManager(Random? random = null)
         {
+            _random = random ?? new Random();
             _tickSubscription = EventBus.Subscribe<GameEvents.System.TickEvent>(OnTick);
         }
 
@@ -51,8 +62,20 @@ namespace AshborneGame._Core.Game.DescriptionHandling
                 _ambientDescription = location.DescriptionComposer.Ambient;
                 _ticksSinceReset = 0;
                 _hoursPassedSinceReset = 0;
-                _isActive = _ambientDescription != null && _ambientDescription.FromDuration.Count > 0;
+                _triggeredFixedTimes.Clear();
+                _unusedRandomTimedDescriptions.Clear();
+                if (_ambientDescription != null)
+                {
+                    _unusedRandomTimedDescriptions.AddRange(_ambientDescription.FromRandomTimeBased);
+                }
+
+                _randomDelayMultiplier = 1;
+                _nextRandomTimedDescriptionAt = GetNextRandomTimedDescriptionAt();
+                _lastAmbientDescriptionTick = null;
+                _isActive = _ambientDescription != null &&
+                    (_ambientDescription.FromDuration.Count > 0 || _unusedRandomTimedDescriptions.Count > 0);
                 _isPaused = false;
+                _isTypewriterActive = false;
                 _isInputPaused = false;
             }
         }
@@ -68,6 +91,10 @@ namespace AshborneGame._Core.Game.DescriptionHandling
                 _ambientDescription = null;
                 _ticksSinceReset = 0;
                 _hoursPassedSinceReset = 0;
+                _triggeredFixedTimes.Clear();
+                _unusedRandomTimedDescriptions.Clear();
+                _nextRandomTimedDescriptionAt = null;
+                _lastAmbientDescriptionTick = null;
             }
         }
 
@@ -85,6 +112,10 @@ namespace AshborneGame._Core.Game.DescriptionHandling
 
                 _ticksSinceReset = 0;
                 _hoursPassedSinceReset = 0;
+                if (_unusedRandomTimedDescriptions.Count > 0)
+                {
+                    _nextRandomTimedDescriptionAt = GetNextRandomTimedDescriptionAt();
+                }
             }
         }
 
@@ -147,12 +178,22 @@ namespace AshborneGame._Core.Game.DescriptionHandling
                 _ticksSinceReset++;
                 _hoursPassedSinceReset += tickEvent.HoursPassed;
 
-                if (_ambientDescription.FromDuration.TryGetValue(_ticksSinceReset, out var desc))
+                if (_ambientDescription.FromDuration.TryGetValue(_ticksSinceReset, out var fixedDescription) &&
+                    !_triggeredFixedTimes.Contains(_ticksSinceReset) &&
+                    CanTriggerAtCurrentTick())
                 {
+                    _triggeredFixedTimes.Add(_ticksSinceReset);
                     _isInputPaused = true;
                     _isPaused = true;
-                    descriptionToTrigger = desc;
-                    _ambientDescription.FromDuration.Remove(_ticksSinceReset);
+                    _lastAmbientDescriptionTick = _ticksSinceReset;
+                    descriptionToTrigger = fixedDescription;
+                }
+                else if (CanTriggerRandomTimedDescription())
+                {
+                    descriptionToTrigger = TakeRandomTimedDescription();
+                    _isInputPaused = true;
+                    _isPaused = true;
+                    _lastAmbientDescriptionTick = _ticksSinceReset;
                 }
             }
 
@@ -161,6 +202,56 @@ namespace AshborneGame._Core.Game.DescriptionHandling
                 OnInputPaused?.Invoke();
                 _ = TriggerAmbientDescriptionAsync(descriptionToTrigger);
             }
+        }
+
+        private bool CanTriggerRandomTimedDescription()
+        {
+            if (_unusedRandomTimedDescriptions.Count == 0 ||
+                !_nextRandomTimedDescriptionAt.HasValue ||
+                _ticksSinceReset < _nextRandomTimedDescriptionAt.Value ||
+                !CanTriggerAtCurrentTick())
+            {
+                return false;
+            }
+
+            int? nextFixedTime = _ambientDescription!.FromDuration.Keys
+                .Where(time => !_triggeredFixedTimes.Contains(time) && time >= _ticksSinceReset)
+                .OrderBy(time => time)
+                .FirstOrDefault();
+
+            if (nextFixedTime.HasValue && nextFixedTime.Value - _ticksSinceReset < MinimumAmbientSpacingTicks)
+            {
+                _nextRandomTimedDescriptionAt = nextFixedTime.Value + MinimumAmbientSpacingTicks;
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool CanTriggerAtCurrentTick()
+        {
+            return !_lastAmbientDescriptionTick.HasValue ||
+                _ticksSinceReset - _lastAmbientDescriptionTick.Value >= MinimumAmbientSpacingTicks;
+        }
+
+        private string TakeRandomTimedDescription()
+        {
+            int index = _random.Next(_unusedRandomTimedDescriptions.Count);
+            string description = _unusedRandomTimedDescriptions[index];
+            _unusedRandomTimedDescriptions.RemoveAll(value => value == description);
+            _randomDelayMultiplier *= 1.5;
+            _nextRandomTimedDescriptionAt = _ticksSinceReset + GetRandomDelayTicks();
+            return description;
+        }
+
+        private double GetNextRandomTimedDescriptionAt()
+        {
+            return GetRandomDelayTicks();
+        }
+
+        private double GetRandomDelayTicks()
+        {
+            return _random.Next(RandomDelayMinimumTicks, RandomDelayMaximumTicks + 1) * _randomDelayMultiplier;
         }
 
         private async Task TriggerAmbientDescriptionAsync(string description)
