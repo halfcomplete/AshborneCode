@@ -53,9 +53,12 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             return this;
         }
 
-        public AmbientDescription AddRandomTimeBased(string desc)
+        public AmbientDescription AddRandomTimeBased(params string[] descs)
         {
-            FromRandomTimeBased.Add(desc);
+            foreach (var desc in descs)
+            {
+                FromRandomTimeBased.Add(desc);
+            }
             return this;
         }
     }
