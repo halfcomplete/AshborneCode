@@ -240,7 +240,20 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                         "The air leaves a faint mineral taste on your tongue, as though you have been breathing beside deep underground water."
                     ),
                     new AmbientDescription()
-                    .AddTimeBased(15, "A single drop of water falls somewhere beyond the walls, followed by a long silence.")
+                    .AddRandomTimeBased(
+                        "A single drop of water falls somewhere beyond the walls, followed by a long silence.",
+                        "The surface of the pool trembles although nothing appears to have disturbed it.",
+                        "One of the candles gives a faint hiss before becoming still again.",
+                        "Somewhere below you, stone shifts with a low, distant groan.",
+                        "A thin ripple travels across the water before disappearing in a quick, quiet death.",
+                        "The darkness above the chamber seems to deepen, though there is no visible change in the light.",
+                        "You hear what sounds like a footstep somewhere beyond the exits.\n\nAnother follows.\n\nThen... nothing.",
+                        "A faint current of air passes across the water, carrying the smell of damp earth.",
+                        "The carved eye beneath you catches the light for an instant.",
+                        "You wait for something else to happen.\n\nNothing does.",
+                        "For a brief moment, you hear a voice somewhere beyond, but you cannot make out the words.",
+                        "You become aware that you have been holding your breath. You let it go in a soft exhale."
+                    )
                 ),
                 [],
                 new CustomCommandHandler()
