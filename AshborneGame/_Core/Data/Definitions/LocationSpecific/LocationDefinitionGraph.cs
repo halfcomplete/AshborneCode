@@ -12,13 +12,13 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
     {
         public static IReadOnlyList<ExitDefinition> Exits =
         [
-            new(DefinitionIDs.Locations.OssuaryOfEyes.WakingChamber, DefinitionIDs.Locations.OssuaryOfEyes.HallOfLostThoughts, DirectionConstants.East),
-            new(DefinitionIDs.Locations.OssuaryOfEyes.WakingChamber, DefinitionIDs.Locations.OssuaryOfEyes.KeepersQuarters, DirectionConstants.North),
-            new(DefinitionIDs.Locations.OssuaryOfEyes.KeepersQuarters, DefinitionIDs.Locations.OssuaryOfEyes.CloisterGardens, DirectionConstants.East),
-            new(DefinitionIDs.Locations.OssuaryOfEyes.HallOfLostThoughts, DefinitionIDs.Locations.OssuaryOfEyes.CloisterGardens, DirectionConstants.North),
-            new(DefinitionIDs.Locations.OssuaryOfEyes.CloisterGardens, DefinitionIDs.Locations.OssuaryOfEyes.CentralOssuary, DirectionConstants.North),
-            new(DefinitionIDs.Locations.OssuaryOfEyes.CentralOssuary, DefinitionIDs.Locations.OssuaryOfEyes.Observatory, DirectionConstants.North),
-            new(DefinitionIDs.Locations.OssuaryOfEyes.CentralOssuary, DefinitionIDs.Locations.OssuaryOfEyes.Scriptorium, DirectionConstants.East),
+            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.WakingChamber, DefinitionIDs.Locations.OssuaryOfEyesLocs.HallOfLostThoughts, DirectionConstants.East),
+            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.WakingChamber, DefinitionIDs.Locations.OssuaryOfEyesLocs.KeepersQuarters, DirectionConstants.North),
+            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.KeepersQuarters, DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens, DirectionConstants.East),
+            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.HallOfLostThoughts, DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens, DirectionConstants.North),
+            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens, DefinitionIDs.Locations.OssuaryOfEyesLocs.CentralOssuary, DirectionConstants.North),
+            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.CentralOssuary, DefinitionIDs.Locations.OssuaryOfEyesLocs.Observatory, DirectionConstants.North),
+            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.CentralOssuary, DefinitionIDs.Locations.OssuaryOfEyesLocs.Scriptorium, DirectionConstants.East),
         ];
 
         public static readonly IReadOnlyList<ParentChildDefinition> Hierarchy =

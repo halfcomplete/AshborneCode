@@ -3,6 +3,7 @@ using AshborneGame._Core.Game;
 using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Constants;
+using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
 using System;
 using System.Collections.Generic;
@@ -214,38 +215,37 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
 
         public static class OssuaryOfEyes
         {
+            #region Waking Chamber
+
             public static LocationDefinition WakingChamber = new(
-                DefinitionIDs.Locations.OssuaryOfEyes.WakingChamber,
+                DefinitionIDs.Locations.OssuaryOfEyesLocs.WakingChamber,
                 DefinitionIDs.Scenes.OssuaryOfEyes,
                 new LocationNameAdapter("Waking Chamber", "the Waking Chamber"),
                 new DescriptionComposer(
                     new LookDescription(
-                        "You take a look around. The chamber is circular and austere, built from dark stone worn smooth by time. A shallow pool covers much of the floor. At the centre, an enormous eye has been carved into the stone.",
-                        "You examine the chamber once more. The stone is old, but the room is not abandoned. Someone has swept the edges of the floor. A small basin contains clear, fresh water, and the remains of several candles sit neatly against the wall. Even the debris beneath the collapsed masonry has been pushed into an orderly pile. The eye beneath your feet remains closed.",
+                        "You take a look around. The chamber is circular and austere, built from dark stone worn smooth by time. At the centre, an enormous eye has been carved into the stone.",
+                        "You examine the chamber once more. The stone is old, but you now notice that the room is not abandoned. Someone has swept the edges of the floor. The small basin contains clear, fresh water, and the remains of several candles sit neatly against the wall. The eye beneath your feet remains closed.",
                         "You look around the chamber again. There is little left to discover, but one detail continues to trouble you. The carved eye is slightly deeper than the surrounding stone, as though something once rested inside it - or as though it was carved from the inside outward. For a moment, you have the uncomfortable impression that it is waiting."
                     ),
                     new VisitDescription(
-                        "For a few moments, there is nothing but darkness and the sound of your own breathing. Then, seemingly from the depths of your mind, a flat voice emerges." + 
-                        "\n\n\"You have awoken.\" A simple statement, nothing more, nothing less. " + 
-                        "Then your eyes adjust. You are lying in a circular chamber of black stone, surrounded by walls that disappear into darkness above you. A thin layer of water covers the floor around your body, perfectly still except where your breathing disturbs it.",
+                        "For a few moments, there is nothing but darkness and the sound of your own breathing. Then, seemingly from the depths of your mind, a flat voice emerges." +
+                        "\n\n\"You have awoken.\" A simple statement, nothing more, nothing less. " +
+                        "Finally, your eyes adjust.\n\nYou are lying in a circular chamber of black stone, surrounded by walls that disappear into darkness above you. To your side, a small basin filled with water sits quietly alongside several unlit candles.",
                         "You return to the chamber where you first awoke. The room is exactly as you remember it: black stone, shallow water, somewhat eerie atmosphere. But you notice other things now. The candles have been cleaned. The basin has been refilled. Someone has been taking care of this room.",
-                        "Yet again, you return to the chamber of your arrival. It no longer feels entirely unfamiliar. Your footsteps disturb the thin layer of water, and the sound travels farther than it should through the stone. The eye carved into the floor remains closed. You are beginning to suspect that the chamber is not as empty as it first appeared.",
+                        "Yet again, you return to the chamber of your arrival. It no longer feels entirely unfamiliar. You are beginning to suspect that the chamber is not as empty as it first appeared.",
                         "You return to the chamber again. Nothing appears to have changed: the water lies still and the candles remain unlit."
                     ),
                     new SensoryDescription(
                         "The black stone reflects the faintest traces of light, giving the chamber a dim, colourless sheen.",
                         "A distant hum resonates through the chamber, vibrating through your very bones.",
                         "The stone beneath your feet is cold enough to numb your toes, while the shallow water is strangely warmer than the air.",
-                        "The air smells faintly of wet stone, extinguished candles and something older that you cannot identify.",
-                        "The air leaves a faint mineral taste on your tongue, as though you have been breathing beside deep underground water."
+                        "The air smells faintly of wet stone, extinguished candles and something older that you cannot identify."
                     ),
                     new AmbientDescription()
                     .AddRandomTimeBased(
                         "A single drop of water falls somewhere beyond the walls, followed by a long silence.",
-                        "The surface of the pool trembles although nothing appears to have disturbed it.",
                         "One of the candles gives a faint hiss before becoming still again.",
                         "Somewhere below you, stone shifts with a low, distant groan.",
-                        "A thin ripple travels across the water before disappearing in a quick, quiet death.",
                         "The darkness above the chamber seems to deepen, though there is no visible change in the light.",
                         "You hear what sounds like a footstep somewhere beyond the exits.\n\nAnother follows.\n\nThen... nothing.",
                         "A faint current of air passes across the water, carrying the smell of damp earth.",
@@ -257,31 +257,133 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 ),
                 [],
                 new CustomCommandHandler()
+                .AddCustomCommand(
+                    new CustomCommandPhrasing(["look at", "examine", "inspect"], ["eye", "the eye", "carved eye", "the carved eye"]),
+                    () => "You crouch beside the carving.\n\nUp close, the eye is more detailed than you first realised. Fine lines radiate from the iris, each one cut so precisely that the stone almost appears soft beneath your fingers.\n\nThere is no pupil. Only a shallow, empty depression.",
+                    () =>
+                    {
+                        GameContext.GameState.TryIncrementCounter(StateKeys.Counters.Player.TimesInspected.CarvedEye, 1);
+                    }
+                )
+                .AddCustomCommand(
+                    new CustomCommandPhrasing(["walk to", "move to", "go to", "look at", "examine", "inspect"], ["basin", "the basin", "water", "the water"]),
+                    () => "You peer into the basin. The water is clear and still, reflecting the dim light of the chamber. You can see your own reflection, but it seems... different. The eyes staring back at you are not quite your own. On the side, a small inscription catches your attention:\n\nREMEMBER WHAT YOU HAVE SEEN.\n\nThe lettering is worn, but the cuts are recent enough that they could not have been made centuries ago.",
+                    () => { }
+                )
+                .AddCustomCommand(
+                    new CustomCommandPhrasing(["drink", "sip", "taste"], ["water", "the water", "from the basin"]),
+                    () => "You take a sip of the water. It is cool and refreshing, with a faint mineral taste. For a moment, you feel a strange clarity in your mind, as though the water has washed away some of the fog.",
+                    () => { }
+                )
+                .AddCustomCommand(
+                    new CustomCommandPhrasing(["walk to", "move to", "go to", "look at", "examine", "inspect"], ["candles", "the candles"]),
+                    () => "Three candles sit beside the wall.\r\n\r\nThey have been extinguished recently. Their wicks are still blackened, and the wax around their bases has not yet collected dust.\r\n\r\nSomeone was here before you.\r\n\r\nNot long ago.",
+                    () => { }
+                )
             );
 
-            /*
+            #endregion Waking Chamber
+
+            #region Keeper's Quarters
+
             public static LocationDefinition KeepersQuarters = new(
-                DefinitionIDs.Locations.OssuaryOfEyes.KeepersQuarters,
+                DefinitionIDs.Locations.OssuaryOfEyesLocs.KeepersQuarters,
                 DefinitionIDs.Scenes.OssuaryOfEyes,
                 new LocationNameAdapter("Keeper's Quarters", "the Keeper's Quarters"),
                 new DescriptionComposer(
                     new LookDescription(
-                        "You look around the Keeper's Quarters. The room is filled with ancient tomes and artifacts, each telling a story of a bygone era.",
-                        "You look around the Keeper's Quarters again. The artifacts seem to whisper secrets, though you cannot understand them."
+                        "You take a look around the Keeper's Quarters. The Keeper’s Quarters are narrow but comfortable, built from dark stone and timber. Shelves cover most of the walls, while a large desk sits beneath a collection of maps and diagrams.\n\nUnlike the rest of this place, almost everything here has been deliberately arranged.",
+                        "You examine the room more carefully.\r\rThe shelves are filled with books, journals and records, each labelled in the same careful handwriting. Small boxes sit beneath them, each marked with a name, date or location.\n\nA collection of keys hangs beside the desk. There are far more of them than you expected.",
+                        "You have seen the room enough times to recognise most of it.\n\nThe desk. The shelves. The fire. The maps.\n\nBut there are still details you cannot explain: some of the records are written in a handwriting that does not resemble the Keeper’s, snd several objects on the shelves look as though they did not come from here."
                     ),
                     new VisitDescription(
-                        "You enter the Keeper's Quarters. The air is thick with history, and you feel a weight of knowledge pressing down on you.",
-                        "You return to the Keeper's Quarters. The atmosphere remains heavy, and you feel a sense of foreboding."
+                        "You step into a room that feels strangely ordinary.\n\nThe floor is a dry, familiar wood. A small fire burns in a stone brazier, throwing warm light across shelves of books and carefully labelled boxes. A single heavy desk occupies one side of the room, its surface covered with papers, ink and objects whose purposes you cannot immediately identify.\n\nThe Keeper who lives here is seated behind the desk.\r\n\r\nHe looks up when you enter.",
+                        "You return to the Keeper’s Quarters.\n\nThe room is warmer than the rest of this place, and the familiar smell of smoke and old paper reaches you before you have fully entered. The Keeper remains at his desk, surrounded by the same precise arrangement of books, records and objects.\n\nHe seems unsurprised to see you.",
+                        "You enter the Keeper’s Quarters again.\n\nBy now, the room has become familiar. You recognise the desk, the shelves, the labelled boxes and the collection of keys beside the Keeper.\n\nYet the longer you spend here, the more you notice: there are records everywhere. Some concern the Ossuary. Some concern people. Some concern you.",
+                        "You enter the Keeper’s Quarters.\n\nThe fire burns quietly. The papers remain arranged in their precise stacks. The Keeper is at his desk, reading.\r\n\r\nHe acknowledges your arrival without looking up."
                     ),
                     new SensoryDescription(
                         "The scent of old books and wax fills the air.",
                         "A faint scratching sound echoes through the room, as if something unseen is moving."
                     ),
-                    new AmbientDescription().AddTimeBased(20, "The shadows in the room seem to shift and dance, as if alive.")
+                    new AmbientDescription()
+                    .AddRandomTimeBased(
+                        "The fire shifts in the brazier, sending a brief wave of warmth across the room.",
+                        "The Keeper turns a page, and a drop of ink falls from the tip of his pen.",
+                        "Somewhere in the shelves, a book settles with a quiet thump.",
+                        "You hear the faint scrape of paper against paper.",
+                        "The fire crackles.",
+                        "The Keeper pauses over a line of writing. He reaches for another book without looking for it.",
+                        "A key moves slightly on its hook.",
+                        "You hear footsteps pass somewhere beyond the farside door.",
+                        "The Keeper's pen stops. He looks towards farside the door. After a moment, he continues writing.",
+                        "One of the candles gutters before recovering.",
+                        "Dust moves through the firelight.",
+                        "You hear something being dragged across stone somewhere outside.",
+                        "The Keeper closes his book.\n\nHe watches you for a moment longer than necessary.\n\nThen he looks away."
+                    )
                 ),
                 [],
                 new CustomCommandHandler()
+                .AddCustomCommand(
+                    new CustomCommandPhrasing(
+                        ["inspect", "examine", "look at", "look over", "look around", "look in", "look inside", "look under", "look within"],
+                        ["books", "bookshelves", "the books", "the bookshelves", "desk", "the desk", "the books on the desk", "the maps", "map", "the map", "maps", "the maps on the desk", "the diagrams", "the keys", "keys", "the keys on the desk"]
+                    ),
+                    () => "You can't see much from here. Maybe try going closer.",
+                    () => { }
+                )
+                .AddCustomCommand(
+                    new CustomCommandPhrasing(
+                        ["talk to", "speak to", "converse with", "ask"],
+                        ["the guy", "keeper", "the keeper", "the person"]
+                    ),
+                    () => "",
+                    () => 
+                    {
+                        // TODO: Add Keeper dialogue
+                        //GameContext.DialogueService.StartDialogue("");
+                    }
+                )
             );
+
+            public static class KeepersQuartersLocs
+            {
+                public static LocationDefinition KeepersQuartersDesk = new(
+                    DefinitionIDs.Locations.OssuaryOfEyesLocs.KeepersQuartersLocs.Desk,
+                    DefinitionIDs.Scenes.OssuaryOfEyes,
+                    new LocationNameAdapter("desk", "the desk"),
+                    new DescriptionComposer(
+                        new LookDescription(
+                            "You look at the desk. It is a large, sturdy piece of furniture, covered in papers, ink and objects whose purposes you cannot immediately identify.",
+                        ),
+                        new VisitDescription(
+                            "You approach the desk with the Keeper seated behind it. The Keeper glances up at you curiously, but quickly returns to his work.",
+                            "You return to the desk. The Keeper continues to write, his pen moving quickly across the page.",
+                            "You approach the desk again. The Keeper looks up, his eyes meeting yours for a brief moment before returning to his writing."
+                        ),
+                        new SensoryDescription(
+                            "The scent of ink and old paper fills the air.",
+                            "A faint scratching sound echoes through the room, as if something unseen is moving."
+                        ),
+                        new AmbientDescription()
+                        .AddRandomTimeBased("\"Well?\" The Keeper looks up from his work, his eyes fixated on you. After a while, he returns to his writing.")
+                    ),
+                    [],
+                    new CustomCommandHandler()
+                    .AddCustomCommand(new CustomCommandPhrasing(
+                            ["inspect", "examine", "look at"],
+                            ["papers", "ink", "objects", "the papers", "the ink", "the objects"]
+                        ),
+                        () => "You can't see much from here. Maybe try going closer.",
+                        () => { }
+                    )
+                );
+            }
+
+            #endregion Keeper's Quarters
+
+            /*
 
             public static LocationDefinition HallOfLostThoughts = new(
                 DefinitionIDs.Locations.OssuaryOfEyes.HallOfLostThoughts,

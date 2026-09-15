@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace AshborneGame._Core.Game.CommandHandling
 {
+    // TODO: add support for checking how many times a command has been used, and limit it to a certain number of uses or change the effect of the command based on how many times it has been used
     public class CustomCommandHandler
     {
         private Dictionary<string, (Func<string> Message, Action Effect)> _commands = new();

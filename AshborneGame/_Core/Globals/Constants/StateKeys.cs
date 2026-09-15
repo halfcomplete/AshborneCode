@@ -23,14 +23,13 @@ namespace AshborneGame._Core.Globals.Constants
                 {
                     public static class In
                     {
-                        public static class OssanethsDomain
+                        public static class OssuaryOfEyes
                         {
-                            public static readonly GameStateKey<bool> TalkedToBoundOne = new("Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOne");
-                            public static readonly GameStateKey<bool> TalkedToBoundOneHelp = new("Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOneHelp");
-                            public static readonly GameStateKey<bool> TalkedToBoundOneSelf = new("Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOneSelf");
-                            public static readonly GameStateKey<bool> TalkedToBoundOnePast = new("Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOnePast");
-                            public static readonly GameStateKey<bool> OutroTriggered = new ("Flags.Player.Actions.In.OssanethsDomain.OutroTriggered");
-                        }
+                            public static readonly GameStateKey<bool> TalkedToOssaneth = new("Flags.Player.Actions.In.OssuaryOfEyes.TalkedToOssaneth");
+                            public static readonly GameStateKey<bool> TalkedToOssanethHelp = new("Flags.Player.Actions.In.OssuaryOfEyes.TalkedToOssanethHelp");
+                            public static readonly GameStateKey<bool> TalkedToOssanethSelf = new("Flags.Player.Actions.In.OssuaryOfEyes.TalkedToOssanethSelf");
+                            public static readonly GameStateKey<bool> TalkedToOssanethPast = new("Flags.Player.Actions.In.OssuaryOfEyes.TalkedToOssanethPast");
+                        }   
                     }
                 }
 
@@ -53,6 +52,11 @@ namespace AshborneGame._Core.Globals.Constants
                 {
                     public static readonly GameStateKey<int> Ossaneth = new("Counters.Player.TimesEncountered.Ossaneth");
                     public static readonly GameStateKey<int> Witnesses = new("Counters.Player.TimesEncountered.Witnesses");
+                }
+
+                public static class TimesInspected
+                {
+                    public static readonly GameStateKey<int> CarvedEye = new("Counters.Player.TimesInspected.CarvedEye");
                 }
 
                 // NOTE: TimesVisited counters have been removed.
