@@ -9,21 +9,21 @@ namespace AshborneGame._Core.Game.CommandHandling
     // TODO: add support for checking how many times a command has been used, and limit it to a certain number of uses or change the effect of the command based on how many times it has been used
     public class CustomCommandHandler
     {
-        private Dictionary<string, (Func<string> Message, Action Effect)> _commands = new();
+        private Dictionary<string, Action> _commands = new();
 
-        public CustomCommandHandler AddCustomCommand(CustomCommandPhrasing phrasing, Func<string> message, Action effect)
+        public CustomCommandHandler AddCustomCommand(CustomCommandPhrasing phrasing, Action effect)
         {
             foreach (var phrase in phrasing.Phrases)
             {
-                _commands.Add(phrase, (message, effect));
+                _commands.Add(phrase, effect);
             }
 
             return this;
         }
 
-        public CustomCommandHandler AddCustomCommand(string command, Func<string> message, Action effect)
+        public CustomCommandHandler AddCustomCommand(string command, Action effect)
         {
-            _commands.Add(command, (message, effect));
+            _commands.Add(command, effect);
             return this;
         }
 
@@ -41,7 +41,6 @@ namespace AshborneGame._Core.Game.CommandHandling
                 args2.Insert(0, action);
                 if (string.Join(' ', args2).Equals(kvp.Key, StringComparison.OrdinalIgnoreCase))
                 {
-                    await IOService.Output.WriteNonDialogueLine(kvp.Value.Message.Invoke());
                     kvp.Value.Effect?.Invoke();
                     return true;
                 }
@@ -50,7 +49,7 @@ namespace AshborneGame._Core.Game.CommandHandling
             return false;
         }
 
-        public Dictionary<string, (Func<string> Message, Action Effect)> GetCommands()
+        public Dictionary<string, Action> GetCommands()
         {
             return new(_commands);
         }

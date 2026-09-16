@@ -192,10 +192,18 @@ namespace AshborneGame._Core.Game.DescriptionHandling
             }
             else if (Look.LookCount == 1)
             {
+                if (Look.SecondLook == null)
+                {
+                    description.Append(Look.FirstLook);
+                }
                 description.Append(Look.SecondLook);
             }
             else if (Look.LookCount >= 2)
             {
+                if (Look.RepeatLook == null)
+                {
+                    description.Append(Look.FirstLook);
+                }
                 description.Append(Look.RepeatLook);
             }
 

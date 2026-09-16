@@ -112,9 +112,9 @@ namespace AshborneGame._Core.LocationManagement
 
         private static void InitialiseLocationCustomCommands(Location location, CustomCommandHandler customCommands)
         {
-            foreach (var (command, commandHandlers) in customCommands.GetCommands())
+            foreach (var (command, effect) in customCommands.GetCommands())
             {
-                location.CustomCommands.AddCustomCommand(command, commandHandlers.Message, commandHandlers.Effect);
+                location.CustomCommands.AddCustomCommand(command, effect);
             }
         }
 

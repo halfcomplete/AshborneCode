@@ -259,26 +259,23 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 new CustomCommandHandler()
                 .AddCustomCommand(
                     new CustomCommandPhrasing(["look at", "examine", "inspect"], ["eye", "the eye", "carved eye", "the carved eye"]),
-                    () => "You crouch beside the carving.\n\nUp close, the eye is more detailed than you first realised. Fine lines radiate from the iris, each one cut so precisely that the stone almost appears soft beneath your fingers.\n\nThere is no pupil. Only a shallow, empty depression.",
                     () =>
                     {
+                        IOService.Output.WriteNonDialogueLine("You crouch beside the carving.\n\nUp close, the eye is more detailed than you first realised. Fine lines radiate from the iris, each one cut so precisely that the stone almost appears soft beneath your fingers.\n\nThere is no pupil. Only a shallow, empty depression.");
                         GameContext.GameState.TryIncrementCounter(StateKeys.Counters.Player.TimesInspected.CarvedEye, 1);
                     }
                 )
                 .AddCustomCommand(
                     new CustomCommandPhrasing(["walk to", "move to", "go to", "look at", "examine", "inspect"], ["basin", "the basin", "water", "the water"]),
-                    () => "You peer into the basin. The water is clear and still, reflecting the dim light of the chamber. You can see your own reflection, but it seems... different. The eyes staring back at you are not quite your own. On the side, a small inscription catches your attention:\n\nREMEMBER WHAT YOU HAVE SEEN.\n\nThe lettering is worn, but the cuts are recent enough that they could not have been made centuries ago.",
-                    () => { }
+                    () => { IOService.Output.WriteNonDialogueLine("You peer into the basin. The water is clear and still, reflecting the dim light of the chamber. You can see your own reflection, but it seems... different. The eyes staring back at you are not quite your own. On the side, a small inscription catches your attention:\n\nREMEMBER WHAT YOU HAVE SEEN.\n\nThe lettering is worn, but the cuts are recent enough that they could not have been made centuries ago."); }
                 )
                 .AddCustomCommand(
                     new CustomCommandPhrasing(["drink", "sip", "taste"], ["water", "the water", "from the basin"]),
-                    () => "You take a sip of the water. It is cool and refreshing, with a faint mineral taste. For a moment, you feel a strange clarity in your mind, as though the water has washed away some of the fog.",
-                    () => { }
+                    () => { IOService.Output.WriteNonDialogueLine("You take a sip of the water. It is cool and refreshing, with a faint mineral taste. For a moment, you feel a strange clarity in your mind, as though the water has washed away some of the fog."); }
                 )
                 .AddCustomCommand(
                     new CustomCommandPhrasing(["walk to", "move to", "go to", "look at", "examine", "inspect"], ["candles", "the candles"]),
-                    () => "Three candles sit beside the wall.\r\n\r\nThey have been extinguished recently. Their wicks are still blackened, and the wax around their bases has not yet collected dust.\r\n\r\nSomeone was here before you.\r\n\r\nNot long ago.",
-                    () => { }
+                    () => { IOService.Output.WriteNonDialogueLine("You take a closer look at the candles sitting beside the wall. It's clear they've have been extinguished recently: their wicks are still blackened, and the wax around their bases has not yet collected dust.\n\nSomeone was here before you.\n\nNot long ago."); },
                 )
             );
 
@@ -330,15 +327,13 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                         ["inspect", "examine", "look at", "look over", "look around", "look in", "look inside", "look under", "look within"],
                         ["books", "bookshelves", "the books", "the bookshelves", "desk", "the desk", "the books on the desk", "the maps", "map", "the map", "maps", "the maps on the desk", "the diagrams", "the keys", "keys", "the keys on the desk"]
                     ),
-                    () => "You can't see much from here. Maybe try going closer.",
-                    () => { }
+                    () => { IOService.Output.WriteNonDialogueLine("You can't see much from here. Maybe try going closer."); }
                 )
                 .AddCustomCommand(
                     new CustomCommandPhrasing(
                         ["talk to", "speak to", "converse with", "ask"],
                         ["the guy", "keeper", "the keeper", "the person"]
                     ),
-                    () => "",
                     () => 
                     {
                         // TODO: Add Keeper dialogue
@@ -356,6 +351,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                     new DescriptionComposer(
                         new LookDescription(
                             "You look at the desk. It is a large, sturdy piece of furniture, covered in papers, ink and objects whose purposes you cannot immediately identify.",
+                            "You take a look at it again." // TODO: fill out
                         ),
                         new VisitDescription(
                             "You approach the desk with the Keeper seated behind it. The Keeper glances up at you curiously, but quickly returns to his work.",
@@ -373,10 +369,12 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                     new CustomCommandHandler()
                     .AddCustomCommand(new CustomCommandPhrasing(
                             ["inspect", "examine", "look at"],
-                            ["papers", "ink", "objects", "the papers", "the ink", "the objects"]
+                            ["papers", "the paper", "the papers", "writing", "the writing", "books", "the books", "maps", "the maps"]
                         ),
-                        () => "You can't see much from here. Maybe try going closer.",
-                        () => { }
+                        () =>
+                        {
+                            IOService.Output.WriteNonDialogueLine("You pick up one of the pieces of ");
+                        }
                     )
                 );
             }
@@ -408,29 +406,69 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 new CustomCommandHandler()
             );
 
+            */
+
             public static LocationDefinition CloisterGardens = new(
-                DefinitionIDs.Locations.OssuaryOfEyes.CloisterGardens,
+                DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens,
                 DefinitionIDs.Scenes.OssuaryOfEyes,
                 new LocationNameAdapter("Cloister Gardens", "the Cloister Gardens"),
                 new DescriptionComposer(
                     new LookDescription(
-                        "You look around the Cloister Gardens. The gardens are lush and vibrant, filled with exotic plants and flowers.",
-                        "You look around the Cloister Gardens again. The plants seem to sway and move, as if they are alive."
+                        "You take a look around the garden.\n\nIt's a large stone courtyard filled with plants; paths divide the garden into several areas, with a fountain standing near the centre. Covered cloisters run along the surrounding walls, and several smaller passages lead into different parts of the garden.",
+                        "You examine the garden more carefully.\n\nThere is a clear distinction between what has been planted and what has simply been allowed to grow. The central beds are carefully maintained, while the edges are increasingly overgrown. A number of tools have been left beside the paths: it's clear the Gardener spends a great deal of time here."
                     ),
                     new VisitDescription(
-                        "You enter the Cloister Gardens. The air is filled with the scent of blooming flowers, and you feel a sense of peace.",
-                        "You return to the Cloister Gardens. The atmosphere remains serene, but you feel a growing sense of unease."
+                        "You step beneath a stone archway and emerge into a garden.\n\n" +
+                        "For the first time since entering the Ossuary, you see something growing: " + 
+                        "plants cover the courtyard in carefully arranged beds, climbing trellises and clay pots. A narrow path winds between them beneath an open section of sky, while old cloisters surround the garden on three sides." +
+                        "A woman kneels among the plants with a small knife in one hand.\nShe looks up at you for a moment but quickly returns to tending the garden.",
+
+                        "You return to the Cloister Garden.\n\n" +
+                        "The paths are familiar now. The plants have not changed much, although several have been trimmed since your last visit.\n" +
+                        "The Gardener is working somewhere nearby. You can hear her moving between the beds.",
+
+                        "You return to the garden.\n\n" +
+                        "You have begun to recognise which plants belong where. The cultivated beds remain orderly, but the farther corners of the garden are still less controlled. Vines have pushed through cracks in the masonry, and roots have lifted sections of paving." +
+                        "\n\nThe Gardener does not seem concerned.",
+                    
+                        "You enter the Cloister Garden.\n\n" +
+                        "The plants continue to grow. Water runs through the narrow channels between the beds, and the paths remain clear. The Gardener is somewhere in the garden."
                     ),
                     new SensoryDescription(
                         "The scent of fresh flowers fills the air.",
                         "A gentle breeze rustles through the leaves, creating a soothing sound."
                     ),
-                    new AmbientDescription().AddTimeBased(30, "The sunlight filters through the trees, casting dappled shadows on the ground.")
+                    new AmbientDescription()
+                    .AddRandomTimeBased(
+                        "Leaves move gently above the garden path.",
+                        "Water continues running through the narrow channels between the beds.",
+                        "Somewhere nearby, a gardening tool strikes stone.",
+                        "A bird lands briefly on the edge of the fountain.\n\nThe bird disappears almost immediately.",
+                        "A vine shifts against the wall with the wind.",
+                        "Several leaves fall onto the path.",
+                        "The Gardener hums quietly somewhere beyond the beds.",
+                        "You hear the scrape of a shovel against earth.",
+                        "Water drips from a leaf.",
+                        "You hear the sound of roots shifting beneath the soil.",
+                        "A gust of air passes through the cloisters.",
+                        "The fountain briefly stops running.\n\nAfter a moment, the water starts running again.",
+                        "A loose stone rolls somewhere beneath the vegetation.",
+                        "From beneath the paving, you hear a faint hollow sound.\n\nYou look towards the sound, but nothing appears to have moved."
+                    )
                 ),
                 [],
                 new CustomCommandHandler()
+                .AddCustomCommand(
+                    new CustomCommandPhrasing(["tend", "tend to", "care for", "care", "take care of"], ["", "plants", "plant", "the plants"]),
+                    () =>
+                    {
+                        
+                    }
+                )
             );
 
+            /*
+            
             public static LocationDefinition LowerVault = new(
                 DefinitionIDs.Locations.OssuaryOfEyes.LowerVault,
                 DefinitionIDs.Scenes.OssuaryOfEyes,
@@ -522,6 +560,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 [],
                 new CustomCommandHandler()
             );
+            
             */
         }
     }
