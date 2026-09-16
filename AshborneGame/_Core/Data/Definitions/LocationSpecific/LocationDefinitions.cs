@@ -19,8 +19,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
         public static IReadOnlyList<LocationDefinition> All { get; } = 
         [
             Prologue.PrologueStart, 
-            Dreamspace.EyePlatform, Dreamspace.PlatformEdge, Dreamspace.HallOfMirrors, Dreamspace.MirrorShardSublocation,
-
+            OssuaryOfEyes.WakingChamber, OssuaryOfEyes.KeepersQuarters, OssuaryOfEyes.CloisterGardens,
         ];
 
         public static class Prologue
@@ -44,172 +43,6 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 ),
                 objects: [],
                 customCommands: new()
-            );
-        }
-
-        public static class Dreamspace
-        {
-            public static LocationDefinition EyePlatform = new(
-                DefinitionIDs.Locations.Dreamspace.EyePlatform,
-                DefinitionIDs.Scenes.OssanethsDomain,
-                new LocationNameAdapter("Eye Platform", "an eye-shaped platform"),
-                new DescriptionComposer(
-                    new LookDescription(
-                        "You glance around uneasily. The eye you stand on is unblinking and unmoving. Black clouds cover the sky, and the occasional lightning flashes are bright white against an otherwise dull and dark background.",
-                        "You look around once more. Nothing changes — but are the shards sharper now?"),
-                    new VisitDescription(
-                        "You feel sick and disoriented. It takes you a few moments to stabilise. Glancing around, you notice that you're standing on an eye-shaped platform overlooking a vast, swirling abyss. The air is thick with an otherworldly energy as mirrors and shards of glass spin wildly around you.",
-                        "You are back on the platform. The eye beneath seems stronger now, the pupil having enlarged, as though it wants to see more. The abyss feels darker, heavier.",
-                        "For the fourth time, you stand overlooking the mess of glass and mirrors. You almost grow tired of it. The vortex is at its strongest now. The void is at its darkest, deepest, and the mirrors reflect your ragged face. It is unrecognisable now.",
-                        "You are once again on the eye platform. It remains unchanged. The vortex belows continues swirling, and the eye continues staring."),
-                    new SensoryDescription(
-                        "The platform beneath is an alien stone, black and white patterns etched into every part of the eye.",
-                        "It's eerily quiet despite the chaos above and below. As though the eye is remembering, and commanding everything to be silent."),
-                    new AmbientDescription().AddTimeBased(35, "The glass keeps on spinning around you. The eye does not blink."),
-                    ConditionalDescription.StartNew()
-                        // If the player has visited the Hall of Mirrors and this is their 1st, 2nd, or 4th visit to the Eye Platform
-                        .If((player, gameState) =>
-                        {
-                            int hallOfMirrorsVisits = gameState.GetLocationVisitCount(DefinitionIDs.Locations.Dreamspace.HallOfMirrors);
-                            int currentVisits = player.CurrentLocation.VisitCount;
-                            if (hallOfMirrorsVisits > 0 && 
-                                (currentVisits == 1 || currentVisits == 2 || currentVisits == 4))
-                            {
-                                return true;
-                            }
-                            return false;
-                        })
-                        .ThenShow("The glass also seems to reflect even deeper now, each questioning your very identity.")
-                        .OnlyOnce(),
-                    ConditionalDescription.StartNew()
-                        // If the player has visited the Hall of Mirrors and this is their 3rd or later (>4) visit to the Eye Platform
-                        .If((player, gameState) =>
-                        {
-                            int hallOfMirrorsVisits = gameState.GetLocationVisitCount(DefinitionIDs.Locations.Dreamspace.HallOfMirrors);
-                            int currentVisits = player.CurrentLocation.VisitCount;
-                            if (hallOfMirrorsVisits > 0 &&
-                                (currentVisits == 3 || currentVisits > 4))
-                            {
-                                return true;
-                            }
-                            return false;
-                        })
-                        .ThenShow("However, the glass seems to reflect even deeper into you now, each questioning your very identity.")
-                        .OnlyOnce()
-                    //ConditionalDescription.StartNew()
-                    //    .If((player, gameState) =>
-                    //    {
-                    //        int templeVisits = gameState.GetLocationVisitCount(DefinitionIDs.Locations.Dreamspace.TempleOfTheBoundOne);
-                    //        bool talkedToBound = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOne, out bool v2) && v2;
-                    //        int visits = player.CurrentLocation.VisitCount;
-
-                    //        if (templeVisits > 0 &&
-                    //            talkedToBound &&
-                    //            (visits == 1 || visits == 2 || visits == 4))
-                    //        {
-                    //            return true;
-                    //        }
-                    //        return false;
-                    //    })
-                    //    .ThenShow("However, now the swirl almost reminds you of the Bound One — chaotic, unnerving and unpredictable. You shiver. Maybe it's best not to think about him.")
-                    //    .OnlyOnce(),
-                    //ConditionalDescription.StartNew()
-                    //    .If((player, gameState) =>
-                    //    {
-                    //        int templeVisits = gameState.GetLocationVisitCount(DefinitionIDs.Locations.Dreamspace.TempleOfTheBoundOne);
-                    //        bool talkedToBound = gameState.TryGetFlag(StateKeys.Flags.Player.Actions.In.OssanethsDomain.TalkedToBoundOne, out bool v2) && v2;
-                    //        int visits = player.CurrentLocation.VisitCount;
-
-                    //        if (templeVisits > 0 && talkedToBound && (visits == 3 || visits > 4))
-                    //        {
-                    //            return true;
-                    //        }
-                    //        return false;
-                    //    })
-                ),
-                objects: [],
-                customCommands: new()
-            );
-        
-            public static LocationDefinition PlatformEdge = new(
-                DefinitionIDs.Locations.Dreamspace.PlatformEdge,
-                DefinitionIDs.Scenes.OssanethsDomain,
-                new LocationNameAdapter("platform edge", "the platform edge", new List<string> { "edge", "side" }),
-                new DescriptionComposer(
-                    new LookDescription(
-                        "Peering over the edge, the void stretches endlessly. Fragments warp and twist as if reality itself is bending.",
-                        "You peer over the edge once more. The darkness seems thicker than before. You feel your mind resisting the pull."),
-                    new VisitDescription(
-                        "You walk to the edge, careful and cautious. There, the platform ends abruptly: no smooth curves or edges, just solid ground suddenly giving way to black.",
-                        "You stride back to the edge. The void seems darker and deeper now...",
-                        "You are once more at the edge."),
-                    new SensoryDescription(
-                        "The air smells sharper here, like it's... metallic.",
-                        "A low hum vibrates through your chest, syncing with your heartbeat."),
-                    new AmbientDescription().AddTimeBased(20, "A shadow flickers at the edge of your vision, gone when you turn.")
-                ),
-                new(),
-                new CustomCommandHandler().AddCustomCommand(
-                    new CustomCommandPhrasing(["look over", "look down", "peer over", "peer down"], ["edge", "the edge"]),
-                    () => "You stare into the rift. Vertigo strikes, but the depths reveal nothing.",
-                    () => { }
-                )
-            );
-
-            public static LocationDefinition HallOfMirrors = new(
-                DefinitionIDs.Locations.Dreamspace.HallOfMirrors,
-                DefinitionIDs.Scenes.OssanethsDomain,
-                new LocationNameAdapter("Hall of Mirrors", "the Hall of Mirrors", new List<string> { "hall" }),
-                new DescriptionComposer(
-                    new LookDescription(
-                        "You look around the hall. Everywhere, your reflection stares right back at you, each mirror containing an infinite universe of you's.",
-                        "You look around the hall again. The mirrors remain ever so still, ever so silent."
-                    ),
-                    new VisitDescription(
-                        "You enter the Hall of Mirrors. In front of you is a long, stretching hallway that seems to go on forever; the wall, floor, and ceilings are covered in mirrors. As you walk by, some reflections lag behind and others move before you. " +
-                        "You are surprised to see that the Mask that was forced on to you just before is no longer on your face — instead, it leaves blank, featureless skin. Your identity. Gone.",
-                        "You enter the Hall of Mirrors again. Nothing seems to have changed, but you think that the reflections are diverging further and further away from your real self.",
-                        "For the fourth time, you enter the Hall of Mirrors. The reflections are increasingly clearer in some mirrors, while gone in others. For the first time, there are cracked mirrors dotted along the silver-lined hallway."),
-                    new SensoryDescription(),
-                    new AmbientDescription().AddTimeBased(22, "You stand still. Your reflections do not.")
-                ),
-                [],
-                new CustomCommandHandler().AddCustomCommand(
-                    new CustomCommandPhrasing(["reflect", "self-reflect"], []),
-                    () => "You stare at the mirrors. Your reflections are everywhere, but none of them feel like you.",
-                    () => { }
-                ).AddCustomCommand(new CustomCommandPhrasing(
-                    ["pick up", "grab", "take", "get"],
-                    ["the shard", "shard", "the mirror shard",
-                        "the shard of mirror", "the piece of mirror",
-                        "the mirror piece"]),
-                    () => $"You cannot do that from here. Try going closer to the shard.",
-                    () => { }
-                )
-            );
-
-            public static LocationDefinition MirrorShardSublocation = new(
-                DefinitionIDs.Locations.Dreamspace.MirrorShardSublocation,
-                DefinitionIDs.Scenes.OssanethsDomain,
-                new LocationNameAdapter("mirror shard", "a shard of mirror lying on the floor", new List<string> { "shard", "mirror shard", "shard of glass", "shard of mirror", "shard of a mirror" }),
-                new DescriptionComposer(
-                    new LookDescription("You look at the shard. It is a small piece of a broken mirror, but it seems to reflect deeper than a normal mirror. You can see your reflection, but it feels... empty.",
-                        "You look at the shard again. It still feels empty, but you can't shake the feeling that it is important."),
-                    new VisitDescription("You walk up to the shard of mirror. It is small and broken, but it seems to reflect deeper than a normal mirror can. Perhaps storing it for later will be beneficial.",
-                        "You walk up to the shard again. It still feels empty, but you can't shake the feeling that it is important.",
-                        "You go to the shard again. It still feels empty, but you can't shake the feeling that it is important."),
-                    new SensoryDescription("The shard lies still on the ground.", "It is eerily quiet here.")
-                ),
-                [],
-                new CustomCommandHandler().AddCustomCommand(
-                    new CustomCommandPhrasing(["pick up the", "take the", "grab the"], ["shard", "mirror shard", "shard of glass", "shard of mirror", "shard of a mirror"]),
-                    () => "You pick up the shard. It feels cold and heavy in your hand.",
-                    () =>
-                    {
-                        GameContext.Player.Inventory.TryAddItem(DefinitionIDs.Items.Magic.MirrorShard, 1);
-                        WorldBuilder.RemoveParentChildRelationship(GameContext.LocationRegistry, DefinitionIDs.Locations.Dreamspace.HallOfMirrors, DefinitionIDs.Locations.Dreamspace.MirrorShardSublocation);
-                    }
-                )
             );
         }
 
@@ -275,7 +108,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 )
                 .AddCustomCommand(
                     new CustomCommandPhrasing(["walk to", "move to", "go to", "look at", "examine", "inspect"], ["candles", "the candles"]),
-                    () => { IOService.Output.WriteNonDialogueLine("You take a closer look at the candles sitting beside the wall. It's clear they've have been extinguished recently: their wicks are still blackened, and the wax around their bases has not yet collected dust.\n\nSomeone was here before you.\n\nNot long ago."); },
+                    () => { IOService.Output.WriteNonDialogueLine("You take a closer look at the candles sitting beside the wall. It's clear they've have been extinguished recently: their wicks are still blackened, and the wax around their bases has not yet collected dust.\n\nSomeone was here before you.\n\nNot long ago."); }
                 )
             );
 
@@ -289,15 +122,15 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 new LocationNameAdapter("Keeper's Quarters", "the Keeper's Quarters"),
                 new DescriptionComposer(
                     new LookDescription(
-                        "You take a look around the Keeper's Quarters. The Keeper’s Quarters are narrow but comfortable, built from dark stone and timber. Shelves cover most of the walls, while a large desk sits beneath a collection of maps and diagrams.\n\nUnlike the rest of this place, almost everything here has been deliberately arranged.",
-                        "You examine the room more carefully.\r\rThe shelves are filled with books, journals and records, each labelled in the same careful handwriting. Small boxes sit beneath them, each marked with a name, date or location.\n\nA collection of keys hangs beside the desk. There are far more of them than you expected.",
-                        "You have seen the room enough times to recognise most of it.\n\nThe desk. The shelves. The fire. The maps.\n\nBut there are still details you cannot explain: some of the records are written in a handwriting that does not resemble the Keeper’s, snd several objects on the shelves look as though they did not come from here."
+                        "You take a look around the Keeper's Quarters. The Keeper's Quarters are narrow but comfortable, built from dark stone and timber. Shelves cover most of the walls, while a large desk sits beneath a collection of notes and diagrams. Behind, stuck onto the wall, is a display of various maps, the details of which you cannot make out clearly from here.\n\nUnlike the rest of this place, almost everything here has been deliberately arranged.",
+                        "You examine the room more carefully.\r\rThe shelves are filled with books, journals and records, each labelled in the same careful handwriting. Small boxes sit beneath them, each marked with a name, date or location.\n\nA collection of keys hangs beside the desk. There are far more of them than you expected. Maybe you should take one.",
+                        "You have seen the room enough times to recognise most of it.\n\nThe desk. The shelves. The fire. The maps.\n\nBut there are still details you cannot explain: some of the records are written in a handwriting that does not resemble the Keeper's, snd several objects on the shelves look as though they did not come from here."
                     ),
                     new VisitDescription(
-                        "You step into a room that feels strangely ordinary.\n\nThe floor is a dry, familiar wood. A small fire burns in a stone brazier, throwing warm light across shelves of books and carefully labelled boxes. A single heavy desk occupies one side of the room, its surface covered with papers, ink and objects whose purposes you cannot immediately identify.\n\nThe Keeper who lives here is seated behind the desk.\r\n\r\nHe looks up when you enter.",
-                        "You return to the Keeper’s Quarters.\n\nThe room is warmer than the rest of this place, and the familiar smell of smoke and old paper reaches you before you have fully entered. The Keeper remains at his desk, surrounded by the same precise arrangement of books, records and objects.\n\nHe seems unsurprised to see you.",
-                        "You enter the Keeper’s Quarters again.\n\nBy now, the room has become familiar. You recognise the desk, the shelves, the labelled boxes and the collection of keys beside the Keeper.\n\nYet the longer you spend here, the more you notice: there are records everywhere. Some concern the Ossuary. Some concern people. Some concern you.",
-                        "You enter the Keeper’s Quarters.\n\nThe fire burns quietly. The papers remain arranged in their precise stacks. The Keeper is at his desk, reading.\r\n\r\nHe acknowledges your arrival without looking up."
+                        "You step into a room that feels strangely ordinary.\n\nThe floor is a dry, familiar wood. A small fire burns in a stone brazier, throwing warm light across shelves of books and carefully labelled boxes. A single heavy desk occupies one side of the room, its surface covered with papers, ink and objects whose purposes you cannot immediately identify. Behind it, a collection of maps and diagrams is displayed on the wall.\n\nThe Keeper who lives here is seated behind the desk.\r\n\r\nHe looks up when you enter.",
+                        "You return to the Keeper's Quarters.\n\nThe room is warmer than the rest of this place, and the familiar smell of smoke and old paper reaches you before you have fully entered. The Keeper remains at his desk, surrounded by the same precise arrangement of books, records and objects.\n\nHe seems unsurprised to see you.",
+                        "You enter the Keeper's Quarters again.\n\nBy now, the room has become familiar. You recognise the desk, the shelves, the labelled boxes and the collection of keys beside the Keeper.\n\nYet the longer you spend here, the more you notice: there are records everywhere. Some concern the Ossuary. Some concern people. Some concern you.",
+                        "You enter the Keeper's Quarters.\n\nThe fire burns quietly. The papers remain arranged in their precise stacks. The Keeper is at his desk, reading.\r\n\r\nHe acknowledges your arrival without looking up."
                     ),
                     new SensoryDescription(
                         "The scent of old books and wax fills the air.",
@@ -311,7 +144,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                         "You hear the faint scrape of paper against paper.",
                         "The fire crackles.",
                         "The Keeper pauses over a line of writing. He reaches for another book without looking for it.",
-                        "A key moves slightly on its hook.",
+                        "A key moves slightly on its hook on the desk.",
                         "You hear footsteps pass somewhere beyond the farside door.",
                         "The Keeper's pen stops. He looks towards farside the door. After a moment, he continues writing.",
                         "One of the candles gutters before recovering.",
@@ -324,10 +157,10 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 new CustomCommandHandler()
                 .AddCustomCommand(
                     new CustomCommandPhrasing(
-                        ["inspect", "examine", "look at", "look over", "look around", "look in", "look inside", "look under", "look within"],
+                        ["inspect", "examine", "look at", "look over", "look around", "look in", "look inside", "look under", "look within", "take", "steal", "grab"],
                         ["books", "bookshelves", "the books", "the bookshelves", "desk", "the desk", "the books on the desk", "the maps", "map", "the map", "maps", "the maps on the desk", "the diagrams", "the keys", "keys", "the keys on the desk"]
                     ),
-                    () => { IOService.Output.WriteNonDialogueLine("You can't see much from here. Maybe try going closer."); }
+                    () => { IOService.Output.WriteNonDialogueLine("You can't see or do much from here. Maybe try going closer."); }
                 )
                 .AddCustomCommand(
                     new CustomCommandPhrasing(
@@ -350,11 +183,10 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                     new LocationNameAdapter("desk", "the desk"),
                     new DescriptionComposer(
                         new LookDescription(
-                            "You look at the desk. It is a large, sturdy piece of furniture, covered in papers, ink and objects whose purposes you cannot immediately identify.",
-                            "You take a look at it again." // TODO: fill out
+                            "You take a look at the Keeper's desk. It's old, but carefully maintained. Several stacks of paper cover its surface. Some are written in the Keeper's precise handwriting. Others contain diagrams, lists and symbols you cannot understand. Nothing appears to have been placed here accidentally."
                         ),
                         new VisitDescription(
-                            "You approach the desk with the Keeper seated behind it. The Keeper glances up at you curiously, but quickly returns to his work.",
+                            "You approach the desk with the Keeper seated behind it. The Keeper glances up at you curiously, but quickly returns to his work. There are innumerous documents on the desk, some of which are written in a handwriting that is not the Keeper's. Maybe you should take a closer look at them.",
                             "You return to the desk. The Keeper continues to write, his pen moving quickly across the page.",
                             "You approach the desk again. The Keeper looks up, his eyes meeting yours for a brief moment before returning to his writing."
                         ),
@@ -368,16 +200,94 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                     [],
                     new CustomCommandHandler()
                     .AddCustomCommand(new CustomCommandPhrasing(
-                            ["inspect", "examine", "look at"],
-                            ["papers", "the paper", "the papers", "writing", "the writing", "books", "the books", "maps", "the maps"]
+                            ["inspect", "examine", "look at", "read"],
+                            ["papers", "the paper", "the papers", "writing", "the writing", "books", "the books"]
                         ),
                         () =>
                         {
-                            IOService.Output.WriteNonDialogueLine("You pick up one of the pieces of ");
+                            IOService.Output.WriteNonDialogueLine(
+                                "You pick up the closest piece of paper to you and read it.\n\n" + 
+                                "With a start, you realise it's about you. But it contains remarkably little information: your name. Your arrival. Several observations. And a blank section labelled:\n\n" +
+                                "CONSEQUENCE");
+                        }
+                    )
+                    .AddCustomCommand(new CustomCommandPhrasing(
+                        ["inspect", "examine", "look at", "read"],
+                        ["maps", "the maps", "map", "the map"]
+                        ),
+                        () =>
+                        {
+                            // TODO: add visit time checking to make this description more personalised as to how much the player's explored already
+                            // TODO: fill out w/ rest of locations asw
+                            IOService.Output.WriteNonDialogueLine(
+                                "You take a closer look at the maps on the wall.\n\n" +
+                                "From here, you see that the maps are of this place and its surrounding areas. They are detailed and precise, labelling this strange location as \"The Ossuary of Eyes\".\n" +
+                                "You notice that the room you're in is called the \"Keeper's Quarters\", while the room you woke up in is the \"Waking Chamber\".\n" + 
+                                "You also notice that there are several other rooms on the maps, each with their own names and descriptions: the \"Cloister Gardens\" and the \"Lower Vault\" beneath, as well as the \"Central Ossuary\". But one location draws your attention the most: at the very top, named simply but labelled with a mysterious eye symbol: the \"Observatory\".\n\n" +
+                                "You are sure that all these locations are important, particularly the Observatory. But you cannot yet understand why."
+                            );
+                        }
+                    )
+                    .AddCustomCommand(new CustomCommandPhrasing(
+                        ["take", "grab", "steal", "pick up"],
+                        ["key", "keys", "the keys"]),
+                        () =>
+                        {
+                            IOService.Output.WriteNonDialogueLine(
+                                "You reach for the keys hanging beside the desk. There are far more of them than you expected, each one labelled with a name, date or location. You take one at random and slip it into your pocket.\n\n" +
+                                "You have no idea what it opens, but you feel a strange sense of anticipation."
+                            );
+                            // TODO: Add key to inventory
+                            // TODO: initiate dialogue for when player takes key, make it dependent on trust and stuff, keeper may confront player
                         }
                     )
                 );
             }
+
+            public static LocationDefinition KeepersQuartersBookShelves = new(
+                DefinitionIDs.Locations.OssuaryOfEyesLocs.KeepersQuartersLocs.Bookshelves,
+                DefinitionIDs.Scenes.OssuaryOfEyes,
+                new LocationNameAdapter("bookshelves", "the bookshelves"),
+                new DescriptionComposer(
+                    new LookDescription(
+                        "You take a look at the Keeper's bookshelves. Hundreds of books occupy the shelves. Some are histories. Others appear to be catalogues, journals or records of individual people. The books are arranged according to a system you cannot immediately understand. Underneath the shelves, you see small boxes are stacked neatly, each labelled with a name, date or location. However, they're all locked. You need a key to open them."
+                    ),
+                    new VisitDescription(
+                        "You approach the bookshelves. The Keeper glances up at you curiously, but quickly returns to his work.",
+                        "You return to the bookshelves. The Keeper continues to write, his pen moving quickly across the page.",
+                        "You approach the bookshelves again. The Keeper looks up, his eyes meeting yours for a brief moment before returning to his writing."
+                    ),
+                    new SensoryDescription(
+                        "The scent of old paper and ink fills the air.",
+                        "A faint scratching sound echoes through the room, as if something unseen is moving."
+                    ),
+                    new AmbientDescription()
+                    .AddRandomTimeBased("\"You like reading?\" The Keeper asks, without looking up from his work. After a moment of silence on your part, he returns to writing.")
+                ),
+                [],
+                new CustomCommandHandler()
+                .AddCustomCommand(new CustomCommandPhrasing(
+                    ["read", "open", "inspect", "examine", "look at", "take a look at", "skim through"],
+                    ["a book", "the books", "some books", "books", "book"]),
+                    () =>
+                    {
+                        IOService.Output.WriteNonDialogueLine(
+                            "You take a book from the shelves and open it. The pages are filled with text, diagrams and illustrations. The book concerns an obscure event in the history of the Ossuary. The account is written as though the author witnessed it personally. The final entry ends abruptly. There is no explanation.\n\n" +
+                            "However, you understand more than enough. You realise that these books are records of the past, present and future: they contain knowledge that has been gathered over centuries, and you feel a sense of awe at the Keeper's dedication to preserving it."
+                        );
+                    }
+                )
+                .AddCustomCommand(new CustomCommandPhrasing(
+                    ["scan", "skim", "search"],
+                    ["the shelves", "the books"]),
+                    () =>
+                    {
+                        IOService.Output.WriteNonDialogueLine(
+                            "You scan the shelves, looking for anything that might be of interest. You scan the labels. You find sections concerning places, people, memories, masks, events and unresolved records. The section labelled Masks is considerably larger than you expected."
+                        );
+                    }
+                )
+            );
 
             #endregion Keeper's Quarters
 

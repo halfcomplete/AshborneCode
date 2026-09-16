@@ -38,7 +38,7 @@ namespace AshborneGame._Core.Data.IDSystem
                 public static class KeepersQuartersLocs
                 {
                     public static readonly DefinitionID Desk = new("Locations.OssuaryOfEyes.KeepersQuarters.Desk");
-                    public static readonly DefinitionID LockedCabinet = new("Locations.OssuaryOfEyes.KeepersQuarters.LockedCabinet");
+                    public static readonly DefinitionID Bookshelves = new("Locations.OssuaryOfEyes.KeepersQuarters.Bookshelves");
                 }
                 public static readonly DefinitionID Scriptorium = new("Locations.OssuaryOfEyes.Scriptorium");
                 public static readonly DefinitionID LowerVault = new("Locations.OssuaryOfEyes.LowerVault");
