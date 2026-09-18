@@ -68,6 +68,11 @@ namespace AshborneGame._Core.Data.IDSystem
             {
                 public static readonly DefinitionID MirrorShard = new("Items.Magic.MirrorShard");
             }
+
+            public static class OssuaryOfEyes
+            {
+                public static readonly DefinitionID KeepersKey = new("Items.OssuaryOfEyes.KeepersKey");
+            }
         }
 
         public static class Objects

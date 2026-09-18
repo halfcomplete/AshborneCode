@@ -44,5 +44,19 @@ namespace AshborneGame._Core.Data.Definitions.BOCSSpecific
                     new OnUseChangePlayerStatBehaviour(20, PlayerStatType.MaxHealth, true),
                 ]
             );
+        
+        public static class OssuaryOfEyes
+        {
+            public static BOCSObjectDefinition KeepersKey =
+                new(
+                    DefinitionIDs.Items.OssuaryOfEyes.KeepersKey,
+                    new("Keeper's Key", "a small, ornate key", ["key", "small key", "ornate key"]),
+                    "A small, ornate key that seems to hum with a strange energy.",
+                    [
+                        new StorableBehaviour(1, ItemTypes.Key, ItemQualities.Rare),
+                        new InspectableBehaviour("The key is small and ornate, with intricate carvings that seem to shift and change as you look at them. It hums with a strange energy that you can't quite place.", ItemQualities.Rare),
+                    ]
+                );
+        }
     }
 }

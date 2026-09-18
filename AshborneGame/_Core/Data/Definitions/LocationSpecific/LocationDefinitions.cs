@@ -250,7 +250,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 new LocationNameAdapter("bookshelves", "the bookshelves"),
                 new DescriptionComposer(
                     new LookDescription(
-                        "You take a look at the Keeper's bookshelves. Hundreds of books occupy the shelves. Some are histories. Others appear to be catalogues, journals or records of individual people. The books are arranged according to a system you cannot immediately understand. Underneath the shelves, you see small boxes are stacked neatly, each labelled with a name, date or location. However, they're all locked. You need a key to open them."
+                        "You take a look at the Keeper's bookshelves. Hundreds of books occupy the shelves. Some are histories. Others appear to be catalogues, journals or records of individual people. The books are arranged according to a system you cannot immediately understand. Underneath the shelves, you see small boxes are stacked neatly, each labelled with a name, date or location. Most are unlocked except one, which you suspect might contain something of interest. If only you had a key."
                     ),
                     new VisitDescription(
                         "You approach the bookshelves. The Keeper glances up at you curiously, but quickly returns to his work.",
@@ -267,7 +267,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 [],
                 new CustomCommandHandler()
                 .AddCustomCommand(new CustomCommandPhrasing(
-                    ["read", "open", "inspect", "examine", "look at", "take a look at", "skim through"],
+                    ["read", "open", "inspect", "examine", "look at", "take a look at", "take a closer look at", "skim through"],
                     ["a book", "the books", "some books", "books", "book"]),
                     () =>
                     {
@@ -283,8 +283,38 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                     () =>
                     {
                         IOService.Output.WriteNonDialogueLine(
-                            "You scan the shelves, looking for anything that might be of interest. You scan the labels. You find sections concerning places, people, memories, masks, events and unresolved records. The section labelled Masks is considerably larger than you expected."
+                            "You scan the shelves, looking for anything that might be of interest. You find sections concerning places, people, memories, masks, events and unresolved records. The section labelled Masks is considerably larger than you expected."
                         );
+                    }
+                )
+                .AddCustomCommand(new CustomCommandPhrasing(
+                    ["inspect", "examine", "look at", "take a closer look at", "take a look at"],
+                    ["the boxes", "the small boxes", "boxes", "small boxes", "the labelled boxes", "labelled boxes"]),
+                    () =>
+                    {
+                        IOService.Output.WriteNonDialogueLine(
+                            "You take a closer look at the small boxes stacked beneath the shelves. Each one is labelled with a name, date or location, and contain a single object. A button. A broken key. A child's drawing. A coin. A piece of jewellery. A fragment of glass. However, one particularly intriguing box stands out: it's the only locked one. You need a key to open it."
+                        );
+                    }
+                )
+                .AddCustomCommand(new CustomCommandPhrasing(
+                    ["open", "unlock", "inspect", "examine", "look at", "take a closer look at", "take a look at"],
+                    ["the locked box", "locked box", "the box", "box"]),
+                    () =>
+                    {
+                        if (GameContext.Player.Inventory.GetItemCount(DefinitionIDs.Items.OssuaryOfEyes.KeepersKey.Value) > 0)
+                        {
+                            IOService.Output.WriteNonDialogueLine(
+                                // TODO: figure out exactly what happens here
+                                "You take the key from your pocket and insert it into the lock of the box. With a satisfying click, the lock opens, and you lift the lid to reveal its contents.\n\nInside, you find a small, "
+                            );
+                        }
+                        else
+                        {
+                            IOService.Output.WriteNonDialogueLine(
+                                "You try to open the locked box, but it won't budge. You need a key to unlock it. Perhaps you can find one somewhere in the Keeper's Quarters."
+                            );
+                        }
                     }
                 )
             );
