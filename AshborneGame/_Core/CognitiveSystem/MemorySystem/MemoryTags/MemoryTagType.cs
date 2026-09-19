@@ -13,21 +13,22 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
     {
         Theft,
         Violence,
-        Kindness,
-        Sacrifice,
         Betrayal,
         Deception,
+        Death,
+        Crime,
+        Humiliation,
+
+        Kindness,
+        Sacrifice,
         Secret,
         Knowledge,
-        Family,
-        Death,
         Gift,
         Protection,
-        Crime,
         Conversation,
         Magic,
         Authority,
-        Humiliation,
         Friendship,
+        Help,
     }
 }

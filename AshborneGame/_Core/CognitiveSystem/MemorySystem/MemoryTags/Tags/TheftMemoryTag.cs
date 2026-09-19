@@ -16,7 +16,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags
         public MemoryTagDefinition Definition { get; } = 
             new MemoryTagDefinition(
                 // Base emotional modifiers
-                new Dictionary<EmotionType, (MemoryRole role, double value)>
+                new Dictionary<EmotionType, (MemoryRole? role, double value)>
                 {
                     {EmotionType.Anger, (MemoryRole.Actor, 0.7)},
                     {EmotionType.Contempt, (MemoryRole.Actor, 0.3)},

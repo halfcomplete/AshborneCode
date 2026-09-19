@@ -9,5 +9,9 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
     /// <summary>
     /// Represents a prototype EmotionModifier that hasn't yet been expanded to target a specific entity; rather, it only targets memory ROLES in a general manner.
     /// </summary>
-    public record EmotionPotential(EmotionType Emotion, MemoryRole Role, double Value);
+    public record EmotionPotential(
+        EmotionType Emotion,
+        MemoryRole SubjectRole,
+        MemoryRole? TargetRole,
+        double Value);
 }

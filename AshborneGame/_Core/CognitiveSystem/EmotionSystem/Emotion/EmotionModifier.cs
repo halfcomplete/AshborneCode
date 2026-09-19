@@ -12,7 +12,7 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
         public EmotionType Type { get; init; }
         public double InitialAmount { get; init; }
 
-        public MemoryParticipant Target { get; init; }
+        public MemoryParticipant? Target { get; init; }
 
         [JsonIgnore]
         public Memory? ParentMemory { get; init; }
@@ -24,7 +24,7 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
         /// <param name="target">The MemoryParticipant this modifier is directed to.</param>
         /// <param name="type">The emotion that this modifier affects.</param>
         /// <param name="initialAmount">The initial amount of the modifier. Can be any value, just the final emotional value that the NPC calculates will be clamped from -1 to 1.</param>
-        public EmotionModifier(Memory? parentMemory, MemoryParticipant target, EmotionType type, double initialAmount)
+        public EmotionModifier(Memory? parentMemory, MemoryParticipant? target, EmotionType type, double initialAmount)
         {
             ParentMemory = parentMemory;
             Target = target;
