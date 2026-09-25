@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using AshborneGame._Core.CognitiveSystem.AttitudeSystem;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
+using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.DefinitionRules;
 using AshborneGame._Core.Globals.Enums;
 
 namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags
@@ -43,45 +43,45 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags
                         new EmotionReaction(EmotionType.Sadness, 1.3, 0.3, MemoryRole.Target),
                     ]},
                 },
-                new Dictionary<RelationshipType, List<AttitudeRoleIntensityRule>>
+                new Dictionary<RelationshipType, List<RelationshipIntensityRule>>
                 {
                     {
                         RelationshipType.Trusts,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.5),
-                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: 0.3)
+                            new RelationshipIntensityRule(MemoryRole.Actor, intensity: 0.5),
+                            new RelationshipIntensityRule(MemoryRole.Target, intensity: 0.3)
                         ]
                     },
                     {
                         RelationshipType.Distrusts,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: -0.25),
-                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: 0.1)
+                            new RelationshipIntensityRule(MemoryRole.Actor, intensity: -0.25),
+                            new RelationshipIntensityRule(MemoryRole.Target, intensity: 0.1)
                         ]
                     },
                     {
                         RelationshipType.Loves,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: 0.4),
-                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.2)
+                            new RelationshipIntensityRule(MemoryRole.Target, intensity: 0.4),
+                            new RelationshipIntensityRule(MemoryRole.Actor, intensity: 0.2)
                         ]
                     },
                     {
                         RelationshipType.Hates,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: -0.2)
+                            new RelationshipIntensityRule(MemoryRole.Actor, intensity: -0.2)
                         ]
                     },
                     {
                         RelationshipType.Respects,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.2)
+                            new RelationshipIntensityRule(MemoryRole.Actor, intensity: 0.2)
                         ]
                     },
                     {
                         RelationshipType.Disrespects,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: -0.15)
+                            new RelationshipIntensityRule(MemoryRole.Actor, intensity: -0.15)
                         ]
                     }
                 }

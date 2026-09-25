@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AshborneGame._Core.CognitiveSystem.AttitudeSystem;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
+using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.DefinitionRules;
 using AshborneGame._Core.Globals.Enums;
 
 namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags
@@ -48,48 +48,48 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags
                         new EmotionReaction(EmotionType.Anger, 0.8, 0.2, MemoryRole.Actor),
                     ]},
                 },
-                new Dictionary<RelationshipType, List<AttitudeRoleIntensityRule>>
+                new Dictionary<RelationshipType, List<RelationshipIntensityRule>>
                 {
                     {
                         RelationshipType.Loves,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.3),
-                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: 0.3)
+                            new RelationshipIntensityRule(MemoryRole.Actor, intensity: 0.3),
+                            new RelationshipIntensityRule(MemoryRole.Target, intensity: 0.3)
                         ]
                     },
                     {
                         RelationshipType.Hates,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.25),
-                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: -0.2)
+                            new RelationshipIntensityRule(MemoryRole.Actor, intensity: 0.25),
+                            new RelationshipIntensityRule(MemoryRole.Target, intensity: -0.2)
                         ]
                     },
                     {
                         RelationshipType.Respects,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.25),
-                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: 0.15)
+                            new RelationshipIntensityRule(MemoryRole.Actor, intensity: 0.25),
+                            new RelationshipIntensityRule(MemoryRole.Target, intensity: 0.15)
                         ]
                     },
                     {
                         RelationshipType.Disrespects,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: -0.15),
-                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: -0.3),
+                            new RelationshipIntensityRule(MemoryRole.Actor, intensity: -0.15),
+                            new RelationshipIntensityRule(MemoryRole.Target, intensity: -0.3),
                         ]
                     },
                     {
                         RelationshipType.Trusts,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.2),
-                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: 0.3),
+                            new RelationshipIntensityRule(MemoryRole.Actor, intensity: 0.2),
+                            new RelationshipIntensityRule(MemoryRole.Target, intensity: 0.3),
                         ]
                     },
                     {
                         RelationshipType.Distrusts,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Actor, intensity: 0.25),
-                            new AttitudeRoleIntensityRule(MemoryRole.Target, intensity: -0.25),
+                            new RelationshipIntensityRule(MemoryRole.Actor, intensity: 0.25),
+                            new RelationshipIntensityRule(MemoryRole.Target, intensity: -0.25),
                         ]
                     }
                 }

@@ -41,7 +41,7 @@ namespace AshborneGame._Core.Game.CommandHandling
                 args2.Insert(0, action);
                 if (string.Join(' ', args2).Equals(kvp.Key, StringComparison.OrdinalIgnoreCase))
                 {
-                    kvp.Value.Effect?.Invoke();
+                    kvp.Value.Invoke();
                     return true;
                 }
             }

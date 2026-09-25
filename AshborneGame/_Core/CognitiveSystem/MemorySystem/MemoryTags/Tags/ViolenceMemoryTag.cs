@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AshborneGame._Core.CognitiveSystem.AttitudeSystem;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
+using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.DefinitionRules;
 
 namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags
 {
@@ -55,70 +55,70 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags
                 },
 
                 // Relationships affect how intensely the memory is retained
-                new Dictionary<RelationshipType, List<AttitudeRoleIntensityRule>>
+                new Dictionary<RelationshipType, List<RelationshipIntensityRule>>
                 {
                     {
                         RelationshipType.Loves,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Target, 0.5),
-                            new AttitudeRoleIntensityRule(MemoryRole.Actor, 0.2)
+                            new RelationshipIntensityRule(MemoryRole.Target, 0.5),
+                            new RelationshipIntensityRule(MemoryRole.Actor, 0.2)
                         ]
                     },
                     {
                         RelationshipType.Hates,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Actor, -0.2)
+                            new RelationshipIntensityRule(MemoryRole.Actor, -0.2)
                         ]
                     },
                     {
                         RelationshipType.Trusts,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Actor, -0.15)
+                            new RelationshipIntensityRule(MemoryRole.Actor, -0.15)
                         ]
                     },
                     {
                         RelationshipType.Distrusts,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Actor, 0.25)
+                            new RelationshipIntensityRule(MemoryRole.Actor, 0.25)
                         ]
                     },
                     {
                         RelationshipType.Fears,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Actor, 0.4)
+                            new RelationshipIntensityRule(MemoryRole.Actor, 0.4)
                         ]
                     },
                     {
                         RelationshipType.Respects,
                         [
-                            new AttitudeRoleIntensityRule(MemoryRole.Target, 0.2)
+                            new RelationshipIntensityRule(MemoryRole.Target, 0.2)
                         ]
                     }
                 },
 
                 // Relationship-specific emotional interpretation
-                new Dictionary<RelationshipType, List<AttitudeRoleEmotionRule>>
+                new Dictionary<RelationshipType, List<RelationshipEmotionRule>>
                 {
                     {
                         RelationshipType.Loves,
                         [
-                            new AttitudeRoleEmotionRule(
+                            new AttitudeEmotionRule(
                                 MemoryRole.Target, EmotionType.Sadness, 1.4, 0.2),
-                            new AttitudeRoleEmotionRule(
+                            new AttitudeEmotionRule(
                                 MemoryRole.Actor, EmotionType.Anger, 1.2, 0.2)
                         ]
                     },
                     {
                         RelationshipType.Hates,
                         [
-                            new AttitudeRoleEmotionRule(
+                            new AttitudeEmotionRule(
                                 MemoryRole.Actor, EmotionType.Anger, 0.8, -0.1)
                         ]
                     },
                     {
                         RelationshipType.Fears,
                         [
-                            new AttitudeRoleEmotionRule(
+                            new AttitudeEmotionRule(
                                 MemoryRole.Actor, EmotionType.Fear, 1.3, 0.2)
                         ]
                     }

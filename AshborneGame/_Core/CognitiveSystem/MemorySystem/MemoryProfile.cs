@@ -8,6 +8,7 @@ using AshborneGame._Core.SaveSystem.Data.CognitionDTOs;
 using AshborneGame._Core.SaveSystem.Serialisation;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
 using AshborneGame._Core.CognitiveSystem.AttitudeSystem;
+using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.DefinitionRules;
 
 namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 {
@@ -208,11 +209,11 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             foreach (MemoryTagType tag in def.Tags)
             {
                 // Get the reactions from each personality trait that this MemoryTag defines
-                IReadOnlyList<PersonalityEmotionModifier> personalityReactions = MemoryTagDefinitions.Definitions[tag].Definition.PersonalityEmotionModifiers;
+                IReadOnlyList<PersonalityEmotionRule> personalityReactions = MemoryTagDefinitions.Definitions[tag].Definition.PersonalityEmotionModifiers;
 
                 // Loop over each personality trait in PersonalityReactions
                 // personalityTrait is an enumeration (either Curiosity, Compassion or Aggression)
-                foreach (PersonalityEmotionModifier reaction in personalityReactions)
+                foreach (PersonalityEmotionRule reaction in personalityReactions)
                 {
                     if (!_personality.PersonalityTraits.TryGetValue(reaction.Trait, out double traitValue))
                     {
@@ -559,9 +560,9 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             {
                 var attitudeIntensityModifiers = MemoryTagDefinitions.Definitions[tag].Definition.AttitudeIntensityModifiers;
 
-                foreach ((RelationshipType attitudeType, List<AttitudeRoleIntensityRule> intensityRules) in attitudeIntensityModifiers)
+                foreach ((RelationshipType attitudeType, List<RelationshipIntensityRule> intensityRules) in attitudeIntensityModifiers)
                 {
-                    foreach (AttitudeRoleIntensityRule rule in intensityRules)
+                    foreach (RelationshipIntensityRule rule in intensityRules)
                     {
                         // for each rule, find out who in the participants list is affected by that rule
                         List<MemoryParticipant> targetParticipants = participants.Where(p => p.Roles.Contains(rule.Role)).ToList();
@@ -621,7 +622,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             {
                 MemoryTagDefinition tagDef = MemoryTagDefinitions.Definitions[tag].Definition;
 
-                foreach (PersonalityIntensityModifier modifier in tagDef.PersonalityIntensityModifiers)
+                foreach (PersonalityIntensityRule modifier in tagDef.PersonalityIntensityModifiers)
                 {
                     if (participants.Any(p => p.EntityId == _ownerID && p.Roles.Contains(modifier.SubjectRole)) &&
                         personality.PersonalityTraits.TryGetValue(modifier.Trait, out double traitValue))
@@ -652,7 +653,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
                 foreach (var (attitudeType, attitudeRoleEmotionRules) in attitudeEmotionModifiers)
                 {
-                    foreach (AttitudeRoleEmotionRule rule in attitudeRoleEmotionRules)
+                    foreach (RelationshipEmotionRule rule in attitudeRoleEmotionRules)
                     {
                         // figure out who in the list of participants satisfies the rule's memory role
                         List<MemoryParticipant> targetParticipants = source.Participants.Where(p => p.Roles.Contains(rule.Role)).ToList();

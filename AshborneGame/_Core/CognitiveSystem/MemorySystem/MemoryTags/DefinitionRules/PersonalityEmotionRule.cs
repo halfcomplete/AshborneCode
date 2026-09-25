@@ -1,14 +1,11 @@
 using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
-using AshborneGame._Core.CognitiveSystem.MemorySystem;
 
-namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
+namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.DefinitionRules
 {
-    public record PersonalityEmotionModifier(
+    public record PersonalityEmotionRule(
         PersonalityTrait Trait,
         MemoryRole SubjectRole,
-        MemoryRole? TargetRole,
         EmotionType Emotion,
-        double Multiplier,
         double Value);
 }
