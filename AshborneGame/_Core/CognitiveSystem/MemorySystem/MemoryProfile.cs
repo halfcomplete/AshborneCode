@@ -68,11 +68,11 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             MemoryDefinition def = source.MemoryDefinition;
 
             Dictionary<EmotionPotential, EmotionAccumulator> initialPotentials = GetInitialEmotionPotentials(def.Tags);
-            double intensity = CalculateActualIntensity(def.BaseIntensity, source);
+            double intensity = CalculateActualIntensity(source, _ownerID, _personality, _relationships);
 
             Dictionary<EmotionPotential, EmotionAccumulator> newPotentials = ApplyPersonalityReactionsToEmotionModifiers(def, initialPotentials);
             Dictionary<EmotionModifier, EmotionAccumulator> emotionModifiers = ExpandEmotionPotentialsIntoEmotionModifiers(_ownerID, source.Participants, newPotentials);
-            emotionModifiers = ApplyAttitudeToEmotionalModifiers(source, _relationships, emotionModifiers);
+            emotionModifiers = ApplyAttitudeToEmotionalModifiers(source, _ownerID, _relationships, emotionModifiers);
 
             List<EmotionModifier> accumulatedModifiers = ApplyAccumulatorsToEmotionModifiers(emotionModifiers);
 
@@ -82,7 +82,6 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
             AddMemory(newMemory);
             ApplyMemoryInfluenceToRelationships(newMemory);
-            ApplyAttitudeRules(source);
 
             return newMemory;
         }
@@ -91,6 +90,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         {
             Dictionary<EmotionModifier, EmotionAccumulator> modifiers = new();
 
+            // TODO: check
             foreach (var (potential, accumulator) in newPotentials)
             {
                 MemoryParticipant? subject = participants.FirstOrDefault(p =>
@@ -209,37 +209,36 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             foreach (MemoryTagType tag in def.Tags)
             {
                 // Get the reactions from each personality trait that this MemoryTag defines
-                IReadOnlyList<PersonalityEmotionRule> personalityReactions = MemoryTagDefinitions.Definitions[tag].Definition.PersonalityEmotionModifiers;
+                IReadOnlyList<PersonalityEmotionRule> rules = MemoryTagDefinitions.Definitions[tag].Definition.PersonalityEmotionRules;
 
                 // Loop over each personality trait in PersonalityReactions
                 // personalityTrait is an enumeration (either Curiosity, Compassion or Aggression)
-                foreach (PersonalityEmotionRule reaction in personalityReactions)
+                foreach (PersonalityEmotionRule rule in rules)
                 {
-                    if (!_personality.PersonalityTraits.TryGetValue(reaction.Trait, out double traitValue))
+                    if (!_personality.PersonalityTraits.TryGetValue(rule.Trait, out double traitValue))
                     {
                         continue;
                     }
 
                     foreach (var (potential, accumulator) in initialPotentials)
                     {
-                        if (potential.Emotion == reaction.Emotion &&
-                            potential.SubjectRole == reaction.SubjectRole &&
-                            potential.TargetRole == reaction.TargetRole)
+                        if (potential.Emotion == rule.Emotion && potential.SubjectRole == rule.SubjectRole)
                         {
-                            accumulator.TotalMult = CalculateEmotionAccumulatorTotalMult(accumulator.TotalMult, traitValue, reaction.Multiplier);
+                            accumulator.TotalMult = CalculateEmotionAccumulatorTotalMult(accumulator.TotalMult, traitValue, rule.Value);
                         }
                     }
+                    
+                    // TODO: can this possibly be directed?
 
                     if (!initialPotentials.Keys.Any(p =>
-                        p.Emotion == reaction.Emotion &&
-                        p.SubjectRole == reaction.SubjectRole &&
-                        p.TargetRole == reaction.TargetRole))
+                        p.Emotion == rule.Emotion &&
+                        p.SubjectRole == rule.SubjectRole))
                     {
                         EmotionPotential potential = new(
-                            reaction.Emotion,
-                            reaction.SubjectRole,
-                            reaction.TargetRole,
-                            reaction.Value * traitValue);
+                            rule.Emotion,
+                            rule.SubjectRole,
+                            null,
+                            rule.Value * traitValue);
                         initialPotentials.Add(potential, new EmotionAccumulator());
                     }
                 }
@@ -257,7 +256,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// </remarks>
         private static double CalculateEmotionAccumulatorTotalMult(double currentTotalMult, double personalityTraitInfluence, double reactionMult)
         {
-            return currentTotalMult * (1 + personalityTraitInfluence * Math.Abs(reactionMult - 1));
+            return currentTotalMult * (1 + personalityTraitInfluence * (reactionMult - 1));
         }
 
         #endregion Receiving Memories
@@ -513,12 +512,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             {
                 MemoryTagDefinition tagDefinition = MemoryTagDefinitions.Definitions[tag].Definition;
 
-                foreach (SelfEmotionRule rule in tagDefinition.SelfEmotionRules)
-                {
-                    mods[new EmotionPotential(rule.Emotion, rule.SubjectRole, null, rule.Value)] = new EmotionAccumulator();
-                }
-
-                foreach (DirectedEmotionRule rule in tagDefinition.DirectedEmotionRules)
+                foreach (EmotionPotential rule in tagDefinition.InitialEmotions)
                 {
                     mods[new EmotionPotential(rule.Emotion, rule.SubjectRole, rule.TargetRole, rule.Value)] = new EmotionAccumulator();
                 }
@@ -532,15 +526,34 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             return source.Participants.Any(participant => participant.EntityId == _ownerID);
         }
 
-        private double CalculateActualIntensity(double baseIntensity, IMemorySource source)
+        private static double CalculateActualIntensity(IMemorySource source, DefinitionID self, PersonalityProfile personality, Dictionary<DefinitionID, Attitude> relationships)
         {
-            double intensity = baseIntensity;
+            double intensity = GetInitialIntensity(source, self);
 
-            intensity += GetPersonalityIntensityImpact(_personality, source.MemoryDefinition.Tags, source.Participants);
+            intensity += GetPersonalityIntensityImpact(personality, self, source.MemoryDefinition.Tags, source.Participants);
 
-            intensity += GetAttitudeIntensityImpact(_relationships, source.MemoryDefinition.Tags, source.Participants);
+            intensity += GetAttitudeIntensityImpact(source, self, relationships);
 
             return Math.Clamp(intensity, 0.0, 1.0);
+        }
+
+        private static double GetInitialIntensity(IMemorySource source, DefinitionID self)
+        {
+            double intensity = 0;
+            var selfRoles = source.Participants.FirstOrDefault(p => p.EntityId == self)?.Roles ?? throw new InvalidOperationException("Self roles not found");
+
+            foreach (MemoryTagType tag in source.MemoryDefinition.Tags)
+            {
+                MemoryTagDefinition tagDefinition = MemoryTagDefinitions.Definitions[tag].Definition;
+                foreach (IntensityRule rule in tagDefinition.IntensityRules)
+                {
+                    if (selfRoles.Contains(rule.Subject))
+                    {
+                        intensity += rule.Value;
+                    }
+                }
+            }
+            return intensity;
         }
 
         /// <summary>
@@ -552,33 +565,38 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// their house burning down, then the intensity of the Memory (how significant that is to the NPC) would 
         /// decrease as they don't care.
         /// </remarks>
-        private static double GetAttitudeIntensityImpact(Dictionary<DefinitionID, Attitude> relationships, HashSet<MemoryTagType> tags, List<MemoryParticipant> participants)
+        private static double GetAttitudeIntensityImpact(IMemorySource source, DefinitionID self, Dictionary<DefinitionID, Attitude> relationships)
         {
             double intensityImpact = 0.0;
 
-            foreach (MemoryTagType tag in tags)
+            foreach (MemoryTagType tag in source.MemoryDefinition.Tags)
             {
-                var attitudeIntensityModifiers = MemoryTagDefinitions.Definitions[tag].Definition.AttitudeIntensityModifiers;
+                var relationshipIntensityRules = MemoryTagDefinitions.Definitions[tag].Definition.RelationshipIntensityRules;
 
-                foreach ((RelationshipType attitudeType, List<RelationshipIntensityRule> intensityRules) in attitudeIntensityModifiers)
+                foreach (var rule in relationshipIntensityRules)
                 {
-                    foreach (RelationshipIntensityRule rule in intensityRules)
+                    // first: is this NPC a Subject in this rule? If not, then we don't care about this rule
+                    if (source.Participants.Find(p => p.EntityId == self)?.Roles.Contains(rule.Subject) != true)
                     {
-                        // for each rule, find out who in the participants list is affected by that rule
-                        List<MemoryParticipant> targetParticipants = participants.Where(p => p.Roles.Contains(rule.Role)).ToList();
+                        continue;
+                    }
 
-                        // loop over each participant who is affected by that rule
-                        // (e.g, loop over every participant who was a Target)
-                        // figure out, for each participant, if we have a relationship with them
-                        // if so, then figure out how our intensity should be impacted based on that relationship and what the rule says
-                        foreach (MemoryParticipant participant in targetParticipants)
+                    // figure out who in the list of participants satisfies the rule's target role
+                    List<MemoryParticipant> targetParticipants = source.Participants.Where(p => p.Roles.Contains(rule.Target)).ToList();
+
+                    // loop over each participant who is affected by that rule
+                    // (e.g, loop over every participant who was a Target)
+                    // figure out, for each participant, if we have a relationship with them
+                    // if so, then figure out how the emotion accumulators should be impacted based on that relationship and what the rule says
+                    foreach (MemoryParticipant participant in targetParticipants)
+                    {
+                        if (relationships.TryGetValue(participant.EntityId, out var attitude))
                         {
-                            if (relationships.TryGetValue(participant.EntityId, out var attitude))
-                            {
-                                // for each attitude type, check if the given attitude actually aligns with that attitude type
-                                double alignment = Math.Abs(GetAttitudeAlignmentWithAttitudeType(attitude, attitudeType));
-                                intensityImpact += rule.Intensity * alignment;
-                            }
+                            // now we've figured out that this participant, we have a relationship with them
+                            // figure out if the rule says anything about our relationship type
+                            double alignment = Math.Abs(GetAttitudeAlignmentWithAttitudeType(attitude, rule.Relationship));
+
+                            intensityImpact += rule.Value * alignment;
                         }
                     }
                 }
@@ -614,7 +632,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// Takes the personality an NPC has and the Memory tags of a memory and returns
         /// how much the Memory's intensity for this NPC should change because of the NPC's personality.
         /// </summary>
-        private double GetPersonalityIntensityImpact(PersonalityProfile personality, HashSet<MemoryTagType> tags, List<MemoryParticipant> participants)
+        private static double GetPersonalityIntensityImpact(PersonalityProfile personality, DefinitionID self, HashSet<MemoryTagType> tags, List<MemoryParticipant> participants)
         {
             double impact = 0;
 
@@ -622,9 +640,9 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             {
                 MemoryTagDefinition tagDef = MemoryTagDefinitions.Definitions[tag].Definition;
 
-                foreach (PersonalityIntensityRule modifier in tagDef.PersonalityIntensityModifiers)
+                foreach (PersonalityIntensityRule modifier in tagDef.PersonalityIntensityRules)
                 {
-                    if (participants.Any(p => p.EntityId == _ownerID && p.Roles.Contains(modifier.SubjectRole)) &&
+                    if (participants.Any(p => p.EntityId == self && p.Roles.Contains(modifier.SubjectRole)) &&
                         personality.PersonalityTraits.TryGetValue(modifier.Trait, out double traitValue))
                     {
                         impact += modifier.Value * traitValue;
@@ -639,53 +657,54 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// <summary>
         /// Takes a game event, the NPC's relationships and the current emotional modifiers of a memory and returns a Dictionary of the previous emotion modifiers and the updated emotion accumulators.
         /// </summary>
-        private static Dictionary<EmotionModifier, EmotionAccumulator> ApplyAttitudeToEmotionalModifiers(IMemorySource source, Dictionary<DefinitionID, Attitude> relationships, Dictionary<EmotionModifier, EmotionAccumulator> mods)
+        private static Dictionary<EmotionModifier, EmotionAccumulator> ApplyAttitudeToEmotionalModifiers(IMemorySource source, DefinitionID self, Dictionary<DefinitionID, Attitude> relationships, Dictionary<EmotionModifier, EmotionAccumulator> mods)
         {
             // Loops over each memory tag in the memory definition
-            // Gets the memory tag's AttitudeEmotionModifiers
+            // Gets the memory tag's RelationshipEmotionRules
             // Get all MemoryParticipants in the event where this NPC's attitude towards them
-            // is a key in the memory tag's AttitudeEmotionModifiers
+            // is a key in the memory tag's RelationshipEmotionRules
             // Get the alignment with the attitude type
 
             foreach (MemoryTagType tag in source.MemoryDefinition.Tags)
             {
-                var attitudeEmotionModifiers = MemoryTagDefinitions.Definitions[tag].Definition.AttitudeEmotionModifiers;
+                var relationshipEmotionRules = MemoryTagDefinitions.Definitions[tag].Definition.RelationshipEmotionRules;
 
-                foreach (var (attitudeType, attitudeRoleEmotionRules) in attitudeEmotionModifiers)
+                foreach (var rule in relationshipEmotionRules)
                 {
-                    foreach (RelationshipEmotionRule rule in attitudeRoleEmotionRules)
+                    // first: is this NPC a Subject in this rule? If not, then we don't care about this rule
+                    if (source.Participants.Find(p => p.EntityId == self)?.Roles.Contains(rule.Subject) != true)
                     {
-                        // figure out who in the list of participants satisfies the rule's memory role
-                        List<MemoryParticipant> targetParticipants = source.Participants.Where(p => p.Roles.Contains(rule.Role)).ToList();
+                        continue;
+                    }
 
-                        // loop over each participant who is affected by that rule
-                        // (e.g, loop over every participant who was a Target)
-                        // figure out, for each participant, if we have a relationship with them
-                        // if so, then figure out how the emotion accumulators should be impacted based on that relationship and what the rule says
-                        foreach (MemoryParticipant participant in targetParticipants)
+                    // figure out who in the list of participants satisfies the rule's target role
+                    List<MemoryParticipant> targetParticipants = source.Participants.Where(p => p.Roles.Contains(rule.Target)).ToList();
+
+                    // loop over each participant who is affected by that rule
+                    // (e.g, loop over every participant who was a Target)
+                    // figure out, for each participant, if we have a relationship with them
+                    // if so, then figure out how the emotion accumulators should be impacted based on that relationship and what the rule says
+                    foreach (MemoryParticipant participant in targetParticipants)
+                    {
+                        if (relationships.TryGetValue(participant.EntityId, out var attitude))
                         {
-                            if (relationships.TryGetValue(participant.EntityId, out var attitude))
+                            // now we've figured out that this participant, we have a relationship with them
+                            // figure out if the rule says anything about our relationship type
+                            double alignment = Math.Abs(GetAttitudeAlignmentWithAttitudeType(attitude, rule.Relationship));
+
+                            // if the rule modifies emotion modifiers with this relationship type
+                            if (alignment > 0)
                             {
-                                // now we've figured out that this participant, we have a relationship with them
-                                // figure out if the rule says anything about our relationship type
-                                double alignment = Math.Abs(GetAttitudeAlignmentWithAttitudeType(attitude, attitudeType));
+                                var targetMods = mods.Where(m => m.Key.Type == rule.Emotion);
 
-                                // if the rule modifies emotion modifiers with this relationship type
-                                if (alignment > 0)
+                                foreach (var (emotionMod, emotionAccumulator) in targetMods)
                                 {
-                                    EmotionReaction reaction = rule.Reaction;
+                                    emotionAccumulator.TotalMult = CalculateEmotionAccumulatorTotalMult(emotionAccumulator.TotalMult, alignment, rule.Value);
+                                }
 
-                                    var targetMods = mods.Where(m => m.Key.Type == reaction.Emotion);
-
-                                    foreach (var (emotionMod, emotionAccumulator) in targetMods)
-                                    {
-                                        emotionAccumulator.TotalMult = CalculateEmotionAccumulatorTotalMult(emotionAccumulator.TotalMult, alignment, reaction.Mult);
-                                    }
-
-                                    if (targetMods.Count() == 0)
-                                    {
-                                        mods.Add(new(null, participant, reaction.Emotion, reaction.Add * alignment), new());
-                                    }
+                                if (targetMods.Count() == 0)
+                                {
+                                    mods.Add(new(null, participant, rule.Emotion, rule.Value * alignment), new());
                                 }
                             }
                         }
@@ -722,50 +741,6 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                 {
                     List<AttitudeReaction> attitudeReactions = EmotionToAttitudeMap.Reactions[emotion];
                     _relationships[target.EntityId] = AttitudeFactory.ModifyAttitude(_relationships[target.EntityId], attitudeReactions);
-                }
-            }
-        }
-
-        private void ApplyAttitudeRules(IMemorySource source)
-        {
-            foreach (MemoryTagType tag in source.MemoryDefinition.Tags)
-            {
-                foreach (AttitudeRule rule in MemoryTagDefinitions.Definitions[tag].Definition.AttitudeRules)
-                {
-                    if (!source.Participants.Any(p => p.EntityId == _ownerID && p.Roles.Contains(rule.SubjectRole)))
-                    {
-                        continue;
-                    }
-
-                    foreach (MemoryParticipant target in source.Participants.Where(p => p.Roles.Contains(rule.TargetRole)))
-                    {
-                        if (!_relationships.TryGetValue(target.EntityId, out Attitude? attitude))
-                        {
-                            attitude = new Attitude();
-                            _relationships[target.EntityId] = attitude;
-                        }
-
-                        AttitudeFactor factor = rule.Relationship switch
-                        {
-                            RelationshipType.Loves or RelationshipType.Hates => AttitudeFactor.Affection,
-                            RelationshipType.Trusts or RelationshipType.Distrusts => AttitudeFactor.Trust,
-                            RelationshipType.Respects or RelationshipType.Disrespects => AttitudeFactor.Respect,
-                            RelationshipType.Fears or RelationshipType.DoesNotFear => AttitudeFactor.Fear,
-                            RelationshipType.Dominates or RelationshipType.Submits => AttitudeFactor.Dominance,
-                            _ => throw new ArgumentOutOfRangeException(nameof(rule.Relationship))
-                        };
-
-                        double modifier = rule.Relationship switch
-                        {
-                            RelationshipType.Hates or RelationshipType.Distrusts or RelationshipType.Disrespects or
-                                RelationshipType.DoesNotFear or RelationshipType.Submits => -rule.Modifier,
-                            _ => rule.Modifier
-                        };
-
-                        _relationships[target.EntityId] = AttitudeFactory.ModifyAttitude(
-                            attitude,
-                            [new AttitudeReaction(factor, modifier)]);
-                    }
                 }
             }
         }

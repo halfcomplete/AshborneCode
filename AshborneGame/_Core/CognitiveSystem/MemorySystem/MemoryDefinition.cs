@@ -11,16 +11,13 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
     /// </summary>
     public class MemoryDefinition
     {
-        public double BaseIntensity { get; }
-
         /// <summary>
         /// Describes in broad terms what this Memory is about. Used by the Memory & Emotion systems to determine how an NPC should adapt this base MemoryDefinition to a unique Memory.
         /// </summary>
         public HashSet<MemoryTagType> Tags { get; }
         
-        public MemoryDefinition(double baseIntensity, HashSet<MemoryTagType> tags)
+        public MemoryDefinition(HashSet<MemoryTagType> tags)
         {
-            BaseIntensity = baseIntensity;
             Tags = tags;
         }
     }

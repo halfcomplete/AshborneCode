@@ -97,7 +97,7 @@ namespace AshborneGame._Core.Game.Events
             /// <param name="location">The location where the item was stolen.</param>
             public sealed record StoleItemEvent(int CurrentTotalHours, BOCSObject target, BOCSObject item, List<MemoryParticipant> Participants, Location location) : IMemorableGameEvent
             {
-                public MemoryDefinition MemoryDefinition { get; } = new(0.4, [MemoryTagType.Theft]);
+                public MemoryDefinition MemoryDefinition { get; } = new([MemoryTagType.Theft]);
                 public DefinitionID LocationID { get; } = location.DefinitionID;
             }
         }

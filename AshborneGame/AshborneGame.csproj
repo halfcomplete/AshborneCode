@@ -28,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="_Core\CognitiveSystem\MemorySystem\MemoryTags\Tags\" />
     <Folder Include="_Core\SaveSystem\Migration\" />
   </ItemGroup>
 

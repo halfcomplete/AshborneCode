@@ -17,16 +17,10 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
         /// <remarks>
         /// For example, the Deception may have a kvp of (MemoryRole.Target, (EmotionType.Happiness, -0.5)), meaning that if the memory has the Deception memory tag, then the Target NPC's happiness emotion will decrease by 0.5.
         /// </remarks>
-        public List<SelfEmotionRule> SelfEmotionRules { get; init; }
-        
-        /// <summary>
-        /// A Dictionary where the Key is each MemoryRole and the value is a tuple of (MemoryRole, EmotionType, value) that defines the directed emotions the self would have towards other NPCs with the target MemoryRole if the self has the first MemoryRole.
-        /// </summary>
-        /// <remarks>
-        /// These emotions are primarily used to affect attitudes between NPCs and also contribute to the aggregate emotion profile by a factor of 10%.
-        /// </remarks>
-        public List<DirectedEmotionRule> DirectedEmotionRules { get; init; }
-        
+        public List<EmotionPotential> InitialEmotions { get; init; }
+
+        public List<IntensityRule> IntensityRules { get; init; }
+
         /// <summary>
         /// A Dictionary where the Key is each MemoryRole and the value is a tuple of (MemoryRole, RelationshipType, EmotionType, value) that defines the relationship emotions the self would have towards other NPCs with the target MemoryRole if the self has the first MemoryRole.
         /// </summary>
@@ -49,30 +43,18 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
         public List<PersonalityIntensityRule> PersonalityIntensityRules { get; init; }
 
         public MemoryTagDefinition(
-            Dictionary<MemoryRole, List<(EmotionType emotion, double value)>> selfEmotionRules,
-            Dictionary<MemoryRole, List<(MemoryRole target, List<(EmotionType emotion, double value)> emotionValues)>> directedEmotionRules,
+            Dictionary<MemoryRole, List<(MemoryRole? target, List<(EmotionType emotion, double value)> emotionValues)>> initialEmotions,
+            Dictionary<MemoryRole, List<double>> intensityRules,
             Dictionary<MemoryRole, List<(MemoryRole target, List<(RelationshipType relationship, List<(EmotionType emotion, double value)> emotionValues)> relationships)>> relationshipEmotionRules,
             Dictionary<MemoryRole, List<(MemoryRole target, List<(RelationshipType relationship, double value)> relationships)>> attitudeIntensityRules,
             Dictionary<PersonalityTrait, List<(MemoryRole self, List<(EmotionType emotion, double value)> emotionValues)>> personalityEmotionRules,
             Dictionary<PersonalityTrait, List<(MemoryRole self, double value)>> personalityIntensityRules)
         {
-            SelfEmotionRules = selfEmotionRules
-                .SelectMany(pair => 
-                    pair.Value.Select(emotion => 
-                        new SelfEmotionRule(
-                            pair.Key, 
-                            emotion.emotion, 
-                            emotion.value
-                        )
-                    )
-                )
-                .ToList();
-
-            DirectedEmotionRules = directedEmotionRules
+            InitialEmotions = initialEmotions
                 .SelectMany(role =>
                     role.Value.SelectMany(target =>
                         target.emotionValues.Select(emotion =>
-                            new DirectedEmotionRule(
+                            new EmotionPotential(
                                 SubjectRole: role.Key,
                                 TargetRole: target.target,
                                 Emotion: emotion.emotion,
@@ -81,6 +63,15 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
                         )
                     )
                 )
+                .ToList();
+
+            IntensityRules = intensityRules
+                .SelectMany(pair => pair.Value.Select(value =>
+                    new IntensityRule(
+                        pair.Key,
+                        value
+                    )
+                ))
                 .ToList();
 
             RelationshipEmotionRules = relationshipEmotionRules

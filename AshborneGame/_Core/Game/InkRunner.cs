@@ -402,7 +402,7 @@ namespace AshborneGame._Core.Game
 
             // --- In-Game Time & Emotions ---
             _story.BindExternalFunction("advance_time", (int hours) => ExternalAdvanceTime(hours));
-            _story.BindExternalFunction("add_synthetic_memory", (string tagsCsv, float baseIntensity, string locationId) => ExternalAddSyntheticMemory(tagsCsv, baseIntensity, new DefinitionID(locationId)));
+            _story.BindExternalFunction("add_synthetic_memory", (string tagsCsv, string locationId) => ExternalAddSyntheticMemory(tagsCsv, new DefinitionID(locationId)));
 
             // --- Game Events ---
             _story.BindExternalFunction("eventBegin", (string eventName) => ExternalEventBegin(eventName));
@@ -589,10 +589,10 @@ namespace AshborneGame._Core.Game
             return null;
         }
 
-        private object ExternalAddSyntheticMemory(string tagsCsv, float baseIntensity, DefinitionID locationID)
+        private object ExternalAddSyntheticMemory(string tagsCsv, DefinitionID locationID)
         {
             HashSet<MemoryTagType> tags = ParseMemoryTags(tagsCsv);
-            MemoryDefinition memoryDefinition = new(baseIntensity, tags);
+            MemoryDefinition memoryDefinition = new(tags);
 
             GameContext.Player.PsychologicalState.MemoryEmotion.ReceiveSyntheticMemory(
                 memoryDefinition,

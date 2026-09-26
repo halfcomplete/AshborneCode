@@ -5,7 +5,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
 {
     public record DirectedEmotionRule(
         MemoryRole SubjectRole,
-        MemoryRole TargetRole,
+        MemoryRole? TargetRole,
         EmotionType Emotion,
         double Value);
 }

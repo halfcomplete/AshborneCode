@@ -171,7 +171,7 @@ namespace AshborneGame._Core.Game.Events
         }
 
         /// <summary>
-        /// Builds a MemoryDefinition object based on the EventData dictionary, specifically looking for "memoryTags" and "baseIntensity" keys. If no tags are provided, it defaults to a Theft tag. The base intensity is clamped between 0.0 and 1.0.
+        /// Builds a MemoryDefinition object based on the EventData dictionary, specifically looking for "memoryTags" key. If no tags are provided, it throws an error.
         /// </summary>
         /// <returns></returns>
         private static MemoryDefinition BuildMemoryDefinitionFromData()
@@ -188,7 +188,7 @@ namespace AshborneGame._Core.Game.Events
             double baseIntensity = TryParseDouble(GetDataOrDefault("baseIntensity", "0.4")) ?? 0.4;
             baseIntensity = Math.Clamp(baseIntensity, 0.0, 1.0);
 
-            return new MemoryDefinition(baseIntensity, tags);
+            return new MemoryDefinition(tags);
         }
 
         /// <summary>
