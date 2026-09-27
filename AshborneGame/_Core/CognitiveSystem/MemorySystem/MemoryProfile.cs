@@ -133,6 +133,21 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             }
         }
 
+        public List<Memory> GetMemories(MemoryQuery query)
+        {
+            return _memories.Where(m => m.Matches(query)).ToList();
+        }
+
+        public int GetMemoryCount(MemoryQuery query)
+        {
+            return _memories.Count(m => m.Matches(query));
+        }
+
+        public bool HasMemory(MemoryQuery query)
+        {
+            return _memories.Any(m => m.Matches(query));
+        }
+
         /// <summary>
         /// Takes a list of EmotionModifiers and combines ones with the same emotion type and target.
         /// </summary>

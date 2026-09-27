@@ -7,10 +7,11 @@ using AshborneGame._Core.CognitiveSystem;
 using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
 using AshborneGame._Core.SaveSystem.Data.CognitionDTOs;
 using AshborneGame._Core.SaveSystem.Serialisation;
+using AshborneGame._Core.Globals.Interfaces;
 
 namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
 {
-    public class CognitiveBehaviour : Behaviour
+    public class CognitiveBehaviour : Behaviour, ISentientEntity
     {
         public override string SaveId => "cognitive";
 

@@ -15,6 +15,7 @@ using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.Data.Definitions.Registries;
 using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags;
+using AshborneGame._Core.Globals.Interfaces;
 
 namespace AshborneGame._Core.Game
 {
@@ -403,6 +404,9 @@ namespace AshborneGame._Core.Game
             // --- In-Game Time & Emotions ---
             _story.BindExternalFunction("advance_time", (int hours) => ExternalAdvanceTime(hours));
             _story.BindExternalFunction("add_synthetic_memory", (string tagsCsv, string locationId) => ExternalAddSyntheticMemory(tagsCsv, new DefinitionID(locationId)));
+            _story.BindExternalFunction("getNPCEmotion", (string entityID, string emotionType) => ExternalGetNPCEmotion(entityID, emotionType));
+            _story.BindExternalFunction("hasNPCMemory", (string entityID, string tagsCsv) => ExternalHasNPCMemory(entityID, tagsCsv));
+            _story.BindExternalFunction("getNPCMemoryCount", (string entityID, string tagsCsv) => ExternalGetNPCMemoryCount(entityID, tagsCsv));
 
             // --- Game Events ---
             _story.BindExternalFunction("eventBegin", (string eventName) => ExternalEventBegin(eventName));
@@ -601,6 +605,53 @@ namespace AshborneGame._Core.Game
             );
 
             return null;
+        }
+
+        private static object ExternalGetNPCEmotion(string entityID, string emotionType)
+        {
+            if (!Enum.TryParse<EmotionType>(emotionType, true, out EmotionType parsedEmotion))
+            {
+                throw new ArgumentException($"Unknown emotion type '{emotionType}'.", nameof(emotionType));
+            }
+
+            ISentientEntity entity = ResolveSentientEntity(new DefinitionID(entityID));
+            return entity.PsychologicalState.MemoryEmotion.GetTotalEmotionIntensity(parsedEmotion);
+        }
+
+        private static object ExternalHasNPCMemory(string entityID, string tagsCsv)
+        {
+            ISentientEntity entity = ResolveSentientEntity(new DefinitionID(entityID));
+            MemoryQuery query = new() { Tags = ParseMemoryTags(tagsCsv) };
+            return entity.PsychologicalState.MemoryEmotion.HasMemory(query);
+        }
+
+        private static object ExternalGetNPCMemoryCount(string entityID, string tagsCsv)
+        {
+            ISentientEntity entity = ResolveSentientEntity(new DefinitionID(entityID));
+            MemoryQuery query = new() { Tags = ParseMemoryTags(tagsCsv) };
+            return entity.PsychologicalState.MemoryEmotion.GetMemoryCount(query);
+        }
+
+        private static ISentientEntity ResolveSentientEntity(DefinitionID entityID)
+        {
+            if (entityID == DefinitionIDs.Player)
+            {
+                return GameContext.Player;
+            }
+
+            List<BOCSObject> targets = GameContext.InstanceRegistry.GetByDefinition(entityID).ToList();
+            if (targets.Count != 1)
+            {
+                throw new InvalidOperationException($"NPC DefinitionID '{entityID}' resolved to {targets.Count} instances. Expected exactly one.");
+            }
+
+            BOCSObject target = targets[0];
+            if (!target.HasBehaviours<ISentientEntity>())
+            {
+                throw new InvalidOperationException($"Entity '{entityID}' does not have a cognitive behaviour.");
+            }
+
+            return target.TryGetBehaviour<ISentientEntity>().Result.Item2;
         }
 
         private static HashSet<MemoryTagType> ParseMemoryTags(string tagsCsv)
