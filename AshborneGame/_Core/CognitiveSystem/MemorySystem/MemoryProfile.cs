@@ -609,20 +609,20 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         {
             return attitudeType switch
             {
-                RelationshipType.Loves => Math.Max(0, attitude.Affection),
-                RelationshipType.Hates => Math.Min(0, attitude.Affection),
+                RelationshipType.Loves => Math.Max(0, attitude.Affection - 0.5),
+                RelationshipType.Hates => Math.Min(0, attitude.Affection - 0.5),
 
-                RelationshipType.Trusts => Math.Max(0, attitude.Trust),
-                RelationshipType.Distrusts => Math.Min(0, attitude.Trust),
+                RelationshipType.Trusts => Math.Max(0, attitude.Trust - 0.5),
+                RelationshipType.Distrusts => Math.Min(0, attitude.Trust - 0.5),
 
-                RelationshipType.Respects => Math.Max(0, attitude.Respect),
-                RelationshipType.Disrespects => Math.Min(0, attitude.Respect),
+                RelationshipType.Respects => Math.Max(0, attitude.Respect - 0.5),
+                RelationshipType.Disrespects => Math.Min(0, attitude.Respect - 0.5),
 
-                RelationshipType.Fears => Math.Max(0, attitude.Fear),
-                RelationshipType.DoesNotFear => Math.Min(0, attitude.Fear),
+                RelationshipType.Fears => Math.Max(0, attitude.Fear - 0.5),
+                RelationshipType.DoesNotFear => Math.Min(0, attitude.Fear - 0.5),
 
-                RelationshipType.Dominates => Math.Max(0, attitude.Dominance),
-                RelationshipType.Submits => Math.Min(0, attitude.Dominance),
+                RelationshipType.Dominates => Math.Max(0, attitude.Dominance - 0.5),
+                RelationshipType.Submits => Math.Min(0, attitude.Dominance - 0.5),
 
                 _ => throw new ArgumentOutOfRangeException(nameof(attitudeType), $"Unhandled attitude: {attitudeType}")
             };
