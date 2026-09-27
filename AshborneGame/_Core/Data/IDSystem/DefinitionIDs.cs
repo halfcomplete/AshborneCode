@@ -7,6 +7,8 @@ namespace AshborneGame._Core.Data.IDSystem
 {
     public static class DefinitionIDs
     {
+        public static readonly DefinitionID Player = new DefinitionID("Player");
+
         public static class NPCs
         {
             public static readonly DefinitionID BoundOne = new DefinitionID("NPCs.BoundOne");

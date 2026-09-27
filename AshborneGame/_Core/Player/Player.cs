@@ -29,7 +29,7 @@ namespace AshborneGame._Core._Player
     public class Player : ISentientEntity
     {
         private InstanceID _instanceID = new();
-        private DefinitionID _definitionID = new("Player");
+        private DefinitionID _definitionID = DefinitionIDs.Player;
 
         public PsychologicalState PsychologicalState { get; }
 
