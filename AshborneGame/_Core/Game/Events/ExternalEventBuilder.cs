@@ -63,7 +63,7 @@ namespace AshborneGame._Core.Game.Events
                 return;
             }
 
-            if (type == "memorable" || EventData.ContainsKey("memoryTags") || EventData.ContainsKey("baseIntensity"))
+            if (type == "memorable" || EventData.ContainsKey("memoryTags"))
             {
                 CommitMemorable(currentTotalHours, locationRegistry, definitionRegistry);
                 return;
