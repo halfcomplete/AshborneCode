@@ -20,8 +20,10 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
     {
         public static IReadOnlyList<LocationDefinition> All { get; } = 
         [
-            Prologue.PrologueStart, 
-            OssuaryOfEyes.WakingChamber, OssuaryOfEyes.KeepersQuarters, OssuaryOfEyes.CloisterGardens,
+            Prologue.PrologueStart,
+            OssuaryOfEyes.WakingChamber,
+            OssuaryOfEyes.KeepersQuarters, OssuaryOfEyes.KeepersQuartersLocs.KeepersQuartersDesk, OssuaryOfEyes.KeepersQuartersLocs.KeepersQuartersBookShelves,
+            OssuaryOfEyes.CloisterGardens,
         ];
 
         public static class Prologue
@@ -244,82 +246,82 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                         }
                     )
                 );
-            }
 
-            public static LocationDefinition KeepersQuartersBookShelves = new(
-                DefinitionIDs.Locations.OssuaryOfEyesLocs.KeepersQuartersLocs.Bookshelves,
-                DefinitionIDs.Scenes.OssuaryOfEyes,
-                new LocationNameAdapter("bookshelves", "the bookshelves"),
-                new DescriptionComposer(
-                    new LookDescription(
-                        "You take a look at the Keeper's bookshelves. Hundreds of books occupy the shelves. Some are histories. Others appear to be catalogues, journals or records of individual people. The books are arranged according to a system you cannot immediately understand. Underneath the shelves, you see small boxes are stacked neatly, each labelled with a name, date or location. Most are unlocked except one, which you suspect might contain something of interest. If only you had a key."
+                public static LocationDefinition KeepersQuartersBookShelves = new(
+                    DefinitionIDs.Locations.OssuaryOfEyesLocs.KeepersQuartersLocs.Bookshelves,
+                    DefinitionIDs.Scenes.OssuaryOfEyes,
+                    new LocationNameAdapter("bookshelves", "the bookshelves"),
+                    new DescriptionComposer(
+                        new LookDescription(
+                            "You take a look at the Keeper's bookshelves. Hundreds of books occupy the shelves. Some are histories. Others appear to be catalogues, journals or records of individual people. The books are arranged according to a system you cannot immediately understand. Underneath the shelves, you see small boxes are stacked neatly, each labelled with a name, date or location. Most are unlocked except one, which you suspect might contain something of interest. If only you had a key."
+                        ),
+                        new VisitDescription(
+                            "You approach the bookshelves. The Keeper glances up at you curiously, but quickly returns to his work.",
+                            "You return to the bookshelves. The Keeper continues to write, his pen moving quickly across the page.",
+                            "You approach the bookshelves again. The Keeper looks up, his eyes meeting yours for a brief moment before returning to his writing."
+                        ),
+                        new SensoryDescription(
+                            "The scent of old paper and ink fills the air.",
+                            "A faint scratching sound echoes through the room, as if something unseen is moving."
+                        ),
+                        new AmbientDescription()
+                        .AddRandomTimeBased("\"You like reading?\" The Keeper asks, without looking up from his work. After a moment of silence on your part, he returns to writing.")
                     ),
-                    new VisitDescription(
-                        "You approach the bookshelves. The Keeper glances up at you curiously, but quickly returns to his work.",
-                        "You return to the bookshelves. The Keeper continues to write, his pen moving quickly across the page.",
-                        "You approach the bookshelves again. The Keeper looks up, his eyes meeting yours for a brief moment before returning to his writing."
-                    ),
-                    new SensoryDescription(
-                        "The scent of old paper and ink fills the air.",
-                        "A faint scratching sound echoes through the room, as if something unseen is moving."
-                    ),
-                    new AmbientDescription()
-                    .AddRandomTimeBased("\"You like reading?\" The Keeper asks, without looking up from his work. After a moment of silence on your part, he returns to writing.")
-                ),
-                [],
-                new CustomCommandHandler()
-                .AddCustomCommand(new CustomCommandPhrasing(
-                    ["read", "open", "inspect", "examine", "look at", "take a look at", "take a closer look at", "skim through"],
-                    ["a book", "the books", "some books", "books", "book"]),
-                    () =>
-                    {
-                        IOService.Output.WriteNonDialogueLine(
-                            "You take a book from the shelves and open it. The pages are filled with text, diagrams and illustrations. The book concerns an obscure event in the history of the Ossuary. The account is written as though the author witnessed it personally. The final entry ends abruptly. There is no explanation.\n\n" +
-                            "However, you understand more than enough. You realise that these books are records of the past, present and future: they contain knowledge that has been gathered over centuries, and you feel a sense of awe at the Keeper's dedication to preserving it."
-                        );
-                    }
-                )
-                .AddCustomCommand(new CustomCommandPhrasing(
-                    ["scan", "skim", "search"],
-                    ["the shelves", "the books"]),
-                    () =>
-                    {
-                        IOService.Output.WriteNonDialogueLine(
-                            "You scan the shelves, looking for anything that might be of interest. You find sections concerning places, people, memories, masks, events and unresolved records. The section labelled Masks is considerably larger than you expected."
-                        );
-                    }
-                )
-                .AddCustomCommand(new CustomCommandPhrasing(
-                    ["inspect", "examine", "look at", "take a closer look at", "take a look at"],
-                    ["the boxes", "the small boxes", "boxes", "small boxes", "the labelled boxes", "labelled boxes"]),
-                    () =>
-                    {
-                        IOService.Output.WriteNonDialogueLine(
-                            "You take a closer look at the small boxes stacked beneath the shelves. Each one is labelled with a name, date or location, and contain a single object. A button. A broken key. A child's drawing. A coin. A piece of jewellery. A fragment of glass. However, one particularly intriguing box stands out: it's the only locked one. You need a key to open it."
-                        );
-                    }
-                )
-                .AddCustomCommand(new CustomCommandPhrasing(
-                    ["open", "unlock", "inspect", "examine", "look at", "take a closer look at", "take a look at"],
-                    ["the locked box", "locked box", "the box", "box"]),
-                    () =>
-                    {
-                        if (GameContext.Player.Inventory.GetItemCount(DefinitionIDs.Items.OssuaryOfEyes.KeepersKey.Value) > 0)
+                    [],
+                    new CustomCommandHandler()
+                    .AddCustomCommand(new CustomCommandPhrasing(
+                        ["read", "open", "inspect", "examine", "look at", "take a look at", "take a closer look at", "skim through"],
+                        ["a book", "the books", "some books", "books", "book"]),
+                        () =>
                         {
                             IOService.Output.WriteNonDialogueLine(
-                                // TODO: figure out exactly what happens here
-                                "You take the key from your pocket and insert it into the lock of the box. With a satisfying click, the lock opens, and you lift the lid to reveal its contents.\n\nInside, you find a small, "
+                                "You take a book from the shelves and open it. The pages are filled with text, diagrams and illustrations. The book concerns an obscure event in the history of the Ossuary. The account is written as though the author witnessed it personally. The final entry ends abruptly. There is no explanation.\n\n" +
+                                "However, you understand more than enough. You realise that these books are records of the past, present and future: they contain knowledge that has been gathered over centuries, and you feel a sense of awe at the Keeper's dedication to preserving it."
                             );
                         }
-                        else
+                    )
+                    .AddCustomCommand(new CustomCommandPhrasing(
+                        ["scan", "skim", "search"],
+                        ["the shelves", "the books"]),
+                        () =>
                         {
                             IOService.Output.WriteNonDialogueLine(
-                                "You try to open the locked box, but it won't budge. You need a key to unlock it. Perhaps you can find one somewhere in the Keeper's Quarters."
+                                "You scan the shelves, looking for anything that might be of interest. You find sections concerning places, people, memories, masks, events and unresolved records. The section labelled Masks is considerably larger than you expected."
                             );
                         }
-                    }
-                )
-            );
+                    )
+                    .AddCustomCommand(new CustomCommandPhrasing(
+                        ["inspect", "examine", "look at", "take a closer look at", "take a look at"],
+                        ["the boxes", "the small boxes", "boxes", "small boxes", "the labelled boxes", "labelled boxes"]),
+                        () =>
+                        {
+                            IOService.Output.WriteNonDialogueLine(
+                                "You take a closer look at the small boxes stacked beneath the shelves. Each one is labelled with a name, date or location, and contain a single object. A button. A broken key. A child's drawing. A coin. A piece of jewellery. A fragment of glass. However, one particularly intriguing box stands out: it's the only locked one. You need a key to open it."
+                            );
+                        }
+                    )
+                    .AddCustomCommand(new CustomCommandPhrasing(
+                        ["open", "unlock", "inspect", "examine", "look at", "take a closer look at", "take a look at"],
+                        ["the locked box", "locked box", "the box", "box"]),
+                        () =>
+                        {
+                            if (GameContext.Player.Inventory.GetItemCount(DefinitionIDs.Items.OssuaryOfEyes.KeepersKey.Value) > 0)
+                            {
+                                IOService.Output.WriteNonDialogueLine(
+                                    // TODO: figure out exactly what happens here
+                                    "You take the key from your pocket and insert it into the lock of the box. With a satisfying click, the lock opens, and you lift the lid to reveal its contents.\n\nInside, you find a small, "
+                                );
+                            }
+                            else
+                            {
+                                IOService.Output.WriteNonDialogueLine(
+                                    "You try to open the locked box, but it won't budge. You need a key to unlock it. Perhaps you can find one somewhere in the Keeper's Quarters."
+                                );
+                            }
+                        }
+                    )
+                );
+            }
 
             #endregion Keeper's Quarters
 
@@ -405,11 +407,11 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                     () =>
                     {
                         IOService.Output.WriteNonDialogueLine("You kneel down and begin tending to the plants. The Gardener watches you for a moment in gratitude, then returns to her work. You feel a sense of satisfaction as you help maintain the garden.");
-                        //EventBus.Publish(new GameEvents.Player.HelpedCharacterEvent(GameContext.TimeTracker.TotalInGameHours, [new MemoryParticipant("The Gardener", [MemoryRole.Target], new MemoryParticipant(DefinitionIDs.Player, [MemoryRole.Actor]))], DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens));
+                        EventBus.Publish(new GameEvents.Player.HelpedCharacterEvent(GameContext.TimeTracker.TotalInGameHours, [new MemoryParticipant(DefinitionIDs.NPCs.Gardener, [MemoryRole.Target]), new MemoryParticipant(DefinitionIDs.Player, [MemoryRole.Actor])], DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens));
                     }
                 )
                 .AddCustomCommand(
-                    new CustomCommandPhrasing(["talk to", "speak to", "converse with", "ask"], ["gardener", "the gardener", "woman", "the woman"]),
+                    new CustomCommandPhrasing(["talk to", "speak to", "converse with", "ask", "call"], ["gardener", "the gardener", "woman", "the woman"]),
                     async () =>
                     {
                         await IOService.Output.WriteNonDialogueLine("You move across the garden towards the Gardener.");
