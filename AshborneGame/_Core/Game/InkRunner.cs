@@ -721,21 +721,6 @@ namespace AshborneGame._Core.Game
 
         #endregion
 
-        #region Memories
-
-        // TODO: (Later) Finish API
-
-        private static object ExternalStrengthenMemoriesByTags(string entityID, string tagsCsv, double amount)
-        {
-            var tags = ParseMemoryTags(tagsCsv);
-
-            // find entity id
-
-            return null;
-        }
-
-        #endregion Memories
-
         /// <summary>
         /// Gets the visit count for a location by its slug-based ID.
         /// Throws with a clear error message if the location ID is unknown.
