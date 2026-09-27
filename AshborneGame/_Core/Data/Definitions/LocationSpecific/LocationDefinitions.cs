@@ -415,10 +415,124 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                     async () =>
                     {
                         await IOService.Output.WriteNonDialogueLine("You move across the garden towards the Gardener.");
-                        await GameContext.DialogueService.StartDialogue("Act1_Scene1_Gardener");
+                        await GameContext.DialogueService.StartDialogue("Act1_Scene1_Gardener_Intro");
                     }
                 )
             );
+
+            public static class CloisterGardenLocs
+            {
+                public static LocationDefinition GardenWalk =>
+                    new(
+                        DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardenLocs.GardenWalk,
+                        DefinitionIDs.Scenes.OssuaryOfEyes,
+                        new LocationNameAdapter("garden walk", "the garden walk"),
+                        new DescriptionComposer(
+                            new LookDescription(
+                                "You take a look around the garden walk. The path is lined with carefully tended plants and curves through the garden, passing beneath old stone arches and between dense beds of vegetation. Several smaller paths branch away from it, including towards the herbs beds and the nearby fountain.",
+                                "You examine the garden walk more closely. The plants are thriving, and you notice a few small birds flitting between the branches."
+                            ),
+                            new VisitDescription(
+                                "You follow the narrow path beneath the cloisters, away from where the Gardener works. Plants grow along both sides, climbing the old stone columns and hanging across the arches overhead. The path remains mostly clear despite the growth, suggesting that someone walks here every day.",
+                                "You move through the walkway again. There are small signs of life all around you: a bird lands briefly on the edge of the fountain, a vine shifts against the wall with the wind, and several leaves fall onto the path.",
+                                "You walk along the Garden Walk. The route has become familiar. You recognise the plants growing beside the path and the marks left by the Gardener's tools."
+                            ),
+                            new SensoryDescription(
+                                "The scent of fresh flowers fills the air.",
+                                "A gentle breeze rustles through the leaves, creating a soothing sound."
+                            ),
+                            new AmbientDescription()
+                            .AddRandomTimeBased(
+                                "Leaves move gently above the garden path.",
+                                "Water continues running through the narrow channels between the beds to somewhere beneath the paving.",
+                                "Somewhere nearby, a gardening tool strikes stone.",
+                                "A vine falls across one of the stones.",
+                                "A leaf lands at your feet.",
+                                "The Gardener passes by carrying a basket, before returning to her work among the herb beds."
+                            )
+                        ),
+                        [],
+                        new CustomCommandHandler()
+                        .AddCustomCommand(
+                            new CustomCommandPhrasing(["talk to", "speak to", "converse with", "ask", "call"], ["gardener", "the gardener", "woman", "the woman"]),
+                            async () =>
+                            {
+                                await IOService.Output.WriteNonDialogueLine("You move across the garden towards the Gardener.");
+                                await GameContext.DialogueService.StartDialogue("Act1_Scene1_Gardener_Intro");
+                            }
+                        )
+                        .AddCustomCommand(
+                            new CustomCommandPhrasing(["tend", "tend to", "care for", "care", "take care of", "water", "give water to"], ["", "plants", "plant", "the plants"]),
+                            () =>
+                            {
+                                IOService.Output.WriteNonDialogueLine("You kneel down and begin tending to the plants. The Gardener watches you for a moment in gratitude, then returns to her work. You feel a sense of satisfaction as you help maintain the garden.");
+                                EventBus.Publish(new GameEvents.Player.HelpedCharacterEvent(GameContext.TimeTracker.TotalInGameHours, [new MemoryParticipant(DefinitionIDs.NPCs.Gardener, [MemoryRole.Target]), new MemoryParticipant(DefinitionIDs.Player, [MemoryRole.Actor])], DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens));
+                            }
+                        )
+                        .AddCustomCommand(
+                            new CustomCommandPhrasing(["follow", "continue on", "keep moving on", "keep going on", "keep moving", "keep going"], ["", "the path", "path", "the walk", "walk", "the garden walk", "garden walk"]),
+                            async () =>
+                            {
+                                await GameContext.MovementService.Move(GameContext.Player, ["herb beds"]);
+                            }
+                        )
+                    );
+                
+                public static LocationDefinition HerbBeds =>
+                    new(
+                        DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardenLocs.HerbBeds,
+                        DefinitionIDs.Scenes.OssuaryOfEyes,
+                        new LocationNameAdapter("herb beds", "the herb beds"),
+                        new DescriptionComposer(
+                            new LookDescription(
+                                "Rows of herbs fill the beds. Some are recognisable. Others have leaves, stems or flowers unlike anything you have seen outside the Ossuary."
+                            ),
+                            new VisitDescription(
+                                "You enter a section of the garden divided into low rectangular beds.\n\nEach contains a different collection of plants. Small wooden markers identify most of them, although several labels have faded beyond recognition. The Gardener has arranged everything according to a system of her own.",
+                                "You return to the Herb Beds.\n\nSeveral plants have been harvested since your last visit. Others have begun flowering. The Gardener has replaced some of the missing labels.",
+                                "You enter the Herb Beds again. The plants continue to grow, and the Gardener is tending to them somewhere nearby."
+                            ),
+                            new SensoryDescription(
+                                "The scent of fresh herbs fills the air.",
+                                "A gentle breeze rustles through the leaves, creating a soothing sound."
+                            ),
+                            new AmbientDescription()
+                            .AddRandomTimeBased(
+                                "The Gardener cuts a stem with a small knife.",
+                                "A small insect crawls across a wooden marker.",
+                                "The smell of crushed leaves briefly fills the air.",
+                                "Soil falls from a recently disturbed root.",
+                                "The Gardener mutters something about a plant refusing to grow.",
+                                "One of the flowers closes as your shadow crosses it."
+                            )
+                        ),
+                        [],
+                        new CustomCommandHandler()
+                        .AddCustomCommand(
+                            new CustomCommandPhrasing(["talk to", "speak to", "converse with", "ask", "call"], ["gardener", "the gardener", "woman", "the woman"]),
+                            async () =>
+                            {
+                                await IOService.Output.WriteNonDialogueLine("You move across the herb beds towards the Gardener.");
+                                await GameContext.DialogueService.StartDialogue("Act1_Scene1_Gardener_Intro");
+                            }
+                        )
+                        .AddCustomCommand(
+                            new CustomCommandPhrasing(["tend", "tend to", "care for", "care", "take care of", "water", "give water to"], ["", "plants", "plant", "the plants"]),
+                            () =>
+                            {
+                                IOService.Output.WriteNonDialogueLine("You kneel down and begin tending to the plants. The Gardener watches you for a moment in gratitude, then returns to her work. You feel a sense of satisfaction as you help maintain the garden.");
+                                EventBus.Publish(new GameEvents.Player.HelpedCharacterEvent(GameContext.TimeTracker.TotalInGameHours, [new MemoryParticipant(DefinitionIDs.NPCs.Gardener, [MemoryRole.Target]), new MemoryParticipant(DefinitionIDs.Player, [MemoryRole.Actor])], DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens));
+                            }
+                        )
+                        .AddCustomCommand(
+                            new CustomCommandPhrasing(["harvest", "take", "harvest all", "take all", "unroot"], ["a plant", "plant", "one of the plants", "the plants", "some plants"]),
+                            async () =>
+                            {
+                                await GameContext.DialogueService.StartDialogue("Act1_Scene1_Gardener_Harvest");
+                            }
+                        )
+                    );
+            }
 
             /*
             
