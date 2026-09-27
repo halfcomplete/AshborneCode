@@ -532,6 +532,65 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                             }
                         )
                     );
+                
+                public static LocationDefinition InnerFountain =>
+                    new(
+                        DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardenLocs.InnerFountain,
+                        DefinitionIDs.Scenes.OssuaryOfEyes,
+                        new LocationNameAdapter("inner fountain", "the inner fountain"),
+                        new DescriptionComposer(
+                            new LookDescription(
+                                "You take a look at the inner fountain. It is old and heavily worn: the carving above the basin depicts several intertwined roots surrounding a single eye."
+                            ),
+                            new VisitDescription(
+                                "You arrive at the centre of the garden.\n\nA circular fountain stands here, its stone basin darkened by centuries of water. A narrow stream falls continuously from a carved opening above it. The water is remarkably clear.",
+                                "You return to the fountain. The water continues to run. The Gardener has placed several small plants around its base, carefully positioned where the spray reaches them.",
+                                "You arrive at the fountain again. The area is almost entirely familiar to you now. The Gardener remains elsewhere, tending to the plants."
+                            ),
+                            new SensoryDescription(
+                                "The scent of fresh water and stone fills the air.",
+                                "The gentle sound of water trickling over stone creates a peaceful atmosphere."
+                            ),
+                            new AmbientDescription()
+                            .AddRandomTimeBased(
+                                "A bird lands briefly on the edge of the fountain before flying away.",
+                                "A leaf falls into the water, creating ripples that spread across the surface.",
+                                "The Gardener passes by, pausing briefly to admire the fountain.",
+                                "Water falls steadily into the basin.",
+                                "A drop lands on the stone beside you.",
+                                "The carved eye catches the light and, for a tiny moment, seems to be watching you.",
+                                "Water disappears into a narrow channel beneath the basin.",
+                                "A small underground tremor makes the surface of the fountain quiver."
+                            )
+                        ),
+                        [],
+                        new CustomCommandHandler()
+                        .AddCustomCommand(
+                            new CustomCommandPhrasing(["drink", "have a drink", "take a drink", "drink some water", "have a sip"], ["", "from the fountain", "from the water", "from the basin", "from the fountain's basin", "of the water", "of the fountain's water"]),
+                            () =>
+                            {
+                                IOService.Output.WriteNonDialogueLine("You cup your hands and take a sip of water from the fountain. The water is cool and refreshing, and you feel a momentary sense of clarity and calm.");
+                            }
+                        )
+                        .AddCustomCommand(
+                            new CustomCommandPhrasing(["talk to", "speak to", "converse with", "ask", "call"], ["gardener", "the gardener", "woman", "the woman"]),
+                            async () =>
+                            {
+                                await IOService.Output.WriteNonDialogueLine("You move across the garden towards the Gardener.");
+                                await GameContext.DialogueService.StartDialogue("Act1_Scene1_Gardener_Intro");
+                            }
+                        )
+                        .AddCustomCommand(
+                            new CustomCommandPhrasing(["inspect", "examine", "take a closer look at"], ["it", "the fountain", "the inner fountain"]),
+                            async () =>
+                            {
+                                await IOService.Output.WriteNonDialogueLine(
+                                    "You take a closer look at the fountain.\n\nThe carving above the basin depicts several intertwined roots surrounding a single eye. The craftsmanship is exquisite, and you feel a strange sense of reverence as you gaze upon it.\n\n" +
+                                    "Looking down at tthe base of the fountain, you find a small inscription that reads: \"To those who observe, may the waters guide you.\" Surrounding it is a series of small, intricate symbols: a sphere-like object, what seems to be a star, and another eye."
+                                );
+                            }
+                        )
+                    );
             }
 
             /*
