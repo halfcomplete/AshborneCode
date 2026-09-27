@@ -530,9 +530,9 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         {
             double intensity = GetInitialIntensity(source, self);
 
-            intensity += GetPersonalityIntensityImpact(personality, self, source.MemoryDefinition.Tags, source.Participants);
+            intensity *= GetPersonalityIntensityMult(personality, self, source.MemoryDefinition.Tags, source.Participants);
 
-            intensity += GetAttitudeIntensityImpact(source, self, relationships);
+            intensity *= GetAttitudeIntensityMult(source, self, relationships);
 
             return Math.Clamp(intensity, 0.0, 1.0);
         }
@@ -565,9 +565,9 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// their house burning down, then the intensity of the Memory (how significant that is to the NPC) would 
         /// decrease as they don't care.
         /// </remarks>
-        private static double GetAttitudeIntensityImpact(IMemorySource source, DefinitionID self, Dictionary<DefinitionID, Attitude> relationships)
+        private static double GetAttitudeIntensityMult(IMemorySource source, DefinitionID self, Dictionary<DefinitionID, Attitude> relationships)
         {
-            double intensityImpact = 0.0;
+            double mult = 1.0;
 
             foreach (MemoryTagType tag in source.MemoryDefinition.Tags)
             {
@@ -596,13 +596,13 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                             // figure out if the rule says anything about our relationship type
                             double alignment = Math.Abs(GetAttitudeAlignmentWithAttitudeType(attitude, rule.Relationship));
 
-                            intensityImpact += rule.Value * alignment;
+                            mult *= (rule.Value - 1) * alignment + 1;
                         }
                     }
                 }
             }
 
-            return intensityImpact;
+            return mult;
         }
 
         private static double GetAttitudeAlignmentWithAttitudeType(Attitude attitude, RelationshipType attitudeType)
@@ -632,9 +632,9 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// Takes the personality an NPC has and the Memory tags of a memory and returns
         /// how much the Memory's intensity for this NPC should change because of the NPC's personality.
         /// </summary>
-        private static double GetPersonalityIntensityImpact(PersonalityProfile personality, DefinitionID self, HashSet<MemoryTagType> tags, List<MemoryParticipant> participants)
+        private static double GetPersonalityIntensityMult(PersonalityProfile personality, DefinitionID self, HashSet<MemoryTagType> tags, List<MemoryParticipant> participants)
         {
-            double impact = 0;
+            double mult = 1.0;
 
             foreach (MemoryTagType tag in tags)
             {
@@ -645,12 +645,12 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                     if (participants.Any(p => p.EntityId == self && p.Roles.Contains(modifier.SubjectRole)) &&
                         personality.PersonalityTraits.TryGetValue(modifier.Trait, out double traitValue))
                     {
-                        impact += modifier.Value * traitValue;
+                        mult *= (modifier.Value - 1) * traitValue + 1;
                     }
                 }
             }
 
-            return impact;
+            return mult;
         }
 
         // TODO: review this function; can we make it any more efficient?
