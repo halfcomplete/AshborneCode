@@ -257,7 +257,7 @@ namespace AshborneGame._Core.Game.Events
             if (targets.Count == 0)
             {
                 // Player currently has Guid.Empty in this codebase.
-                targets.Add((GameContext.Player, new DefinitionID("Player")));
+                targets.Add((GameContext.Player, DefinitionIDs.Player));
             }
 
             return targets;
@@ -267,7 +267,7 @@ namespace AshborneGame._Core.Game.Events
         {
             ConfirmInitialised();
 
-            if (entityId.Value == "Player")
+            if (entityId.Value == DefinitionIDs.Player.Value)
             {
                 return GameContext.Player;
             }
