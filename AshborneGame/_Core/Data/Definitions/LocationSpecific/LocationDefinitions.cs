@@ -1,7 +1,9 @@
-﻿using AshborneGame._Core.Data.IDSystem;
+﻿using AshborneGame._Core.CognitiveSystem.MemorySystem;
+using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Game.CommandHandling;
 using AshborneGame._Core.Game.DescriptionHandling;
+using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.Globals.Constants;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
@@ -399,10 +401,19 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                 [],
                 new CustomCommandHandler()
                 .AddCustomCommand(
-                    new CustomCommandPhrasing(["tend", "tend to", "care for", "care", "take care of"], ["", "plants", "plant", "the plants"]),
+                    new CustomCommandPhrasing(["tend", "tend to", "care for", "care", "take care of", "water", "give water to"], ["", "plants", "plant", "the plants"]),
                     () =>
                     {
-                        
+                        IOService.Output.WriteNonDialogueLine("You kneel down and begin tending to the plants. The Gardener watches you for a moment in gratitude, then returns to her work. You feel a sense of satisfaction as you help maintain the garden.");
+                        //EventBus.Publish(new GameEvents.Player.HelpedCharacterEvent(GameContext.TimeTracker.TotalInGameHours, [new MemoryParticipant("The Gardener", [MemoryRole.Target], new MemoryParticipant(DefinitionIDs.Player, [MemoryRole.Actor]))], DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens));
+                    }
+                )
+                .AddCustomCommand(
+                    new CustomCommandPhrasing(["talk to", "speak to", "converse with", "ask"], ["gardener", "the gardener", "woman", "the woman"]),
+                    async () =>
+                    {
+                        await IOService.Output.WriteNonDialogueLine("You move across the garden towards the Gardener.");
+                        await GameContext.DialogueService.StartDialogue("Act1_Scene1_Gardener");
                     }
                 )
             );
