@@ -13,6 +13,8 @@ namespace AshborneGame._Core.Data.IDSystem
         {
             public static readonly DefinitionID BoundOne = new DefinitionID("NPCs.BoundOne");
             public static readonly DefinitionID Dummy = new DefinitionID("NPCs.Dummy");
+            public static readonly DefinitionID Keeper = new DefinitionID("NPCs.Keeper");
+            public static readonly DefinitionID Gardener = new DefinitionID("NPCs.Gardener");
         }
 
         public static class Locations
