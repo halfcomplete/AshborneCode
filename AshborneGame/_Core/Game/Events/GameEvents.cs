@@ -89,31 +89,19 @@ namespace AshborneGame._Core.Game.Events
             /// <param name="MaskName">The name of the mask equipped.</param>
             public sealed record MaskEquippedEvent(int CurrentTotalHours, string MaskName) : IGameEvent;
 
-            /// <summary>
-            /// Test event. Raised when the player steals an item from an NPC.
-            /// </summary>
-            /// <param name="target">The NPC affected.</param>
-            /// <param name="item">The item stolen.</param>
-            /// <param name="location">The location where the item was stolen.</param>
-            public sealed record StoleItemEvent(int CurrentTotalHours, BOCSObject target, BOCSObject item, List<MemoryParticipant> Participants, DefinitionID location) : IMemorableGameEvent
-            {
-                public MemoryDefinition MemoryDefinition { get; } = new([MemoryTagType.Theft]);
-                public DefinitionID LocationID { get; } = location;
-            }
-
             public sealed record HelpedCharacterEvent(int CurrentTotalHours, List<MemoryParticipant> Participants, DefinitionID location) : IMemorableGameEvent
             {
                 public MemoryDefinition MemoryDefinition { get; } = new([MemoryTagType.Help, MemoryTagType.Kindness]);
                 public DefinitionID LocationID { get; } = location;
             }
 
-            public sealed record AvoidedFlowersEvent(int CurrentTotalHours, List<MemoryParticipant> Participants, DefinitionID location) : IMemorableGameEvent
+            public sealed record ShowedCareForSomethingPreciousEvent(int CurrentTotalHours, List<MemoryParticipant> Participants, DefinitionID location) : IMemorableGameEvent
             {
                 public MemoryDefinition MemoryDefinition { get; } = new([MemoryTagType.Kindness]);
                 public DefinitionID LocationID { get; } = location;
             }
 
-            public sealed record SteppedOnFlowersEvent(int CurrentTotalHours, List<MemoryParticipant> Participants, DefinitionID location) : IMemorableGameEvent
+            public sealed record RuinedSomethingPreciousEvent(int CurrentTotalHours, List<MemoryParticipant> Participants, DefinitionID location) : IMemorableGameEvent
             {
                 // TODO: Add a specific memory tag for this event type
                 public MemoryDefinition MemoryDefinition { get; } = new([]);

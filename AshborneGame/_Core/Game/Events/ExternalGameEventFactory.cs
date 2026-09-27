@@ -5,7 +5,7 @@ namespace AshborneGame._Core.Game.Events
 {
     internal static class ExternalGameEventFactory
     {
-        public static bool TryCreateNormalEvent(string eventName, int currentTotalHours, IReadOnlyDictionary<string, string> data, out IGameEvent? gameEvent)
+        public static bool TryCreateNormalEvent(string eventName, int currentTotalHours, IReadOnlyDictionary<string, string> data, List<MemoryParticipant> participants, out IGameEvent? gameEvent)
         {
             string normalizedName = eventName.Trim().ToLowerInvariant();
 
@@ -15,6 +15,13 @@ namespace AshborneGame._Core.Game.Events
                 "player.moved" => new GameEvents.Player.MovedEvent(currentTotalHours, GetOptionalString(data, "fromLocation", "from"), GetRequiredString(data, "toLocation", "to")),
                 "player.itempickedup" => new GameEvents.Player.ItemPickedUpEvent(currentTotalHours, GetRequiredString(data, "itemName", "item"), GetRequiredString(data, "itemId")),
                 "player.maskequipped" => new GameEvents.Player.MaskEquippedEvent(currentTotalHours, GetRequiredString(data, "maskName", "mask")),
+                
+                "player.helpedcharacter" => 
+                new GameEvents.Player.HelpedCharacterEvent(currentTotalHours, participants, new (GetRequiredString(data, "locationId", "character"))),
+                "player.showedcareforsomethingprecious" => 
+                new GameEvents.Player.ShowedCareForSomethingPreciousEvent(currentTotalHours, participants, new (GetRequiredString(data, "locationId", "location"))),
+                "player.ruinedsomethingprecious" => 
+                new GameEvents.Player.RuinedSomethingPreciousEvent(currentTotalHours, participants, new (GetRequiredString(data, "locationId", "location"))),
 
                 "dialogue.started" => new GameEvents.Dialogue.StartedEvent(currentTotalHours, GetRequiredString(data, "dialogueName", "dialogue")),
                 "dialogue.ended" => new GameEvents.Dialogue.EndedEvent(currentTotalHours, GetRequiredString(data, "dialogueName", "dialogue")),

@@ -69,7 +69,7 @@ namespace AshborneGame._Core.Game.Events
                 return;
             }
 
-            if (ExternalGameEventFactory.TryCreateNormalEvent(EventName, currentTotalHours, EventData, out IGameEvent? gameEvent) && gameEvent != null)
+            if (ExternalGameEventFactory.TryCreateNormalEvent(EventName, currentTotalHours, EventData, BuildParticipants(definitionRegistry), out IGameEvent? gameEvent) && gameEvent != null)
             {
                 PublishConcreteEvent(gameEvent);
                 return;
