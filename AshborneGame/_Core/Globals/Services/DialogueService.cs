@@ -30,20 +30,20 @@ namespace AshborneGame._Core.Globals.Services
 
         private string originalKey = string.Empty;
 
-        public async Task StartDialogue(string inkFilePath)
+        public async Task StartDialogue(string inkFileName)
         {
-            originalKey = inkFilePath;
+            originalKey = inkFileName;
             _currentDialogueKey = originalKey;
             Console.WriteLine($"[DialogueService] StartDialogue invoked with key='{originalKey}' (before path resolution)");
             try
             {
-                await IOService.Output.DisplayDebugMessage($"Starting dialogue: {inkFilePath}", ConsoleMessageTypes.INFO);
+                await IOService.Output.DisplayDebugMessage($"Starting dialogue: {inkFileName}", ConsoleMessageTypes.INFO);
                 await IOService.Output.DisplayDebugMessage($"Current directory: {Directory.GetCurrentDirectory()}", ConsoleMessageTypes.INFO);
                 DialogueStart?.Invoke();
-                inkFilePath = await FilePathResolver.FromDialogue(inkFilePath);
-                await IOService.Output.DisplayDebugMessage($"[DialogueService] Resolved ink file path='{inkFilePath}' for key='{originalKey}'");
-                await IOService.Output.DisplayDebugMessage($"Loading file: {inkFilePath}", ConsoleMessageTypes.INFO);
-                await _inkRunner.LoadFromFileAsync(inkFilePath);
+                inkFileName = await FilePathResolver.FromDialogue(inkFileName);
+                await IOService.Output.DisplayDebugMessage($"[DialogueService] Resolved ink file path='{inkFileName}' for key='{originalKey}'");
+                await IOService.Output.DisplayDebugMessage($"Loading file: {inkFileName}", ConsoleMessageTypes.INFO);
+                await _inkRunner.LoadFromFileAsync(inkFileName);
                 await IOService.Output.DisplayDebugMessage("Running Ink story...", ConsoleMessageTypes.INFO);
                 await _inkRunner.RunAsync();
                 await IOService.Output.DisplayDebugMessage("RunAsync() completed.", ConsoleMessageTypes.INFO);
