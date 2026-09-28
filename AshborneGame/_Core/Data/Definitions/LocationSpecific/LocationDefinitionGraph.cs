@@ -23,6 +23,9 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
 
         public static readonly IReadOnlyList<ParentChildDefinition> Hierarchy =
         [
+            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens, DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardenLocs.GardenWalk),
+            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens, DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardenLocs.HerbBeds),
+            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens, DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardenLocs.InnerFountain),
         ];
     }
 }
