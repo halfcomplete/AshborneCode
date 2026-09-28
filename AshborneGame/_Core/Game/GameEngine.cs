@@ -92,8 +92,6 @@ namespace AshborneGame._Core.Game
             var _firstScene = _firstLocation.Scene ?? throw new InvalidOperationException($"Location '{_firstLocation.DefinitionID}' does not have a scene.");
 
             player.SetupMoveTo(_firstLocation, _firstScene, false).GetAwaiter().GetResult();
-
-            EventBus.Publish(new RuinedSomethingPreciousEvent(0, [new(DefinitionIDs.Player, [MemoryRole.Actor]), new(DefinitionIDs.NPCs.Gardener, [MemoryRole.Target])], DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGarden));
         }
 
 
