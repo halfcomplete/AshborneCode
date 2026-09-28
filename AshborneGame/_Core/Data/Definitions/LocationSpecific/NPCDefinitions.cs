@@ -50,7 +50,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                     new CognitiveBehaviour(
                         new PsychologicalState(
                             new(),
-                            new MemoryEmotionProfile(DefinitionIDs.NPCs.Gardener, GardenerPersonality, new()),
+                            new MemoryEmotionProfile(DefinitionIDs.NPCs.Gardener, GardenerPersonality, new(), subscribeToEvents: false),
                             GardenerPersonality
                         )
                     )
@@ -76,7 +76,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                     new CognitiveBehaviour(
                         new PsychologicalState(
                             new(),
-                            new MemoryEmotionProfile(DefinitionIDs.NPCs.Keeper, KeeperPersonality, new()),
+                            new MemoryEmotionProfile(DefinitionIDs.NPCs.Keeper, KeeperPersonality, new(), subscribeToEvents: false),
                             KeeperPersonality
                         )
                     )

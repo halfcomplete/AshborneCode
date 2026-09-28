@@ -142,23 +142,23 @@ public class BOCSObject
     {
 #if DEBUG
         // Debug messages
-        await IOService.Output.DisplayDebugMessage($"Attempting to get behaviour of type {typeof(T).FullName} from {Name}.", ConsoleMessageTypes.INFO);
-        await IOService.Output.DisplayDebugMessage($"{Name} has Behaviours:", ConsoleMessageTypes.INFO);
+        //await IOService.Output.DisplayDebugMessage($"Attempting to get behaviour of type {typeof(T).FullName} from {Name}.", ConsoleMessageTypes.INFO);
+        //await IOService.Output.DisplayDebugMessage($"{Name} has Behaviours:", ConsoleMessageTypes.INFO);
         
-        // Loop over each module and each Behaviour implementing that module and print it
-        foreach (var kvp in ByModule)
-        {
-            foreach (var b in kvp.Value)
-            {
-                await IOService.Output.DisplayDebugMessage($"- {kvp.Key.Name}: {b.GetType().FullName}", ConsoleMessageTypes.INFO);
-            }
-        }
+        //// Loop over each module and each Behaviour implementing that module and print it
+        //foreach (var kvp in ByModule)
+        //{
+        //    foreach (var b in kvp.Value)
+        //    {
+        //        await IOService.Output.DisplayDebugMessage($"- {kvp.Key.Name}: {b.GetType().FullName}", ConsoleMessageTypes.INFO);
+        //    }
+        //}
 #endif
         // Check if the given module T exists in Behaviours
         if (ByModule.TryGetValue(typeof(T), out var behaviours) && behaviours.Count > 0 && behaviours[0] is T castedBehaviour)
         {
             // If it does, return the first Behaviour in the list
-            await IOService.Output.DisplayDebugMessage($"Successfully retrieved behaviour of type {typeof(T).FullName} from {Name}", ConsoleMessageTypes.INFO);
+            //await IOService.Output.DisplayDebugMessage($"Successfully retrieved behaviour of type {typeof(T).FullName} from {Name}", ConsoleMessageTypes.INFO);
             return (true, castedBehaviour);
         }
         // If not, return false and null

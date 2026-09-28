@@ -18,51 +18,67 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
         /// </summary>
         public static readonly Dictionary<EmotionType, List<AttitudeReaction>> Reactions = new()
         {
-            [EmotionType.Anger] = 
             {
-                new(AttitudeFactor.Affection, -0.3),
-                new(AttitudeFactor.Trust, -0.4),
-                new(AttitudeFactor.Respect, -0.3),
+                EmotionType.Anger, new()
+                {
+                    new(AttitudeFactor.Affection, -0.3),
+                    new(AttitudeFactor.Trust, -0.4),
+                    new(AttitudeFactor.Respect, -0.3),
+                }
             },
-            [EmotionType.Contempt] = 
             {
-                new(AttitudeFactor.Affection, -0.3),
-                new(AttitudeFactor.Trust, -0.3),
-                new(AttitudeFactor.Respect, -0.6),
-                new(AttitudeFactor.Fear, -0.1),
+                EmotionType.Contempt, new()
+                {
+                    new(AttitudeFactor.Affection, -0.3),
+                    new(AttitudeFactor.Trust, -0.3),
+                    new(AttitudeFactor.Respect, -0.6),
+                    new(AttitudeFactor.Fear, -0.1),
+                }
             },
-            [EmotionType.Disgust] = 
             {
-                new(AttitudeFactor.Affection, -0.4),
-                new(AttitudeFactor.Trust, -0.2),
-                new(AttitudeFactor.Respect, -0.5),
-                new(AttitudeFactor.Fear, -0.1),
+                EmotionType.Disgust, new()
+                {
+                    new(AttitudeFactor.Affection, -0.4),
+                    new(AttitudeFactor.Trust, -0.2),
+                    new(AttitudeFactor.Respect, -0.5),
+                    new(AttitudeFactor.Fear, -0.1),
+                }
             },
-            [EmotionType.Fear] = 
             {
-                new(AttitudeFactor.Affection, -0.2),
-                new(AttitudeFactor.Trust, -0.2),
-                new(AttitudeFactor.Fear, +0.7),
-                new(AttitudeFactor.Dominance, -0.4)
+                EmotionType.Fear, new()
+                {
+                    new(AttitudeFactor.Affection, -0.2),
+                    new(AttitudeFactor.Trust, -0.2),
+                    new(AttitudeFactor.Fear, +0.7),
+                    new(AttitudeFactor.Dominance, -0.4)
+                }
             },
-            [EmotionType.Happiness] = 
             {
-                new(AttitudeFactor.Affection, +0.6),
-                new(AttitudeFactor.Trust, +0.3),
-                new(AttitudeFactor.Fear, -0.2),
-                new(AttitudeFactor.Dominance, -0.1),
-                new(AttitudeFactor.Respect, +0.3),
+                EmotionType.Happiness, new()
+                {
+                    new(AttitudeFactor.Affection, +0.6),
+                    new(AttitudeFactor.Trust, +0.3),
+                    new(AttitudeFactor.Fear, -0.2),
+                    new(AttitudeFactor.Dominance, -0.1),
+                    new(AttitudeFactor.Respect, +0.3),
+                }
             },
-            [EmotionType.Sadness] = 
             {
-                new(AttitudeFactor.Affection, +0.2),
-                new(AttitudeFactor.Trust, +0.15),
-                new(AttitudeFactor.Fear, -0.2),
+                EmotionType.Sadness, new()
+                {
+                    new(AttitudeFactor.Affection, +0.2),
+                    new(AttitudeFactor.Trust, +0.15),
+                    new(AttitudeFactor.Fear, -0.2),
+                }
             },
-            [EmotionType.Surprise] = 
             {
-                // idk what to put here; what attitude changes does feeling 'surprised' at someone make???
+                EmotionType.Surprise, new()
+                {
+                    new(AttitudeFactor.Dominance, -0.3),
+                    new(AttitudeFactor.Trust, -0.2)
+                }
             },
         };
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AshborneGame._Core._Player;
+using AshborneGame._Core.CognitiveSystem.MemorySystem;
 using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.Definitions;
 using AshborneGame._Core.Data.Definitions.Registries;
@@ -13,6 +14,7 @@ using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.QuestManagement;
 using AshborneGame._Core.SaveSystem;
 using AshborneGame._Core.SaveSystem.Data;
+using static AshborneGame._Core.Game.Events.GameEvents.Player;
 
 namespace AshborneGame._Core.Game
 {
@@ -90,6 +92,8 @@ namespace AshborneGame._Core.Game
             var _firstScene = _firstLocation.Scene ?? throw new InvalidOperationException($"Location '{_firstLocation.DefinitionID}' does not have a scene.");
 
             player.SetupMoveTo(_firstLocation, _firstScene, false).GetAwaiter().GetResult();
+
+            EventBus.Publish(new RuinedSomethingPreciousEvent(0, [new(DefinitionIDs.Player, [MemoryRole.Actor]), new(DefinitionIDs.NPCs.Gardener, [MemoryRole.Target])], DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGarden));
         }
 
 

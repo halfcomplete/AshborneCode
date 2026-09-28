@@ -28,6 +28,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
             var save = new SaveData(PsychologicalState.GetSaveData());
             var clone = new CognitiveBehaviour(new PsychologicalState(PsychologicalState.OwnerID));
             clone.LoadSaveData(new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement(save)));
+            clone.PsychologicalState.MemoryEmotion.SubscribeToEvents();
             return clone;
         }
 

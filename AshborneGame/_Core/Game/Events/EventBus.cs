@@ -193,7 +193,7 @@ namespace AshborneGame._Core.Game.Events
                 catch (Exception ex)
                 {
                     // Log but don't throw - one handler failure shouldn't break others
-                    Console.WriteLine($"[EventBus] Handler error for {typeof(TEvent).Name}: {ex.Message}");
+                    Console.WriteLine($"[EventBus] Handler error for {typeof(TEvent).Name}: {ex}");
                 }
             }
         }

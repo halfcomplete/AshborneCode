@@ -1,14 +1,15 @@
-﻿using AshborneGame._Core.CognitiveSystem.EmotionSystem;
-using AshborneGame._Core.Game.Events;
+﻿using AshborneGame._Core.CognitiveSystem.AttitudeSystem;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
 using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags;
-using System.Diagnostics;
-using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.DefinitionRules;
 using AshborneGame._Core.Data.Definitions;
+using AshborneGame._Core.Data.IDSystem;
+using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.SaveSystem.Data.CognitionDTOs;
 using AshborneGame._Core.SaveSystem.Serialisation;
-using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
-using AshborneGame._Core.CognitiveSystem.AttitudeSystem;
-using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.DefinitionRules;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 {
@@ -18,20 +19,39 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         private PersonalityProfile _personality;
         private Dictionary<DefinitionID, Attitude> _relationships;
         private List<Memory> _memories;
+        private readonly object _memoryLock = new();
+        private bool _subscribedToEvents;
 
-        public MemoryEmotionProfile(DefinitionID ownerID, PersonalityProfile personality, Dictionary<DefinitionID, Attitude> relationships, List<Memory> memories)
+        internal DefinitionID OwnerID => _ownerID;
+
+        public MemoryEmotionProfile(DefinitionID ownerID, PersonalityProfile personality, Dictionary<DefinitionID, Attitude> relationships, List<Memory> memories, bool subscribeToEvents = true)
         {
             _ownerID = ownerID;
             _personality = personality;
             _relationships = relationships;
             _memories = memories;
 
-            EventBus.Subscribe<GameEvents.System.TickEvent>(e => TickMemoryDecay(e.HoursPassed));
-            EventBus.Subscribe<IMemorableGameEvent>(e => ReceiveMemorableEvent(e));
+            if (subscribeToEvents)
+            {
+                SubscribeToEvents();
+            }
         }
 
-        public MemoryEmotionProfile(DefinitionID ownerID, PersonalityProfile personality, Dictionary<DefinitionID, Attitude> relationships)
-            : this(ownerID, personality, relationships, new List<Memory>()) { }
+        public MemoryEmotionProfile(DefinitionID ownerID, PersonalityProfile personality, Dictionary<DefinitionID, Attitude> relationships, bool subscribeToEvents = true)
+            : this(ownerID, personality, relationships, new List<Memory>(), subscribeToEvents) { }
+
+        public void SubscribeToEvents()
+        {
+            if (_subscribedToEvents)
+            {
+                return;
+            }
+
+            EventBus.Subscribe<GameEvents.System.TickEvent>(e => TickMemoryDecay(e.HoursPassed));
+            EventBus.Subscribe<IMemorableGameEvent>(e => ReceiveMemorableEvent(e));
+            _subscribedToEvents = true;
+            Console.WriteLine($"[MemoryEmotionProfile] Subscribed owner '{_ownerID}' profile {RuntimeHelpers.GetHashCode(this)} to game events.");
+        }
 
         #region Receiving Memories
 
@@ -87,7 +107,13 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             ApplyMemoryInfluenceToRelationships(newMemory);
 
             Console.WriteLine($"Owner '{_ownerID}' stored memory: tags=[{string.Join(", ", newMemory.Tags)}], intensity={newMemory.Intensity:0.000}, strength={newMemory.Strength:0.000}, modifiers={newMemory.EmotionModifiers.Count}.");
+            Console.WriteLine($"Number of memories: {_memories.Count}, active memories: {_memories.Count(m => m.IsActive)}.");
             Console.WriteLine($"Owner '{_ownerID}' applied memory influence to relationships.");
+
+            Console.WriteLine(
+                $"[MEMORY ADD] " +
+                $"MemoryProfileHash={RuntimeHelpers.GetHashCode(this)}, " +
+                $"PersonalityHash={RuntimeHelpers.GetHashCode(_personality)}");
 
             return newMemory;
         }
@@ -297,16 +323,19 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
             // TODO: Make contradicting memories (player stole from the NPC, player saved the NPC's life) reduce each other's strengths by a little bit.
             //       This will require a method of quantifying how much two memories contradict each other
-            for (int i = 0; i < _memories.Count; i++)
+            lock (_memoryLock)
             {
-                Memory existingMemory = _memories[i];
+                for (int i = 0; i < _memories.Count; i++)
+                {
+                    Memory existingMemory = _memories[i];
 
-                double similarity = CalculateSimilarity(memory, existingMemory);
+                    double similarity = CalculateSimilarity(memory, existingMemory);
 
-                (memory, _memories[i]) = ReinforceMemories(memory, existingMemory, CalculateStrengthReinforcement(similarity));
+                    (memory, _memories[i]) = ReinforceMemories(memory, existingMemory, CalculateStrengthReinforcement(similarity));
+                }
+
+                _memories.Add(memory);
             }
-
-            _memories.Add(memory);
         }
 
         /// <summary>
@@ -393,6 +422,11 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             var union = tags1.Union(tags2);
             int unionCount = union.Count();
 
+            if (unionCount == 0)
+            {
+                return 0;
+            }
+
             double similarity = (double)commonCount / (double)unionCount;
 
             return similarity;
@@ -426,17 +460,14 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
             foreach (var mod2 in emotions2)
             {
                 uniqueEmotions.Add(mod2.Type);
-                EmotionModifier? mod1 = emotions2.FirstOrDefault(m => m.Type == mod2.Type);
-
-                // If there is an emotion modifier shared by both memory1 and memory2
-                // This SHOULD always be false after the first round of checks but just in case
-                if (mod1 != null)
-                {
-                    throw new UnreachableException($"MemoryProfile: discovered emotion modifier affecting {mod1.Type} in memory2.");
-                }
             }
 
-            similarity /= (double)uniqueEmotions.Count();
+            if (uniqueEmotions.Count == 0)
+            {
+                return 0;
+            }
+
+            similarity /= uniqueEmotions.Count;
 
             return similarity;
         }
@@ -445,15 +476,45 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
         #region API
 
-        public List<Memory> GetMemories() => _memories;
+        public List<Memory> GetMemories()
+        {
+            lock (_memoryLock)
+            {
+                return _memories.ToList();
+            }
+        }
 
-        public List<Memory> GetActiveMemories() => _memories.Where(m => m.IsActive).ToList();
+        public List<Memory> GetActiveMemories()
+        {
+            lock (_memoryLock)
+            {
+                return _memories.Where(m => m.IsActive).ToList();
+            }
+        }
 
-        public List<Memory> GetMemoriesByCause(IMemorySource cause) => _memories.Where(m => m.Cause == cause).ToList();
+        public List<Memory> GetMemoriesByCause(IMemorySource cause)
+        {
+            lock (_memoryLock)
+            {
+                return _memories.Where(m => m.Cause == cause).ToList();
+            }
+        }
 
-        public List<Memory> GetMemoriesByTag(MemoryTagType tag) => _memories.Where(m => m.Tags.Contains(tag)).ToList();
+        public List<Memory> GetMemoriesByTag(MemoryTagType tag)
+        {
+            lock (_memoryLock)
+            {
+                return _memories.Where(m => m.Tags.Contains(tag)).ToList();
+            }
+        }
 
-        public List<Memory> GetMemoriesOrderedByStrength() => _memories.OrderByDescending(m => m.Strength).ToList();
+        public List<Memory> GetMemoriesOrderedByStrength()
+        {
+            lock (_memoryLock)
+            {
+                return _memories.OrderByDescending(m => m.Strength).ToList();
+            }
+        }
 
         /// <summary>
         /// Recursively iterates through every EmotionModifier in every Memory and sums up their modifications
@@ -464,22 +525,31 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         {
             double total = 0;
 
-            foreach (Memory memory in _memories)
+            lock (_memoryLock)
             {
-                List<EmotionModifier> emotionModifiers = memory.EmotionModifiers;
-
-                var targetMods = emotionModifiers.Where(m => m.Type == emotionType).ToList();
-
-                foreach (EmotionModifier modifier in targetMods)
+                foreach (Memory memory in _memories)
                 {
-                    total += modifier.InitialAmount * memory.Influence;
+                    List<EmotionModifier> emotionModifiers = memory.EmotionModifiers;
+
+                    var targetMods = emotionModifiers.Where(m => m.Type == emotionType).ToList();
+
+                    foreach (EmotionModifier modifier in targetMods)
+                    {
+                        total += modifier.InitialAmount * memory.Influence;
+                    }
                 }
             }
 
             return total;
         }
 
-        public bool RemembersEvent(IMemorySource cause) => _memories.Any(m => m.Cause == cause);
+        public bool RemembersEvent(IMemorySource cause)
+        {
+            lock (_memoryLock)
+            {
+                return _memories.Any(m => m.Cause == cause);
+            }
+        }
 
         #endregion API
 
@@ -492,15 +562,18 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         public void TickMemoryDecay(int hoursPassed)
         {
             // Decay the strength of every memory in this memory profile
-            foreach (Memory mem in _memories.ToList())
+            lock (_memoryLock)
             {
-                double strengthDecay = CalculateStrengthDecay(mem.Intensity, hoursPassed);
-
-                mem.Strength -= strengthDecay;
-
-                if (mem.Strength < 0.00001)
+                foreach (Memory mem in _memories.ToList())
                 {
-                    _memories.Remove(mem);
+                    double strengthDecay = CalculateStrengthDecay(mem.Intensity, hoursPassed);
+
+                    mem.Strength -= strengthDecay;
+
+                    if (mem.Strength < 0.00001)
+                    {
+                        _memories.Remove(mem);
+                    }
                 }
             }
         }
@@ -785,11 +858,14 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
         public void LoadSaveData(MemoryProfileSaveData saveData)
         {
-            _memories.Clear();
-            foreach (var memorySaveData in saveData.Memories)
+            lock (_memoryLock)
             {
-                Memory memory = Memory.LoadFromSaveData(memorySaveData);
-                _memories.Add(memory);
+                _memories.Clear();
+                foreach (var memorySaveData in saveData.Memories)
+                {
+                    Memory memory = Memory.LoadFromSaveData(memorySaveData);
+                    _memories.Add(memory);
+                }
             }
         }
     }

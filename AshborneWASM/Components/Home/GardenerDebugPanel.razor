@@ -7,6 +7,7 @@
 @using AshborneGame._Core.Data.Definitions.Registries
 @using AshborneGame._Core.Game
 @using AshborneGame._Core.Globals.Interfaces
+@using System.Runtime.CompilerServices
 @implements IDisposable
 
 @if (DeveloperToolsEnabled)
@@ -103,8 +104,21 @@
             using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(250));
             while (await timer.WaitForNextTickAsync(cancellationToken))
             {
-                _gardenerState = ReadGardenerState();
-                await InvokeAsync(StateHasChanged);
+                try
+                {
+                    var state = ReadGardenerState();
+
+                    await InvokeAsync(() =>
+                    {
+                        _gardenerState = state;
+                        StateHasChanged();
+                        Console.WriteLine("[GardenerDebugPanel] Refreshed gardener state.");
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[GardenerDebugPanel] Failed to refresh: {ex.Message}");
+                }
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -116,44 +130,75 @@
     {
         if (GameContext.InstanceRegistry is null)
         {
+            Console.WriteLine("[GardenerDebugPanel] InstanceRegistry is null.");
             return null;
         }
 
-        BOCSObject? gardener = GameContext.InstanceRegistry
+        var gardeners = GameContext.InstanceRegistry
             .GetByDefinition(DefinitionIDs.NPCs.Gardener)
-            .SingleOrDefault();
-        if (gardener is null || !gardener.HasBehaviours<ISentientEntity>())
+            .ToList();
+
+        Console.WriteLine(
+            $"[GardenerDebugPanel] Found {gardeners.Count} Gardener object(s).");
+
+        foreach (var g in gardeners)
+        {
+            Console.WriteLine(
+                $"[GardenerDebugPanel] Gardener: " +
+                $"InstanceID={g.InstanceID}, " +
+                $"ObjectHash={RuntimeHelpers.GetHashCode(g)}, " +
+                $"Behaviours={g.ByBehaviour.Count}");
+        }
+
+        BOCSObject? gardener = gardeners.FirstOrDefault();
+
+        if (gardener is null)
         {
             return null;
         }
 
-        ISentientEntity? entity = gardener.TryGetBehaviour<ISentientEntity>().Result.Item2;
+        var entity = gardener.ByBehaviour
+            .OfType<ISentientEntity>()
+            .FirstOrDefault();
+
         if (entity is null)
         {
+            Console.WriteLine(
+                "[GardenerDebugPanel] Gardener has no ISentientEntity.");
             return null;
         }
 
         var psychologicalState = entity.PsychologicalState;
-        var emotions = Enum.GetValues<EmotionType>()
-            .Select(emotion => new NamedValue(emotion.ToString(), psychologicalState.MemoryEmotion.GetTotalEmotionIntensity(emotion)))
-            .ToList();
-        var attitudes = psychologicalState.Relationships
-            .Select(pair => new AttitudeState(
-                pair.Key.ToString(),
-                pair.Value.Factors.Select(factor => new NamedValue(factor.Key.ToString(), factor.Value)).ToList()))
-            .ToList();
-        var memories = psychologicalState.MemoryEmotion.GetMemoriesOrderedByStrength()
-            .Select(memory => new MemoryState(
-                memory.Tags,
-                memory.Intensity,
-                memory.Strength,
-                memory.Influence,
-                memory.HourCreatedAt,
-                memory.Cause.LocationID.ToString(),
-                memory.Cause.GetType().Name,
-                string.Join(", ", memory.Cause.Participants.Select(participant => $"{participant.EntityId} [{string.Join("/", participant.Roles)}]")),
-                memory.EmotionModifiers.Select(modifier => $"{modifier.Type}: {modifier.InitialAmount:0.000}").ToList()))
-            .ToList();
+
+        Console.WriteLine(
+            $"[GardenerDebugPanel] " +
+            $"Gardener InstanceID={gardener.InstanceID}, " +
+            $"ObjectHash={RuntimeHelpers.GetHashCode(gardener)}, " +
+            $"EntityHash={RuntimeHelpers.GetHashCode(entity)}, " +
+            $"PsychStateHash={RuntimeHelpers.GetHashCode(psychologicalState)}, " +
+            $"MemoryProfileHash={RuntimeHelpers.GetHashCode(psychologicalState.MemoryEmotion)}, " +
+            $"PersonalityHash={RuntimeHelpers.GetHashCode(psychologicalState.Personality)}, " +
+            $"Memories={psychologicalState.MemoryEmotion.GetMemoriesOrderedByStrength().Count()}");
+            var emotions = Enum.GetValues<EmotionType>()
+                .Select(emotion => new NamedValue(emotion.ToString(), psychologicalState.MemoryEmotion.GetTotalEmotionIntensity(emotion)))
+                .ToList();
+            var attitudes = psychologicalState.Relationships
+                .Select(pair => new AttitudeState(
+                    pair.Key.ToString(),
+                    pair.Value.Factors.Select(factor => new NamedValue(factor.Key.ToString(), factor.Value)).ToList()))
+                .ToList();
+            var memories = psychologicalState.MemoryEmotion.GetMemoriesOrderedByStrength()
+                .Select(memory => new MemoryState(
+                    memory.Tags,
+                    memory.Intensity,
+                    memory.Strength,
+                    memory.Influence,
+                    memory.HourCreatedAt,
+                    memory.Cause.LocationID.ToString(),
+                    memory.Cause.GetType().Name,
+                    string.Join(", ", memory.Cause.Participants.Select(participant => $"{participant.EntityId} [{string.Join("/", participant.Roles)}]")),
+                    memory.EmotionModifiers.Select(modifier => $"{modifier.Type}: {modifier.InitialAmount:0.000}").ToList()))
+                .ToList();
 
         return new GardenerDebugState(emotions, attitudes, memories);
     }

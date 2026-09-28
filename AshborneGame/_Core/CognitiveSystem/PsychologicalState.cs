@@ -43,6 +43,7 @@ namespace AshborneGame._Core.CognitiveSystem
 
         public PsychologicalState(Dictionary<DefinitionID, Attitude> relationships, MemoryEmotionProfile memory, PersonalityProfile personality)
         {
+            _ownerID = memory.OwnerID;
             Relationships = relationships;
             MemoryEmotion = memory;
             Personality = personality;
