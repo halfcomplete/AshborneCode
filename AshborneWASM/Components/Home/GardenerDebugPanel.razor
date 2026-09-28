@@ -1,0 +1,184 @@
+@using AshborneGame._Core.CognitiveSystem.AttitudeSystem
+@using AshborneGame._Core.CognitiveSystem.EmotionSystem
+@using AshborneGame._Core.CognitiveSystem.MemorySystem
+@using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
+@using AshborneGame._Core.Data.BOCS
+@using AshborneGame._Core.Data.IDSystem
+@using AshborneGame._Core.Data.Definitions.Registries
+@using AshborneGame._Core.Game
+@using AshborneGame._Core.Globals.Interfaces
+@implements IDisposable
+
+@if (DeveloperToolsEnabled)
+{
+    <aside class="gardener-debug-panel" aria-label="Gardener developer debug state">
+        <header class="gardener-debug-header">
+            <strong>Gardener</strong>
+            <span>Developer state</span>
+        </header>
+
+        @if (_gardenerState is null)
+        {
+            <p class="gardener-debug-empty">Gardener is not currently registered.</p>
+        }
+        else
+        {
+            <section>
+                <h3>Emotions</h3>
+                @foreach (var emotion in _gardenerState.Emotions)
+                {
+                    <div class="gardener-debug-row">
+                        <span>@emotion.Name</span>
+                        <span>@emotion.Value.ToString("0.000")</span>
+                    </div>
+                }
+            </section>
+
+            <section>
+                <h3>Attitudes</h3>
+                @if (_gardenerState.Attitudes.Count == 0)
+                {
+                    <p class="gardener-debug-empty">No relationships.</p>
+                }
+                @foreach (var attitude in _gardenerState.Attitudes)
+                {
+                    <div class="gardener-debug-block">
+                        <strong>@attitude.Target</strong>
+                        @foreach (var factor in attitude.Factors)
+                        {
+                            <div class="gardener-debug-row">
+                                <span>@factor.Name</span>
+                                <span>@factor.Value.ToString("0.000")</span>
+                            </div>
+                        }
+                    </div>
+                }
+            </section>
+
+            <section>
+                <h3>Memories <span>(@_gardenerState.Memories.Count)</span></h3>
+                @if (_gardenerState.Memories.Count == 0)
+                {
+                    <p class="gardener-debug-empty">No memories.</p>
+                }
+                @foreach (var memory in _gardenerState.Memories)
+                {
+                    <article class="gardener-debug-memory">
+                        <strong>@string.Join(", ", memory.Tags)</strong>
+                        <div>Intensity @memory.Intensity.ToString("0.000") | Strength @memory.Strength.ToString("0.000")</div>
+                        <div>Influence @memory.Influence.ToString("0.000") | Hour @memory.HourCreatedAt</div>
+                        <div>Location: @memory.Location</div>
+                        <div>Cause: @memory.Cause</div>
+                        <div>Participants: @memory.Participants</div>
+                        @foreach (var modifier in memory.Modifiers)
+                        {
+                            <div class="gardener-debug-modifier">@modifier</div>
+                        }
+                    </article>
+                }
+            </section>
+        }
+        <footer>Updates every 250 ms</footer>
+    </aside>
+}
+
+@code {
+    // Flip this constant to false to remove the developer panel from the UI.
+    private const bool DeveloperToolsEnabled = true;
+    private readonly CancellationTokenSource _refreshCancellation = new();
+    private GardenerDebugState? _gardenerState;
+
+    protected override void OnInitialized()
+    {
+        if (DeveloperToolsEnabled)
+        {
+            _ = RefreshLoopAsync(_refreshCancellation.Token);
+        }
+    }
+
+    private async Task RefreshLoopAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(250));
+            while (await timer.WaitForNextTickAsync(cancellationToken))
+            {
+                _gardenerState = ReadGardenerState();
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+    }
+
+    private static GardenerDebugState? ReadGardenerState()
+    {
+        if (GameContext.InstanceRegistry is null)
+        {
+            return null;
+        }
+
+        BOCSObject? gardener = GameContext.InstanceRegistry
+            .GetByDefinition(DefinitionIDs.NPCs.Gardener)
+            .SingleOrDefault();
+        if (gardener is null || !gardener.HasBehaviours<ISentientEntity>())
+        {
+            return null;
+        }
+
+        ISentientEntity? entity = gardener.TryGetBehaviour<ISentientEntity>().Result.Item2;
+        if (entity is null)
+        {
+            return null;
+        }
+
+        var psychologicalState = entity.PsychologicalState;
+        var emotions = Enum.GetValues<EmotionType>()
+            .Select(emotion => new NamedValue(emotion.ToString(), psychologicalState.MemoryEmotion.GetTotalEmotionIntensity(emotion)))
+            .ToList();
+        var attitudes = psychologicalState.Relationships
+            .Select(pair => new AttitudeState(
+                pair.Key.ToString(),
+                pair.Value.Factors.Select(factor => new NamedValue(factor.Key.ToString(), factor.Value)).ToList()))
+            .ToList();
+        var memories = psychologicalState.MemoryEmotion.GetMemoriesOrderedByStrength()
+            .Select(memory => new MemoryState(
+                memory.Tags,
+                memory.Intensity,
+                memory.Strength,
+                memory.Influence,
+                memory.HourCreatedAt,
+                memory.Cause.LocationID.ToString(),
+                memory.Cause.GetType().Name,
+                string.Join(", ", memory.Cause.Participants.Select(participant => $"{participant.EntityId} [{string.Join("/", participant.Roles)}]")),
+                memory.EmotionModifiers.Select(modifier => $"{modifier.Type}: {modifier.InitialAmount:0.000}").ToList()))
+            .ToList();
+
+        return new GardenerDebugState(emotions, attitudes, memories);
+    }
+
+    public void Dispose()
+    {
+        _refreshCancellation.Cancel();
+        _refreshCancellation.Dispose();
+    }
+
+    private sealed record GardenerDebugState(
+        List<NamedValue> Emotions,
+        List<AttitudeState> Attitudes,
+        List<MemoryState> Memories);
+
+    private sealed record AttitudeState(string Target, List<NamedValue> Factors);
+    private sealed record NamedValue(string Name, double Value);
+    private sealed record MemoryState(
+        HashSet<MemoryTagType> Tags,
+        double Intensity,
+        double Strength,
+        double Influence,
+        int HourCreatedAt,
+        string Location,
+        string Cause,
+        string Participants,
+        List<string> Modifiers);
+}

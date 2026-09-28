@@ -49,6 +49,7 @@ namespace AshborneGame._Core.Game.Events
 
         public static void Commit(ILocationRegistry locationRegistry, IDefinitionRegistry definitionRegistry)
         {
+            Console.WriteLine($"Processing external event '{EventName}' with {EventParticipants.Count} participant(s) and {EventData.Count} data field(s).");
             if (string.IsNullOrWhiteSpace(EventName))
             {
                 throw new InvalidOperationException("[ExternalEventBuilder] Cannot commit event: EventName is empty.");
@@ -59,19 +60,25 @@ namespace AshborneGame._Core.Game.Events
 
             if (type == "synthetic" || EventName.StartsWith("synthetic.", StringComparison.OrdinalIgnoreCase))
             {
+                Console.WriteLine($"Committing external synthetic event '{EventName}'.");
                 CommitSynthetic(currentTotalHours, definitionRegistry);
+                Console.WriteLine($"Committed external synthetic event '{EventName}'.");
                 return;
             }
 
             if (type == "memorable" || EventData.ContainsKey("memoryTags"))
             {
+                Console.WriteLine($"Committing external memorable event '{EventName}'.");
                 CommitMemorable(currentTotalHours, locationRegistry, definitionRegistry);
+                Console.WriteLine($"Committed external memorable event '{EventName}'.");
                 return;
             }
 
             if (ExternalGameEventFactory.TryCreateNormalEvent(EventName, currentTotalHours, EventData, BuildParticipants(definitionRegistry), out IGameEvent? gameEvent) && gameEvent != null)
             {
+                Console.WriteLine($"Committing external normal event '{EventName}' as {gameEvent.GetType().Name}.");
                 PublishConcreteEvent(gameEvent);
+                Console.WriteLine($"Committed external normal event '{EventName}'.");
                 return;
             }
 
@@ -105,6 +112,7 @@ namespace AshborneGame._Core.Game.Events
 
             // Memory profiles currently subscribe to IMemorableGameEvent, so we publish as that interface type.
             EventBus.Publish<IMemorableGameEvent>(memorableEvent);
+            Console.WriteLine($"Published memorable event '{EventName}' to memory profiles.");
         }
 
         private static void CommitSynthetic(int currentTotalHours, IDefinitionRegistry definitionRegistry)

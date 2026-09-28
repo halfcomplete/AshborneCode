@@ -369,6 +369,89 @@ body {
     min-height: 500px;
 }
 
+.gardener-debug-panel {
+    position: fixed;
+    top: 120px;
+    left: 16px;
+    z-index: 3;
+    width: 250px;
+    max-height: 540px;
+    margin-top: 24px;
+    padding: 14px;
+    overflow-y: auto;
+    box-sizing: border-box;
+    background: linear-gradient(160deg, #171614 0%, #24211d 100%);
+    border: 1px solid #bfae8e55;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px #0009;
+    color: #eee5d4;
+    font-family: 'AnonymousPro-Regular', monospace;
+    font-size: 0.78rem;
+    line-height: 1.35;
+}
+
+.gardener-debug-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 9px;
+    border-bottom: 1px solid #bfae8e44;
+    color: #f8eecb;
+}
+
+.gardener-debug-header span,
+.gardener-debug-panel footer,
+.gardener-debug-panel h3 span {
+    color: #bfae8e99;
+    font-size: 0.7rem;
+}
+
+.gardener-debug-panel section {
+    margin-top: 14px;
+}
+
+.gardener-debug-panel h3 {
+    margin: 0 0 6px;
+    color: #d8c39b;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.gardener-debug-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.gardener-debug-block,
+.gardener-debug-memory {
+    margin: 7px 0;
+    padding: 7px;
+    background: #00000024;
+    border-left: 2px solid #bfae8e55;
+}
+
+.gardener-debug-memory strong {
+    color: #f8eecb;
+}
+
+.gardener-debug-modifier {
+    color: #c8d6a5;
+}
+
+.gardener-debug-empty {
+    margin: 4px 0;
+    color: #bfae8e99;
+    font-style: italic;
+}
+
+.gardener-debug-panel footer {
+    display: block;
+    margin-top: 14px;
+    text-align: right;
+}
+
 .game-output {
     width: 80%;
     max-width: 1500px;
@@ -1023,4 +1106,21 @@ input {
     /* Vendor prefixes might be needed for older browser support: */
     -webkit-backdrop-filter: blur(0px);
     z-index: 10; /* Ensure it is on top of other content */
+}
+
+@media (max-width: 1100px) {
+    .gardener-debug-panel {
+        left: 10px;
+        width: 220px;
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 760px) {
+    .gardener-debug-panel {
+        position: static;
+        width: 80%;
+        max-height: 260px;
+        margin: 16px auto 0;
+    }
 }

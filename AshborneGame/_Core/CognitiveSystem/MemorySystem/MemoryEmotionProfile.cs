@@ -44,6 +44,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// <param name="e">The IMemorableGameEvent to pass in.</param>
         public void ReceiveMemorableEvent(IMemorableGameEvent e)
         {
+            Console.WriteLine($"Owner '{_ownerID}' received memorable event {e.GetType().Name}: tags=[{string.Join(", ", e.MemoryDefinition.Tags)}], participants={e.Participants.Count}, location={e.LocationID}.");
             ReceiveMemorySource(e);
         }
 
@@ -60,8 +61,10 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
         public Memory? ReceiveMemorySource(IMemorySource source)
         {
+            Console.WriteLine($"Owner '{_ownerID}' processing memory source {source.GetType().Name}.");
             if (!ShouldReceiveMemorySource(source))
             {
+                Console.WriteLine($"Owner '{_ownerID}' ignored memory source because it is not a participant.");
                 return null;
             }
 
@@ -82,6 +85,9 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
             AddMemory(newMemory);
             ApplyMemoryInfluenceToRelationships(newMemory);
+
+            Console.WriteLine($"Owner '{_ownerID}' stored memory: tags=[{string.Join(", ", newMemory.Tags)}], intensity={newMemory.Intensity:0.000}, strength={newMemory.Strength:0.000}, modifiers={newMemory.EmotionModifiers.Count}.");
+            Console.WriteLine($"Owner '{_ownerID}' applied memory influence to relationships.");
 
             return newMemory;
         }
