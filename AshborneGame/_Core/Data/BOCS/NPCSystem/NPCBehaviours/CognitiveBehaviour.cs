@@ -25,7 +25,10 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
         public override Behaviour DeepClone()
         {
             // TODO: Figure out deep cloning method of psychological state
-            return new CognitiveBehaviour(new PsychologicalState(Owner.DefinitionID));
+            var save = new SaveData(PsychologicalState.GetSaveData());
+            var clone = new CognitiveBehaviour(new PsychologicalState(PsychologicalState.OwnerID));
+            clone.LoadSaveData(new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement(save)));
+            return clone;
         }
 
 
@@ -36,7 +39,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
             return new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement(new SaveData(PsychologicalState.GetSaveData())));
         }
 
-        public override void LoadSaveData(BehaviourSaveData data, SaveLoadContext context)
+        public override void LoadSaveData(BehaviourSaveData data, SaveLoadContext context = null)
         {
             if (data.State.HasValue == false)
             {

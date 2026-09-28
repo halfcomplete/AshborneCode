@@ -23,6 +23,8 @@ namespace AshborneGame._Core.Data.Definitions.Registries
         {
             registry.Register(NPCDefinitions.BoundOne);
             registry.Register(NPCDefinitions.Dummy);
+            registry.Register(NPCDefinitions.Gardener);
+            registry.Register(NPCDefinitions.Keeper);
         }
 
         public void RegisterObjectDefinitions(DefinitionRegistry registry)

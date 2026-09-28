@@ -147,7 +147,7 @@ namespace AshborneGame._Core.Game.Events
 
             foreach ((DefinitionID definitionID, List<MemoryRole> roles) in EventParticipants)
             {
-                if (!definitionRegistry.TryGet<Definition>(definitionID, out var _))
+                if (!definitionRegistry.TryGet<Definition>(definitionID, out var _) && definitionID != DefinitionIDs.Player)
                 {
                     throw new InvalidOperationException($"Building Participants: DefinitionID {definitionID} doesn't exist.");
                 }

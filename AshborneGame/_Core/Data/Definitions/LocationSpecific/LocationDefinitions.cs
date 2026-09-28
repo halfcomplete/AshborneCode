@@ -400,7 +400,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                         "From beneath the paving, you hear a faint hollow sound.\n\nYou look towards the sound, but nothing appears to have moved."
                     )
                 ),
-                [],
+                [DefinitionIDs.NPCs.Gardener],
                 new CustomCommandHandler()
                 .AddCustomCommand(
                     new CustomCommandPhrasing(["tend", "tend to", "care for", "care", "take care of", "water", "give water to"], ["", "plants", "plant", "the plants"]),
@@ -411,7 +411,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                     }
                 )
                 .AddCustomCommand(
-                    new CustomCommandPhrasing(["talk to", "speak to", "converse with", "ask", "call"], ["gardener", "the gardener", "woman", "the woman"]),
+                    new CustomCommandPhrasing(["talk to", "speak to", "converse with", "ask", "call"], ["her", "gardener", "the gardener", "woman", "the woman"]),
                     async () =>
                     {
                         await IOService.Output.WriteNonDialogueLine("You move across the garden towards the Gardener.");
@@ -454,7 +454,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                         [],
                         new CustomCommandHandler()
                         .AddCustomCommand(
-                            new CustomCommandPhrasing(["talk to", "speak to", "converse with", "ask", "call"], ["gardener", "the gardener", "woman", "the woman"]),
+                            new CustomCommandPhrasing(["talk to", "speak to", "converse with", "ask", "call"], ["her", "gardener", "the gardener", "woman", "the woman"]),
                             async () =>
                             {
                                 await IOService.Output.WriteNonDialogueLine("You move across the garden towards the Gardener.");
@@ -509,7 +509,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                         [],
                         new CustomCommandHandler()
                         .AddCustomCommand(
-                            new CustomCommandPhrasing(["talk to", "speak to", "converse with", "ask", "call"], ["gardener", "the gardener", "woman", "the woman"]),
+                            new CustomCommandPhrasing(["talk to", "speak to", "converse with", "ask", "call"], ["her", "gardener", "the gardener", "woman", "the woman"]),
                             async () =>
                             {
                                 await IOService.Output.WriteNonDialogueLine("You move across the herb beds towards the Gardener.");
@@ -573,7 +573,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                             }
                         )
                         .AddCustomCommand(
-                            new CustomCommandPhrasing(["talk to", "speak to", "converse with", "ask", "call"], ["gardener", "the gardener", "woman", "the woman"]),
+                            new CustomCommandPhrasing(["talk to", "speak to", "converse with", "ask", "call"], ["her", "gardener", "the gardener", "woman", "the woman"]),
                             async () =>
                             {
                                 await IOService.Output.WriteNonDialogueLine("You move across the garden towards the Gardener.");

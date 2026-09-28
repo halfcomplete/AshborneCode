@@ -23,9 +23,9 @@ namespace AshborneGame._Core.Game
             LabelKeys.TryAdd("Labels.TestLabel", new GameStateKey<string>("Labels.TestLabel"));
         }
 
-        public Dictionary<string, bool> Flags { get; } = new();
-        public Dictionary<string, int> Counters { get; } = new();
-        public Dictionary<string, string> Labels { get; } = new();
+        public Dictionary<string, bool> Flags { get; } = CreateDefaultFlags();
+        public Dictionary<string, int> Counters { get; } = CreateDefaultCounters();
+        public Dictionary<string, string> Labels { get; } = CreateDefaultLabels();
 
         public static GameStateKey<bool> ValidateAndGetFlagKey(string key) => Validate(key, FlagKeys, "flag");
         public static GameStateKey<int> ValidateAndGetCounterKey(string key) => Validate(key, CounterKeys, "counter");
@@ -38,7 +38,14 @@ namespace AshborneGame._Core.Game
         public void SetFlag(GameStateKey<bool> key, bool value) => Flags[key] = value;
         public bool TryGetFlag(GameStateKey<bool> key, out bool value) => Flags.TryGetValue(key, out value);
         public bool HasFlag(GameStateKey<bool> key) => Flags.ContainsKey(key);
-        public bool RemoveFlag(GameStateKey<bool> key) => Flags.Remove(key);
+        public bool RemoveFlag(GameStateKey<bool> key)
+        {
+            if (!Flags.ContainsKey(key))
+                return false;
+
+            Flags[key] = false;
+            return true;
+        }
 
         public bool? TryToggleFlag(GameStateKey<bool> key)
         {
@@ -52,7 +59,14 @@ namespace AshborneGame._Core.Game
         public void SetCounter(GameStateKey<int> key, int value) => Counters[key] = value;
         public bool TryGetCounter(GameStateKey<int> key, out int value) => Counters.TryGetValue(key, out value);
         public bool HasCounter(GameStateKey<int> key) => Counters.ContainsKey(key);
-        public bool RemoveCounter(GameStateKey<int> key) => Counters.Remove(key);
+        public bool RemoveCounter(GameStateKey<int> key)
+        {
+            if (!Counters.ContainsKey(key))
+                return false;
+
+            Counters[key] = 0;
+            return true;
+        }
 
         public bool TryIncrementCounter(GameStateKey<int> key, int amount = 1)
         {
@@ -75,13 +89,56 @@ namespace AshborneGame._Core.Game
         public void SetLabel(GameStateKey<string> key, string value) => Labels[key] = value;
         public string? TryGetLabel(GameStateKey<string> key) => Labels.TryGetValue(key, out var value) ? value : null;
         public bool HasLabel(GameStateKey<string> key) => Labels.ContainsKey(key);
-        public bool RemoveLabel(GameStateKey<string> key) => Labels.Remove(key);
+        public bool RemoveLabel(GameStateKey<string> key)
+        {
+            if (!Labels.ContainsKey(key))
+                return false;
+
+            Labels[key] = string.Empty;
+            return true;
+        }
 
         public void Clear()
         {
             Flags.Clear();
             Counters.Clear();
             Labels.Clear();
+            InitialiseDefaultFlags();
+            InitialiseDefaultCounters();
+            InitialiseDefaultLabels();
+        }
+
+        public void InitialiseDefaultCounters()
+        {
+            foreach (var key in CounterKeys.Keys)
+                Counters.TryAdd(key, 0);
+        }
+
+        public void InitialiseDefaultFlags()
+        {
+            foreach (var key in FlagKeys.Keys)
+                Flags.TryAdd(key, false);
+        }
+
+        public void InitialiseDefaultLabels()
+        {
+            foreach (var key in LabelKeys.Keys)
+                Labels.TryAdd(key, string.Empty);
+        }
+
+        private static Dictionary<string, bool> CreateDefaultFlags()
+        {
+            return FlagKeys.Keys.ToDictionary(key => key, _ => false);
+        }
+
+        private static Dictionary<string, int> CreateDefaultCounters()
+        {
+            return CounterKeys.Keys.ToDictionary(key => key, _ => 0);
+        }
+
+        private static Dictionary<string, string> CreateDefaultLabels()
+        {
+            return LabelKeys.Keys.ToDictionary(key => key, _ => string.Empty);
         }
 
         private static void RegisterKeys<T>(Type type, Dictionary<string, GameStateKey<T>> registry)

@@ -31,6 +31,8 @@ namespace AshborneGame._Core.Game.CommandHandling.Commands
             if (possibleNPCs.Count() == 0)
             {
                 await IOService.Output.WriteNonDialogueLine($"There is no-one named '{targetName}' here that you can talk to.");
+                // TODO: should be returning false but wtv
+                return true;
             }
             else if (possibleNPCs.Count() > 1)
             {

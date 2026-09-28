@@ -20,6 +20,8 @@ namespace AshborneGame._Core.CognitiveSystem
     {
         private readonly DefinitionID _ownerID;
 
+        internal DefinitionID OwnerID => _ownerID;
+
         /// <summary>
         /// Represents the mapping of character or entity identifiers to their corresponding attitudes in the
         /// relationship system.

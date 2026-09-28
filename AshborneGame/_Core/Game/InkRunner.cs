@@ -21,6 +21,45 @@ using System.Diagnostics;
 
 namespace AshborneGame._Core.Game
 {
+    public static class InkExternalFunctionNames
+    {
+        public const string SetFlag = "setFlag";
+        public const string GetFlag = "getFlag";
+        public const string HasFlag = "hasFlag";
+        public const string ToggleFlag = "toggleFlag";
+        public const string RemoveFlag = "removeFlag";
+        public const string SetCounter = "setCounter";
+        public const string GetCounter = "getCounter";
+        public const string HasCounter = "hasCounter";
+        public const string IncCounter = "incCounter";
+        public const string DecCounter = "decCounter";
+        public const string RemoveCounter = "removeCounter";
+        public const string SetLabel = "setLabel";
+        public const string GetLabel = "getLabel";
+        public const string HasLabel = "hasLabel";
+        public const string RemoveLabel = "removeLabel";
+        public const string PlayerHas = "playerHas";
+        public const string PlayerForceMask = "playerForceMask";
+        public const string PlayerGiveMask = "playerGiveMask";
+        public const string PlayerTryTakeMask = "playerTryTakeMask";
+        public const string PlayerWearingMask = "playerWearingMask";
+        public const string ChangePlayerStat = "changePlayerStat";
+        public const string GetPlayerStat = "getPlayerStat";
+        public const string GetLocationVisits = "getLocationVisits";
+        public const string IncLocationVisits = "incLocationVisits";
+        public const string AdvanceTime = "advance_time";
+        public const string AddSyntheticMemory = "add_synthetic_memory";
+        public const string GetNpcEmotion = "getNPCEmotion";
+        public const string HasNpcMemory = "hasNPCMemory";
+        public const string GetNpcMemoryCount = "getNPCMemoryCount";
+        public const string EventBegin = "eventBegin";
+        public const string EventAddParticipant = "eventAddParticipant";
+        public const string EventAddData = "eventAddData";
+        public const string EventCommit = "eventCommit";
+        public const string SetSilentPath = "setSilentPath";
+        public const string AnimateBlur = "animateBlur";
+    }
+
     /// <summary>
     /// Handles loading, running, and syncing Ink stories with the Ashborne engine.
     /// Syncs variables and flags with GameStateManager.
@@ -416,61 +455,61 @@ namespace AshborneGame._Core.Game
             Console.WriteLine("[DEBUG] InitialiseBindings called - registering external functions");
 
             // --- Flags ---
-            _story.BindExternalFunction("setFlag", (string key, bool value) => ExternalSetFlag(key, value));
-            _story.BindExternalFunction("getFlag", (string key) => ExternalGetFlag(key));
-            _story.BindExternalFunction("hasFlag", (string key) => ExternalHasFlag(key));
-            _story.BindExternalFunction("toggleFlag", (string key) => ExternalToggleFlag(key));
-            _story.BindExternalFunction("removeFlag", (string key) => ExternalRemoveFlag(key));
+            _story.BindExternalFunction(InkExternalFunctionNames.SetFlag, (string key, bool value) => ExternalSetFlag(key, value));
+            _story.BindExternalFunction(InkExternalFunctionNames.GetFlag, (string key) => ExternalGetFlag(key));
+            _story.BindExternalFunction(InkExternalFunctionNames.HasFlag, (string key) => ExternalHasFlag(key));
+            _story.BindExternalFunction(InkExternalFunctionNames.ToggleFlag, (string key) => ExternalToggleFlag(key));
+            _story.BindExternalFunction(InkExternalFunctionNames.RemoveFlag, (string key) => ExternalRemoveFlag(key));
 
             // --- Counters ---
-            _story.BindExternalFunction("setCounter", (string key, int value) => ExternalSetCounter(key, value));
-            _story.BindExternalFunction("getCounter", (string key) => ExternalGetCounter(key));
-            _story.BindExternalFunction("hasCounter", (string key) => ExternalHasCounter(key));
-            _story.BindExternalFunction("incCounter", (string key, int amount) => ExternalIncCounter(key, amount));
-            _story.BindExternalFunction("decCounter", (string key, int amount) => ExternalDecCounter(key, amount));
-            _story.BindExternalFunction("removeCounter", (string key) => ExternalRemoveCounter(key));
+            _story.BindExternalFunction(InkExternalFunctionNames.SetCounter, (string key, int value) => ExternalSetCounter(key, value));
+            _story.BindExternalFunction(InkExternalFunctionNames.GetCounter, (string key) => ExternalGetCounter(key));
+            _story.BindExternalFunction(InkExternalFunctionNames.HasCounter, (string key) => ExternalHasCounter(key));
+            _story.BindExternalFunction(InkExternalFunctionNames.IncCounter, (string key, int amount) => ExternalIncCounter(key, amount));
+            _story.BindExternalFunction(InkExternalFunctionNames.DecCounter, (string key, int amount) => ExternalDecCounter(key, amount));
+            _story.BindExternalFunction(InkExternalFunctionNames.RemoveCounter, (string key) => ExternalRemoveCounter(key));
 
             // --- Labels ---
-            _story.BindExternalFunction("setLabel", (string key, string value) => ExternalSetLabel(key, value));
-            _story.BindExternalFunction("getLabel", (string key) => ExternalGetLabel(key));
-            _story.BindExternalFunction("hasLabel", (string key) => ExternalHasLabel(key));
-            _story.BindExternalFunction("removeLabel", (string key) => ExternalRemoveLabel(key));
+            _story.BindExternalFunction(InkExternalFunctionNames.SetLabel, (string key, string value) => ExternalSetLabel(key, value));
+            _story.BindExternalFunction(InkExternalFunctionNames.GetLabel, (string key) => ExternalGetLabel(key));
+            _story.BindExternalFunction(InkExternalFunctionNames.HasLabel, (string key) => ExternalHasLabel(key));
+            _story.BindExternalFunction(InkExternalFunctionNames.RemoveLabel, (string key) => ExternalRemoveLabel(key));
 
             // --- Inventory ---
-            _story.BindExternalFunction("playerHas", (string itemName) => ExternalPlayerHas(itemName));
+            _story.BindExternalFunction(InkExternalFunctionNames.PlayerHas, (string itemName) => ExternalPlayerHas(itemName));
 
             // --- Masks ---
-            _story.BindExternalFunction("playerForceMask", (string maskName) => ExternalPlayerForceMask(maskName));
-            _story.BindExternalFunction("playerGiveMask", (string maskName) => ExternalPlayerGiveMask(maskName));
-            _story.BindExternalFunction("playerTryTakeMask", (string maskName) => ExternalPlayerTryTakeMask(maskName));
-            _story.BindExternalFunction("playerWearingMask", (string maskName) => ExternalPlayerWearingMask(maskName));
+            _story.BindExternalFunction(InkExternalFunctionNames.PlayerForceMask, (string maskName) => ExternalPlayerForceMask(maskName));
+            _story.BindExternalFunction(InkExternalFunctionNames.PlayerGiveMask, (string maskName) => ExternalPlayerGiveMask(maskName));
+            _story.BindExternalFunction(InkExternalFunctionNames.PlayerTryTakeMask, (string maskName) => ExternalPlayerTryTakeMask(maskName));
+            _story.BindExternalFunction(InkExternalFunctionNames.PlayerWearingMask, (string maskName) => ExternalPlayerWearingMask(maskName));
 
             // --- Stats ---
-            _story.BindExternalFunction("changePlayerStat", (string statName, int amount) => ExternalChangePlayerStat(statName, amount));
-            _story.BindExternalFunction("getPlayerStat", (string statName) => ExternalGetPlayerStat(statName));
+            _story.BindExternalFunction(InkExternalFunctionNames.ChangePlayerStat, (string statName, int amount) => ExternalChangePlayerStat(statName, amount));
+            _story.BindExternalFunction(InkExternalFunctionNames.GetPlayerStat, (string statName) => ExternalGetPlayerStat(statName));
 
             // --- Location Visit Counts ---
-            _story.BindExternalFunction("getLocationVisits", (string locationId) => ExternalGetLocationVisits(new DefinitionID(locationId)));
-            _story.BindExternalFunction("incLocationVisits", (string locationId) => ExternalIncLocationVisits(new DefinitionID(locationId)));
+            _story.BindExternalFunction(InkExternalFunctionNames.GetLocationVisits, (string locationId) => ExternalGetLocationVisits(new DefinitionID(locationId)));
+            _story.BindExternalFunction(InkExternalFunctionNames.IncLocationVisits, (string locationId) => ExternalIncLocationVisits(new DefinitionID(locationId)));
 
             // --- In-Game Time & Emotions ---
-            _story.BindExternalFunction("advance_time", (int hours) => ExternalAdvanceTime(hours));
-            _story.BindExternalFunction("add_synthetic_memory", (string tagsCsv, string locationId) => ExternalAddSyntheticMemory(tagsCsv, new DefinitionID(locationId)));
-            _story.BindExternalFunction("getNPCEmotion", (string entityID, string emotionType) => ExternalGetNPCEmotion(entityID, emotionType));
-            _story.BindExternalFunction("hasNPCMemory", (string entityID, string tagsCsv) => ExternalHasNPCMemory(entityID, tagsCsv));
-            _story.BindExternalFunction("getNPCMemoryCount", (string entityID, string tagsCsv) => ExternalGetNPCMemoryCount(entityID, tagsCsv));
+            _story.BindExternalFunction(InkExternalFunctionNames.AdvanceTime, (int hours) => ExternalAdvanceTime(hours));
+            _story.BindExternalFunction(InkExternalFunctionNames.AddSyntheticMemory, (string tagsCsv, string locationId) => ExternalAddSyntheticMemory(tagsCsv, new DefinitionID(locationId)));
+            _story.BindExternalFunction(InkExternalFunctionNames.GetNpcEmotion, (string entityID, string emotionType) => ExternalGetNPCEmotion(entityID, emotionType));
+            _story.BindExternalFunction(InkExternalFunctionNames.HasNpcMemory, (string entityID, string tagsCsv) => ExternalHasNPCMemory(entityID, tagsCsv));
+            _story.BindExternalFunction(InkExternalFunctionNames.GetNpcMemoryCount, (string entityID, string tagsCsv) => ExternalGetNPCMemoryCount(entityID, tagsCsv));
 
             // --- Game Events ---
-            _story.BindExternalFunction("eventBegin", (string eventName) => ExternalEventBegin(eventName));
-            _story.BindExternalFunction("eventAddParticipant", (string id, string memRoles) => ExternalEventAddParticipant(id, memRoles));
-            _story.BindExternalFunction("eventAddData", (string dataName, string dataValue) => ExternalEventAddData(dataName, dataValue));
-            _story.BindExternalFunction("eventCommit", () => ExternalEventCommit(GameContext.LocationRegistry, GameContext.DefinitionRegistry));
+            _story.BindExternalFunction(InkExternalFunctionNames.EventBegin, (string eventName) => ExternalEventBegin(eventName));
+            _story.BindExternalFunction(InkExternalFunctionNames.EventAddParticipant, (string id, string memRoles) => ExternalEventAddParticipant(id, memRoles));
+            _story.BindExternalFunction(InkExternalFunctionNames.EventAddData, (string dataName, string dataValue) => ExternalEventAddData(dataName, dataValue));
+            _story.BindExternalFunction(InkExternalFunctionNames.EventCommit, () => ExternalEventCommit(GameContext.LocationRegistry, GameContext.DefinitionRegistry));
 
             // --- Silent Path ---
-            _story.BindExternalFunction("setSilentPath", (string silentPath, int silentMs) => ExternalSetSilentPath(silentPath, silentMs));
+            _story.BindExternalFunction(InkExternalFunctionNames.SetSilentPath, (string silentPath, int silentMs) => ExternalSetSilentPath(silentPath, silentMs));
 
             // --- Blur Animation ---
-            _story.BindExternalFunction("animateBlur", (float targetOpacity, float durationSecs, float fadeBackDurationSecs, float waitSecs) =>
+            _story.BindExternalFunction(InkExternalFunctionNames.AnimateBlur, (float targetOpacity, float durationSecs, float fadeBackDurationSecs, float waitSecs) =>
             {
                 Console.WriteLine($"[DEBUG] animateBlur binding called with args: {targetOpacity}, {durationSecs}, {fadeBackDurationSecs}, {waitSecs}");
                 try

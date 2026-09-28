@@ -17,11 +17,15 @@ namespace AshborneGame._Core.Game.Events
                 "player.maskequipped" => new GameEvents.Player.MaskEquippedEvent(currentTotalHours, GetRequiredString(data, "maskName", "mask")),
                 
                 "player.helpedcharacter" => 
-                new GameEvents.Player.HelpedCharacterEvent(currentTotalHours, participants, new (GetRequiredString(data, "locationId", "character"))),
+                new GameEvents.Player.HelpedCharacterEvent(currentTotalHours, participants, new (GetRequiredString(data, "locationId", "location"))),
                 "player.showedcareforsomethingprecious" => 
                 new GameEvents.Player.ShowedCareForSomethingPreciousEvent(currentTotalHours, participants, new (GetRequiredString(data, "locationId", "location"))),
                 "player.ruinedsomethingprecious" => 
                 new GameEvents.Player.RuinedSomethingPreciousEvent(currentTotalHours, participants, new (GetRequiredString(data, "locationId", "location"))),
+                "player.showednoremorse" =>
+                new GameEvents.Player.ShowedNoRemorseEvent(currentTotalHours, participants, new(GetRequiredString(data, "locationId", "location"))),
+                "player.showedremorse" =>
+                new GameEvents.Player.ShowedRemorseEvent(currentTotalHours, participants, new(GetRequiredString(data, "locationId", "location"))),
 
                 "dialogue.started" => new GameEvents.Dialogue.StartedEvent(currentTotalHours, GetRequiredString(data, "dialogueName", "dialogue")),
                 "dialogue.ended" => new GameEvents.Dialogue.EndedEvent(currentTotalHours, GetRequiredString(data, "dialogueName", "dialogue")),
@@ -59,9 +63,10 @@ namespace AshborneGame._Core.Game.Events
         {
             foreach (string key in keys)
             {
-                if (data.TryGetValue(key, out string? value) && !string.IsNullOrWhiteSpace(value))
+                foreach (var kvp in data)
                 {
-                    return value;
+                    if (string.Equals(kvp.Key, key, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(kvp.Value))
+                        return kvp.Value;
                 }
             }
 

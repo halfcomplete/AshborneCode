@@ -50,37 +50,65 @@ namespace AshborneTooling
 
         private static void OnInkFileChanged(object sender, FileSystemEventArgs e)
         {
+            List<(string FileName, string Message)> errors = new();
             try
             {
                 Console.WriteLine("============================================================================");
                 Console.WriteLine($"Change detected: {e.Name} at {DateTime.Now}");
-                var jsonPath = CompileInkFile(e.FullPath);
+                var jsonPath = CompileInkFile(e.FullPath, out string? compilationError);
+                if (string.IsNullOrWhiteSpace(jsonPath))
+                {
+                    errors.Add((e.Name ?? "<unknown>", compilationError ?? "Ink compilation failed."));
+                    PrintErrorSummary(errors);
+                    return;
+                }
+
                 var issues = InkDialogueValidator.ValidateSingleFile(jsonPath);
-                Console.WriteLine();
                 foreach (var issue in issues)
                 {
-                    Console.WriteLine($"[ERROR] Validation Issue in {e.Name}: {issue}");
+                    errors.Add((Path.GetFileName(issue.FilePath), issue.Message));
                 }
-                if (issues.Count == 0)
+                if (errors.Count == 0)
                 {
                     Console.WriteLine($"[SUCCESS] Compile and Validation complete for {e.Name}!");
+                }
+                else
+                {
+                    PrintErrorSummary(errors);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to compile and validate {e.Name}: {ex.Message}");
+                errors.Add((e.Name ?? "<unknown>", ex.Message));
+                PrintErrorSummary(errors);
             }
         }
 
-        private static string CompileInkFile(string inkFilePath)
+        private static void PrintErrorSummary(IEnumerable<(string FileName, string Message)> errors)
         {
+            ConsoleColor previousColor = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine();
+            Console.WriteLine("Ink dialogue compilation/validation failed:");
+            foreach ((string fileName, string message) in errors)
+            {
+                Console.WriteLine($"- {fileName}: {message}");
+            }
+            Console.WriteLine("Summary: {0} error(s).", errors.Count());
+            Console.ForegroundColor = previousColor;
+        }
+
+        private static string? CompileInkFile(string inkFilePath, out string? compilationError)
+        {
+            compilationError = null;
             string fileName = Path.GetFileName(inkFilePath); // e.g. Act1_Scene1_intro.ink
             string[] parts = fileName.Split('_', StringSplitOptions.RemoveEmptyEntries);
 
             if (parts.Length < 2 || !parts[0].StartsWith("Act") || !parts[1].StartsWith("Scene"))
             {
                 Console.WriteLine($"Invalid file name format: {fileName}");
-                return "";
+                compilationError = "Invalid file name format; expected Act*_Scene*_*.ink.";
+                return null;
             }
 
             string actPart = parts[0];   // Act1
@@ -107,6 +135,12 @@ namespace AshborneTooling
             };
 
             using var process = Process.Start(startInfo);
+            if (process == null)
+            {
+                Console.WriteLine($"Unable to start Ink compiler for {fileName}.");
+                compilationError = "Unable to start the Ink compiler.";
+                return null;
+            }
             process.WaitForExit();
 
             string output = process.StandardOutput.ReadToEnd();
@@ -121,8 +155,12 @@ namespace AshborneTooling
             }
             else
             {
+                ConsoleColor previousColor = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Compilation error in {fileName}:\n{error}");
-                return "";
+                Console.ForegroundColor = previousColor;
+                compilationError = string.IsNullOrWhiteSpace(error) ? "Ink compiler returned a failure exit code." : error.Trim();
+                return null;
             }
 
             return jsonOutputPath;

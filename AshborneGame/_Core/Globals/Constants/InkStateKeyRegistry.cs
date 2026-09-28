@@ -3,7 +3,7 @@ using AshborneGame._Core.Game;
 namespace AshborneGame._Core.Globals.Constants
 {
     /// <summary>
-    /// Compatibility façade for Ink and tooling. Key registration and validation are owned by GameStateTracker.
+    /// Compatibility facade for Ink and tooling. Key registration and validation are owned by GameStateTracker.
     /// </summary>
     public static class InkStateKeyRegistry
     {

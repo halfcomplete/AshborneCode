@@ -6,6 +6,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Constants;
+using AshborneGame._Core.CognitiveSystem.EmotionSystem;
+using AshborneGame._Core.CognitiveSystem.MemorySystem;
+using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags;
 
 namespace AshborneTooling
 {
@@ -39,10 +42,27 @@ namespace AshborneTooling
             string Message
         );
 
-        private static readonly Regex FlagKeyPattern = new(@"""setFlag""|""getFlag""|""hasFlag""|""toggleFlag""|""removeFlag""", RegexOptions.Compiled);
-        private static readonly Regex CounterKeyPattern = new(@"""setCounter""|""getCounter""|""hasCounter""|""incCounter""|""decCounter""|""removeCounter""", RegexOptions.Compiled);
-        private static readonly Regex LabelKeyPattern = new(@"""setLabel""|""getLabel""|""hasLabel""|""removeLabel""", RegexOptions.Compiled);
-        private static readonly Regex StringExtraction = new(@"""([^""\\]|\\.)*""", RegexOptions.Compiled);
+        private static readonly HashSet<string> KnownFunctions =
+        [
+            InkExternalFunctionNames.SetFlag, InkExternalFunctionNames.GetFlag, InkExternalFunctionNames.HasFlag,
+            InkExternalFunctionNames.ToggleFlag, InkExternalFunctionNames.RemoveFlag,
+            InkExternalFunctionNames.SetCounter, InkExternalFunctionNames.GetCounter, InkExternalFunctionNames.HasCounter,
+            InkExternalFunctionNames.IncCounter, InkExternalFunctionNames.DecCounter, InkExternalFunctionNames.RemoveCounter,
+            InkExternalFunctionNames.SetLabel, InkExternalFunctionNames.GetLabel, InkExternalFunctionNames.HasLabel,
+            InkExternalFunctionNames.RemoveLabel, InkExternalFunctionNames.PlayerHas,
+            InkExternalFunctionNames.PlayerForceMask, InkExternalFunctionNames.PlayerGiveMask,
+            InkExternalFunctionNames.PlayerTryTakeMask, InkExternalFunctionNames.PlayerWearingMask,
+            InkExternalFunctionNames.ChangePlayerStat, InkExternalFunctionNames.GetPlayerStat,
+            InkExternalFunctionNames.GetLocationVisits, InkExternalFunctionNames.IncLocationVisits,
+            InkExternalFunctionNames.AdvanceTime, InkExternalFunctionNames.AddSyntheticMemory,
+            InkExternalFunctionNames.GetNpcEmotion, InkExternalFunctionNames.HasNpcMemory,
+            InkExternalFunctionNames.GetNpcMemoryCount, InkExternalFunctionNames.EventBegin,
+            InkExternalFunctionNames.EventAddParticipant, InkExternalFunctionNames.EventAddData,
+            InkExternalFunctionNames.EventCommit, InkExternalFunctionNames.SetSilentPath,
+            InkExternalFunctionNames.AnimateBlur
+        ];
+
+        private sealed record ExternalFunctionCall(string Name, string[] Arguments, int CompiledArity, string FullLine);
 
         /// <summary>
         /// Validates all .json dialogue files in a directory and subdirectories.
@@ -103,9 +123,9 @@ namespace AshborneTooling
             return issues;
         }
 
-        private static List<(string, string, string)> ExtractExternalFunctionCalls(string json)
+        private static List<ExternalFunctionCall> ExtractExternalFunctionCalls(string json)
         {
-            var calls = new List<(string, string, string)>();
+            var calls = new List<ExternalFunctionCall>();
 
             var matches = OutputConstants.InkFunctionRegex.Matches(json);
 
@@ -113,71 +133,116 @@ namespace AshborneTooling
             {
                 var parameters = match.Groups[1].Value;
                 var functionName = match.Groups[2].Value;
-                var paramCount = int.Parse(match.Groups[3].Value);
+                int paramCount = int.Parse(match.Groups[3].Value);
 
                 // Extract parameters from the parameters match
-                var splitParameters = RemoveStringMarkers(parameters.Split(','));
-
-                foreach (var p in splitParameters)
-                {
-                    switch (functionName)
-                    {
-                        case "setFlag":
-                        case "setCounter":
-                        case "setLabel":
-                            //calls.Add((functionName, RemoveQuotes(splitParameters[1]), $"~ {functionName}({string.Join(", ", splitParameters)})"));
-                            //break;
-
-                        case "hasFlag":
-                        case "getFlag":
-                        case "toggleFlag":
-                        case "removeFlag":
-                        case "hasCounter":
-                        case "incCounter":
-                        case "decCounter":
-                        case "getCounter":
-                        case "removeCounter":
-                        case "hasLabel":
-                        case "getLabel":
-                        case "removeLabel":
-                            calls.Add((functionName, RemoveInkJSONUpArrow(RemoveQuotes(splitParameters[0])), $"~ {functionName}{string.Join(", ", splitParameters)}"));
-                            break;
-                    }
-                }
+                string[] splitParameters = RemoveStringMarkers(parameters.Split(','))
+                    .Select(parameter => parameter.Trim())
+                    .Where(parameter => parameter.Length > 0)
+                    .ToArray();
+                calls.Add(new ExternalFunctionCall(
+                    functionName,
+                    splitParameters,
+                    paramCount,
+                    $"~ {functionName}({string.Join(", ", splitParameters)})"));
             }
 
             return calls;
         }
 
-        private static void ValidateFunctionCall(string filePath, (string, string, string) call, List<ValidationIssue> issues)
+        private static void ValidateFunctionCall(string filePath, ExternalFunctionCall call, List<ValidationIssue> issues)
         {
-            var (functionName, argument, fullLine) = call;
+            string functionName = call.Name;
+            if (!KnownFunctions.Contains(functionName))
+            {
+                issues.Add(new ValidationIssue(filePath, call.FullLine, $"'{functionName}' is not a registered Ink external function."));
+                return;
+            }
+
+            int expectedArity = GetExpectedArity(functionName);
+            if (call.CompiledArity != expectedArity || call.Arguments.Length != expectedArity)
+            {
+                issues.Add(new ValidationIssue(filePath, call.FullLine,
+                    $"'{functionName}' expects {expectedArity} argument(s), but compiled Ink contains {call.CompiledArity}."));
+                return;
+            }
+
+            string argument = call.Arguments.Length > 0
+                ? RemoveInkJSONUpArrow(RemoveQuotes(call.Arguments[0]))
+                : string.Empty;
 
             switch (functionName)
             {
-                case "setFlag":
-                case "getFlag":
-                case "hasFlag":
-                case "toggleFlag":
-                case "removeFlag":
-                    ValidateFlagKey(filePath, argument, issues, fullLine);
+                case InkExternalFunctionNames.SetFlag:
+                case InkExternalFunctionNames.GetFlag:
+                case InkExternalFunctionNames.HasFlag:
+                case InkExternalFunctionNames.ToggleFlag:
+                case InkExternalFunctionNames.RemoveFlag:
+                    ValidateFlagKey(filePath, argument, issues, call.FullLine);
                     break;
 
-                case "setCounter":
-                case "getCounter":
-                case "hasCounter":
-                case "incCounter":
-                case "decCounter":
-                case "removeCounter":
-                    ValidateCounterKey(filePath, argument, issues, fullLine);
+                case InkExternalFunctionNames.SetCounter:
+                case InkExternalFunctionNames.GetCounter:
+                case InkExternalFunctionNames.HasCounter:
+                case InkExternalFunctionNames.IncCounter:
+                case InkExternalFunctionNames.DecCounter:
+                case InkExternalFunctionNames.RemoveCounter:
+                    ValidateCounterKey(filePath, argument, issues, call.FullLine);
                     break;
 
-                case "setLabel":
-                case "getLabel":
-                case "hasLabel":
-                case "removeLabel":
-                    ValidateLabelKey(filePath, argument, issues, fullLine);
+                case InkExternalFunctionNames.SetLabel:
+                case InkExternalFunctionNames.GetLabel:
+                case InkExternalFunctionNames.HasLabel:
+                case InkExternalFunctionNames.RemoveLabel:
+                    ValidateLabelKey(filePath, argument, issues, call.FullLine);
                     break;
+
+                case InkExternalFunctionNames.GetNpcEmotion:
+                    ValidateEnumArgument(filePath, call, 1, issues, typeof(EmotionType), "emotion");
+                    break;
+                case InkExternalFunctionNames.EventAddParticipant:
+                    ValidateEnumCsvArgument(filePath, call, 1, issues, typeof(MemoryRole), "memory role");
+                    break;
+                case InkExternalFunctionNames.AddSyntheticMemory:
+                    ValidateEnumCsvArgument(filePath, call, 0, issues, typeof(MemoryTagType), "memory tag");
+                    break;
+                case InkExternalFunctionNames.HasNpcMemory:
+                case InkExternalFunctionNames.GetNpcMemoryCount:
+                    ValidateEnumCsvArgument(filePath, call, 1, issues, typeof(MemoryTagType), "memory tag");
+                    break;
+            }
+        }
+
+        private static int GetExpectedArity(string functionName) => functionName switch
+        {
+            InkExternalFunctionNames.SetFlag or InkExternalFunctionNames.SetCounter or InkExternalFunctionNames.SetLabel => 2,
+            InkExternalFunctionNames.IncCounter or InkExternalFunctionNames.DecCounter => 2,
+            InkExternalFunctionNames.AddSyntheticMemory or InkExternalFunctionNames.GetNpcEmotion or InkExternalFunctionNames.HasNpcMemory or InkExternalFunctionNames.GetNpcMemoryCount or InkExternalFunctionNames.EventAddParticipant or InkExternalFunctionNames.EventAddData or InkExternalFunctionNames.SetSilentPath => 2,
+            InkExternalFunctionNames.ChangePlayerStat => 2,
+            InkExternalFunctionNames.AnimateBlur => 4,
+            InkExternalFunctionNames.GetFlag or InkExternalFunctionNames.HasFlag or InkExternalFunctionNames.ToggleFlag or InkExternalFunctionNames.RemoveFlag or InkExternalFunctionNames.GetCounter or InkExternalFunctionNames.HasCounter or InkExternalFunctionNames.RemoveCounter or InkExternalFunctionNames.GetLabel or InkExternalFunctionNames.HasLabel or InkExternalFunctionNames.RemoveLabel or InkExternalFunctionNames.PlayerHas or InkExternalFunctionNames.PlayerForceMask or InkExternalFunctionNames.PlayerGiveMask or InkExternalFunctionNames.PlayerTryTakeMask or InkExternalFunctionNames.PlayerWearingMask or InkExternalFunctionNames.GetPlayerStat or InkExternalFunctionNames.GetLocationVisits or InkExternalFunctionNames.IncLocationVisits or InkExternalFunctionNames.EventBegin => 1,
+            InkExternalFunctionNames.AdvanceTime or InkExternalFunctionNames.EventCommit => 0,
+            _ => throw new InvalidOperationException($"No compile-time arity is registered for '{functionName}'.")
+        };
+
+        private static void ValidateEnumArgument(string filePath, ExternalFunctionCall call, int index, List<ValidationIssue> issues, Type enumType, string description)
+        {
+            string value = RemoveInkJSONUpArrow(RemoveQuotes(call.Arguments[index]));
+            if (call.Arguments[index].StartsWith("^", StringComparison.Ordinal) && !Enum.TryParse(enumType, value, true, out _))
+                issues.Add(new ValidationIssue(filePath, call.FullLine, $"'{value}' is not a valid {description} for '{call.Name}'."));
+        }
+
+        private static void ValidateEnumCsvArgument(string filePath, ExternalFunctionCall call, int index, List<ValidationIssue> issues, Type enumType, string description)
+        {
+            string rawValue = call.Arguments[index];
+            if (!rawValue.StartsWith("^", StringComparison.Ordinal))
+                return;
+
+            string value = RemoveInkJSONUpArrow(RemoveQuotes(rawValue));
+            foreach (string item in value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                if (!Enum.TryParse(enumType, item, true, out _))
+                    issues.Add(new ValidationIssue(filePath, call.FullLine, $"'{item}' is not a valid {description} for '{call.Name}'."));
             }
         }
 
