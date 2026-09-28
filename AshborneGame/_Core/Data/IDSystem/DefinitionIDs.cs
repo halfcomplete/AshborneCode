@@ -34,7 +34,7 @@ namespace AshborneGame._Core.Data.IDSystem
                 public static readonly DefinitionID Observatory = new("Locations.OssuaryOfEyes.Observatory");
                 public static readonly DefinitionID CentralOssuary = new("Locations.OssuaryOfEyes.CentralOssuary");
                 public static readonly DefinitionID HallOfLostThoughts = new("Locations.OssuaryOfEyes.HallOfLostThoughts");
-                public static readonly DefinitionID CloisterGardens = new("Locations.OssuaryOfEyes.CloisterGardens");
+                public static readonly DefinitionID CloisterGarden = new("Locations.OssuaryOfEyes.CloisterGardens");
                 public static class CloisterGardenLocs
                 {
                     public static readonly DefinitionID GardenWalk = new("Locations.OssuaryOfEyes.CloisterGardens.GardenWalk");

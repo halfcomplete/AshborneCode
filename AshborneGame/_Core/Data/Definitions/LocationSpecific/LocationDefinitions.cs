@@ -23,7 +23,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
             Prologue.PrologueStart,
             OssuaryOfEyes.WakingChamber,
             OssuaryOfEyes.KeepersQuarters, OssuaryOfEyes.KeepersQuartersLocs.KeepersQuartersDesk, OssuaryOfEyes.KeepersQuartersLocs.KeepersQuartersBookShelves,
-            OssuaryOfEyes.CloisterGardens,
+            OssuaryOfEyes.CloisterGarden, OssuaryOfEyes.CloisterGardenLocs.GardenWalk, OssuaryOfEyes.CloisterGardenLocs.HerbBeds, OssuaryOfEyes.CloisterGardenLocs.InnerFountain
         ];
 
         public static class Prologue
@@ -352,8 +352,8 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
 
             */
 
-            public static LocationDefinition CloisterGardens = new(
-                DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens,
+            public static LocationDefinition CloisterGarden = new(
+                DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGarden,
                 DefinitionIDs.Scenes.OssuaryOfEyes,
                 new LocationNameAdapter("Cloister Gardens", "the Cloister Gardens"),
                 new DescriptionComposer(
@@ -407,7 +407,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                     () =>
                     {
                         IOService.Output.WriteNonDialogueLine("You kneel down and begin tending to the plants. The Gardener watches you for a moment in gratitude, then returns to her work. You feel a sense of satisfaction as you help maintain the garden.");
-                        EventBus.Publish(new GameEvents.Player.HelpedCharacterEvent(GameContext.TimeTracker.TotalInGameHours, [new MemoryParticipant(DefinitionIDs.NPCs.Gardener, [MemoryRole.Target]), new MemoryParticipant(DefinitionIDs.Player, [MemoryRole.Actor])], DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens));
+                        EventBus.Publish(new GameEvents.Player.HelpedCharacterEvent(GameContext.TimeTracker.TotalInGameHours, [new MemoryParticipant(DefinitionIDs.NPCs.Gardener, [MemoryRole.Target]), new MemoryParticipant(DefinitionIDs.Player, [MemoryRole.Actor])], DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGarden));
                     }
                 )
                 .AddCustomCommand(
@@ -466,7 +466,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                             () =>
                             {
                                 IOService.Output.WriteNonDialogueLine("You kneel down and begin tending to the plants. The Gardener watches you for a moment in gratitude, then returns to her work. You feel a sense of satisfaction as you help maintain the garden.");
-                                EventBus.Publish(new GameEvents.Player.HelpedCharacterEvent(GameContext.TimeTracker.TotalInGameHours, [new MemoryParticipant(DefinitionIDs.NPCs.Gardener, [MemoryRole.Target]), new MemoryParticipant(DefinitionIDs.Player, [MemoryRole.Actor])], DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens));
+                                EventBus.Publish(new GameEvents.Player.HelpedCharacterEvent(GameContext.TimeTracker.TotalInGameHours, [new MemoryParticipant(DefinitionIDs.NPCs.Gardener, [MemoryRole.Target]), new MemoryParticipant(DefinitionIDs.Player, [MemoryRole.Actor])], DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGarden));
                             }
                         )
                         .AddCustomCommand(
@@ -521,7 +521,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                             () =>
                             {
                                 IOService.Output.WriteNonDialogueLine("You kneel down and begin tending to the plants. The Gardener watches you for a moment in gratitude, then returns to her work. You feel a sense of satisfaction as you help maintain the garden.");
-                                EventBus.Publish(new GameEvents.Player.HelpedCharacterEvent(GameContext.TimeTracker.TotalInGameHours, [new MemoryParticipant(DefinitionIDs.NPCs.Gardener, [MemoryRole.Target]), new MemoryParticipant(DefinitionIDs.Player, [MemoryRole.Actor])], DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens));
+                                EventBus.Publish(new GameEvents.Player.HelpedCharacterEvent(GameContext.TimeTracker.TotalInGameHours, [new MemoryParticipant(DefinitionIDs.NPCs.Gardener, [MemoryRole.Target]), new MemoryParticipant(DefinitionIDs.Player, [MemoryRole.Actor])], DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGarden));
                             }
                         )
                         .AddCustomCommand(

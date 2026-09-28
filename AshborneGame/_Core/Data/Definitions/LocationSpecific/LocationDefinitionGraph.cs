@@ -14,7 +14,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
         [
             //new(DefinitionIDs.Locations.OssuaryOfEyesLocs.WakingChamber, DefinitionIDs.Locations.OssuaryOfEyesLocs.HallOfLostThoughts, DirectionConstants.East),
             new(DefinitionIDs.Locations.OssuaryOfEyesLocs.WakingChamber, DefinitionIDs.Locations.OssuaryOfEyesLocs.KeepersQuarters, DirectionConstants.North),
-            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.KeepersQuarters, DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens, DirectionConstants.East),
+            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.KeepersQuarters, DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGarden, DirectionConstants.East),
             //new(DefinitionIDs.Locations.OssuaryOfEyesLocs.HallOfLostThoughts, DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens, DirectionConstants.North),
             //new(DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens, DefinitionIDs.Locations.OssuaryOfEyesLocs.CentralOssuary, DirectionConstants.North),
             //new(DefinitionIDs.Locations.OssuaryOfEyesLocs.CentralOssuary, DefinitionIDs.Locations.OssuaryOfEyesLocs.Observatory, DirectionConstants.North),
@@ -23,9 +23,9 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
 
         public static readonly IReadOnlyList<ParentChildDefinition> Hierarchy =
         [
-            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens, DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardenLocs.GardenWalk),
-            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens, DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardenLocs.HerbBeds),
-            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardens, DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardenLocs.InnerFountain),
+            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGarden, DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardenLocs.GardenWalk),
+            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGarden, DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardenLocs.HerbBeds),
+            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGarden, DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardenLocs.InnerFountain),
         ];
     }
 }

@@ -18,7 +18,10 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
         Death,
         Crime,
         Humiliation,
-
+        Cruelty,
+        Remorse,
+        Care,
+        Loss,
         Kindness,
         Sacrifice,
         Secret,

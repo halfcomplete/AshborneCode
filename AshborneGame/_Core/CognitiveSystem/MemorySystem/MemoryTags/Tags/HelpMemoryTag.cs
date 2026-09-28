@@ -3,6 +3,8 @@ using AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality;
 using AshborneGame._Core.CognitiveSystem.MemorySystem;
 using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags;
 
+namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags;
+
 public class HelpMemoryTag : IMemoryTag
 {
     public MemoryTagType Type => MemoryTagType.Help;
