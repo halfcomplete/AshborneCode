@@ -617,7 +617,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                             // figure out if the rule says anything about our relationship type
                             double alignment = Math.Abs(GetAttitudeAlignmentWithAttitudeType(attitude, rule.Relationship));
 
-                            mult *= (rule.Value - 1) * alignment + 1;
+                            mult = ApplyIntensityMultiplier(mult, rule.Value, alignment);
                         }
                     }
                 }
@@ -666,12 +666,17 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                     if (participants.Any(p => p.EntityId == self && p.Roles.Contains(modifier.SubjectRole)) &&
                         personality.PersonalityTraits.TryGetValue(modifier.Trait, out double traitValue))
                     {
-                        mult *= (modifier.Value - 1) * traitValue + 1;
+                        mult = ApplyIntensityMultiplier(mult, modifier.Value, traitValue);
                     }
                 }
             }
 
             return mult;
+        }
+
+        private static double ApplyIntensityMultiplier(double current, double modifier, double influence)
+        {
+            return current * (1.0 + ((modifier - 1.0) * influence));
         }
 
         // TODO: review this function; can we make it any more efficient?

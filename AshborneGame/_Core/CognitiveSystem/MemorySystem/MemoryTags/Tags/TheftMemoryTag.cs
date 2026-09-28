@@ -81,9 +81,9 @@ public class TheftMemoryTag : IMemoryTag
                         MemoryRole.Actor,
                         new()
                         {
-                            (RelationshipType.Loves, 0.25),
-                            (RelationshipType.Trusts, 0.2),
-                            (RelationshipType.Hates, 0.1)
+                            (RelationshipType.Loves, 1.25),
+                            (RelationshipType.Trusts, 1.2),
+                            (RelationshipType.Hates, 1.1)
                         }
                     )
                 }
@@ -119,7 +119,7 @@ public class TheftMemoryTag : IMemoryTag
             {
                 [PersonalityTrait.Aggression] = new()
                 {
-                    (MemoryRole.Target, 0.15)
+                    (MemoryRole.Target, 1.15)
                 }
             }
         );

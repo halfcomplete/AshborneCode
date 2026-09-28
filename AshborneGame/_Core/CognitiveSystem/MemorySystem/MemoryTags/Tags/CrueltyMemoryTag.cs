@@ -21,7 +21,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags
                     MemoryRole.Actor,
                     new()
                     {
-                        (EmotionType.Anger, 0.65),
+                        (EmotionType.Anger, 0.8),
                         (EmotionType.Sadness, 0.4)
                     }
                 )
@@ -31,8 +31,8 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags
             // Intensity
             new Dictionary<MemoryRole, List<double>>
             {
-                [MemoryRole.Target] = new() { 0.65 },
-                [MemoryRole.Actor] = new() { 0.3 },
+                [MemoryRole.Target] = new() { 0.85 },
+                [MemoryRole.Actor] = new() { 0.35 },
                 [MemoryRole.Witness] = new() { 0.2 }
             },
 
@@ -82,9 +82,9 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags
                     MemoryRole.Actor,
                     new()
                     {
-                        (RelationshipType.Loves, 0.25),
-                        (RelationshipType.Trusts, 0.2),
-                        (RelationshipType.Hates, 0.05)
+                        (RelationshipType.Loves, 1.25),
+                        (RelationshipType.Trusts, 1.2),
+                        (RelationshipType.Hates, 1.05)
                     }
                 )
                 }
@@ -121,11 +121,11 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags
             {
                 [PersonalityTrait.Aggression] = new()
                 {
-                    (MemoryRole.Target, 0.1)
+                    (MemoryRole.Target, 1.1)
                 },
                 [PersonalityTrait.Compassion] = new()
                 {
-                    (MemoryRole.Target, 0.1)
+                    (MemoryRole.Target, 1.1)
                 }
             }
         );

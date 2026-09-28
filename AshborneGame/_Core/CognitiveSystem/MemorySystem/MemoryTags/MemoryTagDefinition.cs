@@ -35,10 +35,10 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
         public List<PersonalityEmotionRule> PersonalityEmotionRules { get; init; }
 
         /// <summary>
-        /// A Dictionary where the Key is each personality trait and the value is a double that defines how much of an effect that personality trait has on the Memory's intensity if this memory tag is on it.
+        /// A Dictionary where the Key is each personality trait and the value is a 0-to-2 multiplier that defines how much of an effect that personality trait has on the Memory's intensity if this memory tag is on it.
         /// </summary>
         /// <remarks>
-        /// For example, the SecretMemoryTag may have a kvp of (PersonalityTrait.Curiosity, +0.3), meaning that if the NPC is fully curious, then the intensity of memories with a Secret tag on them will increase by 0.3.
+        /// For example, the SecretMemoryTag may have a multiplier of 1.3 for PersonalityTrait.Curiosity, meaning that if the NPC is fully curious, then the intensity of memories with a Secret tag on them will increase by 30 percent.
         /// </remarks>
         public List<PersonalityIntensityRule> PersonalityIntensityRules { get; init; }
 
@@ -100,7 +100,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
                                 role.Key,
                                 target.target,
                                 relationship.relationship,
-                                relationship.value
+                                ValidateIntensityMultiplier(relationship.value, nameof(attitudeIntensityRules))
                             )
                         )
                     )
@@ -127,10 +127,20 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags
                     new PersonalityIntensityRule(
                         pair.Key,
                         intensity.self,
-                        intensity.value
+                        ValidateIntensityMultiplier(intensity.value, nameof(personalityIntensityRules))
                     )
                 ))
                 .ToList();
+        }
+
+        private static double ValidateIntensityMultiplier(double value, string parameterName)
+        {
+            if (value is < 0 or > 2)
+            {
+                throw new ArgumentOutOfRangeException(parameterName, value, "Intensity multipliers must be between 0 and 2.");
+            }
+
+            return value;
         }
     }
 }

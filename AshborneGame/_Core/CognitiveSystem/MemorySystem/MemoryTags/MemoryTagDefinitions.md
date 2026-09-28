@@ -79,7 +79,7 @@ var attitudeIntensityRules = new Dictionary<MemoryRole, List<(MemoryRole target,
 {
     [MemoryRole.Target] = new()
     {
-        (MemoryRole.Actor, new() { (RelationshipType.Loves, 0.2), (RelationshipType.Hates, -0.2) })
+        (MemoryRole.Actor, new() { (RelationshipType.Loves, 1.2), (RelationshipType.Hates, 0.8) })
     }
 };
 
@@ -93,7 +93,7 @@ var personalityEmotionRules = new Dictionary<PersonalityTrait, List<(MemoryRole 
 
 var personalityIntensityRules = new Dictionary<PersonalityTrait, List<(MemoryRole self, double value)>>
 {
-    [PersonalityTrait.Compassion] = new() { (MemoryRole.Target, 0.2) }
+    [PersonalityTrait.Compassion] = new() { (MemoryRole.Target, 1.2) }
 };
 
 var theftTag = new MemoryTag(
@@ -158,14 +158,14 @@ public enum MemoryRole
 All effects use `double`; the constructor does not validate or clamp the rule values.
 
 - Initial emotion values seed a role's emotion potential. Positive and negative values represent increasing and decreasing influence, respectively.
-- Intensity values are added when the NPC has the specified role. Personality intensity adds `rule value * trait value`; relationship intensity adds `rule value * relationship alignment`. The final intensity is clamped to `0.0..1.0` after contributions are combined.
+- Intensity rules use multiplicative values from `0.0` to `2.0`, where `1.0` is neutral, `0.0` suppresses the contribution, and `2.0` doubles it. The multiplier is interpolated from neutral using the personality trait or relationship alignment. The final intensity is clamped to `0.0..1.0` after contributions are combined.
 - Personality trait values in `PersonalityProfile` are intended to be between `0.0` and `1.0`. An emotion rule's value acts as the response multiplier at full trait strength: `1.0` leaves the response unchanged, above `1.0` increases it, and between `0.0` and `1.0` reduces it.
-- Relationship rules select the relationship direction (`Loves` vs `Hates`, `Trusts` vs `Distrusts`, and so on). The engine uses the magnitude of the matching attitude alignment. Relationship emotion values modify a matching emotion response; relationship intensity values are additive and can be negative.
+- Relationship rules select the relationship direction (`Loves` vs `Hates`, `Trusts` vs `Distrusts`, and so on). The engine uses the magnitude of the matching attitude alignment. Relationship emotion values modify a matching emotion response; relationship intensity values are neutral-centered multipliers from `0.0` to `2.0`.
 - Emotion modifiers (both personality and relationship) are multiplicative and are added to the TotalMult using the formula:
 ```csharp
 currentTotalMult = currentTotalMult * (1 + personalityTraitInfluence * (reactionMult - 1));
 ```
-- Intensity modifiers are additive
+- Intensity modifiers are multiplicative and must be in the range `0.0..2.0`.
 
 Rules only apply when the memory participant has the configured subject role. Relationship rules additionally require a participant matching the target role and an attitude entry for that participant. Personality rules require that the subject has the configured role and that the personality profile contains the trait.
 
@@ -175,4 +175,4 @@ Rules only apply when the memory participant has the configured subject role. Re
 2. Create one `MemoryTagDefinition`, passing the six dictionaries in constructor order. Use an empty dictionary for categories with no effects.
 3. Wrap it in an `IMemoryTag` implementation whose `Type` matches the registry key.
 4. Add the entry to `MemoryTagDefinitions.Definitions` before the tag can appear in a `MemoryDefinition`.
-5. Check each rule's subject role, target role, relationship direction, and sign; test the resulting emotion and intensity behavior in a memory.
+5. Check each rule's subject role, target role, relationship direction, multiplier range, and test the resulting emotion and intensity behavior in a memory.

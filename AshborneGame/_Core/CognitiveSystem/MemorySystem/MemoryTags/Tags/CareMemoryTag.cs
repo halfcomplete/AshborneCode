@@ -138,8 +138,8 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags
                         MemoryRole.Actor,
                         new()
                         {
-                            (RelationshipType.Loves, 0.2),
-                            (RelationshipType.Trusts, 0.15)
+                            (RelationshipType.Loves, 1.2),
+                            (RelationshipType.Trusts, 1.15)
                         }
                     )
                 },
@@ -150,8 +150,8 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags
                         MemoryRole.Target,
                         new()
                         {
-                            (RelationshipType.Loves, 0.15),
-                            (RelationshipType.Trusts, 0.1)
+                            (RelationshipType.Loves, 1.15),
+                            (RelationshipType.Trusts, 1.1)
                         }
                     )
                 }
@@ -190,8 +190,8 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags.Tags
             {
                 [PersonalityTrait.Compassion] = new()
                 {
-                    (MemoryRole.Actor, 0.15),
-                    (MemoryRole.Target, 0.1)
+                    (MemoryRole.Actor, 1.15),
+                    (MemoryRole.Target, 1.1)
                 }
             }
         );

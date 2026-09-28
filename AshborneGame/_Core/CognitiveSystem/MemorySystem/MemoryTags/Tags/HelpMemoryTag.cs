@@ -79,9 +79,9 @@ public class HelpMemoryTag : IMemoryTag
                         MemoryRole.Actor,
                         new()
                         {
-                            (RelationshipType.Loves, 0.2),
-                            (RelationshipType.Trusts, 0.2),
-                            (RelationshipType.Hates, 0.05)
+                            (RelationshipType.Loves, 1.2),
+                            (RelationshipType.Trusts, 1.2),
+                            (RelationshipType.Hates, 1.05)
                         }
                     )
                 }
@@ -107,7 +107,7 @@ public class HelpMemoryTag : IMemoryTag
             {
                 [PersonalityTrait.Compassion] = new()
                 {
-                    (MemoryRole.Target, 0.1)
+                    (MemoryRole.Target, 1.1)
                 }
             }
         );

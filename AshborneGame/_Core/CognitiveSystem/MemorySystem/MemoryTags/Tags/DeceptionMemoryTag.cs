@@ -80,9 +80,9 @@ public class DeceptionMemoryTag : IMemoryTag
                         MemoryRole.Actor,
                         new()
                         {
-                            (RelationshipType.Trusts, 0.25),
-                            (RelationshipType.Loves, 0.2),
-                            (RelationshipType.Hates, 0.05)
+                            (RelationshipType.Trusts, 1.25),
+                            (RelationshipType.Loves, 1.2),
+                            (RelationshipType.Hates, 1.05)
                         }
                     )
                 }
@@ -108,7 +108,7 @@ public class DeceptionMemoryTag : IMemoryTag
             {
                 [PersonalityTrait.Aggression] = new()
                 {
-                    (MemoryRole.Target, 0.1)
+                    (MemoryRole.Target, 1.1)
                 }
             }
         );

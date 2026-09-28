@@ -104,21 +104,21 @@ namespace AshborneGame._Core.Game.Events
             public sealed record RuinedSomethingPreciousEvent(int CurrentTotalHours, List<MemoryParticipant> Participants, DefinitionID location) : IMemorableGameEvent
             {
                 // TODO: Add a specific memory tag for this event type
-                public MemoryDefinition MemoryDefinition { get; } = new([]);
+                public MemoryDefinition MemoryDefinition { get; } = new([MemoryTagType.Loss]);
                 public DefinitionID LocationID { get; } = location;
             }
 
             public sealed record ShowedNoRemorseEvent(int CurrentTotalHours, List<MemoryParticipant> Participants, DefinitionID location) : IMemorableGameEvent
             {
                 // TODO: Add a specific memory tag for this event type
-                public MemoryDefinition MemoryDefinition { get; } = new([]);
+                public MemoryDefinition MemoryDefinition { get; } = new([MemoryTagType.Cruelty]);
                 public DefinitionID LocationID { get; } = location;
             }
 
             public sealed record ShowedRemorseEvent(int CurrentTotalHours, List<MemoryParticipant> Participants, DefinitionID location) : IMemorableGameEvent
             {
                 // TODO: Add a specific memory tag for this event type
-                public MemoryDefinition MemoryDefinition { get; } = new([]);
+                public MemoryDefinition MemoryDefinition { get; } = new([MemoryTagType.Remorse]);
                 public DefinitionID LocationID { get; } = location;
             }
         }
