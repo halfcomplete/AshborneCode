@@ -1,9 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AshborneGame._Core.CognitiveSystem.EmotionSystem;
 using AshborneGame._Core.Globals.Enums;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace AshborneGame._Core.Globals.Services
 {
@@ -22,7 +23,7 @@ namespace AshborneGame._Core.Globals.Services
                 EmotionType.Fear => "scared",
                 EmotionType.Disgust => "disgusted",
                 EmotionType.Surprise => "surprised",
-                _ => throw new ArgumentOutOfRangeException(nameof(emotionType), $"Unhandled emotion type when calling GetEmotionDescriptor: {emotionType}")
+                _ => throw new InvalidEnumArgumentException(nameof(emotionType), $"Unhandled emotion type when calling GetEmotionDescriptor: {emotionType}")
             };
         }
     }

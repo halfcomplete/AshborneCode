@@ -107,6 +107,20 @@ namespace AshborneGame._Core.Game.Events
                 public MemoryDefinition MemoryDefinition { get; } = new([]);
                 public DefinitionID LocationID { get; } = location;
             }
+
+            public sealed record ShowedNoRemorseEvent(int CurrentTotalHours, List<MemoryParticipant> Participants, DefinitionID location) : IMemorableGameEvent
+            {
+                // TODO: Add a specific memory tag for this event type
+                public MemoryDefinition MemoryDefinition { get; } = new([]);
+                public DefinitionID LocationID { get; } = location;
+            }
+
+            public sealed record ShowedRemorseEvent(int CurrentTotalHours, List<MemoryParticipant> Participants, DefinitionID location) : IMemorableGameEvent
+            {
+                // TODO: Add a specific memory tag for this event type
+                public MemoryDefinition MemoryDefinition { get; } = new([]);
+                public DefinitionID LocationID { get; } = location;
+            }
         }
 
         /// <summary>

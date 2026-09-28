@@ -16,6 +16,8 @@ using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.Data.Definitions.Registries;
 using AshborneGame._Core.CognitiveSystem.MemorySystem.MemoryTags;
 using AshborneGame._Core.Globals.Interfaces;
+using AshborneGame._Core.CognitiveSystem.AttitudeSystem;
+using System.Diagnostics;
 
 namespace AshborneGame._Core.Game
 {
@@ -308,6 +310,57 @@ namespace AshborneGame._Core.Game
                                             {
                                                 choiceState = ChoiceState.Disabled;
                                                 reason = $"You aren't {EmotionToAdjective.GetEmotionDescriptor(eType)} enough to do this.";
+                                            }
+                                        }
+                                    }
+                                }
+                                else if (tag.StartsWith("attitude:", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    var parts = tag.Substring(8);
+                                    bool isLessThan = parts.Contains("<");
+                                    bool isGreaterThan = parts.Contains(">");
+
+                                    await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Attitude constraint detected. Parts='{parts}', isLessThan={isLessThan}, isGreaterThan={isGreaterThan}", ConsoleMessageTypes.INFO);
+
+                                    if (isLessThan || isGreaterThan)
+                                    {
+
+                                        char op = isLessThan ? '<' : '>';
+                                        var attitudeParts = parts.Split(op);
+                                        await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Split attitude parts. Parts='{string.Join(", ", attitudeParts)}'", ConsoleMessageTypes.INFO);
+                                        if (attitudeParts.Length == 2 &&
+                                            Enum.TryParse<AttitudeFactor>(attitudeParts[0], true, out var attitudeFactor) &&
+                                            double.TryParse(attitudeParts[1], out double targetVal))
+                                        {
+                                            var npc = _player.CurrentNPCInteraction;
+                                            if (npc == null)
+                                            {
+                                                throw new InvalidOperationException("Player is not currently interacting with an NPC. Cannot check attitude constraints.");
+                                            }
+
+                                            if (npc.TryGetBehaviour<ISentientEntity>().Result.Item2?.PsychologicalState.TryGetRelationship(DefinitionIDs.Player, out var attitude) is null or false)
+                                            {
+                                                throw new InvalidOperationException("Player is not currently interacting with an NPC or the NPC does not have a cognitive behaviour.");
+                                            }
+
+                                            if (attitude == null)
+                                            {
+                                                throw new UnreachableException("Attitude object is null. This should not happen if TryGetRelationship returned true.");
+                                            }
+
+                                            double currentVal = attitude.Factors[attitudeFactor];
+
+                                            await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Checking attitude constraint. attitudeFactor={attitudeFactor}, CurrentVal={currentVal}, TargetVal={targetVal}, isLessThan={isLessThan}, isGreaterThan={isGreaterThan}", ConsoleMessageTypes.INFO);
+
+                                            if (isLessThan && currentVal >= targetVal)
+                                            {
+                                                choiceState = ChoiceState.Disabled;
+                                                reason = $"{npc.Name} {AttitudeToAdjective.GetAttitudeDescriptor(attitudeFactor)}s you too much to do this.";
+                                            }
+                                            else if (isGreaterThan && currentVal <= targetVal)
+                                            {
+                                                choiceState = ChoiceState.Disabled;
+                                                reason = $"{npc.Name} does not {AttitudeToAdjective.GetAttitudeDescriptor(attitudeFactor)} you enough to do this.";
                                             }
                                         }
                                     }
