@@ -26,6 +26,8 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
             new(DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGarden, DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardenLocs.GardenWalk),
             new(DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGarden, DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardenLocs.HerbBeds),
             new(DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGarden, DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGardenLocs.InnerFountain),
+            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.KeepersQuarters, DefinitionIDs.Locations.OssuaryOfEyesLocs.KeepersQuartersLocs.Bookshelves),
+            new(DefinitionIDs.Locations.OssuaryOfEyesLocs.KeepersQuarters, DefinitionIDs.Locations.OssuaryOfEyesLocs.KeepersQuartersLocs.Desk),
         ];
     }
 }
