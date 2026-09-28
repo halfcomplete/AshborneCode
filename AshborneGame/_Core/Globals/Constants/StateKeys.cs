@@ -29,6 +29,7 @@ namespace AshborneGame._Core.Globals.Constants
                             public static readonly GameStateKey<bool> TalkedToOssanethHelp = new("Flags.Player.Actions.In.OssuaryOfEyes.TalkedToOssanethHelp");
                             public static readonly GameStateKey<bool> TalkedToOssanethSelf = new("Flags.Player.Actions.In.OssuaryOfEyes.TalkedToOssanethSelf");
                             public static readonly GameStateKey<bool> TalkedToOssanethPast = new("Flags.Player.Actions.In.OssuaryOfEyes.TalkedToOssanethPast");
+                            public static readonly GameStateKey<bool> SteppedOnPlant = new("Flags.Player.Actions.In.OssuaryOfEyes.SteppedOnPlant");
                         }   
                     }
                 }
@@ -53,6 +54,7 @@ namespace AshborneGame._Core.Globals.Constants
                     public static readonly GameStateKey<int> Ossaneth = new("Counters.Player.TimesEncountered.Ossaneth");
                     public static readonly GameStateKey<int> Witnesses = new("Counters.Player.TimesEncountered.Witnesses");
                     public static readonly GameStateKey<int> Gardener = new("Counters.Player.TimesEncountered.Gardener");
+                    public static readonly GameStateKey<int> Keeper = new("Counters.Player.TimesEncountered.Keeper");
                 }
 
                 public static class TimesInspected

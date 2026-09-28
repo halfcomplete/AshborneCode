@@ -171,10 +171,10 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                         ["talk to", "speak to", "converse with", "ask"],
                         ["the guy", "keeper", "the keeper", "the person"]
                     ),
-                    () => 
+                    async () => 
                     {
-                        // TODO: Add Keeper dialogue
-                        //GameContext.DialogueService.StartDialogue("");
+                        await IOService.Output.WriteNonDialogueLine("You approach the Keeper.");
+                        await GameContext.DialogueService.StartDialogue("Act1_Scene1_Keeper");
                     }
                 )
             );
@@ -522,13 +522,6 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                             {
                                 IOService.Output.WriteNonDialogueLine("You kneel down and begin tending to the plants. The Gardener watches you for a moment in gratitude, then returns to her work. You feel a sense of satisfaction as you help maintain the garden.");
                                 EventBus.Publish(new GameEvents.Player.HelpedCharacterEvent(GameContext.TimeTracker.TotalInGameHours, [new MemoryParticipant(DefinitionIDs.NPCs.Gardener, [MemoryRole.Target]), new MemoryParticipant(DefinitionIDs.Player, [MemoryRole.Actor])], DefinitionIDs.Locations.OssuaryOfEyesLocs.CloisterGarden));
-                            }
-                        )
-                        .AddCustomCommand(
-                            new CustomCommandPhrasing(["harvest", "take", "harvest all", "take all", "unroot"], ["a plant", "plant", "one of the plants", "the plants", "some plants"]),
-                            async () =>
-                            {
-                                await GameContext.DialogueService.StartDialogue("Act1_Scene1_Gardener_Harvest");
                             }
                         )
                     );
