@@ -365,7 +365,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                         "You step beneath a stone archway and emerge into a garden.\n\n" +
                         "For the first time since entering the Ossuary, you see something growing: " + 
                         "plants cover the courtyard in carefully arranged beds, climbing trellises and clay pots. A narrow path winds between them beneath an open section of sky, while old cloisters surround the garden on three sides." +
-                        "A woman kneels among the plants with a small knife in one hand.\nShe looks up at you for a moment but quickly returns to tending the garden.",
+                        "\n\nA woman kneels among the plants with a small knife in one hand.\n\nShe looks up at you for a moment but quickly returns to tending the garden.",
 
                         "You return to the Cloister Garden.\n\n" +
                         "The paths are familiar now. The plants have not changed much, although several have been trimmed since your last visit.\n" +

@@ -624,20 +624,20 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         {
             return attitudeType switch
             {
-                RelationshipType.Loves => Math.Max(0, attitude.Affection - 0.5),
-                RelationshipType.Hates => Math.Min(0, attitude.Affection - 0.5),
+                RelationshipType.Loves => Math.Max(0, attitude.Factors[AttitudeFactor.Affection] - 0.5),
+                RelationshipType.Hates => Math.Min(0, attitude.Factors[AttitudeFactor.Affection] - 0.5),
 
-                RelationshipType.Trusts => Math.Max(0, attitude.Trust - 0.5),
-                RelationshipType.Distrusts => Math.Min(0, attitude.Trust - 0.5),
+                RelationshipType.Trusts => Math.Max(0, attitude.Factors[AttitudeFactor.Trust] - 0.5),
+                RelationshipType.Distrusts => Math.Min(0, attitude.Factors[AttitudeFactor.Trust] - 0.5),
 
-                RelationshipType.Respects => Math.Max(0, attitude.Respect - 0.5),
-                RelationshipType.Disrespects => Math.Min(0, attitude.Respect - 0.5),
+                RelationshipType.Respects => Math.Max(0, attitude.Factors[AttitudeFactor.Respect] - 0.5),
+                RelationshipType.Disrespects => Math.Min(0, attitude.Factors[AttitudeFactor.Respect] - 0.5),
 
-                RelationshipType.Fears => Math.Max(0, attitude.Fear - 0.5),
-                RelationshipType.DoesNotFear => Math.Min(0, attitude.Fear - 0.5),
+                RelationshipType.Fears => Math.Max(0, attitude.Factors[AttitudeFactor.Fear] - 0.5),
+                RelationshipType.DoesNotFear => Math.Min(0, attitude.Factors[AttitudeFactor.Fear] - 0.5),
 
-                RelationshipType.Dominates => Math.Max(0, attitude.Dominance - 0.5),
-                RelationshipType.Submits => Math.Min(0, attitude.Dominance - 0.5),
+                RelationshipType.Dominates => Math.Max(0, attitude.Factors[AttitudeFactor.Dominance] - 0.5),
+                RelationshipType.Submits => Math.Min(0, attitude.Factors[AttitudeFactor.Dominance] - 0.5),
 
                 _ => throw new ArgumentOutOfRangeException(nameof(attitudeType), $"Unhandled attitude: {attitudeType}")
             };

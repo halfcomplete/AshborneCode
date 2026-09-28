@@ -128,11 +128,11 @@ namespace AshborneGame._Core.Game
 
         public async Task StartNewGameAsnyc()
         {
-            await DialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_{_startingSceneSection}");
+            //await DialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_{_startingSceneSection}");
 
             Console.WriteLine("[GameEngine] Initial intro dialogue completed.");
 
-            GameContext.LocationRegistry.TryGetLocationByDefinitionID(DefinitionIDs.Locations.Dreamspace.EyePlatform, out var location);
+            GameContext.LocationRegistry.TryGetLocationByDefinitionID(DefinitionIDs.Locations.OssuaryOfEyesLocs.WakingChamber, out var location);
 
             await GameContext.Player.SetupMoveTo(location, location.Scene, true);
             GameContext.GameState.SetCounter(StateKeys.Counters.Player.CurrentActNo, 1);

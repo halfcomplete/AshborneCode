@@ -20,23 +20,23 @@ namespace AshborneGame._Core.CognitiveSystem.AttitudeSystem
                 switch (reaction.AttitudeFactor)
                 {
                     case AttitudeFactor.Affection:
-                        attitude.Affection = ModifyValue(attitude.Affection, reaction.Add);
+                        attitude.Factors[AttitudeFactor.Affection] = ModifyValue(attitude.Factors[AttitudeFactor.Affection], reaction.Add);
                         break;
 
                     case AttitudeFactor.Respect:
-                        attitude.Respect = ModifyValue(attitude.Respect, reaction.Add);
+                        attitude.Factors[AttitudeFactor.Respect] = ModifyValue(attitude.Factors[AttitudeFactor.Respect], reaction.Add);
                         break;
 
                     case AttitudeFactor.Trust:
-                        attitude.Trust = ModifyValue(attitude.Trust, reaction.Add);
+                        attitude.Factors[AttitudeFactor.Trust] = ModifyValue(attitude.Factors[AttitudeFactor.Trust], reaction.Add);
                         break;
 
                     case AttitudeFactor.Fear:
-                        attitude.Fear = ModifyValue(attitude.Fear, reaction.Add);
+                        attitude.Factors[AttitudeFactor.Fear] = ModifyValue(attitude.Factors[AttitudeFactor.Fear], reaction.Add);
                         break;
 
                     case AttitudeFactor.Dominance:
-                        attitude.Dominance = ModifyValue(attitude.Dominance, reaction.Add);
+                        attitude.Factors[AttitudeFactor.Dominance] = ModifyValue(attitude.Factors[AttitudeFactor.Dominance], reaction.Add);
                         break;
                 }
             }

@@ -7,7 +7,8 @@ namespace AshborneGame._Core.Globals.Constants
         {
             { "Judgement", "D1CDCD" },  // Dust Grey
             { "Mercy", "B80B0B" },      // Brick Ember
-            { "Truth", "2F7DB8" }       // Steel Blue
+            { "Truth", "2F7DB8" },      // Steel Blue
+            { "Gardener", "3B7A57" }    // Forest Green
         };
     }
 }

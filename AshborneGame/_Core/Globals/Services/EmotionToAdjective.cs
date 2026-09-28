@@ -23,7 +23,7 @@ namespace AshborneGame._Core.Globals.Services
                 EmotionType.Fear => "scared",
                 EmotionType.Disgust => "disgusted",
                 EmotionType.Surprise => "surprised",
-                _ => throw new InvalidEnumArgumentException(nameof(emotionType), $"Unhandled emotion type when calling GetEmotionDescriptor: {emotionType}")
+                _ => throw new InvalidEnumArgumentException($"Unhandled emotion type when calling GetEmotionDescriptor: {emotionType}")
             };
         }
     }

@@ -52,6 +52,7 @@ namespace AshborneGame._Core.Globals.Constants
                 {
                     public static readonly GameStateKey<int> Ossaneth = new("Counters.Player.TimesEncountered.Ossaneth");
                     public static readonly GameStateKey<int> Witnesses = new("Counters.Player.TimesEncountered.Witnesses");
+                    public static readonly GameStateKey<int> Gardener = new("Counters.Player.TimesEncountered.Gardener");
                 }
 
                 public static class TimesInspected

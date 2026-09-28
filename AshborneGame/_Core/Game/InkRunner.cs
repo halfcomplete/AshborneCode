@@ -316,7 +316,7 @@ namespace AshborneGame._Core.Game
                                 }
                                 else if (tag.StartsWith("attitude:", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    var parts = tag.Substring(8);
+                                    var parts = tag.Substring(9);
                                     bool isLessThan = parts.Contains("<");
                                     bool isGreaterThan = parts.Contains(">");
 
@@ -324,7 +324,6 @@ namespace AshborneGame._Core.Game
 
                                     if (isLessThan || isGreaterThan)
                                     {
-
                                         char op = isLessThan ? '<' : '>';
                                         var attitudeParts = parts.Split(op);
                                         await IOService.Output.DisplayDebugMessage($"[DEBUG] InkRunner: Split attitude parts. Parts='{string.Join(", ", attitudeParts)}'", ConsoleMessageTypes.INFO);
