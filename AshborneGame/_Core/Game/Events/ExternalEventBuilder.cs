@@ -111,6 +111,7 @@ namespace AshborneGame._Core.Game.Events
                 EventData);
 
             // Memory profiles currently subscribe to IMemorableGameEvent, so we publish as that interface type.
+            Console.WriteLine($"IMemorableGameEvent subscribers before publication: {EventBus.GetSubscriberCount<IMemorableGameEvent>()}");
             EventBus.Publish<IMemorableGameEvent>(memorableEvent);
             Console.WriteLine($"Published memorable event '{EventName}' to memory profiles.");
         }

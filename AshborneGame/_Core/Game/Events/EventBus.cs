@@ -161,16 +161,22 @@ namespace AshborneGame._Core.Game.Events
 
             lock (_lock)
             {
-                if (!_subscribers.TryGetValue(typeof(TEvent), out var list))
+                List<HandlerEntry> matchingHandlers = _subscribers
+                    .Where(pair => pair.Key.IsAssignableFrom(typeof(TEvent)))
+                    .SelectMany(pair => pair.Value)
+                    .ToList();
+
+                if (matchingHandlers.Count == 0)
                     return;
 
                 // Take a snapshot to avoid issues if handlers modify subscriptions
-                snapshot = new List<HandlerEntry>(list);
+                snapshot = matchingHandlers;
 
                 // If OneTime, remove ALL subscribers now (before invoking)
                 if (gameEvent.OneTime)
                 {
-                    _subscribers.TryRemove(typeof(TEvent), out _);
+                    foreach (Type subscriberType in _subscribers.Keys.Where(type => type.IsAssignableFrom(typeof(TEvent))).ToList())
+                        _subscribers.TryRemove(subscriberType, out _);
                 }
             }
 
@@ -178,15 +184,10 @@ namespace AshborneGame._Core.Game.Events
             {
                 try
                 {
-                    if (entry.IsAsync)
+                    object? callbackResult = entry.Callback.DynamicInvoke(gameEvent);
+                    if (entry.IsAsync && callbackResult is Task callbackTask)
                     {
-                        var asyncCallback = (Func<TEvent, Task>)entry.Callback;
-                        await asyncCallback(gameEvent).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        var syncCallback = (Action<TEvent>)entry.Callback;
-                        syncCallback(gameEvent);
+                        await callbackTask.ConfigureAwait(false);
                     }
                 }
                 catch (Exception ex)
