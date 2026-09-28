@@ -19,9 +19,10 @@ namespace AshborneGame._Core.Game
     /// </summary>
     public class GameStateManager
     {
-        public Dictionary<string, bool> Flags { get; private set; } = new();
-        public Dictionary<string, int> Counters { get; private set; } = new();
-        public Dictionary<string, string> Labels { get; private set; } = new();
+        public GameStateTracker State { get; } = new();
+        public Dictionary<string, bool> Flags => State.Flags;
+        public Dictionary<string, int> Counters => State.Counters;
+        public Dictionary<string, string> Labels => State.Labels;
         public Dictionary<string, BOCSObject> Masks { get; private set; } = new();
 
         public string GameText { get; set; } = "";
@@ -46,7 +47,7 @@ namespace AshborneGame._Core.Game
         
 
         #region Flags
-        public void SetFlag(GameStateKey<bool> key, bool value) => Flags[key] = value;
+        public void SetFlag(GameStateKey<bool> key, bool value) => State.SetFlag(key, value);
 
         /// <summary>
         /// Gets the value of the provided flag name.
@@ -55,18 +56,18 @@ namespace AshborneGame._Core.Game
         /// <returns>A bool? value, true if the flag is true, false if the flag is false, null if the flag doesn't exist.</returns>
         public bool TryGetFlag(GameStateKey<bool> key, out bool value) 
         {
-            return Flags.TryGetValue(key, out value);
+            return State.TryGetFlag(key, out value);
         }
 
         /// <summary>
         /// Gets whether the flag exists.
         /// </summary>
-        public bool HasFlag(GameStateKey<bool> key) => Flags.ContainsKey(key);
+        public bool HasFlag(GameStateKey<bool> key) => State.HasFlag(key);
 
         /// <summary>
         /// Removes the flag.
         /// </summary>
-        public void RemoveFlag(GameStateKey<bool> key) => Flags.Remove(key);
+        public void RemoveFlag(GameStateKey<bool> key) => State.RemoveFlag(key);
 
         /// <summary>
         /// Toggles a flag
@@ -77,19 +78,13 @@ namespace AshborneGame._Core.Game
         /// <returns>True if the flag is now true. False if the flag is now false. Null if the flag doesn't exist.</returns>
         public bool? TryToggleFlag(GameStateKey<bool> key)
         {
-            if (Flags.ContainsKey(key))
-            {
-                Flags[key] = !Flags[key];
-                return true;
-            }
-            else
-                return null;
+            return State.TryToggleFlag(key);
         }
 
         #endregion
 
         #region Counters
-        public void SetCounter(GameStateKey<int> key, int value) => Counters[key] = value;
+        public void SetCounter(GameStateKey<int> key, int value) => State.SetCounter(key, value);
 
         /// <summary>
         /// Gets the value of a counter.
@@ -97,7 +92,7 @@ namespace AshborneGame._Core.Game
         /// <returns>True if it was successful, false if not. Out integer value.</returns>
         public bool TryGetCounter(GameStateKey<int> key, out int value)
         {
-            return Counters.TryGetValue(key, out value);
+            return State.TryGetCounter(key, out value);
         }
 
 
@@ -107,12 +102,7 @@ namespace AshborneGame._Core.Game
         /// <returns>True if it was successful. False otherwise.</returns>
         public bool TryIncrementCounter(GameStateKey<int> key, int amount = 1)
         {
-            if (!TryGetCounter(key, out var baseValue))
-            {
-                return false;
-            }
-            Counters[key] = (int)baseValue + amount;
-            return true;
+            return State.TryIncrementCounter(key, amount);
         }
 
         /// <summary>
@@ -121,34 +111,25 @@ namespace AshborneGame._Core.Game
         /// <returns>True if it was successful. False otherwise.</returns>
         public bool TryDecrementCounter(GameStateKey<int> key, int amount = 1)
         {
-            if (!TryGetCounter(key, out var baseValue))
-            {
-                return false;
-            }
-            Counters[key] = (int)baseValue - amount;
-            if (Counters[key] < 0) Counters[key] = 0;
-            return true;
+            return State.TryDecrementCounter(key, amount);
         }
 
-        public bool HasCounter(GameStateKey<int> key) => Counters.ContainsKey(key);
+        public bool HasCounter(GameStateKey<int> key) => State.HasCounter(key);
 
-        public bool RemoveCounter(GameStateKey<int> key) => Counters.Remove(key);
+        public bool RemoveCounter(GameStateKey<int> key) => State.RemoveCounter(key);
 
         #endregion
         
         #region Labels
-        public void SetLabel(GameStateKey<string> key, string value) => Labels[key] = value;
+        public void SetLabel(GameStateKey<string> key, string value) => State.SetLabel(key, value);
         public string? TryGetLabel(GameStateKey<string> key)
         {
-            if (Labels.TryGetValue(key, out string? value))
-                return value;
-            else
-                return null;
+            return State.TryGetLabel(key);
         }
 
-        public bool HasLabel(GameStateKey<string> key) => Labels.Keys.Contains(key);
+        public bool HasLabel(GameStateKey<string> key) => State.HasLabel(key);
 
-        public bool RemoveLabel(GameStateKey<string> key) => Labels.Remove(key);
+        public bool RemoveLabel(GameStateKey<string> key) => State.RemoveLabel(key);
 
         #endregion
         
@@ -292,9 +273,7 @@ namespace AshborneGame._Core.Game
         #region Utilities
         public void ClearAll()
         {
-            Flags.Clear();
-            Counters.Clear();
-            Labels.Clear();
+            State.Clear();
             Masks.Clear();
         }
 
@@ -327,9 +306,10 @@ namespace AshborneGame._Core.Game
 
         public void LoadSaveData(GameStateSaveData data, SaveLoadContext context)
         {
-            Flags = new Dictionary<string, bool>(data.Flags);
-            Counters = new Dictionary<string, int>(data.Counters);
-            Labels = new Dictionary<string, string>(data.Labels);
+            State.Clear();
+            foreach (var flag in data.Flags) State.Flags[flag.Key] = flag.Value;
+            foreach (var counter in data.Counters) State.Counters[counter.Key] = counter.Value;
+            foreach (var label in data.Labels) State.Labels[label.Key] = label.Value;
             Masks.Clear();
             foreach (var kvp in data.Masks)
             {

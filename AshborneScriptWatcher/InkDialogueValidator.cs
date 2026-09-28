@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.Json;
 using System.Linq;
 using System.Text.RegularExpressions;
+using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Constants;
 
 namespace AshborneTooling
@@ -183,7 +184,7 @@ namespace AshborneTooling
         private static void ValidateFlagKey(string filePath, string key, List<ValidationIssue> issues, string line)
         {
             // Check against registered keys
-            var registeredKeys = InkStateKeyRegistry.GetAllRegisteredFlagKeys();
+            var registeredKeys = GameStateTracker.GetAllRegisteredFlagKeys();
             key = "Flags." + key;
             if (registeredKeys.Contains(key))
                 return;
@@ -197,7 +198,7 @@ namespace AshborneTooling
 
         private static void ValidateCounterKey(string filePath, string key, List<ValidationIssue> issues, string line)
         {
-            var registeredKeys = InkStateKeyRegistry.GetAllRegisteredCounterKeys();
+            var registeredKeys = GameStateTracker.GetAllRegisteredCounterKeys();
             key = "Counters." + key;
             if (registeredKeys.Contains(key))
                 return;
@@ -211,7 +212,7 @@ namespace AshborneTooling
 
         private static void ValidateLabelKey(string filePath, string key, List<ValidationIssue> issues, string line)
         {
-            var registeredKeys = InkStateKeyRegistry.GetAllRegisteredLabelKeys();
+            var registeredKeys = GameStateTracker.GetAllRegisteredLabelKeys();
             key = "Labels." + key;
             if (registeredKeys.Contains(key))
                 return;

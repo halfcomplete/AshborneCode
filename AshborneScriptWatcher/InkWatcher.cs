@@ -2,6 +2,7 @@
 using System.IO;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using AshborneGame._Core.Game;
 using AshborneGame._Core.Globals.Constants;
 
 namespace AshborneTooling
@@ -19,15 +20,15 @@ namespace AshborneTooling
             Console.WriteLine($"Watching for changes in: {inkDialogueRoot}");
 
             Console.WriteLine("Registered State Keys:");
-            foreach (var key in InkStateKeyRegistry.GetAllRegisteredLabelKeys())
+            foreach (var key in GameStateTracker.GetAllRegisteredLabelKeys())
             {
                 Console.WriteLine($"- {key}");
             }
-            foreach (var key in InkStateKeyRegistry.GetAllRegisteredFlagKeys())
+            foreach (var key in GameStateTracker.GetAllRegisteredFlagKeys())
             {
                 Console.WriteLine($"- {key}");
             }
-            foreach (var key in InkStateKeyRegistry.GetAllRegisteredCounterKeys())
+            foreach (var key in GameStateTracker.GetAllRegisteredCounterKeys())
             {
                 Console.WriteLine($"- {key}");
             }
