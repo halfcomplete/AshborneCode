@@ -15,35 +15,31 @@ namespace AshborneGame._Core.CognitiveSystem.AttitudeSystem
     /// </remarks>
     public class Attitude
     {
-        // How much the character likes/dislikes the other character. 0 = hates, 0.5 = neutral, 1 = loves.
-        private double _affection = 0.5;
-        public double Affection { get => _affection; set => _affection = Math.Clamp(value, 0, 1); }
-
-        // How much the character respects/disrespects the other character. 0 = disrespects, 0.5 = neutral, 1 = respects.
-        private double _respect = 0.5;
-        public double Respect { get => _respect; set => _respect = Math.Clamp(value, 0, 1); }
-
-        // How much the character trusts/distrusts the other character. 0 = neutral, 0.5 = unsure, 1 = trusts.
-        private double _trust = 0.5;
-        public double Trust { get => _trust; set => _trust = Math.Clamp(value, 0, 1); }
-
-        // How much the character fears the other character. 0 = neutral, 0.5 = unsure, 1 = extreme fear.
-        private double _fear = 0.5;
-        public double Fear { get => _fear; set => _fear = Math.Clamp(value, 0, 1); }
-
-        // How dominant the character feels in relation to the other character. 0 = submissive, 0.5 = neutral, 1 = dominant.
-        private double _dominance = 0.5;
-        public double Dominance { get => _dominance; set => _dominance = Math.Clamp(value, 0, 1); }
+        public Dictionary<AttitudeFactor, double> Factors { get; private set; } = new Dictionary<AttitudeFactor, double>
+        {
+            { AttitudeFactor.Affection, 0 },
+            { AttitudeFactor.Respect, 0 },
+            { AttitudeFactor.Trust, 0 },
+            { AttitudeFactor.Fear, 0 },
+            { AttitudeFactor.Dominance, 0 },
+        };
 
         public Attitude() { }
 
         public Attitude(double affection, double respect, double trust, double fear, double dominance, double dependence, double envy, double curiosity)
         {
-            Affection = affection;
-            Respect = respect;
-            Trust = trust;
-            Fear = fear;
-            Dominance = dominance;
+            foreach (var factor in Enum.GetValues(typeof(AttitudeFactor)).Cast<AttitudeFactor>())
+            {
+                Factors[factor] = factor switch
+                {
+                    AttitudeFactor.Affection => Math.Clamp(affection, 0, 1),
+                    AttitudeFactor.Respect => Math.Clamp(respect, 0, 1),
+                    AttitudeFactor.Trust => Math.Clamp(trust, 0, 1),
+                    AttitudeFactor.Fear => Math.Clamp(fear, 0, 1),
+                    AttitudeFactor.Dominance => Math.Clamp(dominance, 0, 1),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+            }
         }
     }
 }
