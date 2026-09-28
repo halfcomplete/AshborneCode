@@ -38,7 +38,7 @@ namespace AshborneGame._Core.Globals.Constants
         RegexOptions.Singleline | RegexOptions.Compiled);
 
         public static readonly Regex InkFunctionRegex = new(
-            @"""ev"",([^{]+),\{""x\(\)"":""([^""]*)"",""exArgs"":(\d)\}",
+            @"""ev"",([^\{]*?)\{""x\(\)"":""([^""]*)"",""exArgs"":(\d+)\}",
             RegexOptions.Compiled);
 
         public static readonly Regex DialogueChoiceRegex = new(

@@ -178,7 +178,8 @@ namespace AshborneTooling
                 case InkExternalFunctionNames.HasFlag:
                 case InkExternalFunctionNames.ToggleFlag:
                 case InkExternalFunctionNames.RemoveFlag:
-                    ValidateFlagKey(filePath, argument, issues, call.FullLine);
+                    if (IsLiteralString(call.Arguments[0]))
+                        ValidateFlagKey(filePath, argument, issues, call.FullLine);
                     break;
 
                 case InkExternalFunctionNames.SetCounter:
@@ -187,14 +188,16 @@ namespace AshborneTooling
                 case InkExternalFunctionNames.IncCounter:
                 case InkExternalFunctionNames.DecCounter:
                 case InkExternalFunctionNames.RemoveCounter:
-                    ValidateCounterKey(filePath, argument, issues, call.FullLine);
+                    if (IsLiteralString(call.Arguments[0]))
+                        ValidateCounterKey(filePath, argument, issues, call.FullLine);
                     break;
 
                 case InkExternalFunctionNames.SetLabel:
                 case InkExternalFunctionNames.GetLabel:
                 case InkExternalFunctionNames.HasLabel:
                 case InkExternalFunctionNames.RemoveLabel:
-                    ValidateLabelKey(filePath, argument, issues, call.FullLine);
+                    if (IsLiteralString(call.Arguments[0]))
+                        ValidateLabelKey(filePath, argument, issues, call.FullLine);
                     break;
 
                 case InkExternalFunctionNames.GetNpcEmotion:
@@ -210,6 +213,31 @@ namespace AshborneTooling
                 case InkExternalFunctionNames.GetNpcMemoryCount:
                     ValidateEnumCsvArgument(filePath, call, 1, issues, typeof(MemoryTagType), "memory tag");
                     break;
+            }
+
+            ValidateNumericArguments(filePath, call, issues);
+        }
+
+        private static bool IsLiteralString(string argument) => argument.StartsWith("^", StringComparison.Ordinal);
+
+        private static void ValidateNumericArguments(string filePath, ExternalFunctionCall call, List<ValidationIssue> issues)
+        {
+            int[] numericArguments = call.Name switch
+            {
+                InkExternalFunctionNames.IncCounter or InkExternalFunctionNames.DecCounter or InkExternalFunctionNames.ChangePlayerStat or InkExternalFunctionNames.SetSilentPath => [1],
+                InkExternalFunctionNames.AdvanceTime => [0],
+                InkExternalFunctionNames.AnimateBlur => [0, 1, 2, 3],
+                _ => []
+            };
+
+            foreach (int index in numericArguments)
+            {
+                string argument = call.Arguments[index];
+                if (IsLiteralString(argument))
+                    argument = RemoveInkJSONUpArrow(RemoveQuotes(argument));
+
+                if (IsLiteralString(call.Arguments[index]) && !double.TryParse(argument, out _))
+                    issues.Add(new ValidationIssue(filePath, call.FullLine, $"'{argument}' is not a valid numeric argument for '{call.Name}'."));
             }
         }
 
