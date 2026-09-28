@@ -584,7 +584,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
         /// <returns>A double representing how much the Strength should decrease by</returns>
         public static double CalculateStrengthDecay(double intensity, int hoursPassed)
         {
-            double decayPerHour = (0.4 - 0.399) * Math.Pow(intensity, 0.5);
+            double decayPerHour = Math.Pow(intensity + 0.3, -0.23) - 0.9;
             return hoursPassed * decayPerHour;
         }
 
