@@ -110,7 +110,7 @@
                     {
                         _gardenerState = state;
                         StateHasChanged();
-                        Console.WriteLine("[GardenerDebugPanel] Refreshed gardener state.");
+                        // Console.WriteLine("[GardenerDebugPanel] Refreshed gardener state.");
                     });
                 }
                 catch (Exception ex)
@@ -136,9 +136,8 @@
             .GetByDefinition(DefinitionIDs.NPCs.Gardener)
             .ToList();
 
-        Console.WriteLine(
-            $"[GardenerDebugPanel] Found {gardeners.Count} Gardener object(s).");
-
+        // Console.WriteLine($"[GardenerDebugPanel] Found {gardeners.Count} Gardener object(s).");
+        /*
         foreach (var g in gardeners)
         {
             Console.WriteLine(
@@ -147,6 +146,7 @@
                 $"ObjectHash={RuntimeHelpers.GetHashCode(g)}, " +
                 $"Behaviours={g.ByBehaviour.Count}");
         }
+        */
 
         BOCSObject? gardener = gardeners.FirstOrDefault();
 
@@ -167,7 +167,7 @@
         }
 
         var psychologicalState = entity.PsychologicalState;
-
+        /*
         Console.WriteLine(
             $"[GardenerDebugPanel] " +
             $"Gardener InstanceID={gardener.InstanceID}, " +
@@ -176,7 +176,7 @@
             $"PsychStateHash={RuntimeHelpers.GetHashCode(psychologicalState)}, " +
             $"MemoryProfileHash={RuntimeHelpers.GetHashCode(psychologicalState.MemoryEmotion)}, " +
             $"PersonalityHash={RuntimeHelpers.GetHashCode(psychologicalState.Personality)}, " +
-            $"Memories={psychologicalState.MemoryEmotion.GetMemoriesOrderedByStrength().Count()}");
+            $"Memories={psychologicalState.MemoryEmotion.GetMemoriesOrderedByStrength().Count()}");*/
             var emotions = Enum.GetValues<EmotionType>()
                 .Select(emotion => new NamedValue(emotion.ToString(), psychologicalState.MemoryEmotion.GetTotalEmotionIntensity(emotion)))
                 .ToList();
@@ -197,7 +197,6 @@
                     string.Join(", ", memory.Cause.Participants.Select(participant => $"{participant.EntityId} [{string.Join("/", participant.Roles)}]")),
                     memory.EmotionModifiers.Select(modifier => $"{modifier.Type}: {modifier.InitialAmount:0.000}").ToList()))
                 .ToList();
-
         return new GardenerDebugState(emotions, attitudes, memories);
     }
 
