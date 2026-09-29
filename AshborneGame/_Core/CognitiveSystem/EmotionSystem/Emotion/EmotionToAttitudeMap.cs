@@ -66,8 +66,8 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem
             {
                 EmotionType.Sadness, new()
                 {
-                    new(AttitudeFactor.Affection, +0.2),
-                    new(AttitudeFactor.Trust, +0.15),
+                    new(AttitudeFactor.Affection, +0.08),
+                    new(AttitudeFactor.Trust, +0.03),
                     new(AttitudeFactor.Fear, -0.2),
                 }
             },
