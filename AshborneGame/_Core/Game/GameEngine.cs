@@ -130,7 +130,7 @@ namespace AshborneGame._Core.Game
 
         public async Task StartNewGameAsnyc()
         {
-            //await DialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_{_startingSceneSection}");
+            await DialogueService.StartDialogue($"{_startingActNo}_{_startingSceneNo}_{_startingSceneSection}");
 
             Console.WriteLine("[GameEngine] Initial intro dialogue completed.");
 
