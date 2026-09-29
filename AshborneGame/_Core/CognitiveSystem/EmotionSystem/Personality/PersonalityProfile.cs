@@ -1,4 +1,5 @@
 using AshborneGame._Core.Globals.Enums;
+using System.Text.Json.Serialization;
 
 namespace AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality
 {
@@ -10,7 +11,8 @@ namespace AshborneGame._Core.CognitiveSystem.EmotionSystem.Personality
         /// <summary>
         /// A dictionary where the Key is a PersonalityTrait and the value is a double from 0 to 1 tracking how much of this personality trait is in this NPC.
         /// </summary>
-        public Dictionary<PersonalityTrait, double> PersonalityTraits { get; } = [];
+        [JsonInclude]
+        public Dictionary<PersonalityTrait, double> PersonalityTraits { get; private set; } = [];
         
         public PersonalityProfile(Dictionary<PersonalityTrait, double> personalityTraits)
         {

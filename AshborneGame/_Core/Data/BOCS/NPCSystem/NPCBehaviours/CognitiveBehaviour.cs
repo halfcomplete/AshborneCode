@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using AshborneGame._Core.CognitiveSystem;
+using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
 using AshborneGame._Core.SaveSystem.Data.CognitionDTOs;
 using AshborneGame._Core.SaveSystem.Serialisation;
@@ -27,7 +28,9 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
             // TODO: Figure out deep cloning method of psychological state
             var save = new SaveData(PsychologicalState.GetSaveData());
             var clone = new CognitiveBehaviour(new PsychologicalState(PsychologicalState.OwnerID));
-            clone.LoadSaveData(new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement(save)));
+            clone.LoadSaveData(new BehaviourSaveData(
+                SaveId,
+                JsonSerializer.SerializeToElement(save, CreateSaveDataJsonOptions())));
             clone.PsychologicalState.MemoryEmotion.SubscribeToEvents();
             return clone;
         }
@@ -35,9 +38,19 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
 
         private record SaveData(PsychologicalStateSaveData PsychologicalStateSaveData);
 
+        private static JsonSerializerOptions CreateSaveDataJsonOptions()
+        {
+            return new JsonSerializerOptions
+            {
+                Converters = { new DefinitionIDJsonConverter() }
+            };
+        }
+
         public override BehaviourSaveData GetSaveData(SaveLoadContext context)
         {
-            return new BehaviourSaveData(SaveId, JsonSerializer.SerializeToElement(new SaveData(PsychologicalState.GetSaveData())));
+            return new BehaviourSaveData(
+                SaveId,
+                JsonSerializer.SerializeToElement(new SaveData(PsychologicalState.GetSaveData()), CreateSaveDataJsonOptions()));
         }
 
         public override void LoadSaveData(BehaviourSaveData data, SaveLoadContext context = null)
@@ -46,7 +59,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
             {
                 throw new InvalidDataException("CognitiveBehaviour save data is missing state.");
             }
-            SaveData save = JsonSerializer.Deserialize<SaveData>(data.State.Value) ?? throw new InvalidDataException("Failed to deserialise CognitiveBehaviour save data.");
+            SaveData save = JsonSerializer.Deserialize<SaveData>(data.State.Value, CreateSaveDataJsonOptions()) ?? throw new InvalidDataException("Failed to deserialise CognitiveBehaviour save data.");
             PsychologicalState.LoadSaveData(save.PsychologicalStateSaveData);
         }
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace AshborneGame._Core.CognitiveSystem.AttitudeSystem
@@ -15,6 +16,7 @@ namespace AshborneGame._Core.CognitiveSystem.AttitudeSystem
     /// </remarks>
     public class Attitude
     {
+        [JsonInclude]
         public Dictionary<AttitudeFactor, double> Factors { get; private set; } = new Dictionary<AttitudeFactor, double>
         {
             { AttitudeFactor.Affection, 0.5 },

@@ -233,7 +233,22 @@ public class BOCSObject
         foreach (var behaviourSaveData in behaviours)
         {
             var behaviour = BehaviourLoadingService.LoadFromSaveData(behaviourSaveData, context);
+            RegisterLoadedBehaviour(bocsObject, behaviour);
+        }
+    }
+
+    private static void RegisterLoadedBehaviour(BOCSObject bocsObject, Behaviour behaviour)
+    {
+        Type[] interfaces = behaviour.GetType().GetInterfaces();
+        if (interfaces.Length == 0)
+        {
             bocsObject.AddBehaviour(behaviour.GetType(), behaviour);
+            return;
+        }
+
+        foreach (Type interfaceType in interfaces)
+        {
+            bocsObject.AddBehaviour(interfaceType, behaviour);
         }
     }
 
@@ -255,7 +270,7 @@ public class BOCSObject
         foreach (var behaviourSaveData in saveData.Behaviours)
         {
             var behaviour = BehaviourLoadingService.LoadFromSaveData(behaviourSaveData, context);
-            bocsObject.AddBehaviour(behaviour.GetType(), behaviour);
+            RegisterLoadedBehaviour(bocsObject, behaviour);
         }
         return bocsObject;
     }

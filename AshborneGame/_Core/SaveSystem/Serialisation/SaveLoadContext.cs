@@ -14,7 +14,7 @@ namespace AshborneGame._Core.SaveSystem.Serialisation
     public sealed class SaveLoadContext
     {
         private IInstanceRegistry _instanceRegistry;
-        private Dictionary<InstanceID, List<BehaviourSaveData>> _instanceToBehaviourMap;
+        private readonly Dictionary<InstanceID, List<BehaviourSaveData>> _instanceToBehaviourMap = new();
         public ILocationRegistry LocationRegistry { get; }
 
         public SaveLoadContext(IInstanceRegistry instanceRegistry, ILocationRegistry locationRegistry)
