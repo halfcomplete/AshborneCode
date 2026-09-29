@@ -17,11 +17,11 @@ namespace AshborneGame._Core.CognitiveSystem.AttitudeSystem
     {
         public Dictionary<AttitudeFactor, double> Factors { get; private set; } = new Dictionary<AttitudeFactor, double>
         {
-            { AttitudeFactor.Affection, 0 },
-            { AttitudeFactor.Respect, 0 },
-            { AttitudeFactor.Trust, 0 },
-            { AttitudeFactor.Fear, 0 },
-            { AttitudeFactor.Dominance, 0 },
+            { AttitudeFactor.Affection, 0.5 },
+            { AttitudeFactor.Respect, 0.5 },
+            { AttitudeFactor.Trust, 0.5 },
+            { AttitudeFactor.Fear, 0.3 },
+            { AttitudeFactor.Dominance, 0.3 },
         };
 
         public Attitude() { }

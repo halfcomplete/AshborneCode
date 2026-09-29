@@ -94,7 +94,11 @@ namespace AshborneGame._Core.CognitiveSystem
 
         public void LoadSaveData(PsychologicalStateSaveData data)
         {
-            Relationships = data.Relationships;
+            Relationships.Clear();
+            foreach (var relationship in data.Relationships)
+            {
+                Relationships[relationship.Key] = relationship.Value;
+            }
             MemoryEmotion.LoadSaveData(data.Memory);
             Personality.LoadSaveData(data.Personality);
         }

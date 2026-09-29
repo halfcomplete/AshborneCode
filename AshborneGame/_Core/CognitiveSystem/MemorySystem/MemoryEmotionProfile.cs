@@ -829,17 +829,18 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
                 }
 
                 EmotionType emotion = modifier.Type;
+                double mult = modifier.InitialAmount * memory.Influence;
 
                 if (!_relationships.Keys.ToList().Contains(target.EntityId))
                 {
                     // if we don't have a relationship with this entity yet
-                    List<AttitudeReaction> attitudeReactions = EmotionToAttitudeMap.Reactions[emotion];
+                    List<AttitudeReaction> attitudeReactions = EmotionToAttitudeMap.Reactions[emotion].Select(a => new AttitudeReaction(a.AttitudeFactor, a.Add * mult)).ToList();
 
                     _relationships.Add(target.EntityId, AttitudeFactory.CreateAttitude(attitudeReactions));
                 }
                 else
                 {
-                    List<AttitudeReaction> attitudeReactions = EmotionToAttitudeMap.Reactions[emotion];
+                    List<AttitudeReaction> attitudeReactions = EmotionToAttitudeMap.Reactions[emotion].Select(a => new AttitudeReaction(a.AttitudeFactor, a.Add * mult)).ToList();
                     _relationships[target.EntityId] = AttitudeFactory.ModifyAttitude(_relationships[target.EntityId], attitudeReactions);
                 }
             }

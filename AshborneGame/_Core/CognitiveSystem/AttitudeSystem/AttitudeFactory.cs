@@ -55,7 +55,7 @@ namespace AshborneGame._Core.CognitiveSystem.AttitudeSystem
             double x = 4.0 * alignment; // controls steepness
             double agreementMultiplier = 0.2 + 0.8 / (1.0 + Math.Exp(-x)); // 0.2 floor ensures contradictory evidence is never completely ignored
 
-            return current + delta * openness * agreementMultiplier;
+            return Math.Clamp(current + delta * openness * agreementMultiplier, 0, 1);
         }
     }
 }

@@ -92,6 +92,8 @@ namespace AshborneGame._Core.Game
             var _firstScene = _firstLocation.Scene ?? throw new InvalidOperationException($"Location '{_firstLocation.DefinitionID}' does not have a scene.");
 
             player.SetupMoveTo(_firstLocation, _firstScene, false).GetAwaiter().GetResult();
+
+            EventBus.Publish(new ShowedNoRemorseEvent(0, [new MemoryParticipant(DefinitionIDs.Player, [MemoryRole.Actor]), new(DefinitionIDs.NPCs.Gardener, [MemoryRole.Target])], _firstLocation.DefinitionID));
         }
 
 
