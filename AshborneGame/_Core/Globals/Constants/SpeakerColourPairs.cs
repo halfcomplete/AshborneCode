@@ -9,7 +9,7 @@ namespace AshborneGame._Core.Globals.Constants
             { "Mercy", "B80B0B" },      // Brick Ember
             { "Truth", "2F7DB8" },      // Steel Blue
             { "Gardener", "38ab5e" },   // Emerald Green
-            { "Keeper", "8B4513"  }     // Saddle Brown
+            { "Keeper", "b8550f"  }     // Saddle Brown
         };
     }
 }
