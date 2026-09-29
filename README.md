@@ -171,87 +171,6 @@ The project is intentionally not built using a traditional game engine such as U
 
 ---
 
-## Repository Structure
-
-
-A possible structure is:
-
-```text
-AshborneCode/
-├── Ashborne/
-│   ├── Core/
-│   ├── BOCS/
-│   ├── Cognitive/
-│   ├── Dialogue/
-│   ├── World/
-│   ├── Saving/
-│   └── ...
-│
-├── Definitions/
-│
-├── Ink/
-│
-├── Documentation/
-│
-├── Tests/
-│
-└── README.md
-```
-
----
-
-## Getting Started
-
-### Requirements
-
-**[ADD REQUIRED .NET VERSION HERE]**
-
-**[ADD OTHER REQUIREMENTS HERE]**
-
-### Installation
-
-Clone the repository:
-
-```bash
-git clone [ADD REPOSITORY URL HERE]
-```
-
-Navigate to the project:
-
-```bash
-cd AshborneCode
-```
-
-**[ADD ANY REQUIRED SETUP STEPS HERE]**
-
-### Running the Project
-
-**To run the project locally (on localhost:xxxx):**
-
-Simply use an IDE of your choice (my preference is Visual Studio) and run the AshborneWASM project on the "release" version.
-
-**To run the project on the web:**
-
-Go to halfcomplete.github.io/Ashborne
-
----
-
-## Documentation
-
-More detailed technical documentation is available in the following areas:
-
-* **[BOCS Architecture](ADD LINK)**
-* **[Cognitive System](ADD LINK)**
-* **[Memory & Emotion](ADD LINK)**
-* **[Dynamic Dialogue](ADD LINK)**
-* **[Universal ID System](ADD LINK)**
-* **[Save & Load System](ADD LINK)**
-* **[World Building](ADD LINK)**
-
-**[ADD ANY OTHER DOCUMENTATION LINKS HERE]**
-
----
-
 ## Development Status
 
 Ashborne is an ongoing personal project and is currently under active development.
@@ -260,9 +179,9 @@ The project is being developed incrementally, with a focus on improving both the
 
 Current development priorities include:
 
-* **[ADD CURRENT PRIORITY HERE]**
-* **[ADD CURRENT PRIORITY HERE]**
-* **[ADD CURRENT PRIORITY HERE]**
+* **Allowing for NPC movement between locations**
+* **Refactoring InkRunner.cs into multiple smaller classes**
+* **Expanding Demo dialogue + interactions**
 
 ---
 
@@ -288,8 +207,6 @@ Ashborne is a long-term personal project combining my interests in software arch
 
 My portfolio: halfcomplete.github.io
 
-**[ADD CONTACT / SOCIAL LINKS HERE, IF DESIRED]**
-
 ---
 
 ## Project History
@@ -309,6 +226,4 @@ The 2026 version represents a major architectural evolution of the project and w
 
 ## Acknowledgements
 
-**[ADD ANY PEOPLE, TEACHERS, FRIENDS, LIBRARIES, OR RESOURCES YOU WOULD LIKE TO CREDIT HERE]**
-
-Special thanks to **[ADD NAME / ORGANISATION]** for **[ADD CONTRIBUTION]**.
+* **Inkle Studios** for their open-source narrative engine *Ink*
