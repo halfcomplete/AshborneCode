@@ -1,9 +1,5 @@
 ﻿using AshborneGame._Core._Player;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using AshborneGame._Core.Game;
 
 namespace AshborneGame._Core.LocationManagement
 {
@@ -75,6 +71,15 @@ namespace AshborneGame._Core.LocationManagement
             }
 
             Console.WriteLine("no exits");
+
+            foreach (var e in current.Exits)
+            {
+                if (GameContext.LocationRegistry.TryGetLocationByDefinitionID(e.TargetLocation, out var loc) && loc != null && loc.Name.Matches(arguments))
+                {
+                    await player.MoveTo(loc);
+                    return true;
+                }
+            }
 
             return false;
         }
