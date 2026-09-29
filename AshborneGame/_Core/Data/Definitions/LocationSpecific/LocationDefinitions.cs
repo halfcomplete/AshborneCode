@@ -157,7 +157,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                         "The Keeper closes his book.\n\nHe watches you for a moment longer than necessary.\n\nThen he looks away."
                     )
                 ),
-                [],
+                [DefinitionIDs.NPCs.Keeper],
                 new CustomCommandHandler()
                 .AddCustomCommand(
                     new CustomCommandPhrasing(
