@@ -108,6 +108,7 @@ namespace AshborneGame._Core.CognitiveSystem.MemorySystem
 
             Console.WriteLine($"Owner '{_ownerID}' stored memory: tags=[{string.Join(", ", newMemory.Tags)}], intensity={newMemory.Intensity:0.000}, strength={newMemory.Strength:0.000}, modifiers={newMemory.EmotionModifiers.Count}.");
             Console.WriteLine($"Number of memories: {_memories.Count}, active memories: {_memories.Count(m => m.IsActive)}.");
+            Console.WriteLine($"Number of relationships: {_relationships.Count}.");
             Console.WriteLine($"Owner '{_ownerID}' applied memory influence to relationships.");
 
             Console.WriteLine(
