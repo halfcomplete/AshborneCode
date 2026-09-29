@@ -37,9 +37,22 @@
                 string reason = DialogueChoices[i].reason;
                 string displayTxt = DialogueChoices[i].text;
 
-                <button @onclick="() => OnSelectChoice.InvokeAsync(choiceIndex + 1)" class="choice-button" disabled="@(!isEnabled)" title="@(!isEnabled ? reason : "")">
-                    [@(choiceIndex + 1)] @displayTxt
-                </button>
+                <div class="choice-button-wrapper"
+                     @onmouseenter="() => ShowChoiceTooltip(choiceIndex, isEnabled, reason)"
+                     @onmouseleave="HideChoiceTooltip"
+                     @onmousemove="UpdateChoiceTooltipPosition">
+                    <button @onclick="() => OnSelectChoice.InvokeAsync(choiceIndex + 1)" class="choice-button" disabled="@(!isEnabled)">
+                        [@(choiceIndex + 1)] @displayTxt
+                    </button>
+
+                    @if (showChoiceTooltip && choiceTooltipIndex == choiceIndex && !isEnabled)
+                    {
+                        <div class="save-tooltip"
+                             style="left:@($"{choiceTooltipX}px"); top:@($"{choiceTooltipY}px")">
+                            @reason
+                        </div>
+                    }
+                </div>
             }
         </div>
     }
@@ -87,6 +100,35 @@
     [Parameter] public string WaitingText { get; set; } = string.Empty;
     [Parameter] public string ListeningText { get; set; } = string.Empty;
     [Parameter] public EventCallback<int> OnSelectChoice { get; set; }
+
+    private bool showChoiceTooltip;
+    private int choiceTooltipIndex = -1;
+    private double choiceTooltipX;
+    private double choiceTooltipY;
+
+    private void ShowChoiceTooltip(int choiceIndex, bool isEnabled, string reason)
+    {
+        if (!isEnabled && !string.IsNullOrWhiteSpace(reason))
+        {
+            choiceTooltipIndex = choiceIndex;
+            showChoiceTooltip = true;
+        }
+    }
+
+    private void HideChoiceTooltip()
+    {
+        showChoiceTooltip = false;
+        choiceTooltipIndex = -1;
+    }
+
+    private void UpdateChoiceTooltipPosition(MouseEventArgs e)
+    {
+        if (showChoiceTooltip)
+        {
+            choiceTooltipX = e.ClientX + 15;
+            choiceTooltipY = e.ClientY + 15;
+        }
+    }
 
     private async Task HandleUserInputChange(ChangeEventArgs args)
     {

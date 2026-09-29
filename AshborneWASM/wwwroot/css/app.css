@@ -116,8 +116,11 @@
     color: #f8eecb;
     font-size: 1.1rem;
 }
-input[type="range"] {
-    width: 100%;
+.slider-group input[type="range"] {
+    display: block;
+    width: 94%;
+    margin-left: auto;
+    margin-right: auto;
     accent-color: #bfae8e;
     margin-top: 0.2rem;
     margin-bottom: 0.2rem;
@@ -1136,4 +1139,8 @@ input {
         max-height: 260px;
         margin: 16px auto 0;
     }
+}
+
+.choice-button-wrapper {
+    position: relative;
 }

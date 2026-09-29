@@ -1415,7 +1415,9 @@ public partial class Home : ComponentBase, IDisposable
 
         await engine.StartGameLoopAsync();
 
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(50);
+        await AutoScrollToBottom(force: true);
     }
 
     private bool ShouldGifFadeOut => isInDialogue && dialogueChoices.Count > 0 && !isTypingDialogue;
