@@ -388,6 +388,27 @@ body {
     font-family: 'AnonymousPro-Regular', monospace;
     font-size: 0.78rem;
     line-height: 1.35;
+    scrollbar-color: #8c7c5a99 #171614;
+    scrollbar-width: thin;
+}
+
+.gardener-debug-panel::-webkit-scrollbar {
+    width: 8px;
+}
+
+.gardener-debug-panel::-webkit-scrollbar-track {
+    background: #171614;
+    border-radius: 8px;
+}
+
+.gardener-debug-panel::-webkit-scrollbar-thumb {
+    background: #8c7c5a99;
+    border: 2px solid #171614;
+    border-radius: 8px;
+}
+
+.gardener-debug-panel::-webkit-scrollbar-thumb:hover {
+    background: #bfae8ecc;
 }
 
 .gardener-debug-header {
@@ -399,8 +420,6 @@ body {
     color: #f8eecb;
 }
 
-.gardener-debug-header span,
-.gardener-debug-panel footer,
 .gardener-debug-panel h3 span {
     color: #bfae8e99;
     font-size: 0.7rem;
@@ -444,12 +463,6 @@ body {
     margin: 4px 0;
     color: #bfae8e99;
     font-style: italic;
-}
-
-.gardener-debug-panel footer {
-    display: block;
-    margin-top: 14px;
-    text-align: right;
 }
 
 .game-output {
