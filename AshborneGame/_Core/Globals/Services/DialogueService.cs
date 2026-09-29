@@ -1,4 +1,6 @@
 ﻿using AshborneGame._Core.Game;
+using AshborneGame._Core.Data.BOCS;
+using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.Globals.Enums;
 using System;
@@ -32,8 +34,29 @@ namespace AshborneGame._Core.Globals.Services
 
         public async Task StartDialogue(string inkFileName)
         {
+            await StartDialogue(inkFileName, null);
+        }
+
+        public async Task StartNPCDialogue(string inkFileName, DefinitionID npcDefinitionID)
+        {
+            BOCSObject? npc = GameContext.InstanceRegistry
+                .GetByDefinition(npcDefinitionID)
+                .SingleOrDefault();
+
+            if (npc == null)
+            {
+                throw new InvalidOperationException($"Could not find NPC instance with definition ID '{npcDefinitionID}'.");
+            }
+
+            await StartDialogue(inkFileName, npc);
+        }
+
+        public async Task StartDialogue(string inkFileName, BOCSObject? dialogueInteractionTarget)
+        {
             originalKey = inkFileName;
             _currentDialogueKey = originalKey;
+            GameContext.Player.CurrentNPCInteraction = dialogueInteractionTarget;
+            _inkRunner.SetDialogueInteractionTarget(dialogueInteractionTarget);
             Console.WriteLine($"[DialogueService] StartDialogue invoked with key='{originalKey}' (before path resolution)");
             try
             {

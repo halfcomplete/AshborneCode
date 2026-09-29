@@ -174,7 +174,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                     async () => 
                     {
                         await IOService.Output.WriteNonDialogueLine("You approach the Keeper.");
-                        await GameContext.DialogueService.StartDialogue("Act1_Scene1_Keeper");
+                        await GameContext.DialogueService.StartNPCDialogue("Act1_Scene1_Keeper", DefinitionIDs.NPCs.Keeper);
                     }
                 )
             );
@@ -415,7 +415,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                     async () =>
                     {
                         await IOService.Output.WriteNonDialogueLine("You move across the garden towards the Gardener.");
-                        await GameContext.DialogueService.StartDialogue("Act1_Scene1_Gardener_Intro");
+                        await GameContext.DialogueService.StartNPCDialogue("Act1_Scene1_Gardener_Intro", DefinitionIDs.NPCs.Gardener);
                     }
                 )
             );
@@ -458,7 +458,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                             async () =>
                             {
                                 await IOService.Output.WriteNonDialogueLine("You move across the garden towards the Gardener.");
-                                await GameContext.DialogueService.StartDialogue("Act1_Scene1_Gardener_Intro");
+                                await GameContext.DialogueService.StartNPCDialogue("Act1_Scene1_Gardener_Intro", DefinitionIDs.NPCs.Gardener);
                             }
                         )
                         .AddCustomCommand(
@@ -513,7 +513,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                             async () =>
                             {
                                 await IOService.Output.WriteNonDialogueLine("You move across the herb beds towards the Gardener.");
-                                await GameContext.DialogueService.StartDialogue("Act1_Scene1_Gardener_Intro");
+                                await GameContext.DialogueService.StartNPCDialogue("Act1_Scene1_Gardener_Intro", DefinitionIDs.NPCs.Gardener);
                             }
                         )
                         .AddCustomCommand(
@@ -570,7 +570,7 @@ namespace AshborneGame._Core.Data.Definitions.LocationSpecific
                             async () =>
                             {
                                 await IOService.Output.WriteNonDialogueLine("You move across the garden towards the Gardener.");
-                                await GameContext.DialogueService.StartDialogue("Act1_Scene1_Gardener_Intro");
+                                await GameContext.DialogueService.StartNPCDialogue("Act1_Scene1_Gardener_Intro", DefinitionIDs.NPCs.Gardener);
                             }
                         )
                         .AddCustomCommand(

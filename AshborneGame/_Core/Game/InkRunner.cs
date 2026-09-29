@@ -81,6 +81,7 @@ namespace AshborneGame._Core.Game
         private Player _player;
         private readonly GameStateManager _gameState;
         private readonly AppEnvironment _appEnvironment;
+        private BOCSObject? _dialogueInteractionTarget;
 
         private (string, int) _currentSilentPath = ("", 0);
         private CancellationTokenSource? _silentPathCts = null;
@@ -370,10 +371,10 @@ namespace AshborneGame._Core.Game
                                             Enum.TryParse<AttitudeFactor>(attitudeParts[0], true, out var attitudeFactor) &&
                                             double.TryParse(attitudeParts[1], out double targetVal))
                                         {
-                                            var npc = _player.CurrentNPCInteraction;
+                                            var npc = _dialogueInteractionTarget;
                                             if (npc == null)
                                             {
-                                                throw new InvalidOperationException("Player is not currently interacting with an NPC. Cannot check attitude constraints.");
+                                                throw new InvalidOperationException("This dialogue contains an attitude constraint but was not started with an NPC interaction target.");
                                             }
 
                                             if (npc.TryGetBehaviour<ISentientEntity>().Result.Item2?.PsychologicalState.TryGetRelationship(DefinitionIDs.Player, out var attitude) is null or false)
@@ -666,6 +667,11 @@ namespace AshborneGame._Core.Game
         {
             _currentSilentPath = (silentPath, silentMs);
             return null;
+        }
+
+        public void SetDialogueInteractionTarget(BOCSObject? target)
+        {
+            _dialogueInteractionTarget = target;
         }
 
         #region In-Game Time & Emotions

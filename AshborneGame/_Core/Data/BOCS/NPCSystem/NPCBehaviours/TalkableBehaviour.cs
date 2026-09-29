@@ -47,7 +47,7 @@ namespace AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours
             if (DialogueFileName != null)
             {
                 // Start the dialogue
-                await GameContext.DialogueService.StartDialogue(DialogueFileName);
+                await GameContext.DialogueService.StartDialogue(DialogueFileName, Owner);
             }
             else if (Greeting != null)
             {
