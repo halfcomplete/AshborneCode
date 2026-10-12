@@ -9,9 +9,9 @@ namespace AshborneGame._Core.Game
 {
     public static class GameContext
     {
-        public static IDefinitionRegistry DefinitionRegistry { get; private set; }
-        public static IInstanceRegistry InstanceRegistry { get; private set; }
-        public static ILocationRegistry LocationRegistry { get; private set; }
+        public static IDefinitionRegistry DefinitionRegistry { get; private set; } = new DefinitionRegistry();
+        public static IInstanceRegistry InstanceRegistry { get; private set; } = new InstanceRegistry();
+        public static ILocationRegistry LocationRegistry { get; private set; } = new LocationRegistry();
 
         public static Player Player { get; private set; }
         public static GameStateManager GameState { get; private set; }

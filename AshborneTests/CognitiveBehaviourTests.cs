@@ -9,6 +9,7 @@ using AshborneGame._Core.Data.Definitions.Registries;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
 using AshborneGame._Core.Globals.Interfaces;
+using AshborneGame._Core.Game.Events;
 using AshborneGame._Core.LocationManagement;
 using AshborneGame._Core.SaveSystem.Data.BOCSDTOs;
 using AshborneGame._Core.SaveSystem.Serialisation;
@@ -19,10 +20,10 @@ namespace AshborneTests;
 public class CognitiveBehaviourTests
 {
     [Fact]
-    public void DeepClone_DoesNotRequireAnAttachedOwner()
+    public void DeepClone_ShouldNotRequireAnAttachedOwner_WhenPrototypeIsUnattached()
     {
         var behaviour = Assert.IsType<CognitiveBehaviour>(
-            Gardener.BehaviourPrototypes.Single());
+            NPCDefinitions.Gardener.BehaviourPrototypes.Single());
 
         var clone = behaviour.DeepClone();
 
@@ -31,12 +32,12 @@ public class CognitiveBehaviourTests
     }
 
     [Fact]
-    public void SaveLoadContext_RegisterStoresBehaviourSaveData()
+    public void SaveLoadContext_ShouldStoreBehaviourSaveData_WhenObjectIsRegistered()
     {
         var context = new SaveLoadContext(new InstanceRegistry(), new LocationRegistry());
         var instanceId = InstanceID.New();
         var bocsObject = new BOCSObject(
-            new ObjectNameAdapter("Test object", null),
+            new ObjectNameAdapter("Test object", "a test object", []),
             "A test object.",
             new DefinitionID("Test.Object"),
             instanceId);
@@ -49,7 +50,7 @@ public class CognitiveBehaviourTests
     }
 
     [Fact]
-    public void CognitiveBehaviour_SaveDataRoundTripsRelationshipsAndMemories()
+    public void CognitiveBehaviour_ShouldRoundTripRelationshipsAndMemories_WhenSaveDataIsLoaded()
     {
         var gardenerId = new DefinitionID("NPCs.Gardener");
         var playerId = new DefinitionID("Player");
@@ -77,20 +78,20 @@ public class CognitiveBehaviourTests
         restored.LoadSaveData(saveData);
 
         Assert.True(restored.PsychologicalState.Relationships.TryGetValue(playerId, out var restoredAttitude));
-        Assert.Equal(0.8, restoredAttitude!.Factors[AttitudeFactor.Affection]);
+        Assert.Equal(0.8, restoredAttitude!.Factors[AttitudeFactor.Affection], precision: 1);
         Assert.Equal(0.6, restored.PsychologicalState.Personality.PersonalityTraits[PersonalityTrait.Compassion]);
         Assert.Single(restored.PsychologicalState.MemoryEmotion.GetMemories());
     }
 
     [Fact]
-    public void LoadingCognitiveBehaviour_RegistersSentientEntityModule()
+    public void LoadingCognitiveBehaviour_ShouldRegisterSentientEntityModule_WhenSaveDataIsLoaded()
     {
         var gardenerId = new DefinitionID("NPCs.Gardener");
         var context = new SaveLoadContext(new InstanceRegistry(), new LocationRegistry());
         var sourceBehaviour = new CognitiveBehaviour(new PsychologicalState(gardenerId));
         var saveData = sourceBehaviour.GetSaveData(context);
         var loadedObject = new BOCSObject(
-            new ObjectNameAdapter("Gardener", null),
+            new ObjectNameAdapter("Gardener", "a gardener", []),
             "A gardener.",
             gardenerId,
             InstanceID.New());

@@ -82,8 +82,9 @@ namespace AshborneGame._Core.CognitiveSystem
 
         public PsychologicalState DeepClone()
         {
-            // TODO: deepclone personality and memory?
-            return new PsychologicalState(new(Relationships), new(_ownerID, Personality, Relationships), new());
+            var clone = new PsychologicalState(_ownerID);
+            clone.LoadSaveData(GetSaveData());
+            return clone;
         }
 
 

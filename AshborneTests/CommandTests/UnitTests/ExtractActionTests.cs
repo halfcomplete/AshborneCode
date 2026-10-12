@@ -23,7 +23,7 @@ namespace AshborneTests.CommandTests
 
         [Theory]
         [MemberData(nameof(DictionaryTestData))]
-        public void ExtractAction_Succeeds_With_Good_Input(string input, string expectedAction, List<string> expectedArgs)
+        public void ExtractAction_ShouldReturnActionAndArguments_WhenInputIsValid(string input, string expectedAction, List<string> expectedArgs)
         {
             var inputList = input.Split(' ').ToList();
 

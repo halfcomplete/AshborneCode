@@ -55,12 +55,12 @@ namespace AshborneGame._Core.Data.BOCS
             await IOService.Output.DisplayDebugMessage($"Cloning BOCSObject: {source.Name} ({source.InstanceID})");
             var clone = new BOCSObject(source.Name.DeepClone(), source.Description, source.DefinitionID);
 
-            foreach (var (behaviourType, behaviours) in source.ByModule)
+            foreach (var behaviour in source.ByBehaviour)
             {
-                foreach (var behaviour in behaviours)
+                var clonedBehaviour = behaviour.DeepClone();
+                foreach (var interfaceType in clonedBehaviour.GetType().GetInterfaces())
                 {
-                    // TODO: Add deep clone functionality to every behaviour (not here though!)
-                    clone.AddBehaviour(behaviourType, behaviour);
+                    clone.AddBehaviour(interfaceType, clonedBehaviour);
                 }
             }
 

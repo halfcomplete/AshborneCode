@@ -11,7 +11,7 @@ namespace AshborneTests
     public class SFXFormatterTests
     {
         [Fact]
-        public void ConvertSFXToSpans_Succeeds_WithNestedSpans()
+        public void ConvertSFXToSpans_ShouldCreateNestedSpans_WhenTagsAreNested()
         {
             // Arrange
             var sfxString = "<sfx=sfx-shake><span style=\"color:#FFFFFF;\">\"Call me Ossaneth, the Unblinking Eye.\"</span></sfx=sfx-shake>";

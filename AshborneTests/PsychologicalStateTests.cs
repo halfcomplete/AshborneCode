@@ -10,7 +10,7 @@ namespace AshborneTests;
 public class PsychologicalStateTests
 {
     [Fact]
-    public void LoadingStatePreservesRelationshipUpdatesFromMemoryProfile()
+    public void PsychologicalState_ShouldPreserveRelationshipUpdates_WhenSaveDataIsLoadedBeforeMemoryArrives()
     {
         DefinitionID gardenerID = new("NPCs.Gardener");
         DefinitionID playerID = new("Player");

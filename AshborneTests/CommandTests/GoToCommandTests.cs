@@ -9,7 +9,7 @@ namespace AshborneTests.CommandTests
     public class GoToCommandTests : IsolatedTestBase
     {
         [Fact]
-        public async Task GoToCommand_Fails_With_Invalid_Sublocation()
+        public async Task GoToCommand_ShouldFail_WhenDestinationIsInvalid()
         {
             var player = new Player();
 
@@ -19,13 +19,13 @@ namespace AshborneTests.CommandTests
         }
 
         [Fact]
-        public async Task GoToCommand_Succeeds_With_Same_Location()
+        public async Task GoToCommand_ShouldFail_WhenDestinationIsNotRegistered()
         {
             var player = new Player();
 
             bool result = await CommandManager.TryExecute("go to", ["Test", "Location"], player);
 
-            Assert.True(result);
+            Assert.False(result);
         }
     }
 }

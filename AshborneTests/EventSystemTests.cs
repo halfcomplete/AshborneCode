@@ -156,7 +156,7 @@ namespace AshborneTests
         }
 
         [Fact]
-        public void Publish_ShouldPassCorrectEventData_ToSubscriber()
+        public void Publish_ShouldPassCorrectEventData_WhenSubscriberReceivesEvent()
         {
             // Arrange
             TestEvent? receivedEvent = null;
@@ -183,7 +183,6 @@ namespace AshborneTests
         [Fact]
         public void Publish_ShouldThrowArgumentNullException_WhenEventIsNull()
         {
-            // Arrange, Act & Assert
             Assert.Throws<ArgumentNullException>(() => EventBus.Publish<TestEvent>(null!));
         }
 
@@ -248,7 +247,7 @@ namespace AshborneTests
         }
 
         [Fact]
-        public async Task PublishAsync_ShouldAwaitAllHandlers_BeforeReturning()
+        public async Task PublishAsync_ShouldAwaitAllHandlers_WhenPublishCompletes()
         {
             // Arrange
             var completionOrder = new List<int>();
@@ -292,7 +291,7 @@ namespace AshborneTests
         }
 
         [Fact]
-        public void Publish_ShouldStillInvokeAllHandlers_BeforeRemovingThemForOneTimeEvent()
+        public void Publish_ShouldInvokeAllHandlers_WhenOneTimeEventIsPublished()
         {
             // Arrange
             var messages = new List<string>();
@@ -517,7 +516,7 @@ namespace AshborneTests
         #region Thread Safety Tests
 
         [Fact]
-        public async Task EventBus_ShouldHandleConcurrentSubscriptions_WithoutErrors()
+        public async Task EventBus_ShouldHandleConcurrentSubscriptions_WhenSubscriptionsRunConcurrently()
         {
             // Arrange
             var tasks = new List<Task>();
@@ -541,7 +540,7 @@ namespace AshborneTests
         }
 
         [Fact]
-        public async Task EventBus_ShouldHandleConcurrentPublishing_WithoutErrors()
+        public async Task EventBus_ShouldHandleConcurrentPublishing_WhenHandlersRunConcurrently()
         {
             // Arrange
             var callCount = 0;

@@ -7,7 +7,7 @@ namespace AshborneTests
     public class GameStateTrackerTests
     {
         [Fact]
-        public void Tracker_UsesStateKeysAsTheSingleRegisteredCatalog()
+        public void Tracker_ShouldUseStateKeysAsRegisteredCatalog_WhenKeysAreDeclared()
         {
             Assert.Contains("Flags.Player.Received.OssanethMask", GameStateTracker.GetAllRegisteredFlagKeys());
             Assert.Contains("Counters.Player.Prayers", GameStateTracker.GetAllRegisteredCounterKeys());
@@ -19,7 +19,7 @@ namespace AshborneTests
         }
 
         [Fact]
-        public void Tracker_StoresAndValidatesLiveStateThroughTheSameKeyCatalog()
+        public void Tracker_ShouldStoreAndValidateLiveState_WhenUsingRegisteredKeys()
         {
             var tracker = new GameStateTracker();
             var flagKey = GameStateTracker.ValidateAndGetFlagKey("Flags.Player.Received.OssanethMask");
@@ -40,7 +40,7 @@ namespace AshborneTests
         }
 
         [Fact]
-        public void Tracker_RemoveOperationsResetValuesWithoutRemovingRegisteredState()
+        public void Tracker_ShouldResetValuesWithoutRemovingRegisteredState_WhenValuesAreRemoved()
         {
             var tracker = new GameStateTracker();
             var flagKey = GameStateTracker.ValidateAndGetFlagKey("Flags.Player.Received.OssanethMask");

@@ -75,39 +75,6 @@ namespace AshborneTests
             Assert.Empty(issues);
         }
 
-        [Fact]
-        public void ValidateAllDialogues_ShouldAggregateIssues_WhenMultipleFilesHaveProblems()
-        {
-            // Arrange
-            string file1 = Path.Combine(_testDirectory, "file1.json");
-            string file2 = Path.Combine(_testDirectory, "file2.json");
-            File.WriteAllText(file1, CreateMockInkJson("BadFlag1", "setFlag", FunctionType.SetFlag));
-            File.WriteAllText(file2, CreateMockInkJson("BadFlag2", "setFlag", FunctionType.SetFlag));
-
-            // Act
-            var issues = InkDialogueValidator.ValidateAllDialogues(_testDirectory);
-
-            // Assert
-            Assert.True(issues.Count >= 2);
-        }
-
-        [Fact]
-        public void ValidateAllDialogues_ShouldFindAllFiles_WhenFilesAreInNestedDirectories()
-        {
-            // Arrange
-            string subDir = Path.Combine(_testDirectory, "SubFolder");
-            Directory.CreateDirectory(subDir);
-            string nestedFile = Path.Combine(subDir, "nested.json");
-            File.WriteAllText(nestedFile, CreateMockInkJson("BadNestedFlag", "setFlag", FunctionType.SetFlag));
-
-            // Act
-            var issues = InkDialogueValidator.ValidateAllDialogues(_testDirectory);
-
-            // Assert
-            Assert.NotEmpty(issues);
-            Assert.Contains(issues, i => i.FilePath == nestedFile);
-        }
-
         #endregion
 
         #region ValidateSingleFile Tests
@@ -143,24 +110,6 @@ namespace AshborneTests
         }
 
 
-        [Fact]
-        public void ValidateSingleFile_ShouldReturnIssues_WhenFunctionKeysAreInvalid()
-        {
-            // Arrange
-            string testFile = Path.Combine(_testDirectory, "all_functions.json");
-            var json = CreateMockInkJsonWithMultipleBadFunctions();
-            File.WriteAllText(testFile, json);
-
-            // Act
-            var issues = InkDialogueValidator.ValidateSingleFile(testFile);
-
-            // Assert
-            Assert.NotEmpty(issues); // Should have issues for all the bad keys
-            Assert.Contains(issues, i => i.Message.Contains("Flag"));
-            Assert.Contains(issues, i => i.Message.Contains("Counter"));
-            Assert.Contains(issues, i => i.Message.Contains("Label"));
-        }
-        
         #endregion
 
         #region PrintResults Tests

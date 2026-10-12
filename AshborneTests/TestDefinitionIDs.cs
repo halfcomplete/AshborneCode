@@ -24,36 +24,32 @@ namespace AshborneTests
         public static BOCSObjectDefinition TestNPC = 
             new(
                 TestDefinitionIDs.TestNPC,
-                "Test NPC",
+                new("Test NPC", "a test NPC", ["Ricky"]),
                 "A test NPC for testing purposes",
-                ["Ricky"],
                 []
             );
         
         public static BOCSObjectDefinition TestTrader = 
             new(
                 TestDefinitionIDs.TestNPC,
-                "Test Trader",
+                new("Test Trader", "a test trader", ["Mr. Market"]),
                 "A test Trader for testing purposes",
-                ["Mr. Market"],
                 [new TradeableNPCBehaviour()]
             );
 
         public static BOCSObjectDefinition TestSword = 
             new(
                 TestDefinitionIDs.TestSword,
-                "Test Sword",
+                new("Test Sword", "a test sword", ["Cloud"]),
                 "A test sword for testing purposes",
-                ["Cloud"],
                 [new StorableBehaviour(1, AshborneGame._Core.Globals.Enums.ItemTypes.Weapon, AshborneGame._Core.Globals.Enums.ItemQualities.Uncommon)]
             );
         
         public static BOCSObjectDefinition TestChest = 
             new(
                 TestDefinitionIDs.TestChest,
-                "Test Chest",
+                new("Test Chest", "a test chest", ["Pandora's Box"]),
                 "A test chest for testing purposes",
-                ["Pandora's Box"],
                 [new OpenCloseBehaviour(false)]
             );
     }

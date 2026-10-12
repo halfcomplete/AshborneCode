@@ -13,12 +13,11 @@ namespace AshborneTests
     {
         private TimeTracker CreateTimeTracker()
         {
-            var questTracker = new QuestTracker();
-            return new TimeTracker(questTracker);
+            return new TimeTracker();
         }
 
         [Fact]
-        public void AdvanceTime_ShouldIncreaseTotalInGameHours()
+        public void AdvanceTime_ShouldIncreaseTotalInGameHours_WhenGivenPositiveValue()
         {
             // Arrange
             var timeTracker = CreateTimeTracker();
@@ -60,7 +59,7 @@ namespace AshborneTests
         [InlineData(23, TimeOfDay.Night)]
         [InlineData(0, TimeOfDay.Midnight)]
         [InlineData(4, TimeOfDay.Midnight)]
-        public void CurrentTimeOfDay_ShouldReturnCorrectEnum_ForGivenHour(int hourOfDay, TimeOfDay expectedTime)
+        public void CurrentTimeOfDay_ShouldReturnCorrectEnum_WhenGivenHour(int hourOfDay, TimeOfDay expectedTime)
         {
             // Arrange
             var timeTracker = CreateTimeTracker();
@@ -80,7 +79,7 @@ namespace AshborneTests
         }
 
         [Fact]
-        public void AdvanceToTimeOfDay_ShouldJumpToNextOccurrence()
+        public void AdvanceToTimeOfDay_ShouldJumpToNextOccurrence_WhenTargetTimeIsLater()
         {
             // Arrange
             var timeTracker = CreateTimeTracker();
@@ -96,7 +95,7 @@ namespace AshborneTests
         }
         
         [Fact]
-        public void AdvanceToTimeOfDay_ShouldJumpToNextDay_IfTargetTimeIsEarlierInDay()
+        public void AdvanceToTimeOfDay_ShouldJumpToNextDay_WhenTargetTimeIsEarlierInDay()
         {
             // Arrange
             var timeTracker = CreateTimeTracker();
@@ -116,7 +115,7 @@ namespace AshborneTests
         }
 
         [Fact]
-        public void TotalInGameHours_ShouldPersistCorrectly_OverManyDays()
+        public void TotalInGameHours_ShouldPersistCorrectly_WhenAdvancingAcrossManyDays()
         {
             // Arrange
             var timeTracker = CreateTimeTracker();

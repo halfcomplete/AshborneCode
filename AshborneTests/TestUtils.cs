@@ -1,10 +1,14 @@
 ﻿using AshborneGame._Core._Player;
 using AshborneGame._Core.Data.BOCS;
 using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours.Inventory;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemBehaviours;
+using AshborneGame._Core.Data.BOCS.ItemSystem.ItemCapabilities;
 using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCCapabilities;
 using AshborneGame._Core.Data.BOCS.NPCSystem.NPCBehaviours;
 using AshborneGame._Core.Data.BOCS.ObjectSystem;
+using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectBehaviours;
+using AshborneGame._Core.Data.BOCS.ObjectSystem.ObjectCapabilities;
 using AshborneGame._Core.Data.IDSystem;
 using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Enums;
@@ -37,7 +41,12 @@ namespace AshborneTests
         /// </summary>
         static internal BOCSObject CreateTestNPC(string name = "TestNPC")
         {
-            return null;
+            var npc = new BOCSObject(
+                new ObjectNameAdapter(name, name, []),
+                "A test NPC.",
+                new DefinitionID("test-npc-" + Guid.NewGuid().ToString("N")));
+            npc.AddBehaviour(typeof(TalkableBehaviour).GetInterfaces().Single(), new TalkableBehaviour($"Hello from {name}."));
+            return npc;
         }
 
         /// <summary>
@@ -61,45 +70,70 @@ namespace AshborneTests
             var descriptor = new LocationNameAdapter(name, null);
             var narrative = new DescriptionComposer();
             // Pass explicit ID to ensure uniqueness in tests
-            return new Location(descriptor, narrative, new DefinitionID("locations.test-" + Guid.NewGuid().ToString("N")[..8]));
+            return new Location(
+                new DefinitionID("locations.test-" + Guid.NewGuid().ToString("N")[..8]),
+                descriptor,
+                narrative,
+                new(),
+                new(),
+                new(),
+                new());
         }
 
         // TODO: hack
         /// <summary>
         /// Returns a test sublocation with a default name "Test Sublocation" and a default location "Test Location". Has a default game object "Test Object".
         /// </summary>
-        static internal Sublocation CreateTestSublocation(BOCSObject gameObject)
+        static internal Location CreateTestSublocation(BOCSObject gameObject)
         {
-            var parent = CreateTestLocation(Guid.NewGuid().ToString());
-            var identifier = new LocationNameAdapter("test", null);
-            return new Sublocation(
-                parent,
-                gameObject,
-                identifier,
-                new DescriptionComposer(),
-                new DefinitionID("test-sublocatioon"),
-                "[shortened positional phrase]",
-                "[short ref desc]"
-            );
+            var location = CreateTestLocation(Guid.NewGuid().ToString());
+            location.AddObject(gameObject);
+            return location;
         }
 
         static internal BOCSObject CreateTestGameObject(string name = "Test Object")
         {
-            return new BOCSObject(name, "A test object.");
+            return new BOCSObject(
+                new ObjectNameAdapter(name, name, []),
+                "A test object.",
+                new DefinitionID("test-object-" + Guid.NewGuid().ToString("N")));
         }
 
-        static internal async Task<GameObject> CreateTestGameObjectChest(bool hasItem = false, int amount = 1)
+        static internal async Task<BOCSObject> CreateTestGameObjectChest(bool hasItem = false, int amount = 1)
         {
-            GameObject chest = GameObjectFactory.CreateChest("Test chest", "A test chest");
+            var chest = new BOCSObject(
+                new ObjectNameAdapter("Test chest", "Test chest", []),
+                "A test chest.",
+                new DefinitionID("test-chest-" + Guid.NewGuid().ToString("N")));
+            chest.AddBehaviour(typeof(IHasInventory), new ContainerBehaviour());
+            chest.AddBehaviour(typeof(IInteractable), new OpenCloseBehaviour(false));
             (_, var inv) = await chest.TryGetBehaviour<IHasInventory>();
             if (hasItem)
                 inv.Inventory.TryAddItem(CreateTestItem(), amount);
             return chest;
         }
 
-        static internal Item CreateTestItem(string name = "test_item", int stackLimit = 1, ItemTypes itemType = ItemTypes.None)
+        static internal BOCSObject CreateTestItem(string name = "test_item", int stackLimit = 1, ItemTypes itemType = ItemTypes.None)
         {
-            return new Item(name, "A test item", "A test item has been used", stackLimit, itemType, ItemQualities.None);
+            var item = new BOCSObject(
+                new ObjectNameAdapter(name, name, []),
+                "A test item.",
+                new DefinitionID("test-item-" + Guid.NewGuid().ToString("N")));
+            item.AddBehaviour(typeof(IStorable), new StorableBehaviour(stackLimit, itemType, ItemQualities.None));
+            return item;
+        }
+    }
+
+    internal static class InventoryTestExtensions
+    {
+        internal static bool TryAddItem(this Inventory inventory, BOCSObject item, int amount)
+        {
+            var added = true;
+            for (var index = 0; index < amount; index++)
+            {
+                added &= inventory.TryAddItem(index == 0 ? item : TestUtils.CreateTestItem(item.Name.ReferenceName));
+            }
+            return added;
         }
     }
 }

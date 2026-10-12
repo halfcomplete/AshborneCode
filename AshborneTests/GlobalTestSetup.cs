@@ -4,6 +4,7 @@ using AshborneGame._Core.Game.DescriptionHandling;
 using AshborneGame._Core.Globals.Interfaces;
 using AshborneGame._Core.Globals.Services;
 using AshborneGame._Core.LocationManagement;
+using AshborneGame._Core.Data.Definitions.Registries;
 using Moq;
 
 namespace AshborneTests
@@ -19,14 +20,24 @@ namespace AshborneTests
             SlugIdService.IsTestMode = true;
 
             // Clear static registries to ensure test isolation
-            LocationRegistry.Clear();
-
             Player player = new Player();
-            GameStateManager gameStateManager = new GameStateManager(player);
+            GameStateManager gameStateManager = new GameStateManager(player, new TimeTracker());
             AppEnvironment app = new AppEnvironment();
             InkRunner inkRunner = new Mock<InkRunner>(gameStateManager, player, app).Object;
-            QuestTracker questTracker = new QuestTracker();
-            GameContext.Initialise(player, gameStateManager, new Mock<DialogueService>(inkRunner).Object, inkRunner, new Mock<GameEngine>(new Mock<IInputHandler>().Object, new Mock<IOutputHandler>().Object, app).Object, new Mock<TimeTracker>(questTracker).Object, new AmbientTimeManager());
+            var locationRegistry = new LocationRegistry();
+            var gameEngine = new GameEngine(new Mock<IInputHandler>().Object, new Mock<IOutputHandler>().Object, app);
+            GameContext.Initialise(
+                player,
+                gameStateManager,
+                new Mock<DialogueService>(inkRunner).Object,
+                inkRunner,
+                gameEngine,
+                gameStateManager.TimeTracker,
+                new AmbientTimeManager(),
+                new MovementService(locationRegistry),
+                new DefinitionRegistry(),
+                new InstanceRegistry(),
+                locationRegistry);
         }
     }
 
@@ -39,13 +50,11 @@ namespace AshborneTests
         protected IsolatedTestBase()
         {
             // Clear registry before each test
-            LocationRegistry.Clear();
         }
 
         public void Dispose()
         {
             // Clean up after test
-            LocationRegistry.Clear();
             GC.SuppressFinalize(this);
         }
     }

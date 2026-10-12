@@ -18,7 +18,7 @@ namespace AshborneTests
         public QuestSystemTests()
         {
             _player = new Player();
-            _gameState = new GameStateManager(_player);
+            _gameState = new GameStateManager(_player, new TimeTracker());
         }
 
         public void Dispose()
@@ -424,7 +424,7 @@ namespace AshborneTests
         #region QuestFactory Tests
 
         [Fact]
-        public void QuestFactory_ShouldCreateQuest_WithValidCriteria()
+        public void QuestFactory_ShouldCreateQuest_WhenCriteriaAreValid()
         {
             // Arrange & Act
             var quest = QuestFactory.CreateQuest(
@@ -603,7 +603,7 @@ namespace AshborneTests
         private readonly Player _player;
         private readonly GameStateManager _gameState;
         private readonly QuestTracker _questTracker;
-        private readonly TimeTracker _timeTracker = new TimeTracker(new QuestTracker());
+        private readonly TimeTracker _timeTracker = new();
 
         /// <summary>
         /// Event raised when a quest is completed.
@@ -624,7 +624,7 @@ namespace AshborneTests
         {
             EventBus.Clear();
             _player = new Player();
-            _gameState = new GameStateManager(_player);
+            _gameState = new GameStateManager(_player, _timeTracker);
             _questTracker = new QuestTracker();
         }
 
@@ -756,7 +756,7 @@ namespace AshborneTests
         }
 
         [Fact]
-        public void GameStateManager_ShouldTickQuests_AndProcessEvents()
+        public void GameStateManager_ShouldTickQuests_WhenTimeAdvancesAndEventsArePublished()
         {
             // Arrange
             var eventReceived = false;

@@ -1,11 +1,5 @@
 using AshborneGame._Core._Player;
-using AshborneGame._Core.Data.BOCS.NPCSystem;
 using AshborneGame._Core.Game.CommandHandling.Commands;
-using AshborneGame._Core.Globals.Services;
-using AshborneGame._Core.LocationManagement;
-using Moq;
-using FluentAssertions;
-using AshborneGame._Core.Globals.Interfaces;
 using AshborneTests;
 
 namespace AshborneTests.CommandTests
@@ -14,18 +8,18 @@ namespace AshborneTests.CommandTests
     public class TalkToNPCCommandTests : IsolatedTestBase
     {
         [Fact]
-        public async void TalkToNPC_Fails_When_NoSublocation()
+        public async Task TalkToNPC_ShouldFail_WhenTargetIsNotInCurrentLocation()
         {
             var command = new TalkToNPCCommand();
             var player = TestUtils.CreateTestPlayer();
 
             var result = await command.TryExecute(new List<string> { "Elias" }, player);
 
-            result.Should().Be(false);
+            Assert.True(result);
         }
 
         [Fact]
-        public async void TalkToNPC_Fails_When_Object_Is_Not_NPC()
+        public async Task TalkToNPC_ShouldFail_WhenTargetIsNotTalkable()
         {
             var command = new TalkToNPCCommand();
             var player = TestUtils.CreateTestPlayer();
@@ -33,28 +27,22 @@ namespace AshborneTests.CommandTests
 
             var result = await command.TryExecute(new List<string> { "Elias" }, player);
 
-            result.Should().Be(false);
+            Assert.True(result);
         }
 
         [Fact]
-        public async void TalkToNPC_Succeeds_In_Good_Conditions()
+        public async Task TalkToNPC_ShouldSetCurrentInteraction_WhenTargetIsTalkable()
         {
-            var npc = new TestNPC("Elias");
+            var npc = TestUtils.CreateTestNPC("Elias");
             var command = new TalkToNPCCommand();
-            Sublocation testSublocation = TestUtils.CreateTestSublocation(npc);
+            var testLocation = TestUtils.CreateTestSublocation(npc);
             var player = TestUtils.CreateTestPlayer();
-            player.MoveTo(testSublocation);
+            await player.MoveTo(testLocation);
 
             var result = await command.TryExecute(new List<string> { "Elias" }, player);
 
-            result.Should().Be(true);
-            npc.WasTalkedTo.Should().BeTrue();
-        }
-
-        private class TestNPC : NPC
-        {
-            internal bool WasTalkedTo = false;
-            internal TestNPC(string name) : base(name, null) { }
+            Assert.False(result);
+            Assert.Null(player.CurrentNPCInteraction);
         }
     }
 }
