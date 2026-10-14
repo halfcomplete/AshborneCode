@@ -19,18 +19,18 @@ namespace AshborneGame._Core.Globals.Constants
         {
             public static class Player
             {
-                public static class Actions
+                public static class In
                 {
-                    public static class In
+                    public static class OssuaryOfEyes
                     {
-                        public static class OssuaryOfEyes
+                        public static class TalkedTo
                         {
-                            public static readonly GameStateKey<bool> TalkedToOssaneth = new("Flags.Player.Actions.In.OssuaryOfEyes.TalkedToOssaneth");
-                            public static readonly GameStateKey<bool> TalkedToOssanethHelp = new("Flags.Player.Actions.In.OssuaryOfEyes.TalkedToOssanethHelp");
-                            public static readonly GameStateKey<bool> TalkedToOssanethSelf = new("Flags.Player.Actions.In.OssuaryOfEyes.TalkedToOssanethSelf");
-                            public static readonly GameStateKey<bool> TalkedToOssanethPast = new("Flags.Player.Actions.In.OssuaryOfEyes.TalkedToOssanethPast");
-                            public static readonly GameStateKey<bool> SteppedOnPlant = new("Flags.Player.Actions.In.OssuaryOfEyes.SteppedOnPlant");
-                        }   
+                            public static readonly GameStateKey<bool> Ossaneth = new("Flags.Player.In.OssuaryOfEyes.TalkedTo.Ossaneth");
+                            public static readonly GameStateKey<bool> OssanethHelp = new("Flags.Player.In.OssuaryOfEyes.TalkedTo.OssanethHelp");
+                            public static readonly GameStateKey<bool> OssanethSelf = new("Flags.Player.In.OssuaryOfEyes.TalkedTo.OssanethSelf");
+                            public static readonly GameStateKey<bool> OssanethPast = new("Flags.Player.In.OssuaryOfEyes.TalkedTo.OssanethPast");
+                        }
+                        public static readonly GameStateKey<bool> SteppedOnPlant = new("Flags.Player.In.OssuaryOfEyes.SteppedOnPlant");
                     }
                 }
 
